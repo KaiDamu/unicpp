@@ -6,6 +6,7 @@
 	#include <windows.h>
 	#include <winternl.h>
 
+	#include "import/winapi/type.h"
 	#include "import/winapi/value.h"
 	#include "import/winapi/function.h"
 #endif
@@ -13,6 +14,10 @@
 #include "keyword.h"
 #include "debug.h"
 #include "type.h"
+
+#include "pre/process.h"
+#include "pre/console.h"
+
 #include "value.h"
 #include "error.h"
 #include "typeconvert.h"

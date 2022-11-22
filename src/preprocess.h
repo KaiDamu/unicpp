@@ -24,9 +24,12 @@
 	#endif
 #endif
 
-#ifdef PROG_SYS_WIN
+#ifdef PROG_SYS_LINUX
 #else
-	#error "PROG_SYS is not defined! (define: *_WIN)"
+	#ifdef PROG_SYS_WIN
+	#else
+		#error "PROG_SYS is not defined! (define: *_LINUX or *_WIN)"
+	#endif
 #endif
 
 #ifdef PROG_THD_CNT_SINGLE
@@ -35,4 +38,8 @@
 	#else
 		#error "PROG_THD_CNT is not defined! (define: *_SINGLE or *_MULTI)"
 	#endif
+#endif
+
+#ifdef PROG_COMPILER_MSVC
+	#pragma warning(disable:4996) // _CRT_SECURE_NO_WARNINGS
 #endif

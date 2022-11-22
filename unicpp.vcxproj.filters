@@ -179,5 +179,14 @@
     <ClInclude Include="src\import\winapi\value.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\pre\process.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pre\console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\import\winapi\type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

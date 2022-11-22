@@ -35,6 +35,7 @@
     <ClInclude Include="src\event.h" />
     <ClInclude Include="src\file.h" />
     <ClInclude Include="src\import\winapi\function.h" />
+    <ClInclude Include="src\import\winapi\type.h" />
     <ClInclude Include="src\import\winapi\value.h" />
     <ClInclude Include="src\include.h" />
     <ClInclude Include="src\joystick.h" />
@@ -53,6 +54,8 @@
     <ClInclude Include="src\pipe.h" />
     <ClInclude Include="src\pointer.h" />
     <ClInclude Include="src\preprocess.h" />
+    <ClInclude Include="src\pre\console.h" />
+    <ClInclude Include="src\pre\process.h" />
     <ClInclude Include="src\process.h" />
     <ClInclude Include="src\protobuf.h" />
     <ClInclude Include="src\python.h" />

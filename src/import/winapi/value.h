@@ -1,3 +1,4 @@
 #pragma once
 
 #define STATUS_SUCCESS 0x00000000
+#define STATUS_BUFFER_OVERFLOW 0x80000005

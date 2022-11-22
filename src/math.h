@@ -44,6 +44,6 @@ dfa UA BitAlign(UA val, SI size) {
 dfa U1 ObfuscateByte(U1 val, U1 i) {
 	ret U1((val ^ 0x55) + (i ^ 0xAA));
 }
-dfa U1 UnObfuscateByte(U1 val, U1 i) {
+dfa U1 UnobfuscateByte(U1 val, U1 i) {
 	ret U1(val - (i ^ 0xAA)) ^ 0x55;
 }
