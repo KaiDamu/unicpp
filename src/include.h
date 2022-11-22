@@ -50,6 +50,7 @@
 #include "python.h"
 #include "protobuf.h"
 #include "aes.h"
+#include "rsa.h"
 #include "sha256.h"
 #include "md5.h"
 #include "registry.h"
