@@ -97,3 +97,50 @@ dfa NT operator delete[](GA ptr, UA size) {
 	unused(size);
 	MemDealloc(ptr);
 }
+
+class MemPoolTmp {
+private:
+	U1** m_listPtr;
+	SI m_listPtrLen;
+	SI m_sizeFree;
+	U1* m_curPtr;
+private:
+	dfa NT _Init() {
+		m_listPtr = NUL;
+		m_listPtrLen = 0;
+		m_sizeFree = 0;
+		m_curPtr = NUL;
+	}
+public:
+	dfa GA Alloc(SI size) {
+		do {
+			ifl (m_sizeFree >= size) {
+				m_sizeFree -= size;
+				m_curPtr += size;
+				ret m_curPtr - size;
+			}
+			m_sizeFree = 1 << m_listPtrLen;
+			m_listPtr[m_listPtrLen] = new U1[m_sizeFree];
+			m_curPtr = m_listPtr[m_listPtrLen];
+			++m_listPtrLen;
+		} while (YES);
+	}
+	dfa NT DeallocAll() {
+		while (m_listPtrLen > 0) {
+			delete[] m_listPtr[m_listPtrLen - 1];
+			--m_listPtrLen;
+		}
+		m_sizeFree = 0;
+		m_curPtr = NUL;
+	}
+public:
+	dfa MemPoolTmp() {
+		tx->_Init();
+		m_listPtr = new U1 * [sizbit(SI)];
+		MemSet(m_listPtr, 0, sizbit(SI) * sizeof(U1*));
+	}
+	dfa ~MemPoolTmp() {
+		tx->DeallocAll();
+		delete[] m_listPtr;
+	}
+};
