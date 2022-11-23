@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <time.h>
 #ifdef PROG_SYS_WIN
+	#define WINVER 0x0A00 // Windows 10
+	#define _WIN32_WINNT 0x0A00 // Windows 10
+
 	#include <windows.h>
 	#include <winternl.h>
 

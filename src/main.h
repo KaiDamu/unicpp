@@ -1,6 +1,9 @@
 #pragma once
 
 dfa ER MainInit() {
+	#ifdef PROG_SYS_WIN
+		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS); // hint for performance, error not handled
+	#endif
 	TimeResSet(1, 0, NO); // hint for performance, error not handled
 	ife (TimeMainInit()) rete(ERR_TIME);
 	rets;
