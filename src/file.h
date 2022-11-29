@@ -188,3 +188,211 @@ public:
 		tx->Close();
 	}
 };
+
+class File {
+private:
+	#ifdef PROG_SYS_WIN
+		FileWin m_file;
+	#endif
+public:
+	dfa BO IsOpen() {
+		ret m_file.IsOpen();
+	}
+	dfa ER CurMove(SI cnt) {
+		ret m_file.CurMove(cnt);
+	}
+	dfa ER CurSet(SI pos) {
+		ret m_file.CurSet(pos);
+	}
+	dfa ER OpenRead(cx CH* path) {
+		ret m_file.OpenRead(path);
+	}
+	dfa ER OpenWrite(cx CH* path) {
+		ret m_file.OpenWrite(path);
+	}
+	dfa ER OpenReadWrite(cx CH* path) {
+		ret m_file.OpenReadWrite(path);
+	}
+	dfa ER Close() {
+		ret m_file.Close();
+	}
+	dfa ER Read(GA buf, SI size, SI& result) {
+		ret m_file.Read(buf, size, result);
+	}
+	dfa ER Write(CXGA buf, SI size, SI& result) {
+		ret m_file.Write(buf, size, result);
+	}
+	dfa ER Read(GA buf, SI size) {
+		ret m_file.Read(buf, size);
+	}
+	dfa ER Write(CXGA buf, SI size) {
+		ret m_file.Write(buf, size);
+	}
+	dfa ER SizeGet(SI& size) {
+		ret m_file.SizeGet(size);
+	}
+public:
+	dfa File() {
+		;
+	}
+	dfa ~File() {
+		;
+	}
+};
+
+class FileMem {
+private:
+	File m_file;
+	Arr<U1> m_dat;
+	SI m_filePos;
+	SI m_filePosOfs;
+	BO m_isOpen;
+	BO m_isRead;
+	BO m_isWrite;
+	BO m_isWriteDirect;
+public:
+	dfa BO IsOpen() {
+		ret m_isOpen;
+	}
+	dfa ER CurMove(SI cnt) {
+		ifu (m_filePos + m_filePosOfs + cnt < 0) rete(ERR_LOW_SIZE);
+		ifu (m_filePos + m_filePosOfs + cnt > m_dat.Pos()) rete(ERR_HIGH_SIZE);
+		if (m_isWriteDirect) m_filePosOfs += cnt;
+		else m_filePos += cnt;
+		rets;
+	}
+	dfa ER CurSet(SI pos) {
+		ifu (pos < 0) rete(ERR_LOW_SIZE);
+		ifu (pos > m_dat.Pos()) rete(ERR_HIGH_SIZE);
+		if (m_isWriteDirect) m_filePosOfs = pos - m_filePos;
+		else m_filePos = pos;
+		rets;
+	}
+	dfa ER OpenRead(cx CH* path) {
+		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
+		ife (m_file.OpenRead(path)) retepass;
+		SI size = 0;
+		ife (m_file.SizeGet(size)) retepass;
+		m_dat.Alloc(size);
+		ife (m_file.Read(m_dat.Ptr(), size)) retepass;
+		m_dat.CurSet(size);
+		ife (m_file.Close()) retepass;
+		m_filePos = 0;
+		m_filePosOfs = 0;
+		m_isOpen = YES;
+		m_isRead = YES;
+		m_isWrite = NO;
+		m_isWriteDirect = NO;
+		rets;
+	}
+	dfa ER OpenWrite(cx CH* path, BO isWriteDirect = NO) {
+		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
+		ife (m_file.OpenWrite(path)) retepass;
+		SI size = 0;
+		ife (m_file.SizeGet(size)) retepass;
+		m_dat.Alloc(size);
+		MemSet(m_dat.Ptr(), 0, size);
+		m_dat.CurSet(size);
+		m_filePos = 0;
+		m_filePosOfs = 0;
+		m_isOpen = YES;
+		m_isRead = NO;
+		m_isWrite = YES;
+		m_isWriteDirect = isWriteDirect;
+		rets;
+	}
+	dfa ER OpenReadWrite(cx CH* path, BO isWriteDirect = NO) {
+		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
+		ife (m_file.OpenReadWrite(path)) retepass;
+		SI size = 0;
+		ife (m_file.SizeGet(size)) retepass;
+		m_dat.Alloc(size);
+		ife (m_file.Read(m_dat.Ptr(), size)) retepass;
+		m_dat.CurSet(size);
+		m_filePos = 0;
+		m_filePosOfs = 0;
+		m_isOpen = YES;
+		m_isRead = YES;
+		m_isWrite = YES;
+		m_isWriteDirect = isWriteDirect;
+		rets;
+	}
+	dfa ER Close() {
+		ifu (!tx->IsOpen()) rets;
+		if (m_isWrite) {
+			if (!m_isWriteDirect) {
+				ife (m_file.CurSet(0)) retepass;
+				ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retepass;
+			}
+			ife (m_file.Close()) retepass;
+		}
+		m_dat.Dealloc();
+		m_filePos = 0;
+		m_filePosOfs = 0;
+		m_isOpen = NO;
+		m_isRead = NO;
+		m_isWrite = NO;
+		m_isWriteDirect = NO;
+		rets;
+	}
+	dfa ER Read(GA buf, SI size, SI& result) {
+		result = 0;
+		ifu (m_filePos + m_filePosOfs + size > m_dat.Pos()) rete(ERR_HIGH_SIZE);
+		MemCpy(buf, m_dat.Ptr() + m_filePos + m_filePosOfs, size);
+		if (m_isWriteDirect) m_filePosOfs += size;
+		else m_filePos += size;
+		result = size;
+		rets;
+	}
+	dfa ER Write(CXGA buf, SI size, SI& result) {
+		result = 0;
+		ifu (!m_isWrite) rete(ERR_NO_INIT);
+		if (m_isWriteDirect) {
+			if (m_filePosOfs != 0) {
+				ife (m_file.CurMove(m_filePosOfs)) retepass;
+				m_filePos += m_filePosOfs;
+				m_filePosOfs = 0;
+			}
+			ife (m_file.Write(buf, size)) retepass;
+		}
+		ifu (m_filePos + size > m_dat.Cap()) {
+			cx SI newCap = m_dat.Cap() * 2 + size;
+			m_dat.Req(newCap, newCap, m_dat.Pos());
+		}
+		MemCpy(m_dat.Ptr() + m_filePos, buf, size);
+		m_filePos += size;
+		if (m_filePos > m_dat.Pos()) m_dat.CurSet(m_filePos);
+		result = size;
+		rets;
+	}
+	dfa ER Read(GA buf, SI size) {
+		SI result;
+		ife (tx->Read(buf, size, result)) retepass;
+		ifu (size != result) rete(ERR_NO_FULL);
+		rets;
+	}
+	dfa ER Write(CXGA buf, SI size) {
+		SI result;
+		ife (tx->Write(buf, size, result)) retepass;
+		ifu (size != result) rete(ERR_NO_FULL);
+		rets;
+	}
+	dfa ER SizeGet(SI& size) {
+		size = 0;
+		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
+		size = m_dat.Pos();
+		rets;
+	}
+public:
+	dfa FileMem() {
+		m_filePos = 0;
+		m_filePosOfs = 0;
+		m_isOpen = NO;
+		m_isRead = NO;
+		m_isWrite = NO;
+		m_isWriteDirect = NO;
+	}
+	dfa ~FileMem() {
+		tx->Close();
+	}
+};

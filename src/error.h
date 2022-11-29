@@ -26,6 +26,7 @@ enum : ErrVal {
 	ERR_YES_EXIST,
 	ERR_YES_ACTIVE,
 	//
+	ERR_LOW_SIZE,
 	ERR_LOW_WAIT,
 	//
 	ERR_HIGH_SIZE,
