@@ -8,7 +8,13 @@ public:
 	dfa T1& Dat1() {
 		ret m_dat1;
 	}
+	dfa cx T1& Dat1Cx() const {
+		ret m_dat1;
+	}
 	dfa T2& Dat2() {
+		ret m_dat2;
+	}
+	dfa cx T2& Dat2Cx() const {
 		ret m_dat2;
 	}
 	dfa NT Dat1(cx T1& dat) {
@@ -36,8 +42,14 @@ public:
 	dfa T1& Key() {
 		ret m_tuple.Dat1();
 	}
+	dfa cx T1& KeyCx() const {
+		ret m_tuple.Dat1Cx();
+	}
 	dfa T2& Val() {
 		ret m_tuple.Dat2();
+	}
+	dfa cx T2& ValCx() const {
+		ret m_tuple.Dat2Cx();
 	}
 	dfa NT Key(cx T1& key) {
 		m_tuple.Dat1(key);
