@@ -36,6 +36,19 @@ tpl1 dfa T1 VarintDecode(cx U1* in, SI inSize, SI& readSize) {
 	readSize = i;
 	ret out;
 }
+tpl1 dfa SI VarintDecode(T1& out, cx U1* in) {
+	out = 0;
+	SI i = 0;
+	do {
+		out |= (in[i] & 0x7F) << (0x07 * i);
+		if (!(in[i] & 0x80)) {
+			++i;
+			break;
+		}
+		++i;
+	} while (YES);
+	ret i;
+}
 
 dfa UA BitAlign(UA val, SI size) {
 	ret (val + (size - 1)) & ~(size - 1);
