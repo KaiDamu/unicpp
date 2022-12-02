@@ -14,40 +14,26 @@ tpl1 dfa NT Swap(T1& a, T1& b) {
 }
 
 tpl1 dfa SI VarintEncode(U1* out, T1 in) {
-	SI outSize = 0;
+	U1*cx outBase = out;
 	while (in > 0x7F) {
-		out[outSize++] = U1(in & 0x7F) | 0x80;
+		*out++ = U1(in & 0x7F) | 0x80;
 		in >>= 7;
 	}
-	out[outSize++] = U1(in) & 0x7F;
-	ret outSize;
-}
-tpl1 dfa T1 VarintDecode(cx U1* in, SI inSize, SI& readSize) {
-	T1 out = 0;
-	SI i = 0;
-	while (i != inSize) {
-		out |= (in[i] & 0x7F) << (0x07 * i);
-		if (!(in[i] & 0x80)) {
-			++i;
-			break;
-		}
-		++i;
-	}
-	readSize = i;
-	ret out;
+	*out++ = U1(in) & 0x7F;
+	ret SI(out - outBase);
 }
 tpl1 dfa SI VarintDecode(T1& out, cx U1* in) {
 	out = 0;
-	SI i = 0;
+	cx U1*cx inBase = in;
 	do {
-		out |= (in[i] & 0x7F) << (0x07 * i);
-		if (!(in[i] & 0x80)) {
-			++i;
+		out |= ((*in) & 0x7F) << (0x07 * (in - inBase));
+		if (!(*in & 0x80)) {
+			++in;
 			break;
 		}
-		++i;
+		++in;
 	} while (YES);
-	ret i;
+	ret SI(in - inBase);
 }
 
 dfa UA BitAlign(UA val, SI size) {
