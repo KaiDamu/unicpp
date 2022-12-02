@@ -5,7 +5,7 @@ dfa S4 F4ToS4(F4 val) {
 	#ifdef PROG_COMPILER_GCC
 		__asm__("fistpl %0" : "=m"(r) : "t"(val) : "st");
 	#else
-		r = S4(val);
+		r = S4(val + 0.5f);
 	#endif
 	ret r;
 }
