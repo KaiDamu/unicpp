@@ -93,8 +93,7 @@ public:
 		switch (fieldType) {
 		case PRB_FIELD_TYPE_VARINT:
 		{
-			SI readSize;
-			m_valU8 = VarintDecode<U8>(m_bufCur, -1, readSize);
+			cx SI readSize = VarintDecode<U8>(m_valU8, m_bufCur);
 			m_bufCur += readSize;
 			break;
 		}
@@ -106,8 +105,7 @@ public:
 		}
 		case PRB_FIELD_TYPE_LEN:
 		{
-			SI readSize;
-			m_valU8 = VarintDecode<U8>(m_bufCur, -1, readSize);
+			cx SI readSize = VarintDecode<U8>(m_valU8, m_bufCur);
 			m_bufCur += readSize;
 			tx->StackPush(m_bufCur + m_valU8, m_fieldId);
 			break;
