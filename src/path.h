@@ -84,6 +84,9 @@ dfa cx CH* ProcCurFilePathGet() {
 	ifu (s_cache[0] == '\0') {
 		cx DWORD result = GetModuleFileNameW(NUL, s_cache, PATH_LEN_MAX);
 		Assert(result > 0 && result < PATH_LEN_MAX);
+		#ifdef PROG_BUILD_TYPE_RELEASE
+			unused(result);
+		#endif
 	}
 	ret s_cache;
 }
@@ -100,6 +103,9 @@ dfa cx CH* ProcCurWorkPathGet() {
 	ifu (s_cache[0] == '\0') {
 		cx DWORD result = GetCurrentDirectoryW(PATH_LEN_MAX, s_cache);
 		Assert(result > 0 && result < PATH_LEN_MAX);
+		#ifdef PROG_BUILD_TYPE_RELEASE
+			unused(result);
+		#endif
 	}
 	ret s_cache;
 }
