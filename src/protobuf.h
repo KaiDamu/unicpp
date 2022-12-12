@@ -158,6 +158,9 @@ public:
 	dfa PrbCtx() {
 		tx->Init();
 	}
+	dfa PrbCtx(cx U1* buf, SI bufSize) {
+		tx->Init(buf, bufSize);
+	}
 	dfa ~PrbCtx() {
 		tx->Free();
 	}
