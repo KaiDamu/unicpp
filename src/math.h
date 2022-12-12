@@ -44,7 +44,7 @@ tpl1 dfa SI VarintDecode(T1& out, cx U1* in) {
 	out = 0;
 	cx U1*cx inBase = in;
 	do {
-		out |= ((*in) & 0x7F) << (0x07 * (in - inBase));
+		out |= ((*in) & 0x7F) << (0x07 * U1(in - inBase));
 		if (!(*in & 0x80)) {
 			++in;
 			break;
