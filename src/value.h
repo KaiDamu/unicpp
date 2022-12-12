@@ -7,6 +7,12 @@ constexpr ER ERR_NO = 0;
 constexpr ER ERR_YES = 1;
 
 constexpr SI BIT_IN_BYTE = 8;
+
+constexpr SI BYTE_IN_KB = 1024;
+constexpr SI BYTE_IN_MB = BYTE_IN_KB * 1024;
+constexpr SI BYTE_IN_GB = BYTE_IN_MB * 1024;
+constexpr SI BYTE_IN_TB = BYTE_IN_GB * 1024;
+
 constexpr SI SEC_IN_HOUR = 3600;
 
 #ifdef PROG_ADR_SIZE_4

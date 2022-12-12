@@ -9,6 +9,7 @@ enum : ErrVal {
 	ERR_PROC,
 	ERR_THD,
 	ERR_EVT,
+	ERR_DRIVE,
 	ERR_FILE,
 	ERR_PIPE,
 	ERR_ENV,
