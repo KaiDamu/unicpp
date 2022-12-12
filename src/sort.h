@@ -1,6 +1,13 @@
 #pragma once
 
-tpl<typename T1, BO Cmp(cx T1&, cx T1&)> NT SortQuick(T1* low, T1* high) {
+tpl1 dfa BO _CmpAsc(cx T1& a, cx T1& b) {
+	ret (b - a) > 0;
+}
+tpl1 dfa BO _CmpDesc(cx T1& a, cx T1& b) {
+	ret (a - b) > 0;
+}
+
+tpl<typename T1, BO Cmp(cx T1&, cx T1&)> dfa NT SortQuick(T1* low, T1* high) {
 	thdlocal static SI s_stackSize = 0;
 	thdlocal static T1** s_stack = NUL;
 	cx SI stackSizeNew = high - low + 1;
@@ -41,7 +48,14 @@ tpl<typename T1, BO Cmp(cx T1&, cx T1&)> NT SortQuick(T1* low, T1* high) {
 		}
 	} while (s_stack != stackBase);
 }
-tpl<typename T1, BO Cmp(cx T1&, cx T1&)> NT SortQuick(T1* buf, SI cnt) {
+tpl<typename T1, BO Cmp(cx T1&, cx T1&)> dfa NT SortQuick(T1* buf, SI cnt) {
 	ifu (cnt < 2) ret;
 	SortQuick<T1, Cmp>(buf, buf + cnt - 1);
+}
+
+tpl1 dfa NT SortQuickAsc(T1* buf, SI cnt) {
+	SortQuick<T1, _CmpAsc<T1>>(buf, cnt);
+}
+tpl1 dfa NT SortQuickDesc(T1* buf, SI cnt) {
+	SortQuick<T1, _CmpDesc<T1>>(buf, cnt);
 }
