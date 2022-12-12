@@ -18,7 +18,7 @@ public:
 	dfa BO IsConnected() {
 		ret m_hdl.IsOpen();
 	}
-	dfa ER Connect(cx CH* pipeName, SI tryCntMax, SI tryDelay) {
+	dfa ER Connect(cx CH* pipeName, SI tryCntMax, S4 tryDelay) {
 		SI tryCnt = 0;
 		while (tryCnt != tryCntMax) {
 			++tryCnt;
@@ -34,8 +34,7 @@ public:
 	dfa ER Close() {
 		ret m_hdl.Close();
 	}
-	dfa ER ReadWait(Arr<U1>& buf, SI& result) {
-		result = 0;
+	dfa ER ReadWait(Arr<U1>& buf) {
 		SI readResult = 0;
 		SI readSize = 0;
 		ife (m_hdl.Read(&readSize, siz(readSize), readResult)) {
@@ -53,8 +52,6 @@ public:
 			buf.CurMove(readResult);
 			readSizeRem -= readResult;
 		}
-		buf.CurRewind();
-		result = readSize;
 		rets;
 	}
 public:
