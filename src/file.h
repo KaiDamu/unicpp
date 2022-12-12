@@ -240,6 +240,9 @@ public:
 	}
 };
 
+constexpr F8 FILE_MEM_RESIZE_MUL_DEFA = 1.5;
+constexpr SI FILE_MEM_RESIZE_ADD_DEFA = 1024;
+
 class FileMem {
 private:
 	File m_file;
@@ -250,6 +253,8 @@ private:
 	BO m_isRead;
 	BO m_isWrite;
 	BO m_isWriteDirect;
+	F8 m_resizeMul;
+	SI m_resizeAdd;
 public:
 	dfa BO IsOpen() {
 		ret m_isOpen;
@@ -283,14 +288,16 @@ public:
 		m_isRead = YES;
 		m_isWrite = NO;
 		m_isWriteDirect = NO;
+		m_resizeMul = 0.0;
+		m_resizeAdd = 0;
 		rets;
 	}
-	dfa ER OpenWrite(cx CH* path, BO isWriteDirect = NO) {
+	dfa ER OpenWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA) {
 		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
 		ife (m_file.OpenWrite(path)) retepass;
 		SI size = 0;
 		ife (m_file.SizeGet(size)) retepass;
-		m_dat.Alloc(size);
+		m_dat.Alloc(SI(F8(size) * resizeMul + F8(resizeAdd)));
 		MemSet(m_dat.Ptr(), 0, size);
 		m_dat.CurSet(size);
 		m_filePos = 0;
@@ -299,14 +306,16 @@ public:
 		m_isRead = NO;
 		m_isWrite = YES;
 		m_isWriteDirect = isWriteDirect;
+		m_resizeMul = resizeMul;
+		m_resizeAdd = resizeAdd;
 		rets;
 	}
-	dfa ER OpenReadWrite(cx CH* path, BO isWriteDirect = NO) {
+	dfa ER OpenReadWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA) {
 		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
 		ife (m_file.OpenReadWrite(path)) retepass;
 		SI size = 0;
 		ife (m_file.SizeGet(size)) retepass;
-		m_dat.Alloc(size);
+		m_dat.Alloc(SI(F8(size) * resizeMul + F8(resizeAdd)));
 		ife (m_file.Read(m_dat.Ptr(), size)) retepass;
 		m_dat.CurSet(size);
 		m_filePos = 0;
@@ -315,6 +324,8 @@ public:
 		m_isRead = YES;
 		m_isWrite = YES;
 		m_isWriteDirect = isWriteDirect;
+		m_resizeMul = resizeMul;
+		m_resizeAdd = resizeAdd;
 		rets;
 	}
 	dfa ER Close() {
@@ -333,6 +344,8 @@ public:
 		m_isRead = NO;
 		m_isWrite = NO;
 		m_isWriteDirect = NO;
+		m_resizeMul = 0.0;
+		m_resizeAdd = 0;
 		rets;
 	}
 	dfa ER Read(GA buf, SI size, SI& result) {
@@ -356,7 +369,7 @@ public:
 			ife (m_file.Write(buf, size)) retepass;
 		}
 		ifu (m_filePos + size > m_dat.Cap()) {
-			cx SI newCap = m_dat.Cap() * 2 + size;
+			cx SI newCap = SI(F8(m_dat.Cap()) * m_resizeMul) + m_resizeAdd + size;
 			m_dat.Req(newCap, newCap, m_dat.Pos());
 		}
 		MemCpy(m_dat.Ptr() + m_filePos, buf, size);
@@ -391,6 +404,8 @@ public:
 		m_isRead = NO;
 		m_isWrite = NO;
 		m_isWriteDirect = NO;
+		m_resizeMul = 0.0;
+		m_resizeAdd = 0;
 	}
 	dfa ~FileMem() {
 		tx->Close();
