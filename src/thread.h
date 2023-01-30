@@ -130,9 +130,13 @@ public:
 class Thd {
 private:
 	HANDLE m_hdl;
+	U4 m_id;
 public:
 	dfa HANDLE Hdl() const {
 		ret m_hdl;
+	}
+	dfa U4 Id() const {
+		ret m_id;
 	}
 	dfa ER RetVal(U4& out) const {
 		out = -1;
@@ -157,6 +161,7 @@ public:
 		if (tx->IsActive()) rete(ERR_YES_ACTIVE);
 		ifu (CloseHandle(m_hdl) == 0) rete(ERR_THD);
 		m_hdl = NUL;
+		m_id = 0;
 		rets;
 	}
 	dfa ER Wait() const {
@@ -167,7 +172,8 @@ public:
 	dfa ER Start(LPTHREAD_START_ROUTINE fn, LPVOID param) {
 		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
 		ife (tx->Close()) retepass;
-		m_hdl = CreateThread(NUL, 0, fn, param, 0, NUL);
+		m_id = 0;
+		m_hdl = CreateThread(NUL, 0, fn, param, 0, (DWORD*)&m_id);
 		ifu (m_hdl == NUL) rete(ERR_THD);
 		rets;
 	}
@@ -180,6 +186,7 @@ public:
 public:
 	dfa Thd() {
 		m_hdl = NUL;
+		m_id = 0;
 	}
 	dfa ~Thd() {
 		tx->Stop();
