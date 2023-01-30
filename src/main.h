@@ -6,9 +6,15 @@ dfa ER MainInit() {
 	#endif
 	TimeResSet(1, 0, NO); // hint for performance, error not handled
 	ife (TimeMainInit()) rete(ERR_TIME);
+	#ifdef INCLUDE_KEYB
+		ife (KeybInit()) retepass;
+	#endif
 	rets;
 }
 dfa ER MainFree() {
+	#ifdef INCLUDE_KEYB
+		ife (KeybFree()) retepass;
+	#endif
 	TimeResClear(); // hint for performance, error not handled
 	rets;
 }

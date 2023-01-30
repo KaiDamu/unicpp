@@ -14,6 +14,7 @@ enum : ErrVal {
 	ERR_PIPE,
 	ERR_ENV,
 	ERR_CUR,
+	ERR_HOOK,
 	//
 	ERR_MEM_ALLOC,
 	ERR_TIME_RES,

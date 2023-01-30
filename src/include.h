@@ -62,7 +62,9 @@
 #include "screen.h"
 #include "window.h"
 #include "network.h"
-#include "keyboard.h"
+#ifdef INCLUDE_KEYB
+	#include "keyboard.h"
+#endif
 #include "cursor.h"
 #include "joystick.h"
 #include "opengl.h"
