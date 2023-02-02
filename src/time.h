@@ -4,6 +4,14 @@ U8 g_timeMainOfs = 0;
 U8 g_timeMainDivU = 0;
 F8 g_timeMainDivF = 0.0;
 
+dfa U8 TimeLdapToUnix(U8 ldap) {
+	ifu (ldap < 116444736000000000) ret 0;
+	ret ldap / 10000000 - 11644473600;
+}
+dfa U8 TimeUnixToLdap(U8 unix) {
+	ret unix * 10000000 + 116444736000000000;
+}
+
 dfa U8 CpuTsc() {
 	union {
 		U8 val;

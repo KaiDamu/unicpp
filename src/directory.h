@@ -50,10 +50,10 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, GA par
 			pathLen += info->FileNameLength / siz(CH);
 			path[pathLen] = '\0';
 			FileInfo fileInfo;
-			fileInfo.createDate = info->CreationTime.QuadPart;
-			fileInfo.accessDate = info->LastAccessTime.QuadPart;
-			fileInfo.writeDate = info->LastWriteTime.QuadPart;
-			fileInfo.changeDate = info->ChangeTime.QuadPart;
+			fileInfo.createDate = TimeLdapToUnix(info->CreationTime.QuadPart);
+			fileInfo.accessDate = TimeLdapToUnix(info->LastAccessTime.QuadPart);
+			fileInfo.writeDate = TimeLdapToUnix(info->LastWriteTime.QuadPart);
+			fileInfo.changeDate = TimeLdapToUnix(info->ChangeTime.QuadPart);
 			fileInfo.datSize = info->EndOfFile.QuadPart;
 			fileInfo.allocSize = info->AllocationSize.QuadPart;
 			fileInfo.index = U8(info->FileIndex);
