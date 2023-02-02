@@ -27,6 +27,19 @@ dfa SA CsstrCmp(cx CS* strA, cx CS* strB) {
 		ret SA(strcmp(strA, strB));
 	#endif
 }
+dfa SI CsstrEnclose(CS* dst, cx CS* src, cx CS* left, cx CS* right) {
+	cx SI leftLen = CsstrLen(left);
+	MemCpy(dst, left, leftLen * siz(CS));
+	dst += leftLen;
+	cx SI srcLen = CsstrLen(src);
+	MemCpy(dst, src, srcLen * siz(CS));
+	dst += srcLen;
+	cx SI rightLen = CsstrLen(right);
+	MemCpy(dst, right, rightLen * siz(CS));
+	dst += rightLen;
+	*dst = '\0';
+	ret leftLen + srcLen + rightLen;
+}
 
 dfa SI ChstrLen(cx CH* str) {
 	ret wcslen(str);
@@ -39,6 +52,19 @@ dfa NT ChstrAdd(CH* dst, cx CH* src) {
 }
 dfa SA ChstrCmp(cx CH* strA, cx CH* strB) {
 	ret SA(wcscmp(strA, strB));
+}
+dfa SI ChstrEnclose(CH* dst, cx CH* src, cx CH* left, cx CH* right) {
+	cx SI leftLen = ChstrLen(left);
+	MemCpy(dst, left, leftLen * siz(CH));
+	dst += leftLen;
+	cx SI srcLen = ChstrLen(src);
+	MemCpy(dst, src, srcLen * siz(CH));
+	dst += srcLen;
+	cx SI rightLen = ChstrLen(right);
+	MemCpy(dst, right, rightLen * siz(CH));
+	dst += rightLen;
+	*dst = '\0';
+	ret leftLen + srcLen + rightLen;
 }
 
 class Str {

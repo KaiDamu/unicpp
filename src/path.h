@@ -9,6 +9,10 @@ constexpr CH PATH_DIR_SEPARATOR = '\\';
 constexpr CH PATH_EXT_SEPARATOR = '.';
 constexpr CH PATH_DRIVE_SEPARATOR = ':';
 
+constexpr cx CH* PATH_DIR_SEPARATOR_STR = L"\\";
+constexpr cx CH* PATH_EXT_SEPARATOR_STR = L".";
+constexpr cx CH* PATH_DRIVE_SEPARATOR_STR = L":";
+
 dfa cx CH* PathExtPtr(cx CH* path) {
 	cx CH* last = NUL;
 	while (*path != '\0') {
