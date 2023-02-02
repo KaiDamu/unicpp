@@ -15,6 +15,15 @@ dfa NT ProcCurExit(U4 retVal) {
 dfa NT ProcCurExit() {
 	ProcCurExit(U4(ErrLastValGet()));
 }
+dfa BO ProcCurIsElevated() {
+	SID_IDENTIFIER_AUTHORITY sia = SECURITY_NT_AUTHORITY;
+	PSID sid;
+	ifu (AllocateAndInitializeSid(&sia, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &sid) == 0) ret NO;
+	BOOL isElevated;
+	ifu (CheckTokenMembership(NUL, sid, &isElevated) == 0) isElevated = NO;
+	FreeSid(sid);
+	ret BO(isElevated);
+}
 
 class Proc {
 private:
