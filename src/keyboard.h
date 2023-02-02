@@ -5,7 +5,7 @@
 #endif
 
 constexpr SI KEYB_KEY_CNT = 256;
-constexpr SI KEYB_KEY_STR_LEN_MAX = 8;
+constexpr SI KEYB_KEY_STR_LEN_MAX = 4;
 
 constexpr U1 KEYB_HOOK_THD_CODE_ERR_NO = 0;
 constexpr U1 KEYB_HOOK_THD_CODE_ERR_YES = 1;
@@ -189,7 +189,7 @@ DQueue<KeybKeyEvt> g_keybKeyEvtQueue;
 ThdLock g_keybKeyEvtQueueLock;
 S4 g_keybHookThdDelay = 0;
 
-LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp) {
+dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp) {
 	if (NO) {
 		jdst(next);
 		ret CallNextHookEx(NUL, code, wp, lp);
@@ -247,7 +247,7 @@ LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp) {
 	jsrc(next);
 }
 
-DWORD WINAPI _KeybHookThd(LPVOID code) {
+dfa DWORD WINAPI _KeybHookThd(LPVOID code) {
 	cx HHOOK hook = SetWindowsHookExW(WH_KEYBOARD_LL, _KeybHookCallb, GetModuleHandleW(NUL), 0);
 	ifu (hook == NUL) {
 		*reinterpret_cast<U1*>(code) = KEYB_HOOK_THD_CODE_ERR_YES;
@@ -284,6 +284,9 @@ dfa ER KeybFree() {
 	ifu (PostThreadMessageW(g_keybThd.Id(), WM_QUIT, 0, 0) == 0) rete(ERR_THD);
 	ife (g_keybThd.Wait()) retepass;
 	ife (g_keybThd.Close()) retepass;
+	g_keybKeyEvtQueueLock.Lock();
+	g_keybKeyEvtQueue.Free();
+	g_keybKeyEvtQueueLock.Unlock();
 	rets;
 }
 
