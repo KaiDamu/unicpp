@@ -99,3 +99,75 @@ public:
 		tx->Close();
 	}
 };
+
+constexpr SI PROC_GLOBAL_STR_LEN_MAX = PATH_LEN_MAX;
+
+class ProcGlobalStr {
+private:
+	HANDLE m_hdl;
+	CH m_str[PROC_GLOBAL_STR_LEN_MAX + 1];
+private:
+	dfa NT Init() {
+		m_hdl = NUL;
+		m_str[0] = '\0';
+	}
+public:
+	dfa BO IsOpenCur() const {
+		ret m_hdl != NUL;
+	}
+	dfa cx CH* Str() const {
+		ret m_str;
+	}
+	dfa BO IsOpen(cx CH* str) const {
+		SetLastError(0);
+		cx HANDLE hdl = CreateMutexW(NUL, NO, str);
+		ifu (hdl == NUL) ret NO;
+		cx BO r = (GetLastError() == ERROR_ALREADY_EXISTS);
+		CloseHandle(hdl);
+		ret r;
+	}
+	dfa ER Close() {
+		if (tx->IsOpenCur() == NO) rets;
+		ifu (CloseHandle(m_hdl) == 0) rete(ERR_PROC);
+		m_hdl = NUL;
+		rets;
+	}
+	dfa ER Open(cx CH* str) {
+		ifu (tx->IsOpenCur()) rete(ERR_YES_INIT);
+		cx SI strLen = ChstrLen(str);
+		ifu (strLen == 0) rete(ERR_LOW_SIZE);
+		ifu (strLen > PROC_GLOBAL_STR_LEN_MAX) rete(ERR_HIGH_SIZE);
+		SetLastError(0);
+		m_hdl = CreateMutexW(NUL, YES, str);
+		ifu (m_hdl == NUL) rete(ERR_PROC);
+		ifu (GetLastError() == ERROR_ALREADY_EXISTS) {
+			CloseHandle(m_hdl);
+			m_hdl = NUL;
+			rete(ERR_YES_EXIST);
+		}
+		MemCpy(m_str, str, (strLen + 1) * siz(str[0]));
+		rets;
+	}
+	dfa ER WaitIsClose(cx CH* str) const {
+		SetLastError(0);
+		cx HANDLE hdl = CreateMutexW(NUL, NO, str);
+		ifu (hdl == NUL) rete(ERR_PROC);
+		ifu ((GetLastError() == ERROR_ALREADY_EXISTS) && (WaitForSingleObject(hdl, INFINITE) != WAIT_OBJECT_0)) {
+			CloseHandle(hdl);
+			rete(ERR_PROC);
+		}
+		CloseHandle(hdl);
+		rets;
+	}
+public:
+	dfa ProcGlobalStr() {
+		tx->Init();
+	}
+	dfa ProcGlobalStr(cx CH* str) {
+		tx->Init();
+		tx->Open(str);
+	}
+	dfa ~ProcGlobalStr() {
+		tx->Close();
+	}
+};
