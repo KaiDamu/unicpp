@@ -17,6 +17,7 @@ UniCPP is an experimental framework, a compilation of years of universal-looking
 
 ## Includes
 - Character manipulation
+- Clipboard manipulation
 - Command line argument handling
 - Console functions
 - Custom classes: pointer, tuple, string, array, stack, queue, list, dictionary
