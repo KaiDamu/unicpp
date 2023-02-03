@@ -62,6 +62,7 @@
 #include "screen.h"
 #include "window.h"
 #include "network.h"
+#include "clipboard.h"
 #ifdef INCLUDE_KEYB
 	#include "keyboard.h"
 #endif

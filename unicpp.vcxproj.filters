@@ -191,5 +191,8 @@
     <ClInclude Include="src\rsa.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\clipboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
