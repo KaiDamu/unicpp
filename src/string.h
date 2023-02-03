@@ -40,6 +40,12 @@ dfa SI CsstrEnclose(CS* dst, cx CS* src, cx CS* left, cx CS* right) {
 	*dst = '\0';
 	ret leftLen + srcLen + rightLen;
 }
+dfa NT CsstrInsert(CS* dst, cx CS* src, SI i) {
+	cx SI dstLen = CsstrLen(dst);
+	cx SI srcLen = CsstrLen(src);
+	for (SI j = dstLen; j >= i; --j) dst[j + srcLen] = dst[j]; // TODO: Optimize this; use pointer arithmetic
+	for (SI j = 0; j < srcLen; ++j) dst[i + j] = src[j]; // TODO: Optimize this; use pointer arithmetic
+}
 
 dfa SI ChstrLen(cx CH* str) {
 	ret wcslen(str);
@@ -65,6 +71,12 @@ dfa SI ChstrEnclose(CH* dst, cx CH* src, cx CH* left, cx CH* right) {
 	dst += rightLen;
 	*dst = '\0';
 	ret leftLen + srcLen + rightLen;
+}
+dfa NT ChstrInsert(CH* dst, cx CH* src, SI i) {
+	cx SI dstLen = ChstrLen(dst);
+	cx SI srcLen = ChstrLen(src);
+	for (SI j = dstLen; j >= i; --j) dst[j + srcLen] = dst[j]; // TODO: Optimize this; use pointer arithmetic
+	for (SI j = 0; j < srcLen; ++j) dst[i + j] = src[j]; // TODO: Optimize this; use pointer arithmetic
 }
 
 class Str {
