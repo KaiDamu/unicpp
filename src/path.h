@@ -155,3 +155,15 @@ dfa BO PathToNtpathByDirPath(CH* path) {
 	MemCpy(path, NTPATH_PRE_STR, NTPATH_PRE_STR_LEN * siz(CH));
 	ret YES;
 }
+
+constexpr CH PATH_SANITIZE_CHAR = '_';
+
+dfa NT PathSanitize(CH* dst, cx CH* src) {
+	while (*src != '\0') {
+		if (*src == '\\' || *src == '/' || *src == ':' || *src == '*' || *src == '?' || *src == '\"' || *src == '<' || *src == '>' || *src == '|') *dst = PATH_SANITIZE_CHAR;
+		else *dst = *src;
+		++dst;
+		++src;
+	}
+	*dst = '\0';
+}
