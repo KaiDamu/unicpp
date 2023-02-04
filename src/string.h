@@ -46,6 +46,13 @@ dfa NT CsstrInsert(CS* dst, cx CS* src, SI i) {
 	for (SI j = dstLen; j >= i; --j) dst[j + srcLen] = dst[j]; // TODO: Optimize this; use pointer arithmetic
 	for (SI j = 0; j < srcLen; ++j) dst[i + j] = src[j]; // TODO: Optimize this; use pointer arithmetic
 }
+dfa cx CS* CsstrFind(cx CS* main, cx CS* sub) {
+	#ifdef PROG_COMPILER_GCC
+		ret __builtin_strstr(main, sub);
+	#else
+		ret strstr(main, sub);
+	#endif
+}
 
 dfa SI ChstrLen(cx CH* str) {
 	ret wcslen(str);
@@ -77,6 +84,9 @@ dfa NT ChstrInsert(CH* dst, cx CH* src, SI i) {
 	cx SI srcLen = ChstrLen(src);
 	for (SI j = dstLen; j >= i; --j) dst[j + srcLen] = dst[j]; // TODO: Optimize this; use pointer arithmetic
 	for (SI j = 0; j < srcLen; ++j) dst[i + j] = src[j]; // TODO: Optimize this; use pointer arithmetic
+}
+dfa cx CH* ChstrFind(cx CH* main, cx CH* sub) {
+	ret wcsstr(main, sub);
 }
 
 class Str {
