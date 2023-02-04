@@ -22,6 +22,7 @@ UniCPP is an experimental framework, a compilation of years of universal-looking
 - Console functions
 - Custom classes: pointer, tuple, string, array, stack, queue, list, dictionary
 - Debug functions
+- Dumb functions
 - Encryption: AES, RSA
 - Error handling
 - File & directory handling

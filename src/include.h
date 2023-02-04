@@ -71,5 +71,8 @@
 #include "opengl.h"
 #include "sound.h"
 #include "log.h"
+#ifdef INCLUDE_DUMB
+	#include "dumb.h"
+#endif
 
 #include "main.h"
