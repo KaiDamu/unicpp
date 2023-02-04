@@ -43,6 +43,9 @@ using NT = void;
 	static_assert(siz(GA) == 8, "\"GA\" type size is not 8 byte! (while PROG_ADR_SIZE_8 is defined)");
 #endif
 
+using ID = UA;
+using HD = GA;
+
 static_assert(siz(U1) == 1, "\"U1\" type size is not 1 byte!");
 static_assert(siz(U2) == 2, "\"U2\" type size is not 2 byte!");
 static_assert(siz(U4) == 4, "\"U4\" type size is not 4 byte!");
