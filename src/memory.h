@@ -18,6 +18,13 @@ dfa S1 MemCmp(CXGA ptr1, CXGA ptr2, SI size) {
 	ret __builtin_memcmp(ptr1, ptr2, size);
 }
 
+dfa SI MemPageSizeGet() {
+	SYSTEM_INFO info;
+	info.dwPageSize = 0;
+	GetSystemInfo(&info);
+	ret SI(info.dwPageSize);
+}
+
 dfa NT MemObfuscate(GA dst, CXGA src, SI size) {
 	U1* _dst = (U1*)dst;
 	cx U1* _src = (cx U1*)src;
