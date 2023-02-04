@@ -18,6 +18,7 @@ enum : ErrVal {
 	ERR_CUR,
 	ERR_HOOK,
 	ERR_LOCK,
+	ERR_WIN,
 	//
 	ERR_MEM_ALLOC,
 	ERR_TIME_RES,
