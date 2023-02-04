@@ -132,6 +132,11 @@ private:
 	HANDLE m_hdl;
 	U4 m_id;
 public:
+	dfa NT __Drop() {
+		m_hdl = NUL;
+		m_id = 0;
+	}
+public:
 	dfa HANDLE Hdl() const {
 		ret m_hdl;
 	}
