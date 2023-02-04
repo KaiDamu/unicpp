@@ -24,6 +24,12 @@ dfa BO ProcCurIsElevated() {
 	FreeSid(sid);
 	ret BO(isElevated);
 }
+dfa SI ProcCurPathGet(CH* path) {
+	path[0] = '\0';
+	cx SI r = GetModuleFileNameW(NUL, path, PATH_LEN_MAX);
+	ifu (r == PATH_LEN_MAX) ret r - 1;
+	ret r;
+}
 
 class Proc {
 private:
@@ -112,6 +118,10 @@ private:
 		m_str[0] = '\0';
 	}
 public:
+	dfa NT __Drop() {
+		tx->Init();
+	}
+public:
 	dfa BO IsOpenCur() const {
 		ret m_hdl != NUL;
 	}
@@ -171,3 +181,13 @@ public:
 		tx->Close();
 	}
 };
+
+dfa BO ProcGlobalTake() {
+	CH path[PATH_LEN_MAX + 1];
+	ProcCurPathGet(path);
+	PathSanitize(path, path);
+	ProcGlobalStr global;
+	ife (global.Open(path)) ret NO;
+	global.__Drop();
+	ret YES;
+}
