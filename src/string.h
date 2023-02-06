@@ -40,11 +40,24 @@ dfa SI CsstrEnclose(CS* dst, cx CS* src, cx CS* left, cx CS* right) {
 	*dst = '\0';
 	ret leftLen + srcLen + rightLen;
 }
-dfa NT CsstrInsert(CS* dst, cx CS* src, SI i) {
-	cx SI dstLen = CsstrLen(dst);
-	cx SI srcLen = CsstrLen(src);
-	for (SI j = dstLen; j >= i; --j) dst[j + srcLen] = dst[j]; // TODO: Optimize this; use pointer arithmetic
-	for (SI j = 0; j < srcLen; ++j) dst[i + j] = src[j]; // TODO: Optimize this; use pointer arithmetic
+dfa SI CsstrReplace(CS* dst, cx CS* str, SI i, SI len) {
+	i += len;
+	SI dstLen = CsstrLen(dst);
+	cx SI strLen = CsstrLen(str) - len;
+	CS* dstP = dst + dstLen;
+	if (dstP < dst + i) {
+		dstLen += dst + i - dstP;
+		*(dst + dstLen + strLen) = '\0';
+	}
+	while (dstP >= dst + i) {
+		*(dstP + strLen) = *dstP;
+		--dstP;
+	}
+	MemCpy(dst + i - len, str, (strLen + len) * siz(CS));
+	ret dstLen + strLen;
+}
+dfa SI CsstrInsert(CS* dst, cx CS* str, SI i) {
+	ret CsstrReplace(dst, str, i, 0);
 }
 dfa cx CS* CsstrFind(cx CS* main, cx CS* sub) {
 	#ifdef PROG_COMPILER_GCC
@@ -52,6 +65,10 @@ dfa cx CS* CsstrFind(cx CS* main, cx CS* sub) {
 	#else
 		ret strstr(main, sub);
 	#endif
+}
+dfa SI CsstrFindI(cx CS* main, cx CS* sub) {
+	cx CS*cx p = CsstrFind(main, sub);
+	ret (p == NUL) ? -1 : p - main;
 }
 
 dfa SI ChstrLen(cx CH* str) {
@@ -79,14 +96,31 @@ dfa SI ChstrEnclose(CH* dst, cx CH* src, cx CH* left, cx CH* right) {
 	*dst = '\0';
 	ret leftLen + srcLen + rightLen;
 }
-dfa NT ChstrInsert(CH* dst, cx CH* src, SI i) {
-	cx SI dstLen = ChstrLen(dst);
-	cx SI srcLen = ChstrLen(src);
-	for (SI j = dstLen; j >= i; --j) dst[j + srcLen] = dst[j]; // TODO: Optimize this; use pointer arithmetic
-	for (SI j = 0; j < srcLen; ++j) dst[i + j] = src[j]; // TODO: Optimize this; use pointer arithmetic
+dfa SI ChstrReplace(CH* dst, cx CH* str, SI i, SI len) {
+	i += len;
+	SI dstLen = ChstrLen(dst);
+	cx SI strLen = ChstrLen(str) - len;
+	CH* dstP = dst + dstLen;
+	if (dstP < dst + i) {
+		dstLen += dst + i - dstP;
+		*(dst + dstLen + strLen) = '\0';
+	}
+	while (dstP >= dst + i) {
+		*(dstP + strLen) = *dstP;
+		--dstP;
+	}
+	MemCpy(dst + i - len, str, (strLen + len) * siz(CH));
+	ret dstLen + strLen;
+}
+dfa SI ChstrInsert(CH* dst, cx CH* str, SI i) {
+	ret ChstrReplace(dst, str, i, 0);
 }
 dfa cx CH* ChstrFind(cx CH* main, cx CH* sub) {
 	ret wcsstr(main, sub);
+}
+dfa SI ChstrFindI(cx CH* main, cx CH* sub) {
+	cx CH*cx p = ChstrFind(main, sub);
+	ret (p == NUL) ? -1 : p - main;
 }
 
 class Str {
