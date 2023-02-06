@@ -167,3 +167,36 @@ dfa NT PathSanitize(CH* dst, cx CH* src) {
 	}
 	*dst = '\0';
 }
+
+SI ProcCurEnvvarGet(CH*, cx CH*, SI);
+
+constexpr CH PATH_ENVVAR_CHAR = '%';
+
+dfa SI PathEnvvarResolve(CH* path) {
+	CH* p = path;
+	while (*p != '\0') {
+		if (*p == PATH_ENVVAR_CHAR) {
+			CH*cx pFirst = p;
+			do {
+				++p;
+			} while (*p != PATH_ENVVAR_CHAR && *p != PATH_DIR_SEPARATOR && *p != '\0');
+			if (*p == PATH_ENVVAR_CHAR) {
+				CH buf[PATH_LEN_MAX + 1];
+				*p = '\0';
+				cx SI bufLen = ProcCurEnvvarGet(buf, pFirst + 1, PATH_LEN_MAX + 1);
+				*p = PATH_ENVVAR_CHAR;
+				if (bufLen > 0 && bufLen < PATH_LEN_MAX + 1) {
+					ChstrReplace(pFirst, buf, 0, SI(p - pFirst) + 1);
+					p = pFirst + bufLen;
+				} else {
+					++p;
+				}
+			} else if (*p != '\0') {
+				++p;
+			}
+		} else {
+			++p;
+		}
+	}
+	ret p - path;
+}

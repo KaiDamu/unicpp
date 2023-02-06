@@ -30,6 +30,20 @@ dfa SI ProcCurPathGet(CH* path) {
 	ifu (r == PATH_LEN_MAX) ret r - 1;
 	ret r;
 }
+dfa SI ProcCurEnvvarGet(CH* val, cx CH* envvar, SI valLenMax) {
+	ifl (valLenMax > 0) val[0] = '\0';
+	cx SI r = GetEnvironmentVariableW(envvar, val, valLenMax);
+	ifu (r >= valLenMax && valLenMax > 0) val[0] = '\0';
+	ret r;
+}
+dfa ER ProcCurEnvvarSet(cx CH* val, cx CH* envvar) {
+	ifu (SetEnvironmentVariableW(envvar, val) == 0) rete(ERR_PROC);
+	rets;
+}
+dfa ER ProcCurEnvvarClear(cx CH* envvar) {
+	ifu (SetEnvironmentVariableW(envvar, NUL) == 0) rete(ERR_PROC);
+	rets;
+}
 
 class Proc {
 private:
