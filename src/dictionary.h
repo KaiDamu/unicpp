@@ -7,18 +7,20 @@ private:
 		DictAvlElem* left;
 		DictAvlElem* right;
 		U1 lv;
-		Keyval<T1, T2> keyval;
+		T1 key;
+		T2 val;
 	};
 private:
 	DictAvlElem* m_root;
 private:
-	dfa DictAvlElem& ElemAlloc(cx Keyval<T1, T2>& keyval, DictAvlElem* parent) const {
+	dfa DictAvlElem& ElemAlloc(cx T1& key, cx T2& val, DictAvlElem* parent) const {
 		DictAvlElem& elem = *(new DictAvlElem);
 		elem.parent = parent;
 		elem.left = NUL;
 		elem.right = NUL;
 		elem.lv = 1;
-		elem.keyval = keyval;
+		elem.key = key;
+		elem.val = val;
 		ret elem;
 	}
 	dfa U1 LvGet(cx DictAvlElem* elem) const {
@@ -126,8 +128,8 @@ private:
 	dfa DictAvlElem* Srch(cx T1& key) const {
 		DictAvlElem* elem = m_root;
 		while (elem != NUL) {
-			if (key < elem->keyval.Key()) elem = elem->left;
-			else ifl (key > elem->keyval.Key()) elem = elem->right;
+			if (key < elem->key) elem = elem->left;
+			else ifl (key > elem->key) elem = elem->right;
 			else break;
 		}
 		ret elem;
@@ -186,7 +188,8 @@ private:
 		} else {
 			m_root = NUL;
 		}
-		elem->keyval = replace->keyval;
+		elem->key = replace->key;
+		elem->val = replace->val;
 		if (replace->parent) {
 			tx->TravelUp(replace->parent);
 			tx->LvUpd(*replace->parent);
@@ -209,36 +212,40 @@ private:
 		delete elem;
 	}
 public:
-	dfa BO Add(cx Keyval<T1, T2>& keyval) {
+	dfa BO Add(cx T1& key, cx T2& val) {
 		DictAvlElem* parent = NUL;
 		DictAvlElem** elem = &m_root;
-		cx T1& key = keyval.KeyCx();
 		while (*elem != NUL) {
 			parent = *elem;
-			if (key < (*elem)->keyval.KeyCx()) elem = &((*elem)->left);
-			else if (key > (*elem)->keyval.KeyCx()) elem = &((*elem)->right);
+			if (key < (*elem)->key) elem = &((*elem)->left);
+			else if (key > (*elem)->key) elem = &((*elem)->right);
 			else ret NO;
 		}
-		*elem = &tx->ElemAlloc(keyval, parent);
+		*elem = &tx->ElemAlloc(key, val, parent);
 		tx->TravelUp(*elem);
 		ret YES;
 	}
-	dfa BO Replace(cx Keyval<T1, T2>& keyval) {
+	dfa BO Add(cx Keyval<T1, T2>& keyval) {
+		ret tx->Add(keyval.KeyCx(), keyval.ValCx());
+	}
+	dfa BO Replace(cx T1& key, cx T2& val) {
 		DictAvlElem* parent = NUL;
 		DictAvlElem** elem = &m_root;
-		cx T1& key = keyval.KeyCx();
 		while (*elem != NUL) {
 			parent = *elem;
-			if (key < (*elem)->keyval.KeyCx()) elem = &((*elem)->left);
-			else if (key > (*elem)->keyval.KeyCx()) elem = &((*elem)->right);
+			if (key < (*elem)->key) elem = &((*elem)->left);
+			else if (key > (*elem)->key) elem = &((*elem)->right);
 			else {
-				(*elem)->keyval.Val(keyval.ValCx());
+				(*elem)->val = val;
 				ret YES;
 			}
 		}
-		*elem = &tx->ElemAlloc(keyval, parent);
+		*elem = &tx->ElemAlloc(key, val, parent);
 		tx->TravelUp(*elem);
 		ret NO;
+	}
+	dfa BO Replace(cx Keyval<T1, T2>& keyval) {
+		ret tx->Replace(keyval.KeyCx(), keyval.ValCx());
 	}
 	dfa BO Del(cx T1& key) {
 		DictAvlElem* elem = tx->Srch(key);
@@ -249,7 +256,7 @@ public:
 	dfa T2* Get(cx T1& key) {
 		DictAvlElem* elem = tx->Srch(key);
 		ifu (elem == NUL) ret NUL;
-		ret &(const_cast<T2&>(elem->keyval.Val()));
+		ret &(elem->val);
 	}
 	dfa SI Len() {
 		ret tx->_Len(m_root);
