@@ -127,35 +127,72 @@ class Str {
 private:
 	Arr<CH> m_str;
 private:
-	dfa NT Set(cx CH* str, SI datLen) {
-		m_str.Req(datLen, datLen, 0);
-		m_str.Set(str, datLen);
-	}
-	dfa NT Add(cx CH* str, SI datLen) {
-		cx SI fullLen = tx->Len() + datLen;
-		m_str.CurMove(-1);
-		m_str.Req(fullLen, SI(F8(fullLen) * STR_ADD_ALLOC_SCALE), m_str.Pos());
-		m_str.Add(str, datLen);
-	}
-public:
-	dfa SI Len() {
-		ret m_str.Pos() - 1;
-	}
-	dfa cx CH* Val() {
-		ret m_str.Ptr();
-	}
-public:
-	dfa NT operator = (cx CH* str) {
-		cx SI datLen = ChstrLen(str) + 1;
-		tx->Set(str, datLen);
-	}
-	dfa NT operator += (cx CH* str) {
-		cx SI datLen = ChstrLen(str) + 1;
-		tx->Add(str, datLen);
-	}
-public:
-	dfa Str() {
+	dfa NT Init() {
 		m_str.Alloc(STR_INIT_ALLOC_CNT);
 		m_str.Set('\0');
+	}
+public:
+	dfa SI Len() const {
+		ret m_str.Pos() - 1;
+	}
+	dfa cx CH* Val() const {
+		ret m_str.Ptr();
+	}
+private:
+	dfa NT Set(cx CH* dat, SI datLen) {
+		m_str.Req(datLen, datLen, 0);
+		m_str.Set(dat, datLen);
+	}
+	dfa NT Add(cx CH* dat, SI datLen) {
+		cx SI fullLen = tx->Len() + datLen;
+		m_str.Req(fullLen, SI(F8(fullLen) * STR_ADD_ALLOC_SCALE), m_str.Pos());
+		m_str.CurMove(-1);
+		m_str.Add(dat, datLen);
+	}
+public:
+	dfa cx CH* operator = (cx CH* str) {
+		cx SI datLen = ChstrLen(str) + 1;
+		tx->Set(str, datLen);
+		ret tx->Val();
+	}
+	dfa cx CH* operator += (cx CH* str) {
+		cx SI datLen = ChstrLen(str) + 1;
+		tx->Add(str, datLen);
+		ret tx->Val();
+	}
+	dfa BO operator == (cx CH* str) const { ret (ChstrCmp(tx->Val(), str) == 0); }
+	dfa BO operator != (cx CH* str) const { ret (ChstrCmp(tx->Val(), str) != 0); }
+	dfa BO operator <  (cx CH* str) const { ret (ChstrCmp(tx->Val(), str) <  0); }
+	dfa BO operator >  (cx CH* str) const { ret (ChstrCmp(tx->Val(), str) >  0); }
+	dfa BO operator <= (cx CH* str) const { ret (ChstrCmp(tx->Val(), str) <= 0); }
+	dfa BO operator >= (cx CH* str) const { ret (ChstrCmp(tx->Val(), str) >= 0); }
+public:
+	dfa cx CH* operator = (cx Str& str) {
+		cx SI datLen = str.Len() + 1;
+		tx->Set(str.Val(), datLen);
+		ret tx->Val();
+	}
+	dfa cx CH* operator += (cx Str& str) {
+		cx SI datLen = str.Len() + 1;
+		tx->Add(str.Val(), datLen);
+		ret tx->Val();
+	}
+	dfa BO operator == (cx Str& str) const { ret ((tx->Len() == str.Len()) && (ChstrCmp(tx->Val(), str.Val()) == 0)); }
+	dfa BO operator != (cx Str& str) const { ret ((tx->Len() != str.Len()) || (ChstrCmp(tx->Val(), str.Val()) != 0)); }
+	dfa BO operator <  (cx Str& str) const { ret (ChstrCmp(tx->Val(), str.Val()) <  0); }
+	dfa BO operator >  (cx Str& str) const { ret (ChstrCmp(tx->Val(), str.Val()) >  0); }
+	dfa BO operator <= (cx Str& str) const { ret (ChstrCmp(tx->Val(), str.Val()) <= 0); }
+	dfa BO operator >= (cx Str& str) const { ret (ChstrCmp(tx->Val(), str.Val()) >= 0); }
+public:
+	dfa Str() {
+		tx->Init();
+	}
+	dfa Str(cx CH* str) {
+		tx->Init();
+		tx->operator=(str);
+	}
+	dfa Str(cx Str& str) {
+		tx->Init();
+		tx->operator=(str);
 	}
 };
