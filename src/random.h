@@ -66,3 +66,28 @@ public:
 		tx->Init(seed);
 	}
 };
+
+RandCtx g_randCtx(U4(TimeUnixGetSecU() + CpuTsc()));
+
+dfa F8 RandNormal() {
+	ret g_randCtx.RandNormal();
+}
+dfa U4 RandU4() {
+	ret g_randCtx.RandU4();
+}
+dfa U4 RandU4(U4 min, U4 max) {
+	ret g_randCtx.RandU4(min, max);
+}
+dfa S4 RandS4(S4 min, S4 max) {
+	ret g_randCtx.RandS4(min, max);
+}
+dfa F4 RandF4(F4 min, F4 max) {
+	ret g_randCtx.RandF4(min, max);
+}
+dfa F8 RandF8(F8 min, F8 max) {
+	ret g_randCtx.RandF8(min, max);
+}
+
+tpl1 dfa NT RandMix(T1* buf, SI cnt) {
+	ite (i, i < cnt) Swap<T1>(buf[i], buf[SI(RandU4(0, U4(cnt - 1)))]);
+}
