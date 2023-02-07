@@ -115,3 +115,72 @@ public:
 		tx->Dealloc();
 	}
 };
+
+tpl<typename T1, SI cap_> class SArr {
+private:
+	T1 m_ptr[cap_];
+	T1* m_cur;
+private:
+	dfa NT Init() {
+		m_cur = m_ptr;
+	}
+public:
+	dfa T1* Ptr() const {
+		ret m_ptr;
+	}
+	dfa T1* Cur() const {
+		ret m_cur;
+	}
+	dfa SI Cap() const {
+		ret cap_;
+	}
+	dfa SI Pos() const {
+		ret m_cur - m_ptr;
+	}
+	dfa NT CurMove(SI cnt) {
+		m_cur += cnt;
+	}
+	dfa NT CurSet(SI pos) {
+		m_cur = m_ptr + pos;
+	}
+	dfa NT CurRewind() {
+		tx->CurSet(0);
+	}
+	dfa NT Read(T1& dat) {
+		Assert(tx->Pos() < cap_);
+		dat = *m_cur;
+		++m_cur;
+	}
+	dfa NT Read(T1* dat, SI cnt) {
+		Assert(tx->Pos() + cnt <= cap_);
+		MemCpy(dat, m_cur, cnt * siz(T1));
+		m_cur += cnt;
+	}
+	dfa NT Add(cx T1& dat) {
+		Assert(tx->Pos() < cap_);
+		*m_cur = dat;
+		++m_cur;
+	}
+	dfa NT Add(cx T1* dat, SI cnt) {
+		Assert(tx->Pos() + cnt <= cap_);
+		MemCpy(m_cur, dat, cnt * siz(T1));
+		m_cur += cnt;
+	}
+	dfa NT Set(cx T1& dat) {
+		tx->CurRewind();
+		tx->Add(dat);
+	}
+	dfa NT Set(cx T1* dat, SI cnt) {
+		tx->CurRewind();
+		tx->Add(dat, cnt);
+	}
+public:
+	dfa T1& operator [] (SI i) {
+		Assert(i < cap_);
+		ret m_ptr[i];
+	}
+public:
+	dfa SArr() {
+		tx->Init();
+	}
+};
