@@ -24,7 +24,7 @@ dfa BO ProcCurIsElevated() {
 	FreeSid(sid);
 	ret BO(isElevated);
 }
-dfa SI ProcCurPathGet(CH* path) {
+dfa SI ProcCurFilePathGet(CH* path) {
 	path[0] = '\0';
 	cx SI r = GetModuleFileNameW(NUL, path, PATH_LEN_MAX);
 	ifu (r == PATH_LEN_MAX) ret r - 1;
@@ -43,6 +43,9 @@ dfa ER ProcCurEnvvarSet(cx CH* val, cx CH* envvar) {
 dfa ER ProcCurEnvvarClear(cx CH* envvar) {
 	ifu (SetEnvironmentVariableW(envvar, NUL) == 0) rete(ERR_PROC);
 	rets;
+}
+dfa cx CH* ProcCurArgFullGet() {
+	ret GetCommandLineW();
 }
 
 class Proc {
@@ -78,8 +81,8 @@ public:
 	dfa ER Close() {
 		if (m_info.hProcess == NUL) rets;
 		if (tx->IsActive()) rete(ERR_YES_ACTIVE);
-		ifu (CloseHandle(m_info.hThread) == 0) rete(ERR_THD);
-		ifu (CloseHandle(m_info.hProcess) == 0) rete(ERR_PROC);
+		ifu (m_info.hThread != NUL && CloseHandle(m_info.hThread) == 0) rete(ERR_THD);
+		ifu (m_info.hProcess != NUL && CloseHandle(m_info.hProcess) == 0) rete(ERR_PROC);
 		MemSet(&m_info, 0, siz(m_info));
 		m_args = L"";
 		rets;
@@ -198,7 +201,7 @@ public:
 
 dfa BO ProcGlobalTake() {
 	CH path[PATH_LEN_MAX + 1];
-	ProcCurPathGet(path);
+	ProcCurFilePathGet(path);
 	PathSanitize(path, path);
 	ProcGlobalStr global;
 	ife (global.Open(path)) ret NO;

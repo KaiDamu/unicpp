@@ -6,7 +6,7 @@ CH** g_argVal = NUL;
 dfa NT _ArgInit() {
 	ifl (g_argVal != NUL) ret;
 	int tmp = 0;
-	g_argVal = CommandLineToArgvW(GetCommandLineW(), &tmp);
+	g_argVal = CommandLineToArgvW(ProcCurArgFullGet(), &tmp);
 	g_argCnt = tmp;
 	Assert(g_argVal != NUL);
 }
