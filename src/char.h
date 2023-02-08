@@ -38,39 +38,42 @@ enum : CS {
 
 constexpr CS CH_UNKNOWN = '?';
 
-dfa BO IsBetween(CS c, CS min, CS max) {
+tpl1 dfa BO IsBetween(cx T1& c, cx T1& min, cx T1& max) {
 	ret c >= min && c <= max;
 }
-dfa BO IsLowcase(CS c) {
+tpl1 dfa BO IsLowcase(cx T1& c) {
 	ret IsBetween(c, 'a', 'z');
 }
-dfa BO IsUpcase(CS c) {
+tpl1 dfa BO IsUpcase(cx T1& c) {
 	ret IsBetween(c, 'A', 'Z');
 }
-dfa BO IsNumBase2(CS c) {
+tpl1 dfa BO IsNumBase2(cx T1& c) {
 	ret IsBetween(c, '0', '1');
 }
-dfa BO IsNumBase8(CS c) {
+tpl1 dfa BO IsNumBase8(cx T1& c) {
 	ret IsBetween(c, '0', '7');
 }
-dfa BO IsNumBase10(CS c) {
+tpl1 dfa BO IsNumBase10(cx T1& c) {
 	ret IsBetween(c, '0', '9');
 }
-dfa BO IsNumBase16(CS c) {
+tpl1 dfa BO IsNumBase16(cx T1& c) {
 	ret IsNumBase10(c) || IsBetween(c, 'A', 'F') || IsBetween(c, 'a', 'f');
 }
-dfa BO IsSpace(CS c) {
+tpl1 dfa BO IsSpace(cx T1& c) {
 	ret c == ' ';
 }
-dfa BO IsTab(CS c) {
+tpl1 dfa BO IsTab(cx T1& c) {
 	ret c == CH_HT;
 }
-dfa BO IsEol(CS c) {
+tpl1 dfa BO IsEol(cx T1& c) {
 	ret c == CH_CR || c == CH_LF;
 }
-dfa BO IsCntrl(CS c) {
+tpl1 dfa BO IsCntrl(cx T1& c) {
 	ret IsBetween(c, 0, 31) || c == 127;
 }
-dfa BO IsAscii(CS c) {
+tpl1 dfa BO IsAscii(cx T1& c) {
 	ret IsBetween(c, 0, 127);
+}
+tpl1 dfa BO IsWspace(cx T1& c) {
+	ret IsSpace(c) || IsTab(c) || IsEol(c);
 }
