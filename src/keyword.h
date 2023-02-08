@@ -5,6 +5,7 @@
 #define tx this
 #define inl inline
 #define tpl template
+#define tpl0 tpl<>
 #define tpl1 tpl<typename T1>
 #define tpl2 tpl<typename T1, typename T2>
 #define tpl3 tpl<typename T1, typename T2, typename T3>
@@ -18,6 +19,7 @@
 #define falltru __attribute__((fallthrough))
 
 #define unused(var) static_cast<NT>(var)
+#define unimp Assert(!"unimplemented")
 
 #ifdef PROG_COMPILER_GCC
 	#define ifu(cond) if (__builtin_expect((cond), NO))
