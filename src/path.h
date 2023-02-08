@@ -72,9 +72,9 @@ dfa ER PathEnvRelToAbs(CH* out, cx CH* in) {
 				str[strLen - 1] = '\\';
 				str[strLen] = '\0';
 			}
-			ChstrCpy(str + strLen, in);
+			StrCpy(str + strLen, in);
 			if (PathIsExist(str)) {
-				MemCpy(out, str, (strLen + ChstrLen(in) + 1) * siz(CH));
+				MemCpy(out, str, (strLen + StrLen(in) + 1) * siz(CH));
 				rets;
 			}
 			strLen = 0;
@@ -97,7 +97,7 @@ dfa cx CH* ProcCurFilePathGet() {
 dfa cx CH* ProcCurDirPathGet() {
 	static CH s_cache[PATH_LEN_MAX] = {};
 	ifu (s_cache[0] == '\0') {
-		ChstrCpy(s_cache, ProcCurFilePathGet());
+		StrCpy(s_cache, ProcCurFilePathGet());
 		PathDirUp(s_cache);
 	}
 	ret s_cache;
@@ -116,8 +116,8 @@ dfa cx CH* ProcCurWorkPathGet() {
 
 dfa BO PathToAbsByDirPath(CH* path) {
 	if (PathIsAbs(path)) ret NO;
-	cx SI pathLen = ChstrLen(path);
-	cx SI dirPathLen = ChstrLen(ProcCurDirPathGet());
+	cx SI pathLen = StrLen(path);
+	cx SI dirPathLen = StrLen(ProcCurDirPathGet());
 	SI i = pathLen;
 	while (i > -1) {
 		path[i + dirPathLen + 1] = path[i]; // +1 to simulate the extra PATH_DIR_SEPARATOR
@@ -129,8 +129,8 @@ dfa BO PathToAbsByDirPath(CH* path) {
 }
 dfa BO PathToAbsByWorkPath(CH* path) {
 	if (PathIsAbs(path)) ret NO;
-	cx SI pathLen = ChstrLen(path);
-	cx SI workPathLen = ChstrLen(ProcCurWorkPathGet());
+	cx SI pathLen = StrLen(path);
+	cx SI workPathLen = StrLen(ProcCurWorkPathGet());
 	SI i = pathLen;
 	while (i > -1) {
 		path[i + workPathLen + 1] = path[i]; // +1 to simulate the extra PATH_DIR_SEPARATOR
@@ -143,8 +143,8 @@ dfa BO PathToAbsByWorkPath(CH* path) {
 
 dfa BO PathToNtpathByDirPath(CH* path) {
 	if (PathIsNtpath(path)) ret NO;
-	cx SI pathLen = ChstrLen(path);
-	cx SI dirPathLen = ChstrLen(ProcCurDirPathGet());
+	cx SI pathLen = StrLen(path);
+	cx SI dirPathLen = StrLen(ProcCurDirPathGet());
 	SI i = pathLen;
 	while (i > -1) {
 		path[i + dirPathLen + 1 + NTPATH_PRE_STR_LEN] = path[i]; // +1 to simulate the extra PATH_DIR_SEPARATOR
@@ -186,7 +186,7 @@ dfa SI PathEnvvarResolve(CH* path) {
 				cx SI bufLen = ProcCurEnvvarGet(buf, pFirst + 1, PATH_LEN_MAX + 1);
 				*p = PATH_ENVVAR_CHAR;
 				if (bufLen > 0 && bufLen < PATH_LEN_MAX + 1) {
-					ChstrReplace(pFirst, buf, 0, SI(p - pFirst) + 1);
+					StrReplace(pFirst, buf, 0, SI(p - pFirst) + 1);
 					p = pFirst + bufLen;
 				} else {
 					++p;

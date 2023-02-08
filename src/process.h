@@ -158,7 +158,7 @@ public:
 	}
 	dfa ER Open(cx CH* str) {
 		ifu (tx->IsOpenCur()) rete(ERR_YES_INIT);
-		cx SI strLen = ChstrLen(str);
+		cx SI strLen = StrLen(str);
 		ifu (strLen == 0) rete(ERR_LOW_SIZE);
 		ifu (strLen > PROC_GLOBAL_STR_LEN_MAX) rete(ERR_HIGH_SIZE);
 		SetLastError(0);

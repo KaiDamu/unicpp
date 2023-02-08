@@ -8,7 +8,7 @@ private:
 private:
 	dfa ER _Connect(cx CH* pipeName) {
 		CH path[PATH_LEN_MAX] = L"\\\\.\\pipe\\";
-		ChstrAdd(path, pipeName);
+		StrAdd(path, pipeName);
 		ife (m_hdl.Open(path, GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING, 0)) retepass;
 		DWORD mode = PIPE_READMODE_MESSAGE;
 		ifu (SetNamedPipeHandleState(m_hdl.Hdl(), &mode, NUL, NUL) == 0) rete(ERR_PIPE);
@@ -64,7 +64,7 @@ private:
 public:
 	dfa ER Create(cx CH* pipeName) {
 		CH path[PATH_LEN_MAX] = L"\\\\.\\pipe\\";
-		ChstrAdd(path, pipeName);
+		StrAdd(path, pipeName);
 		m_hdl = CreateNamedPipeW(path, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, 1, PIPE_BUF_SIZE, PIPE_BUF_SIZE, 0, NUL);
 		ifu (m_hdl == INVALID_HANDLE_VALUE) rete(ERR_PIPE);
 		ifu (ConnectNamedPipe(m_hdl, NUL) == 0) {

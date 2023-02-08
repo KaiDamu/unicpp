@@ -86,6 +86,6 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, GA par
 
 dfa ER DirEnum(cx CH* path, SI depth, DirEnumCallbFnType callb, GA param1, GA param2) {
 	CH path_[PATH_LEN_MAX];
-	cx SI pathLen = ChstrEnclose(path_, path, NTPATH_PRE_STR, PATH_DIR_SEPARATOR_STR);
+	cx SI pathLen = StrEnclose(path_, path, NTPATH_PRE_STR, PATH_DIR_SEPARATOR_STR);
 	ret _DirEnum(path_, pathLen, depth, callb, param1, param2);
 }

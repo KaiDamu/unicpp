@@ -6,7 +6,7 @@ dfa ER ClipbSetText(cx CH* text) {
 		CloseClipboard();
 		rete(ERR_CLIPB);
 	}
-	cx SI textSize = (ChstrLen(text) + 1) * siz(text[0]);
+	cx SI textSize = (StrLen(text) + 1) * siz(text[0]);
 	cx HGLOBAL textGlobalObj = GlobalAlloc(GMEM_MOVEABLE, textSize);
 	ifu (textGlobalObj == NUL) {
 		CloseClipboard();
@@ -41,7 +41,7 @@ dfa SI ClipbGetText(CH* text, SI textLenMax) {
 		CloseClipboard();
 		ret -1;
 	}
-	cx SI textSize = (ChstrLen(textGlobal) + 1) * siz(textGlobal[0]);
+	cx SI textSize = (StrLen(textGlobal) + 1) * siz(textGlobal[0]);
 	cx SI textLen = textSize / siz(textGlobal[0]);
 	ifu (textLen > textLenMax) {
 		CloseClipboard();
