@@ -197,11 +197,11 @@ private:
 		}
 		delete replace;
 	}
-	dfa SI _Len(cx DictAvlElem* elem) {
+	dfa SI _Len(cx DictAvlElem* elem) const {
 		if (elem == NUL) ret 0;
 		ret 1 + tx->_Len(elem->left) + tx->_Len(elem->right);
 	}
-	dfa SI _Height(cx DictAvlElem* elem) {
+	dfa SI _Height(cx DictAvlElem* elem) const {
 		if (elem == NUL) ret 0;
 		ret 1 + Max<SI>(tx->_Height(elem->left), tx->_Height(elem->right));
 	}
@@ -253,15 +253,15 @@ public:
 		tx->Del(elem);
 		ret YES;
 	}
-	dfa T2* Get(cx T1& key) {
+	dfa T2* Get(cx T1& key) const {
 		DictAvlElem* elem = tx->Srch(key);
 		ifu (elem == NUL) ret NUL;
 		ret &(elem->val);
 	}
-	dfa SI Len() {
+	dfa SI Len() const {
 		ret tx->_Len(m_root);
 	}
-	dfa SI Height() {
+	dfa SI Height() const {
 		ret tx->_Height(m_root);
 	}
 	dfa NT Free() {
@@ -277,7 +277,69 @@ public:
 	dfa BO operator -= (cx T1& key) {
 		ret tx->Del(key);
 	}
-	dfa T2* operator [] (cx T1& key) {
+	dfa T2* operator [] (cx T1& key) const {
 		ret tx->Get(key);
 	}
+};
+
+class SVarBlock {
+private:
+	DictAvl<SStr, SStr> m_vars;
+public:
+	dfa NT Empty() {
+		m_vars.Free();
+	}
+	dfa NT Set(cx SStr& var, cx SStr& val) {
+		m_vars.Replace(var, val);
+	}
+	dfa SStr Get(cx SStr& var) const {
+		cx SStr*cx val = m_vars[var];
+		if (val == NUL) ret SStr();
+		ret *val;
+	}
+	dfa ER LoadFileCfg(cx CH* path) {
+		FileMem file;
+		ife (file.OpenRead(path)) retepass;
+		SStr line;
+		Arr<CS> buf;
+		Arr<CS> buf2;
+		Arr<CS> hdr;
+		SI hdrLen = 0;
+		while (file.ReadLine(line)) {
+			buf.Req(line.Len() + 1);
+			MemCpy(buf.Ptr(), line.Val(), (line.Len() + 1) * siz(CS));
+			CS* p = (CS*)StrFind(buf.Ptr(), '=');
+			if (p == NUL) {
+				p = (CS*)StrFind(buf.Ptr(), '[');
+				if (p == NUL) continue;
+				CS* p2 = (CS*)StrFind(p, ']');
+				if (p2 == NUL) continue;
+				++p;
+				*p2 = '\0';
+				hdrLen = StrTrimWspace(p);
+				hdr.Req(hdrLen + 1);
+				MemCpy(hdr.Ptr(), p, (hdrLen + 1) * siz(CS));
+			} else {
+				*p = '\0';
+				CS* var = buf.Ptr();
+				cx SI varLen = StrTrimWspace(var);
+				if (var[0] == '\0' || var[0] == '#' || var[0] == ';') continue;
+				CS* val = p + 1;
+				StrTrimWspace(val);
+				if (hdrLen == 0) {
+					tx->Set(var, val);
+				} else {
+					buf2.Req(hdrLen + 1 + varLen + 1);
+					MemCpy(buf2.Ptr(), hdr.Ptr(), hdrLen * siz(CS));
+					buf2[hdrLen] = '.';
+					MemCpy(buf2.Ptr() + hdrLen + 1, var, (varLen + 1) * siz(CS));
+					tx->Set(buf2.Ptr(), val);
+				}
+			}
+		}
+		rets;
+	}
+public:
+	SVarBlock() {}
+	~SVarBlock() {}
 };
