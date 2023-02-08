@@ -59,6 +59,18 @@ dfa SI CsstrReplace(CS* dst, cx CS* str, SI i, SI len) {
 dfa SI CsstrInsert(CS* dst, cx CS* str, SI i) {
 	ret CsstrReplace(dst, str, i, 0);
 }
+dfa cx CS* CsstrFind(cx CS* main, CS c) {
+	cx CS* p = main;
+	while (*p != '\0') {
+		if (*p == c) ret p;
+		++p;
+	}
+	ret NUL;
+}
+dfa SI CsstrFindI(cx CS* main, CS c) {
+	cx CS*cx p = CsstrFind(main, c);
+	ret (p == NUL) ? -1 : p - main;
+}
 dfa cx CS* CsstrFind(cx CS* main, cx CS* sub) {
 	#ifdef PROG_COMPILER_GCC
 		ret __builtin_strstr(main, sub);
@@ -69,6 +81,38 @@ dfa cx CS* CsstrFind(cx CS* main, cx CS* sub) {
 dfa SI CsstrFindI(cx CS* main, cx CS* sub) {
 	cx CS*cx p = CsstrFind(main, sub);
 	ret (p == NUL) ? -1 : p - main;
+}
+dfa NT CsstrSubChar(CS* dst, cx CS* charList) {
+	cx SI charListLen = CsstrLen(charList);
+	cx CS* src = dst;
+	while (*src != '\0') {
+		cx CS* charListP = charList;
+		while (*charListP != '\0') {
+			if (*src == *charListP) {
+				++src;
+				break;
+			}
+			++charListP;
+		}
+		if (charListP == charList + charListLen) {
+			*dst = *src;
+			++dst;
+			++src;
+		}
+	}
+	*dst = '\0';
+}
+dfa NT CsstrTrimWspace(CS* dst) {
+	cx CS* src = dst;
+	while (IsWspace(*src)) ++src;
+	CS* dstP = dst;
+	while (*src != '\0') {
+		*dstP = *src;
+		++dstP;
+		++src;
+	}
+	while (dstP > dst && IsWspace(*(dstP - 1))) --dstP;
+	*dstP = '\0';
 }
 
 dfa SI ChstrLen(cx CH* str) {
@@ -115,12 +159,56 @@ dfa SI ChstrReplace(CH* dst, cx CH* str, SI i, SI len) {
 dfa SI ChstrInsert(CH* dst, cx CH* str, SI i) {
 	ret ChstrReplace(dst, str, i, 0);
 }
+dfa cx CH* ChstrFind(cx CH* main, CH c) {
+	cx CH* p = main;
+	while (*p != '\0') {
+		if (*p == c) ret p;
+		++p;
+	}
+	ret NUL;
+}
+dfa SI ChstrFindI(cx CH* main, CH c) {
+	cx CH*cx p = ChstrFind(main, c);
+	ret (p == NUL) ? -1 : p - main;
+}
 dfa cx CH* ChstrFind(cx CH* main, cx CH* sub) {
 	ret wcsstr(main, sub);
 }
 dfa SI ChstrFindI(cx CH* main, cx CH* sub) {
 	cx CH*cx p = ChstrFind(main, sub);
 	ret (p == NUL) ? -1 : p - main;
+}
+dfa NT ChstrSubChar(CH* dst, cx CH* charList) {
+	cx SI charListLen = ChstrLen(charList);
+	cx CH* src = dst;
+	while (*src != '\0') {
+		cx CH* charListP = charList;
+		while (*charListP != '\0') {
+			if (*src == *charListP) {
+				++src;
+				break;
+			}
+			++charListP;
+		}
+		if (charListP == charList + charListLen) {
+			*dst = *src;
+			++dst;
+			++src;
+		}
+	}
+	*dst = '\0';
+}
+dfa NT ChstrTrimWspace(CH* dst) {
+	cx CH* src = dst;
+	while (IsWspace(*src)) ++src;
+	CH* dstP = dst;
+	while (*src != '\0') {
+		*dstP = *src;
+		++dstP;
+		++src;
+	}
+	while (dstP > dst && IsWspace(*(dstP - 1))) --dstP;
+	*dstP = '\0';
 }
 
 class Str {
