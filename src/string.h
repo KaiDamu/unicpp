@@ -115,7 +115,7 @@ tpl1 dfa NT StrSubChar(T1* dst, cx T1* charList) {
 	}
 	*dst = '\0';
 }
-tpl1 dfa NT StrTrimWspace(T1* dst) {
+tpl1 dfa SI StrTrimWspace(T1* dst) {
 	cx T1* src = dst;
 	while (IsWspace(*src)) ++src;
 	T1* dstP = dst;
@@ -126,6 +126,7 @@ tpl1 dfa NT StrTrimWspace(T1* dst) {
 	}
 	while (dstP > dst && IsWspace(*(dstP - 1))) --dstP;
 	*dstP = '\0';
+	ret dstP - dst;
 }
 
 constexpr SI STR_INIT_ALLOC_CNT = 8;
