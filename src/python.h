@@ -9,8 +9,6 @@ dfa ER PythonStart(cx CH* file, cx CH* args, BO wait) {
 	ife (PythonExePathGet(path)) retepass;
 	Str _args;
 	_args = L"\"";
-	_args += path;
-	_args += L"\" \"";
 	_args += file;
 	_args += L"\"";
 	if (args != NUL) {

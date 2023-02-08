@@ -95,7 +95,13 @@ public:
 	dfa ER Start(cx CH* path, cx CH* args, cx CH* workPath) {
 		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
 		ife (tx->Close()) retepass;
-		m_args = args;
+		m_args = L"\"";
+		m_args += path;
+		m_args += L"\"";
+		if (args != NUL && args[0] != '\0') {
+			m_args += L" ";
+			m_args += args;
+		}
 		STARTUPINFOW tmp;
 		MemSet(&tmp, 0, siz(tmp));
 		tmp.cb = siz(tmp);
@@ -105,6 +111,28 @@ public:
 			m_args = L"";
 			rete(ERR_PROC);
 		}
+		rets;
+	}
+	dfa ER StartElevated(cx CH* path, cx CH* args, cx CH* workPath) {
+		if (ProcCurIsElevated()) ret tx->Start(path, args, workPath);
+		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
+		ife (tx->Close()) retepass;
+		m_args = args;
+		SHELLEXECUTEINFOW sei;
+		MemSet(&sei, 0, siz(sei));
+		sei.cbSize = siz(sei);
+		sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+		sei.lpVerb = L"runas";
+		sei.lpFile = path;
+		sei.lpParameters = args;
+		sei.lpDirectory = workPath;
+		sei.nShow = SW_SHOW;
+		ifu (ShellExecuteExW(&sei) == NO || UA(sei.hInstApp) <= 32 || sei.hProcess == NUL) {
+			m_args = L"";
+			rete(ERR_PROC);
+		}
+		MemSet(&m_info, 0, siz(m_info));
+		m_info.hProcess = sei.hProcess;
 		rets;
 	}
 	dfa ER Stop() const {
@@ -122,6 +150,15 @@ public:
 		tx->Close();
 	}
 };
+
+dfa ER ProcCurRestartElevated() {
+	if (ProcCurIsElevated()) rets;
+	Proc proc;
+	ife (proc.StartElevated(ProcCurFilePathGet(), StrSkipArg(ProcCurArgFullGet()), ProcCurWorkPathGet())) retepass;
+	proc.__Drop();
+	ProcCurExit(0);
+	rets;
+}
 
 constexpr SI PROC_GLOBAL_STR_LEN_MAX = PATH_LEN_MAX;
 
