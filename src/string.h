@@ -128,6 +128,18 @@ tpl1 dfa SI StrTrimWspace(T1* dst) {
 	*dstP = '\0';
 	ret dstP - dst;
 }
+tpl1 dfa cx T1* StrSkipArg(cx T1* str) {
+	cx T1* p = str;
+	if (*p == '\"') {
+		++p;
+		while (*p != '\0' && *p != '\"') ++p;
+		if (*p == '\"') ++p;
+	} else {
+		while (*p != '\0' && *p != ' ') ++p;
+	}
+	while (*p == ' ') ++p;
+	ret p;
+}
 
 constexpr SI STR_INIT_ALLOC_CNT = 8;
 constexpr F8 STR_ADD_ALLOC_SCALE = 1.5;
