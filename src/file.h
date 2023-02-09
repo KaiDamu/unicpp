@@ -1,5 +1,18 @@
 #pragma once
 
+dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
+	ifu (CopyFileW(src, dst, !isReplace) == 0) rete(ERR_FILE);
+	rets;
+}
+dfa ER FileDel(cx CH* path) {
+	ifu (DeleteFileW(path) == 0) rete(ERR_FILE);
+	rets;
+}
+dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES) {
+	ifu (MoveFileExW(src, dst, MOVEFILE_COPY_ALLOWED | (isReplace ? MOVEFILE_REPLACE_EXISTING : 0)) == 0) rete(ERR_FILE);
+	rets;
+}
+
 class FileWin {
 private:
 	HANDLE m_hdl;
