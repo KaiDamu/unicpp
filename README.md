@@ -2,7 +2,7 @@
 ### *The unique universal C++ framework for off-brand codery*
 
 ## About UniCPP
-UniCPP is an experimental framework, a compilation of years of universal-looking code I made.
+UniCPP is an experimental framework maintained by KaiDamu, a compilation of useful code applicable for many situations.
 
 ## Features
 - **Universal** - It can be used for any purpose, from making a small tool to making a full game.
@@ -10,12 +10,12 @@ UniCPP is an experimental framework, a compilation of years of universal-looking
 - **Easy to use** - The names are written in a consistent style, therefore easy to learn.
 - **Cross-platform** - It can be compiled for both Windows and Linux, supports both MSVC and GCC.
 - **Open-source** - It is free to use and modify (see LICENSE).
-- **Lightweight** - Relative to C, the code is made to be short and concise.
+- **Lightweight** - The code aims to be short and concise.
 
 ## Links
-- [Trailer](https://www.youtube.com/watch?v=iklTSxr35Qc)
+- [Trailer](https://www.youtube.com/watch?v=iklTSxr35Qc) (symbolism)
 
-## Includes
+## Includes (*in ABC*)
 - Character manipulation
 - Clipboard manipulation
 - Command line argument handling
