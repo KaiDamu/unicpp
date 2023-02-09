@@ -87,6 +87,14 @@ tpl1 dfa cx T1* StrFind(cx T1* main, T1 c) {
 	}
 	ret NUL;
 }
+tpl1 dfa cx T1* StrFindLast(cx T1* main, T1 c) {
+	cx T1* p = main + StrLen(main) - 1;
+	while (p >= main) {
+		if (*p == c) ret p;
+		--p;
+	}
+	ret NUL;
+}
 tpl1 dfa SI StrFindI(cx T1* main, T1 c) {
 	cx T1*cx p = StrFind(main, c);
 	ret (p == NUL) ? -1 : p - main;
