@@ -45,6 +45,11 @@ dfa BO PathIsNtpath(cx CH* path) {
 dfa BO PathIsExist(cx CH* path) {
 	ret GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES;
 }
+dfa BO PathIsDir(cx CH* path) {
+	cx DWORD attrib = GetFileAttributesW(path);
+	if (attrib == INVALID_FILE_ATTRIBUTES) ret NO;
+	ret (attrib & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
 
 dfa ER PathEnvRelToAbs(CH* out, cx CH* in) {
 	out[0] = '\0';
