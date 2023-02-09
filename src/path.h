@@ -205,3 +205,7 @@ dfa SI PathEnvvarResolve(CH* path) {
 	}
 	ret p - path;
 }
+dfa SI PathEnvvarResolve(CH* dst, cx CH* src) {
+	StrCpy(dst, src);
+	ret PathEnvvarResolve(dst);
+}
