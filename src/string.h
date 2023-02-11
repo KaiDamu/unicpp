@@ -36,6 +36,16 @@ dfa SA StrCmp(cx CS* strA, cx CS* strB) {
 dfa SA StrCmp(cx CH* strA, cx CH* strB) {
 	ret SA(wcscmp(strA, strB));
 }
+dfa SA StrCmp(cx CS* strA, cx CS* strB, SI len) {
+	#ifdef PROG_COMPILER_GCC
+		ret SA(__builtin_strncmp(strA, strB, len));
+	#else
+		ret SA(strncmp(strA, strB, len));
+	#endif
+}
+dfa SA StrCmp(cx CH* strA, cx CH* strB, SI len) {
+	ret SA(wcsncmp(strA, strB, len));
+}
 dfa cx CS* StrFind(cx CS* main, cx CS* sub) {
 	#ifdef PROG_COMPILER_GCC
 		ret __builtin_strstr(main, sub);
