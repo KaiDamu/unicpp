@@ -27,3 +27,7 @@ dfa HD WinHdlGetByClassStr(cx CH* str) {
 dfa HD WinHdlGetByTitleStrClassStr(cx CH* titleStr, cx CH* classStr) {
 	ret HD(FindWindowExW(NUL, NUL, classStr, titleStr));
 }
+dfa ER WinFocusSet(HD hdl) {
+	ifu (SetForegroundWindow(HWND(hdl)) == 0) rete(ERR_WIN);
+	rets;
+}
