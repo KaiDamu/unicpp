@@ -10,6 +10,7 @@
 
 	#include <windows.h>
 	#include <winternl.h>
+	#include <shlobj.h>
 
 	#include "import/winapi/type.h"
 	#include "import/winapi/value.h"
