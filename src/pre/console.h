@@ -1,8 +1,9 @@
 #pragma once
 
-#define ConWrite(...) { printf(__VA_ARGS__); printf("\n"); }
-#define ConWriteRaw(...) { printf(__VA_ARGS__); }
-#define ConWriteInfo(...) { printf("[INFO] "); ConWrite(__VA_ARGS__); }
-#define ConWriteErr(...) { printf("[ERROR] "); ConWrite(__VA_ARGS__); }
+enum class ConCol : U1;
 
+dfa ER ConReq();
+dfa ER ConColSet(ConCol col);
+dfa ER ConColGet(ConCol& col);
+dfa ER ConWriteErr(cx CS* format, ...);
 dfa ER ConPause();

@@ -44,7 +44,6 @@
 #include "queue.h"
 #include "event.h"
 #include "thread.h"
-#include "console.h"
 #include "file.h"
 #include "dictionary.h"
 #include "pipe.h"
@@ -61,6 +60,7 @@
 #include "registry.h"
 #include "screen.h"
 #include "window.h"
+#include "console.h"
 #include "network.h"
 #include "clipboard.h"
 #ifdef INCLUDE_KEYB
