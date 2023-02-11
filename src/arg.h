@@ -1,5 +1,10 @@
 #pragma once
 
+using AL = va_list;
+
+#define AlCreate(al, ...) va_start(al, __VA_ARGS__)
+#define AlDel(al) va_end(al)
+
 SI g_argCnt = 0;
 CH** g_argVal = NUL;
 
