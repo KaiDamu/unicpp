@@ -76,7 +76,7 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 			fileInfo.relLen = fileInfo.pathLen - pathLenBase;
 			fileInfo.rel = fileInfo.path + pathLenBase;
 			fileInfo.nameLen = info->FileNameLength / siz(CH);
-			fileInfo.name = info->FileName;
+			fileInfo.name = path + pathLen - fileInfo.nameLen;
 			if ((flags & DIR_ENUM_FLAG_POST) == 0) ifu (callb(fileInfo, param1, param2) == NO) rets;
 			if (fileInfo.attrib & FILE_ATTRIB_DIR) {
 				path[pathLen++] = PATH_DIR_SEPARATOR;
