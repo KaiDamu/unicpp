@@ -80,6 +80,7 @@
     <ClInclude Include="src\unicpp.h" />
     <ClInclude Include="src\value.h" />
     <ClInclude Include="src\vector.h" />
+    <ClInclude Include="src\vfs.h" />
     <ClInclude Include="src\window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

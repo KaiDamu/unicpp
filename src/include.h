@@ -64,6 +64,7 @@
 #include "console.h"
 #include "network.h"
 #include "clipboard.h"
+#include "vfs.h"
 #ifdef INCLUDE_KEYB
 	#include "keyboard.h"
 #endif

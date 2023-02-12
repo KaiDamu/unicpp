@@ -52,4 +52,5 @@ UniCPP is an experimental framework maintained by KaiDamu, a compilation of usef
 - Unique main function wrapper
 - Useful constant values
 - Vector & matrix support
+- Virtual file system
 - Window handling functions
