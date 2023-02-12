@@ -269,8 +269,15 @@ private:
 	F8 m_resizeMul;
 	SI m_resizeAdd;
 public:
-	dfa BO IsOpen() {
+	dfa U1* _Dat() const {
+		ret m_dat.Ptr();
+	}
+public:
+	dfa BO IsOpen() const {
 		ret m_isOpen;
+	}
+	dfa SI CurPos() const {
+		ret m_filePos + m_filePosOfs;
 	}
 	dfa ER CurMove(SI cnt) {
 		ifu (m_filePos + m_filePosOfs + cnt < 0) rete(ERR_LOW_SIZE);
