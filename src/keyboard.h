@@ -275,15 +275,15 @@ dfa DWORD WINAPI _KeybHookThd(LPVOID code) {
 
 dfa ER KeybInit() {
 	volatile AU code = KEYB_HOOK_THD_CODE_WAIT;
-	ife (g_keybThd.Start(_KeybHookThd, const_cast<U1*>(&code))) retepass;
+	ife (g_keybThd.Start(_KeybHookThd, const_cast<U1*>(&code))) retep;
 	while (code == KEYB_HOOK_THD_CODE_WAIT);
 	ifu (code == KEYB_HOOK_THD_CODE_ERR_YES) rete(ERR_HOOK);
 	rets;
 }
 dfa ER KeybFree() {
 	ifu (PostThreadMessageW(g_keybThd.Id(), WM_QUIT, 0, 0) == 0) rete(ERR_THD);
-	ife (g_keybThd.Wait()) retepass;
-	ife (g_keybThd.Close()) retepass;
+	ife (g_keybThd.Wait()) retep;
+	ife (g_keybThd.Close()) retep;
 	g_keybKeyEvtQueueLock.Lock();
 	g_keybKeyEvtQueue.Free();
 	g_keybKeyEvtQueueLock.Unlock();

@@ -94,7 +94,7 @@ public:
 	}
 	dfa ER Start(cx CH* path, cx CH* args, cx CH* workPath) {
 		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
-		ife (tx->Close()) retepass;
+		ife (tx->Close()) retep;
 		m_args = L"\"";
 		m_args += path;
 		m_args += L"\"";
@@ -116,7 +116,7 @@ public:
 	dfa ER StartElevated(cx CH* path, cx CH* args, cx CH* workPath) {
 		if (ProcCurIsElevated()) ret tx->Start(path, args, workPath);
 		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
-		ife (tx->Close()) retepass;
+		ife (tx->Close()) retep;
 		m_args = args;
 		SHELLEXECUTEINFOW sei;
 		MemSet(&sei, 0, siz(sei));
@@ -138,7 +138,7 @@ public:
 	dfa ER Stop() const {
 		if (tx->IsActive() == NO) rets;
 		ifu (TerminateProcess(m_info.hProcess, U4(-1)) == 0) rete(ERR_PROC);
-		ife (tx->Wait()) retepass;
+		ife (tx->Wait()) retep;
 		rets;
 	}
 public:
@@ -154,7 +154,7 @@ public:
 dfa ER ProcCurRestartElevated() {
 	if (ProcCurIsElevated()) rets;
 	Proc proc;
-	ife (proc.StartElevated(ProcCurFilePathGet(), StrSkipArg(ProcCurArgFullGet()), ProcCurWorkPathGet())) retepass;
+	ife (proc.StartElevated(ProcCurFilePathGet(), StrSkipArg(ProcCurArgFullGet()), ProcCurWorkPathGet())) retep;
 	proc.__Drop();
 	ProcCurExit(0);
 	rets;

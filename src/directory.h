@@ -33,7 +33,7 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 	if (depth == 0) rets;
 	--depth;
 	FileNt dir;
-	ife (dir.Open(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, 0, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, FILE_OPEN, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT)) retepass;
+	ife (dir.Open(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, 0, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, FILE_OPEN, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT)) retep;
 	Arr<U1> buf(BYTE_IN_KB * 4); // maybe this should be configurable
 	IO_STATUS_BLOCK isb;
 	U4 queryFlags = 0;
@@ -81,7 +81,7 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 			if (fileInfo.attrib & FILE_ATTRIB_DIR) {
 				path[pathLen++] = PATH_DIR_SEPARATOR;
 				path[pathLen] = '\0';
-				ife (_DirEnum(path, pathLen, depth, callb, flags, param1, param2, pathLenBase)) retepass;
+				ife (_DirEnum(path, pathLen, depth, callb, flags, param1, param2, pathLenBase)) retep;
 				path[--pathLen] = '\0';
 			}
 			if ((flags & DIR_ENUM_FLAG_POST) != 0) ifu (callb(fileInfo, param1, param2) == NO) rets;
@@ -123,7 +123,7 @@ dfa ER DirCreate(cx CH* path) {
 		CH* pathSep = (CH*)StrFindLast(path_, PATH_DIR_SEPARATOR);
 		ifu (pathSep == NUL) rete(ERR_DIR);
 		*pathSep = '\0';
-		ife (DirCreate(path_)) retepass;
+		ife (DirCreate(path_)) retep;
 		ifu (CreateDirectoryW(path, NUL) == 0) rete(ERR_DIR);
 	}
 	rets;
@@ -132,7 +132,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 	CH dst_[PATH_LEN_MAX];
 	StrCpy(dst_, dst);
 	PathToAbsByWorkPath(dst_);
-	ife (DirCreate(dst_)) retepass;
+	ife (DirCreate(dst_)) retep;
 	struct Param {
 		CH* dst;
 		BO isReplace;
@@ -156,7 +156,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 			}
 		}
 		ret YES;
-	}, 0, (GA)&param, NUL)) retepass;
+	}, 0, (GA)&param, NUL)) retep;
 	ifu (param.err != ERR_NONE) rete(param.err);
 	rets;
 }
@@ -182,15 +182,15 @@ dfa ER DirDel(cx CH* path) {
 			}
 		}
 		ret YES;
-	}, DIR_ENUM_FLAG_POST, (GA)&param, NUL)) retepass;
-	ife (_DirDel(path_)) retepass;
+	}, DIR_ENUM_FLAG_POST, (GA)&param, NUL)) retep;
+	ife (_DirDel(path_)) retep;
 	ifu (param.err != ERR_NONE) rete(param.err);
 	rets;
 }
 dfa ER DirMove(cx CH* dst, cx CH* src, BO isReplace = YES) {
 	ife (FileMove(dst, src, isReplace)) {
-		ife (DirCpy(dst, src, isReplace)) retepass;
-		ife (DirDel(src)) retepass;
+		ife (DirCpy(dst, src, isReplace)) retep;
+		ife (DirDel(src)) retep;
 	}
 	rets;
 }

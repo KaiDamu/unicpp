@@ -299,7 +299,7 @@ public:
 	}
 	dfa ER LoadFileCfg(cx CH* path) {
 		FileMem file;
-		ife (file.OpenRead(path)) retepass;
+		ife (file.OpenRead(path)) retep;
 		SStr line;
 		Arr<CS> buf;
 		Arr<CS> buf2;

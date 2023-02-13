@@ -7,13 +7,13 @@ dfa ER MainInit() {
 	TimeResSet(1, 0, NO); // hint for performance, error not handled
 	ife (TimeMainInit()) rete(ERR_TIME);
 	#ifdef INCLUDE_KEYB
-		ife (KeybInit()) retepass;
+		ife (KeybInit()) retep;
 	#endif
 	rets;
 }
 dfa ER MainFree() {
 	#ifdef INCLUDE_KEYB
-		ife (KeybFree()) retepass;
+		ife (KeybFree()) retep;
 	#endif
 	TimeResClear(); // hint for performance, error not handled
 	rets;
@@ -22,9 +22,9 @@ dfa ER MainFree() {
 dfa ER Main();
 
 dfa ER _Main() {
-	ife (MainInit()) retepass;
-	ife (Main()) retepass;
-	ife (MainFree()) retepass;
+	ife (MainInit()) retep;
+	ife (Main()) retep;
+	ife (MainFree()) retep;
 	rets;
 }
 

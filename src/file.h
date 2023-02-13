@@ -76,13 +76,13 @@ public:
 	}
 	dfa ER Read(GA buf, SI size) {
 		SI result;
-		ife (tx->Read(buf, size, result)) retepass;
+		ife (tx->Read(buf, size, result)) retep;
 		ifu (size != result) rete(ERR_NO_FULL);
 		rets;
 	}
 	dfa ER Write(CXGA buf, SI size) {
 		SI result;
-		ife (tx->Write(buf, size, result)) retepass;
+		ife (tx->Write(buf, size, result)) retep;
 		ifu (size != result) rete(ERR_NO_FULL);
 		rets;
 	}
@@ -295,13 +295,13 @@ public:
 	}
 	dfa ER OpenRead(cx CH* path) {
 		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
-		ife (m_file.OpenRead(path)) retepass;
+		ife (m_file.OpenRead(path)) retep;
 		SI size = 0;
-		ife (m_file.SizeGet(size)) retepass;
+		ife (m_file.SizeGet(size)) retep;
 		m_dat.Alloc(size);
-		ife (m_file.Read(m_dat.Ptr(), size)) retepass;
+		ife (m_file.Read(m_dat.Ptr(), size)) retep;
 		m_dat.CurSet(size);
-		ife (m_file.Close()) retepass;
+		ife (m_file.Close()) retep;
 		m_filePos = 0;
 		m_filePosOfs = 0;
 		m_isOpen = YES;
@@ -314,9 +314,9 @@ public:
 	}
 	dfa ER OpenWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA) {
 		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
-		ife (m_file.OpenWrite(path)) retepass;
+		ife (m_file.OpenWrite(path)) retep;
 		SI size = 0;
-		ife (m_file.SizeGet(size)) retepass;
+		ife (m_file.SizeGet(size)) retep;
 		m_dat.Alloc(SI(F8(size) * resizeMul + F8(resizeAdd)));
 		MemSet(m_dat.Ptr(), 0, size);
 		m_dat.CurSet(size);
@@ -332,11 +332,11 @@ public:
 	}
 	dfa ER OpenReadWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA) {
 		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
-		ife (m_file.OpenReadWrite(path)) retepass;
+		ife (m_file.OpenReadWrite(path)) retep;
 		SI size = 0;
-		ife (m_file.SizeGet(size)) retepass;
+		ife (m_file.SizeGet(size)) retep;
 		m_dat.Alloc(SI(F8(size) * resizeMul + F8(resizeAdd)));
-		ife (m_file.Read(m_dat.Ptr(), size)) retepass;
+		ife (m_file.Read(m_dat.Ptr(), size)) retep;
 		m_dat.CurSet(size);
 		m_filePos = 0;
 		m_filePosOfs = 0;
@@ -352,10 +352,10 @@ public:
 		ifu (!tx->IsOpen()) rets;
 		if (m_isWrite) {
 			if (!m_isWriteDirect) {
-				ife (m_file.CurSet(0)) retepass;
-				ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retepass;
+				ife (m_file.CurSet(0)) retep;
+				ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retep;
 			}
-			ife (m_file.Close()) retepass;
+			ife (m_file.Close()) retep;
 		}
 		m_dat.Dealloc();
 		m_filePos = 0;
@@ -382,11 +382,11 @@ public:
 		ifu (!m_isWrite) rete(ERR_NO_INIT);
 		if (m_isWriteDirect) {
 			if (m_filePosOfs != 0) {
-				ife (m_file.CurMove(m_filePosOfs)) retepass;
+				ife (m_file.CurMove(m_filePosOfs)) retep;
 				m_filePos += m_filePosOfs;
 				m_filePosOfs = 0;
 			}
-			ife (m_file.Write(buf, size)) retepass;
+			ife (m_file.Write(buf, size)) retep;
 		}
 		ifu (m_filePos + size > m_dat.Cap()) {
 			cx SI newCap = SI(F8(m_dat.Cap()) * m_resizeMul) + m_resizeAdd + size;
@@ -400,7 +400,7 @@ public:
 	}
 	dfa ER Read(GA buf, SI size) {
 		SI result;
-		ife (tx->Read(buf, size, result)) retepass;
+		ife (tx->Read(buf, size, result)) retep;
 		ifu (size != result) rete(ERR_NO_FULL);
 		rets;
 	}
@@ -427,7 +427,7 @@ public:
 	}
 	dfa ER Write(CXGA buf, SI size) {
 		SI result;
-		ife (tx->Write(buf, size, result)) retepass;
+		ife (tx->Write(buf, size, result)) retep;
 		ifu (size != result) rete(ERR_NO_FULL);
 		rets;
 	}

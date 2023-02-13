@@ -52,8 +52,8 @@ dfa ER RegDirDel(cx CH* path) {
 	rets;
 }
 dfa ER RegDirMove(cx CH* dst, cx CH* src) {
-	ife (RegDirCpy(dst, src)) retepass;
-	ife (RegDirDel(src)) retepass;
+	ife (RegDirCpy(dst, src)) retep;
+	ife (RegDirDel(src)) retep;
 	rets;
 }
 
@@ -138,24 +138,24 @@ dfa ER RegSetExtOpenPath(cx CH* ext, cx CH* prog, cx CH* extName) {
 	CH path[PATH_LEN_MAX];
 	StrCpy(path, L"HKEY_CLASSES_ROOT\\.");
 	StrAdd(path, ext);
-	ife (RegDirCreate(path)) retepass;
+	ife (RegDirCreate(path)) retep;
 	StrAdd(path, L"\\");
-	ife (RegValSetStr(path, name)) retepass;
+	ife (RegValSetStr(path, name)) retep;
 	StrCpy(path, L"HKEY_CLASSES_ROOT\\");
 	StrAdd(path, name);
-	ife (RegDirCreate(path)) retepass;
+	ife (RegDirCreate(path)) retep;
 	StrAdd(path, L"\\");
-	ife (RegValSetStr(path, extName)) retepass;
+	ife (RegValSetStr(path, extName)) retep;
 	StrCpy(path, L"HKEY_CLASSES_ROOT\\");
 	StrAdd(path, name);
 	StrAdd(path, L"\\shell\\open\\command");
-	ife (RegDirCreate(path)) retepass;
+	ife (RegDirCreate(path)) retep;
 	StrAdd(path, L"\\");
 	CH cmd[PATH_LEN_MAX + 10];
 	StrCpy(cmd, L"\"");
 	StrAdd(cmd, prog);
 	StrAdd(cmd, L"\" \"%1\"");
-	ife (RegValSetStr(path, cmd)) retepass;
+	ife (RegValSetStr(path, cmd)) retep;
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NUL, NUL);
 	rets;
 }

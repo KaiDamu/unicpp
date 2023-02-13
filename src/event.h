@@ -11,7 +11,7 @@ public:
 		rets;
 	}
 	dfa ER Init() {
-		ife (tx->Free()) retepass;
+		ife (tx->Free()) retep;
 		m_hdl = CreateEventW(NUL, YES, NO, NUL);
 		ifu (m_hdl == NUL) rete(ERR_EVT);
 		rets;
@@ -28,7 +28,7 @@ public:
 	dfa ER Wait(BO stateAfter) {
 		ifu (m_hdl == NUL) rete(ERR_NO_INIT);
 		ifu (WaitForSingleObject(m_hdl, INFINITE) != WAIT_OBJECT_0) rete(ERR_EVT);
-		if (stateAfter == NO) ife (tx->Set(stateAfter)) retepass;
+		if (stateAfter == NO) ife (tx->Set(stateAfter)) retep;
 		rets;
 	}
 public:

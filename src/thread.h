@@ -176,7 +176,7 @@ public:
 	}
 	dfa ER Start(LPTHREAD_START_ROUTINE fn, LPVOID param) {
 		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
-		ife (tx->Close()) retepass;
+		ife (tx->Close()) retep;
 		m_id = 0;
 		m_hdl = CreateThread(NUL, 0, fn, param, 0, (DWORD*)&m_id);
 		ifu (m_hdl == NUL) rete(ERR_THD);
@@ -185,7 +185,7 @@ public:
 	dfa ER Stop() const {
 		if (tx->IsActive() == NO) rets;
 		ifu (TerminateThread(m_hdl, U4(-1)) == 0) rete(ERR_THD);
-		ife (tx->Wait()) retepass;
+		ife (tx->Wait()) retep;
 		rets;
 	}
 public:
@@ -220,14 +220,14 @@ public:
 		ret m_taskCnt;
 	}
 	dfa ER WaitAll() {
-		while (tx->TaskCnt() != 0) ife (m_evtWait.Wait(NO)) retepass;
+		while (tx->TaskCnt() != 0) ife (m_evtWait.Wait(NO)) retep;
 		rets;
 	}
 	dfa ER Free() {
-		ife (tx->WaitAll()) retepass;
+		ife (tx->WaitAll()) retep;
 		ite (i, i < m_thdList.Cap()) {
-			ife (m_thdList[i].Stop()) retepass;
-			ife (m_thdList[i].Close()) retepass;
+			ife (m_thdList[i].Stop()) retep;
+			ife (m_thdList[i].Close()) retep;
 		}
 		m_thdList.Dealloc();
 		rets;
@@ -235,7 +235,7 @@ public:
 	dfa ER Init(SI cnt) {
 		m_thdList.Alloc(cnt);
 		ite (i, i < cnt) {
-			ife (m_thdList[i].Start(ThdTaskMgrThdFn, tx)) retepass;
+			ife (m_thdList[i].Start(ThdTaskMgrThdFn, tx)) retep;
 		}
 		rets;
 	}

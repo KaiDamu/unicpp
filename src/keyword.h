@@ -38,7 +38,7 @@
 
 #define rets ret ERR_NO
 #define rete(errVal) { ErrLastValSet(errVal); ret ERR_YES; }
-#define retepass ret ERR_YES
+#define retep ret ERR_YES
 
 #define class_setget(type, var, fn) dfa NT fn(type val) { var = val; } dfa type fn() const { ret var; }
 

@@ -74,7 +74,7 @@ public:
 			entry.info = fileInfo;
 			entry.path = fileInfo.path;
 			ret YES;
-		}, 0, &entryList, NUL)) retepass;
+		}, 0, &entryList, NUL)) retep;
 		// Get entry count
 		cx U4 entryCnt = entryList.Len();
 		// Get data size
@@ -84,15 +84,15 @@ public:
 		}
 		// Create VFS file
 		FileMem fileDst;
-		ife (fileDst.OpenWrite(dst)) retepass;
+		ife (fileDst.OpenWrite(dst)) retep;
 		// Write header
-		ife (fileDst.Write(VFS_MAGIC, VFS_MAGIC_SIZE)) retepass; // magic
-		ife (fileDst.Write(&VFS_FORMAT_CREATE, siz(U1))) retepass; // format
-		ife (fileDst.Write(&flags, siz(U4))) retepass; // flags
-		ife (fileDst.Write(&compress, siz(U4))) retepass; // compress
-		ife (fileDst.Write(&encrypt, siz(U4))) retepass; // encrypt
-		ife (fileDst.Write(&entryCnt, siz(U4))) retepass; // entryCnt
-		ife (fileDst.Write(&datSize, siz(U8))) retepass; // datSize
+		ife (fileDst.Write(VFS_MAGIC, VFS_MAGIC_SIZE)) retep; // magic
+		ife (fileDst.Write(&VFS_FORMAT_CREATE, siz(U1))) retep; // format
+		ife (fileDst.Write(&flags, siz(U4))) retep; // flags
+		ife (fileDst.Write(&compress, siz(U4))) retep; // compress
+		ife (fileDst.Write(&encrypt, siz(U4))) retep; // encrypt
+		ife (fileDst.Write(&entryCnt, siz(U4))) retep; // entryCnt
+		ife (fileDst.Write(&datSize, siz(U8))) retep; // datSize
 		// Get path offset
 		CH src_[PATH_LEN_MAX];
 		StrCpy(src_, src);
@@ -102,17 +102,17 @@ public:
 		Arr<U8> datOfsList(entryCnt);
 		for (Entry* entry = entryList.GetFirst(); entry != NUL; entry = entryList.GetNext()) {
 			// Write entry
-			ife (fileDst.Write("\x00\x00\x00\x00", siz(U4))) retepass; // flags
-			ife (fileDst.Write(&entry->info.attrib, siz(U4))) retepass; // attrib
-			ife (fileDst.Write(&entry->info.datSize, siz(U8))) retepass; // datSize
+			ife (fileDst.Write("\x00\x00\x00\x00", siz(U4))) retep; // flags
+			ife (fileDst.Write(&entry->info.attrib, siz(U4))) retep; // attrib
+			ife (fileDst.Write(&entry->info.datSize, siz(U8))) retep; // datSize
 			datOfsList.Add(fileDst.CurPos());
-			ife (fileDst.Write("\x00\x00\x00\x00\x00\x00\x00\x00", siz(U8))) retepass; // datOfs
+			ife (fileDst.Write("\x00\x00\x00\x00\x00\x00\x00\x00", siz(U8))) retep; // datOfs
 			CH path[PATH_LEN_MAX];
 			StrCpy(path, entry->path.Val() + pathOfs);
 			cx U8 pathLen = entry->path.Len() + 1 - pathOfs;
 			MemObfuscate(path, path, pathLen * siz(CH));
-			ife (fileDst.Write(&pathLen, siz(U8))) retepass; // pathLen
-			ife (fileDst.Write(path, pathLen * siz(CH))) retepass; // path
+			ife (fileDst.Write(&pathLen, siz(U8))) retep; // pathLen
+			ife (fileDst.Write(path, pathLen * siz(CH))) retep; // path
 		}
 		// Write data
 		datOfsList.CurRewind();
@@ -122,13 +122,13 @@ public:
 			cx U8 datOfsNow = fileDst.CurPos();
 			U8 datOfsHdr;
 			datOfsList.Read(datOfsHdr);
-			ife (fileDst.CurSet(datOfsHdr)) retepass;
-			ife (fileDst.Write(&datOfsNow, siz(U8))) retepass;
-			ife (fileDst.CurSet(datOfsNow)) retepass;
+			ife (fileDst.CurSet(datOfsHdr)) retep;
+			ife (fileDst.Write(&datOfsNow, siz(U8))) retep;
+			ife (fileDst.CurSet(datOfsNow)) retep;
 			// Skip directory
 			if (entry->info.attrib & FILE_ATTRIB_DIR) continue;
 			// Open file
-			ife (fileSrc.OpenRead(entry->path.Val())) retepass;
+			ife (fileSrc.OpenRead(entry->path.Val())) retep;
 			// Compress
 			if (compress == VFS_COMPRESS_NONE);
 			else rete(ERR_NO_SUPPORT);
@@ -137,34 +137,34 @@ public:
 			else if (encrypt == VFS_ENCRYPT_NONE);
 			else rete(ERR_NO_SUPPORT);
 			// Write data
-			ife (fileDst.Write(fileSrc._Dat(), entry->info.datSize)) retepass;
+			ife (fileDst.Write(fileSrc._Dat(), entry->info.datSize)) retep;
 			// Close file
-			ife (fileSrc.Close()) retepass;
+			ife (fileSrc.Close()) retep;
 		}
 		// Close VFS file
-		ife (fileDst.Close()) retepass;
+		ife (fileDst.Close()) retep;
 		// Done
 		rets;
 	}
 	dfa ER Close() {
-		ife (m_file.Close()) retepass;
+		ife (m_file.Close()) retep;
 		m_fileList.Free();
 		MemSet(&m_hdr, 0, siz(m_hdr));
 		rets;
 	}
 	dfa ER Open(cx CH* path) {
 		// Close VFS file
-		ife (tx->Close()) retepass;
+		ife (tx->Close()) retep;
 		// Open VFS file
-		ife (m_file.OpenRead(path)) retepass;
+		ife (m_file.OpenRead(path)) retep;
 		// Read header
-		ife (m_file.Read(m_hdr.magic, VFS_MAGIC_SIZE)) retepass;
-		ife (m_file.Read(&m_hdr.format, siz(U1))) retepass;
-		ife (m_file.Read(&m_hdr.flags, siz(U4))) retepass;
-		ife (m_file.Read(&m_hdr.compress, siz(U4))) retepass;
-		ife (m_file.Read(&m_hdr.encrypt, siz(U4))) retepass;
-		ife (m_file.Read(&m_hdr.entryCnt, siz(U4))) retepass;
-		ife (m_file.Read(&m_hdr.datSize, siz(U8))) retepass;
+		ife (m_file.Read(m_hdr.magic, VFS_MAGIC_SIZE)) retep;
+		ife (m_file.Read(&m_hdr.format, siz(U1))) retep;
+		ife (m_file.Read(&m_hdr.flags, siz(U4))) retep;
+		ife (m_file.Read(&m_hdr.compress, siz(U4))) retep;
+		ife (m_file.Read(&m_hdr.encrypt, siz(U4))) retep;
+		ife (m_file.Read(&m_hdr.entryCnt, siz(U4))) retep;
+		ife (m_file.Read(&m_hdr.datSize, siz(U8))) retep;
 		// Check magic
 		ifu (MemCmp(m_hdr.magic, VFS_MAGIC, VFS_MAGIC_SIZE) != 0) rete(ERR_NO_VALID);
 		// Check format
@@ -179,12 +179,12 @@ public:
 		ite (i, i < m_hdr.entryCnt) {
 			// Read entry
 			VfsEntry entry = {};
-			ife (m_file.Read(&entry.flags, siz(U4))) retepass;
-			ife (m_file.Read(&entry.attrib, siz(U4))) retepass;
-			ife (m_file.Read(&entry.datSize, siz(U8))) retepass;
-			ife (m_file.Read(&entry.datOfs, siz(U8))) retepass;
-			ife (m_file.Read(&entry.pathLen, siz(U8))) retepass;
-			ife (m_file.Read(entry.path, entry.pathLen * siz(entry.path[0]))) retepass;
+			ife (m_file.Read(&entry.flags, siz(U4))) retep;
+			ife (m_file.Read(&entry.attrib, siz(U4))) retep;
+			ife (m_file.Read(&entry.datSize, siz(U8))) retep;
+			ife (m_file.Read(&entry.datOfs, siz(U8))) retep;
+			ife (m_file.Read(&entry.pathLen, siz(U8))) retep;
+			ife (m_file.Read(entry.path, entry.pathLen * siz(entry.path[0]))) retep;
 			MemUnobfuscate(entry.path, entry.path, entry.pathLen * siz(entry.path[0]));
 			// Check flags
 			ifu (entry.flags != 0) rete(ERR_NO_SUPPORT);
@@ -199,10 +199,10 @@ public:
 	dfa ER Load(cx CH* path, Arr<U1>& buf) {
 		cx VfsEntry* entry = m_fileList[path];
 		ifu (entry == NUL) rete(ERR_NO_EXIST);
-		ife (m_file.CurSet(entry->datOfs)) retepass;
+		ife (m_file.CurSet(entry->datOfs)) retep;
 		buf.Alloc(entry->datSize);
 		if (entry->attrib & FILE_ATTRIB_DIR) rets;
-		ife (m_file.Read(buf.Ptr(), entry->datSize)) retepass;
+		ife (m_file.Read(buf.Ptr(), entry->datSize)) retep;
 		if (m_hdr.encrypt == VFS_ENCRYPT_OBFUSCATE) MemUnobfuscate(buf.Ptr(), buf.Ptr(), entry->datSize);
 		rets;
 	}

@@ -41,7 +41,7 @@ dfa ER _ConColGet(ConCol& col) {
 }
 dfa ER _ConColUpd() {
 	if (g_conColReal != g_conCol) {
-		ife (_ConColSet(g_conCol)) retepass;
+		ife (_ConColSet(g_conCol)) retep;
 	}
 	rets;
 }
@@ -59,7 +59,7 @@ dfa ER _ConBufEmpty() {
 }
 dfa ER _ConWriteRaw(cx CS* buf, SI bufLen) {
 	ifu (bufLen <= 0) rets;
-	ife (_ConColUpd()) retepass;
+	ife (_ConColUpd()) retep;
 	cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
 	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_NO_EXIST);
 	DWORD result;
@@ -69,20 +69,20 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen) {
 }
 dfa ER _ConWriteRawCol(ConCol col, cx CS* buf, SI bufLen) {
 	ConCol colOld;
-	ife (ConColGet(colOld)) retepass;
-	ife (ConColSet(col)) retepass;
+	ife (ConColGet(colOld)) retep;
+	ife (ConColSet(col)) retep;
 	ife (_ConWriteRaw(buf, bufLen)) {
 		ConColSet(colOld);
-		retepass;
+		retep;
 	}
-	ife (ConColSet(colOld)) retepass;
+	ife (ConColSet(colOld)) retep;
 	rets;
 }
 dfa ER _ConWriteRawAl(cx CS* format, cx AL& args) {
 	CS buf[CON_BUF_LEN_MAX + 1];
 	cx SI bufLen = vsnprintf(buf, CON_BUF_LEN_MAX, format, args);
 	ifu (bufLen < 0 || bufLen >= CON_BUF_LEN_MAX) rete(ERR_CON);
-	ife (_ConWriteRaw(buf, bufLen)) retepass;
+	ife (_ConWriteRaw(buf, bufLen)) retep;
 	rets;
 }
 
@@ -90,7 +90,7 @@ dfa BO ConIsExist() {
 	ret (GetConsoleWindow() != NUL);
 }
 dfa ER ConTitleSet(cx CH* title) {
-	ife (ConReq()) retepass;
+	ife (ConReq()) retep;
 	ifu (SetConsoleTitleW(title) == 0) rete(ERR_CON);
 	rets;
 }
@@ -101,10 +101,10 @@ dfa SI ConTitleGet(CH* title, SI titleLenMax) {
 dfa ER ConCreate(cx CH* title = NUL) {
 	ifu (AllocConsole() == 0) rete(ERR_CON);
 	if (title != NUL) {
-		ife (ConTitleSet(title)) retepass;
+		ife (ConTitleSet(title)) retep;
 	}
-	ife (_ConColSet(g_conCol)) retepass;
-	ife (_ConBufEmpty()) retepass;
+	ife (_ConColSet(g_conCol)) retep;
+	ife (_ConBufEmpty()) retep;
 	// font (extra)
 	cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_FONT_INFOEX font;
@@ -115,7 +115,7 @@ dfa ER ConCreate(cx CH* title = NUL) {
 	StrCpy(font.FaceName, L"Lucida Console");
 	SetCurrentConsoleFontEx(hdl, NO, &font);
 	//
-	ife (WinFocusSet(HD(GetConsoleWindow()))) retepass;
+	ife (WinFocusSet(HD(GetConsoleWindow()))) retep;
 	rets;
 }
 dfa ER ConDel() {
@@ -125,7 +125,7 @@ dfa ER ConDel() {
 }
 dfa ER ConReq() {
 	if (ConIsExist()) rets;
-	ife (ConCreate()) retepass;
+	ife (ConCreate()) retep;
 	rets;
 }
 dfa ER ConColSet(ConCol col) {
@@ -137,65 +137,65 @@ dfa ER ConColGet(ConCol& col) {
 	rets;
 }
 dfa ER ConWriteRaw(cx CS* format, ...) {
-	ife (ConReq()) retepass;
+	ife (ConReq()) retep;
 	AL args;
 	AlCreate(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
-		retepass;
+		retep;
 	}
 	AlDel(args);
 	rets;
 }
 dfa ER ConWrite(cx CS* format, ...) {
-	ife (ConReq()) retepass;
+	ife (ConReq()) retep;
 	AL args;
 	AlCreate(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
-		retepass;
+		retep;
 	}
 	AlDel(args);
-	ife (_ConWriteRaw("\n", 1)) retepass;
+	ife (_ConWriteRaw("\n", 1)) retep;
 	rets;
 }
 dfa ER ConWriteInfo(cx CS* format, ...) {
-	ife (ConReq()) retepass;
-	ife (_ConWriteRawCol(ConCol::GREEN, "[INFO] ", 7)) retepass;
+	ife (ConReq()) retep;
+	ife (_ConWriteRawCol(ConCol::GREEN, "[INFO] ", 7)) retep;
 	AL args;
 	AlCreate(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
-		retepass;
+		retep;
 	}
 	AlDel(args);
-	ife (_ConWriteRaw("\n", 1)) retepass;
+	ife (_ConWriteRaw("\n", 1)) retep;
 	rets;
 }
 dfa ER ConWriteWarn(cx CS* format, ...) {
-	ife (ConReq()) retepass;
-	ife (_ConWriteRawCol(ConCol::YELLOW, "[WARNING] ", 10)) retepass;
+	ife (ConReq()) retep;
+	ife (_ConWriteRawCol(ConCol::YELLOW, "[WARNING] ", 10)) retep;
 	AL args;
 	AlCreate(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
-		retepass;
+		retep;
 	}
 	AlDel(args);
-	ife (_ConWriteRaw("\n", 1)) retepass;
+	ife (_ConWriteRaw("\n", 1)) retep;
 	rets;
 }
 dfa ER ConWriteErr(cx CS* format, ...) {
-	ife (ConReq()) retepass;
-	ife (_ConWriteRawCol(ConCol::RED, "[ERROR] ", 8)) retepass;
+	ife (ConReq()) retep;
+	ife (_ConWriteRawCol(ConCol::RED, "[ERROR] ", 8)) retep;
 	AL args;
 	AlCreate(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
-		retepass;
+		retep;
 	}
 	AlDel(args);
-	ife (_ConWriteRaw("\n", 1)) retepass;
+	ife (_ConWriteRaw("\n", 1)) retep;
 	rets;
 }
 dfa SI ConReadStr(CS* str, SI strLenMax, BO isShow = YES) {
@@ -237,8 +237,8 @@ dfa SI ConReadStr(CS* str, SI strLenMax, BO isShow = YES) {
 	ret strLen;
 }
 dfa ER ConPause() {
-	ife (ConReq()) retepass;
-	ife (_ConBufEmpty()) retepass;
+	ife (ConReq()) retep;
+	ife (_ConBufEmpty()) retep;
 	cx HANDLE hdl = GetStdHandle(STD_INPUT_HANDLE);
 	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_NO_EXIST);
 	INPUT_RECORD ir;

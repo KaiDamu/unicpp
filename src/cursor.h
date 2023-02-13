@@ -18,8 +18,8 @@ dfa ER CurPosSet(cx Pos2<F4>& pos) {
 }
 dfa ER CurPosMove(cx Pos2<F4>& pos) {
 	Pos2<F4> tmp;
-	ife (CurPosGet(tmp)) retepass;
+	ife (CurPosGet(tmp)) retep;
 	tmp.Set(tmp.x + pos.x, tmp.y + pos.y);
-	ife (CurPosSet(tmp)) retepass;
+	ife (CurPosSet(tmp)) retep;
 	rets;
 }
