@@ -40,8 +40,6 @@
 #define rete(errVal) { ErrLastValSet(errVal); ret ERR_YES; }
 #define retep ret ERR_YES
 
-#define class_setget(type, var, fn) dfa NT fn(type val) { var = val; } dfa type fn() const { ret var; }
-
 #ifdef PROG_BUILD_TYPE_DBG
 	#define ifdbg(cond) if (cond)
 	#define ifndbg(cond) if (NO)

@@ -19,7 +19,12 @@ public:
 		m_ptr = reinterpret_cast<T1*>(MemResize(m_ptr, cntAlloc * siz(T1), cntCpy * siz(T1)));
 		new(m_ptr + cntCpy) T1[cntAlloc - cntCpy]();
 	}
-	class_setget(T1*, m_ptr, Val)
+	dfa NT Val(T1* val) {
+		m_ptr = val;
+	}
+	dfa T1* Val() const {
+		ret m_ptr;
+	}
 public:
 	dfa T1& operator [] (SI i) {
 		ret m_ptr[i];
