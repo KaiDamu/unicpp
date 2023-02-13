@@ -130,7 +130,7 @@ public:
 			break;
 		}
 		}
-		m_fieldHash = (m_stackHash << sizbit(m_fieldId)) + ((fieldType == PRB_FIELD_TYPE_LEN) ? 0x00 : m_fieldId);
+		m_fieldHash = (m_stackHash << sizb(m_fieldId)) + ((fieldType == PRB_FIELD_TYPE_LEN) ? 0x00 : m_fieldId);
 		if (m_bufCur == m_stack[m_stackLen - 1].elemEnd) tx->StackPop();
 	}
 	dfa NT Free() {

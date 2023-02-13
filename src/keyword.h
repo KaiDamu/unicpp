@@ -12,9 +12,9 @@
 #define siz(_) SI(sizeof(_))
 #define siz4(_) S4(sizeof(_))
 #define siz8(_) S8(sizeof(_))
-#define sizbit(_) SI(siz(_) * BIT_IN_BYTE)
-#define sizbit4(_) S4(siz(_) * BIT_IN_BYTE)
-#define sizbit8(_) S8(siz(_) * BIT_IN_BYTE)
+#define sizb(_) SI(siz(_) * BIT_IN_BYTE)
+#define sizb4(_) S4(siz(_) * BIT_IN_BYTE)
+#define sizb8(_) S8(siz(_) * BIT_IN_BYTE)
 #define nooptimize __attribute__((optimize("O0")))
 #define falltru __attribute__((fallthrough))
 

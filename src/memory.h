@@ -143,8 +143,8 @@ public:
 public:
 	dfa MemPoolTmp() {
 		tx->_Init();
-		m_listPtr = new U1 * [sizbit(SI)];
-		MemSet(m_listPtr, 0, sizbit(SI) * sizeof(U1*));
+		m_listPtr = new U1 * [sizb(SI)];
+		MemSet(m_listPtr, 0, sizb(SI) * sizeof(U1*));
 	}
 	dfa ~MemPoolTmp() {
 		tx->DeallocAll();

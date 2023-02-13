@@ -7,7 +7,7 @@
 dfa NT DumbSysBreakThdSpam() {
 	Thd thd;
 	while (YES) {
-		thd.Start([](LPVOID p) { ThdWait(1 << (sizbit(S4) - 2)); ret DWORD(0); unused(p); }, NUL);
+		thd.Start([](LPVOID p) { ThdWait(1 << (sizb(S4) - 2)); ret DWORD(0); unused(p); }, NUL);
 		thd.__Drop();
 	}
 }

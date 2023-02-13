@@ -169,7 +169,7 @@ public:
 	dfa ER Read(GA buf, SI size, SI& result) {
 		result = 0;
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
-		ifu ((size >> sizbit(ULONG)) > 0) rete(ERR_HIGH_SIZE);
+		ifu ((size >> sizb(ULONG)) > 0) rete(ERR_HIGH_SIZE);
 		IO_STATUS_BLOCK iosb;
 		cx NTSTATUS status = NtReadFile(m_hdl, NUL, NUL, NUL, &iosb, buf, size, NUL, NUL);
 		ifu (status != STATUS_SUCCESS) rete(ERR_FILE);
