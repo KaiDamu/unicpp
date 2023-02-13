@@ -8,8 +8,10 @@
 		#define _WIN32_WINNT 0x0A00 // Windows 10
 	#endif
 
+	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#include <winternl.h>
+	#include <shellapi.h>
 	#include <shlobj.h>
 
 	#include "import/winapi/type.h"
