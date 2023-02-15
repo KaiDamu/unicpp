@@ -70,7 +70,7 @@ public:
 		ife (DirEnum(src, -1, [](cx FileInfo& fileInfo, GA param1, GA param2) {
 			unused(param2);
 			DList<Entry>& entryList_ = *(DList<Entry>*)param1;
-			Entry& entry = *entryList_.AddLast();
+			Entry& entry = *entryList_.NewLast();
 			entry.info = fileInfo;
 			entry.path = fileInfo.path;
 			ret YES;

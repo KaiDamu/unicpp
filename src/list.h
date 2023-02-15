@@ -84,7 +84,7 @@ public:
 		ret YES;
 	}
 public:
-	dfa T1* AddFirst() {
+	dfa T1* NewFirst() {
 		DListElem* elem = new DListElem;
 		elem->prev = NUL;
 		elem->next = m_first;
@@ -94,7 +94,7 @@ public:
 		++m_len;
 		ret &elem->dat;
 	}
-	dfa T1* AddLast() {
+	dfa T1* NewLast() {
 		DListElem* elem = new DListElem;
 		elem->prev = m_last;
 		elem->next = NUL;
@@ -104,7 +104,7 @@ public:
 		++m_len;
 		ret &elem->dat;
 	}
-	dfa T1* AddPrev() {
+	dfa T1* NewPrev() {
 		Assert(m_cur != NUL);
 		DListElem* elem = new DListElem;
 		elem->prev = m_cur->prev;
@@ -115,7 +115,7 @@ public:
 		++m_len;
 		ret &elem->dat;
 	}
-	dfa T1* AddNext() {
+	dfa T1* NewNext() {
 		Assert(m_cur != NUL);
 		DListElem* elem = new DListElem;
 		elem->prev = m_cur;
@@ -127,20 +127,20 @@ public:
 		ret &elem->dat;
 	}
 public:
-	dfa NT AddFirst(cx T1& dat) {
-		T1*cx datPtr = tx->AddFirst();
+	dfa NT NewFirst(cx T1& dat) {
+		T1*cx datPtr = tx->NewFirst();
 		*datPtr = dat;
 	}
-	dfa NT AddLast(cx T1& dat) {
-		T1*cx datPtr = tx->AddLast();
+	dfa NT NewLast(cx T1& dat) {
+		T1*cx datPtr = tx->NewLast();
 		*datPtr = dat;
 	}
-	dfa NT AddPrev(cx T1& dat) {
-		T1*cx datPtr = tx->AddPrev();
+	dfa NT NewPrev(cx T1& dat) {
+		T1*cx datPtr = tx->NewPrev();
 		*datPtr = dat;
 	}
-	dfa NT AddNext(cx T1& dat) {
-		T1*cx datPtr = tx->AddNext();
+	dfa NT NewNext(cx T1& dat) {
+		T1*cx datPtr = tx->NewNext();
 		*datPtr = dat;
 	}
 public:
