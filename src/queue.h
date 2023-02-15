@@ -39,7 +39,7 @@ public:
 		--m_len;
 		ret dat;
 	}
-	dfa NT Free() {
+	dfa NT Clr() {
 		DQueueElem* elem;
 		while ((elem = m_first) != NUL) {
 			m_first = elem->next;
@@ -56,6 +56,6 @@ public:
 		m_len = 0;
 	}
 	dfa ~DQueue() {
-		tx->Free();
+		tx->Clr();
 	}
 };

@@ -148,7 +148,7 @@ public:
 	}
 	dfa ER Close() {
 		ife (m_file.Close()) retep;
-		m_fileList.Free();
+		m_fileList.Clr();
 		MemSet(&m_hdr, U1(0), siz(m_hdr));
 		rets;
 	}

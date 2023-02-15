@@ -133,7 +133,7 @@ public:
 		m_fieldHash = (m_stackHash << sizb(m_fieldId)) + ((fieldType == PRB_FIELD_TYPE_LEN) ? 0x00 : m_fieldId);
 		if (m_bufCur == m_stack[m_stackLen - 1].elemEnd) tx->StackPop();
 	}
-	dfa NT Free() {
+	dfa NT Clr() {
 		m_bufBase = NUL;
 		m_bufCur = NUL;
 		m_bufEnd = NUL;
@@ -143,7 +143,7 @@ public:
 		m_valU8 = 0;
 	}
 	dfa NT Init(cx U1* buf, SI bufSize) {
-		tx->Free();
+		tx->Clr();
 		m_bufBase = buf;
 		m_bufCur = buf;
 		m_bufEnd = buf + bufSize;
@@ -152,7 +152,7 @@ public:
 		}
 	}
 	dfa NT Init() {
-		tx->Free();
+		tx->Clr();
 	}
 public:
 	dfa PrbCtx() {
@@ -162,6 +162,6 @@ public:
 		tx->Init(buf, bufSize);
 	}
 	dfa ~PrbCtx() {
-		tx->Free();
+		tx->Clr();
 	}
 };

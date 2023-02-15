@@ -205,10 +205,10 @@ private:
 		if (elem == NUL) ret 0;
 		ret 1 + Max<SI>(tx->_Height(elem->left), tx->_Height(elem->right));
 	}
-	dfa NT _Free(DictAvlElem* elem) const {
+	dfa NT _Clr(DictAvlElem* elem) const {
 		if (elem == NUL) ret;
-		tx->_Free(elem->left);
-		tx->_Free(elem->right);
+		tx->_Clr(elem->left);
+		tx->_Clr(elem->right);
 		delete elem;
 	}
 public:
@@ -264,8 +264,8 @@ public:
 	dfa SI Height() const {
 		ret tx->_Height(m_root);
 	}
-	dfa NT Free() {
-		tx->_Free(m_root);
+	dfa NT Clr() {
+		tx->_Clr(m_root);
 		m_root = NUL;
 	}
 	dfa DictAvl() {
@@ -286,8 +286,8 @@ class SVarBlock {
 private:
 	DictAvl<SStr, SStr> m_vars;
 public:
-	dfa NT Empty() {
-		m_vars.Free();
+	dfa NT Clr() {
+		m_vars.Clr();
 	}
 	dfa NT Set(cx SStr& var, cx SStr& val) {
 		m_vars.Replace(var, val);

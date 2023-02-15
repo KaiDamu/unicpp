@@ -285,7 +285,7 @@ dfa ER KeybFree() {
 	ife (g_keybThd.Wait()) retep;
 	ife (g_keybThd.Close()) retep;
 	g_keybKeyEvtQueueLock.Lock();
-	g_keybKeyEvtQueue.Free();
+	g_keybKeyEvtQueue.Clr();
 	g_keybKeyEvtQueueLock.Unlock();
 	rets;
 }

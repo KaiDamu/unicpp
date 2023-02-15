@@ -206,7 +206,7 @@ public:
 		m_len = 0;
 	}
 public:
-	dfa NT Free() {
+	dfa NT Clr() {
 		tx->DelAll();
 	}
 public:
@@ -217,6 +217,6 @@ public:
 		m_len = 0;
 	}
 	dfa ~DList() {
-		tx->Free();
+		tx->Clr();
 	}
 };
