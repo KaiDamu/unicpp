@@ -10,7 +10,7 @@ dfa ER ClipbSetText(cx CH* text) {
 	cx HGLOBAL textGlobalObj = GlobalAlloc(GMEM_MOVEABLE, textSize);
 	ifu (textGlobalObj == NUL) {
 		CloseClipboard();
-		rete(ERR_MEM_ALLOC);
+		rete(ERR_MEM_NEW);
 	}
 	CH*cx textGlobal = (CH*)GlobalLock(textGlobalObj);
 	ifu (textGlobal == NUL) {
@@ -18,7 +18,7 @@ dfa ER ClipbSetText(cx CH* text) {
 		CloseClipboard();
 		rete(ERR_LOCK);
 	}
-	MemCpy(textGlobal, text, textSize);
+	MemSet(textGlobal, text, textSize);
 	GlobalUnlock(textGlobalObj);
 	ifu (SetClipboardData(CF_UNICODETEXT, textGlobalObj) == NUL) {
 		GlobalFree(textGlobalObj);
@@ -47,7 +47,7 @@ dfa SI ClipbGetText(CH* text, SI textLenMax) {
 		CloseClipboard();
 		ret textLen;
 	}
-	MemCpy(text, textGlobal, textSize);
+	MemSet(text, textGlobal, textSize);
 	GlobalUnlock(textGlobalObj);
 	CloseClipboard();
 	ret textLen - 1;

@@ -1,5 +1,92 @@
 #pragma once
 
+tpl1 class DatIte {
+private:
+	T1* m_ptr;
+	T1* m_cur;
+	SI m_cap;
+private:
+	dfa NT Init() {
+		m_ptr = NUL;
+		m_cur = NUL;
+		m_cap = 0;
+	}
+public:
+	dfa T1* Ptr() const {
+		ret m_ptr;
+	}
+	dfa T1* Cur() const {
+		ret m_cur;
+	}
+	dfa SI Cap() const {
+		ret m_cap;
+	}
+	dfa SI Pos() const {
+		ret m_cur - m_ptr;
+	}
+	dfa NT Src(T1* ptr, SI cap) {
+		m_ptr = ptr;
+		m_cur = ptr;
+		m_cap = cap;
+	}
+	dfa NT Src(T1* ptr) {
+		tx->Src(ptr, SI_VAL_MAX);
+	}
+	dfa NT Read(T1& dat) {
+		Assert(tx->Pos() < m_cap);
+		dat = *m_cur;
+		++m_cur;
+	}
+	dfa NT Read(T1* dat, SI cnt) {
+		Assert(tx->Pos() + cnt <= m_cap);
+		MemSet(dat, m_cur, cnt * siz(T1));
+		m_cur += cnt;
+	}
+	dfa NT Write(cx T1& dat) {
+		Assert(tx->Pos() < m_cap);
+		*m_cur = dat;
+		++m_cur;
+	}
+	dfa NT Write(cx T1* dat, SI cnt) {
+		Assert(tx->Pos() + cnt <= m_cap);
+		MemSet(m_cur, dat, cnt * siz(T1));
+		m_cur += cnt;
+	}
+	dfa NT CurMove(SI cnt) {
+		m_cur += cnt;
+	}
+	dfa NT CurSet(SI pos) {
+		m_cur = tx->Ptr() + pos;
+	}
+	dfa NT CurClr() {
+		tx->CurSet(0);
+	}
+	dfa NT Set(cx T1& dat) {
+		tx->CurClr();
+		tx->Write(dat);
+	}
+	dfa NT Set(cx T1* dat, SI cnt) {
+		tx->CurClr();
+		tx->Write(dat, cnt);
+	}
+public:
+	dfa T1& operator [] (SI i) const {
+		Assert(i < m_cap);
+		ret m_ptr[i];
+	}
+public:
+	dfa DatIte() {
+		tx->Init();
+	}
+	dfa DatIte(SI cnt) {
+		tx->Init();
+		tx->New(cnt);
+	}
+	dfa ~DatIte() {
+		tx->Del();
+	}
+};
+
 tpl1 class Arr {
 private:
 	Ptr<T1> m_ptr;
@@ -11,18 +98,30 @@ private:
 		m_cap = 0;
 	}
 public:
-	dfa NT __SetPtr(T1* ptr) {
-		m_ptr.Val(ptr);
+	dfa NT __Drop() {
+		m_ptr.Set(NUL);
 	}
-	dfa NT __NoCap() {
+	dfa NT __Set(T1* ptr) {
+		m_ptr.Set(ptr);
+	}
+	dfa NT __CapMax() {
 		m_cap = SI_VAL_MAX;
 	}
-	dfa NT __DropPtr() {
-		m_ptr.Val(NUL);
-	}
 public:
+	dfa NT Del() {
+		ifu (m_ptr.Get() == NUL) ret;
+		m_ptr.Del();
+		m_cur = NUL;
+		m_cap = 0;
+	}
+	dfa NT New(SI cnt) {
+		ifu (m_ptr.Get() != NUL) tx->Del();
+		m_ptr.New(cnt);
+		m_cur = m_ptr.Get();
+		m_cap = cnt;
+	}
 	dfa T1* Ptr() const {
-		ret m_ptr.Val();
+		ret m_ptr.Get();
 	}
 	dfa T1* Cur() const {
 		ret m_cur;
@@ -31,16 +130,7 @@ public:
 		ret m_cap;
 	}
 	dfa SI Pos() const {
-		ret m_cur - m_ptr.Val();
-	}
-	dfa NT CurMove(SI cnt) {
-		m_cur += cnt;
-	}
-	dfa NT CurSet(SI pos) {
-		m_cur = m_ptr.Val() + pos;
-	}
-	dfa NT CurRewind() {
-		tx->CurSet(0);
+		ret m_cur - m_ptr.Get();
 	}
 	dfa NT Read(T1& dat) {
 		Assert(tx->Pos() < m_cap);
@@ -49,42 +139,39 @@ public:
 	}
 	dfa NT Read(T1* dat, SI cnt) {
 		Assert(tx->Pos() + cnt <= m_cap);
-		MemCpy(dat, m_cur, cnt * siz(T1));
+		MemSet(dat, m_cur, cnt * siz(T1));
 		m_cur += cnt;
 	}
-	dfa NT Add(cx T1& dat) {
+	dfa NT Write(cx T1& dat) {
 		Assert(tx->Pos() < m_cap);
 		*m_cur = dat;
 		++m_cur;
 	}
-	dfa NT Add(cx T1* dat, SI cnt) {
+	dfa NT Write(cx T1* dat, SI cnt) {
 		Assert(tx->Pos() + cnt <= m_cap);
-		MemCpy(m_cur, dat, cnt * siz(T1));
+		MemSet(m_cur, dat, cnt * siz(T1));
 		m_cur += cnt;
 	}
+	dfa NT CurMove(SI cnt) {
+		m_cur += cnt;
+	}
+	dfa NT CurSet(SI pos) {
+		m_cur = tx->Ptr() + pos;
+	}
+	dfa NT CurClr() {
+		tx->CurSet(0);
+	}
 	dfa NT Set(cx T1& dat) {
-		tx->CurRewind();
-		tx->Add(dat);
+		tx->CurClr();
+		tx->Write(dat);
 	}
 	dfa NT Set(cx T1* dat, SI cnt) {
-		tx->CurRewind();
-		tx->Add(dat, cnt);
-	}
-	dfa NT Dealloc() {
-		ifu (m_ptr.Val() == NUL) ret;
-		m_ptr.Dealloc();
-		m_cur = NUL;
-		m_cap = 0;
-	}
-	dfa NT Alloc(SI cnt) {
-		ifu (m_ptr.Val() != NUL) tx->Dealloc();
-		m_ptr.Alloc(cnt);
-		m_cur = m_ptr.Val();
-		m_cap = cnt;
+		tx->CurClr();
+		tx->Write(dat, cnt);
 	}
 	dfa NT Resize(SI cntAlloc, SI cntCpy) {
-		cx SI pos = tx->Pos();
-		ifu (m_ptr.Val() == NUL) m_ptr.Alloc(cntAlloc);
+		cx AU pos = tx->Pos();
+		ifu (m_ptr.Get() == NUL) m_ptr.New(cntAlloc);
 		else m_ptr.Resize(cntAlloc, cntCpy);
 		tx->CurSet(Min<SI>(pos, cntAlloc));
 		m_cap = cntAlloc;
@@ -99,7 +186,7 @@ public:
 		tx->Req(cntReq, cntReq, tx->Pos());
 	}
 public:
-	dfa T1& operator [] (SI i) {
+	dfa T1& operator [] (SI i) const {
 		Assert(i < m_cap);
 		ret m_ptr[i];
 	}
@@ -107,80 +194,11 @@ public:
 	dfa Arr() {
 		tx->Init();
 	}
-	dfa Arr(SI cap) {
+	dfa Arr(SI cnt) {
 		tx->Init();
-		tx->Alloc(cap);
+		tx->New(cnt);
 	}
 	dfa ~Arr() {
-		tx->Dealloc();
-	}
-};
-
-tpl<typename T1, SI cap_> class SArr {
-private:
-	T1 m_ptr[cap_];
-	T1* m_cur;
-private:
-	dfa NT Init() {
-		m_cur = m_ptr;
-	}
-public:
-	dfa T1* Ptr() const {
-		ret m_ptr;
-	}
-	dfa T1* Cur() const {
-		ret m_cur;
-	}
-	dfa SI Cap() const {
-		ret cap_;
-	}
-	dfa SI Pos() const {
-		ret m_cur - m_ptr;
-	}
-	dfa NT CurMove(SI cnt) {
-		m_cur += cnt;
-	}
-	dfa NT CurSet(SI pos) {
-		m_cur = m_ptr + pos;
-	}
-	dfa NT CurRewind() {
-		tx->CurSet(0);
-	}
-	dfa NT Read(T1& dat) {
-		Assert(tx->Pos() < cap_);
-		dat = *m_cur;
-		++m_cur;
-	}
-	dfa NT Read(T1* dat, SI cnt) {
-		Assert(tx->Pos() + cnt <= cap_);
-		MemCpy(dat, m_cur, cnt * siz(T1));
-		m_cur += cnt;
-	}
-	dfa NT Add(cx T1& dat) {
-		Assert(tx->Pos() < cap_);
-		*m_cur = dat;
-		++m_cur;
-	}
-	dfa NT Add(cx T1* dat, SI cnt) {
-		Assert(tx->Pos() + cnt <= cap_);
-		MemCpy(m_cur, dat, cnt * siz(T1));
-		m_cur += cnt;
-	}
-	dfa NT Set(cx T1& dat) {
-		tx->CurRewind();
-		tx->Add(dat);
-	}
-	dfa NT Set(cx T1* dat, SI cnt) {
-		tx->CurRewind();
-		tx->Add(dat, cnt);
-	}
-public:
-	dfa T1& operator [] (SI i) {
-		Assert(i < cap_);
-		ret m_ptr[i];
-	}
-public:
-	dfa SArr() {
-		tx->Init();
+		tx->Del();
 	}
 };

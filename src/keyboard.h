@@ -239,7 +239,7 @@ dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp) {
 	keybKey.codeVk = codeVk;
 	keybKey.codeScan = codeScan;
 	keybKey.isDown = isDown;
-	MemCpy(keybKey.str, buf, (bufSize + 1) * siz(buf[0]));
+	MemSet(keybKey.str, buf, (bufSize + 1) * siz(buf[0]));
 	g_keybKeyEvtQueueLock.Lock();
 	g_keybKeyEvtQueue.Add(keybKey);
 	g_keybKeyEvtQueueLock.Unlock();
@@ -255,7 +255,7 @@ dfa DWORD WINAPI _KeybHookThd(LPVOID code) {
 	}
 	*reinterpret_cast<U1*>(code) = KEYB_HOOK_THD_CODE_ERR_NO;
 	ite (i, i < KEYB_KEY_CNT) {
-		g_keybKeyState[i] = U1(GetKeyState(i) & 0xFF);
+		g_keybKeyState[i] = U1(GetKeyState(int(i)) & 0xFF);
 	}
 	g_keybHookThdDelay = 0;
 	MSG msg;

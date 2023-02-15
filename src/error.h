@@ -5,11 +5,12 @@ using ErrVal = U4;
 enum : ErrVal {
 	ERR_NONE = 0,
 	//
+	ERR_MEM,
 	ERR_TIME,
 	ERR_PROC,
 	ERR_THD,
 	ERR_EVT,
-	ERR_DRIVE,
+	ERR_DRV,
 	ERR_FILE,
 	ERR_DIR,
 	ERR_PIPE,
@@ -22,17 +23,17 @@ enum : ErrVal {
 	ERR_CON,
 	ERR_REG,
 	//
-	ERR_MEM_ALLOC,
+	ERR_MEM_NEW,
 	ERR_TIME_RES,
 	//
-	ERR_NO_INIT,
-	ERR_NO_VALID,
 	ERR_NO_SUPPORT,
-	ERR_NO_FULL,
+	ERR_NO_VALID,
 	ERR_NO_EXIST,
+	ERR_NO_INIT,
+	ERR_NO_FULL,
 	//
-	ERR_YES_INIT,
 	ERR_YES_EXIST,
+	ERR_YES_INIT,
 	ERR_YES_ACTIVE,
 	//
 	ERR_LOW_SIZE,
@@ -41,14 +42,14 @@ enum : ErrVal {
 	ERR_HIGH_SIZE,
 	ERR_HIGH_WAIT,
 	//
-	ERR_UNKNOWN,
+	ERR_NA,
 };
 
 thdlocal ErrVal g_errLastVal = ERR_NONE;
 
-dfa NT ErrLastValSet(ErrVal val) {
+dfa NT ErrLastSet(ErrVal val) {
 	g_errLastVal = val;
 }
-dfa ErrVal ErrLastValGet() {
+dfa ErrVal ErrLastGet() {
 	ret g_errLastVal;
 }

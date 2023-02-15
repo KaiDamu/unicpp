@@ -39,7 +39,7 @@ struct VfsEntry {
 		0 = none
 	U4 encrypt
 		0 = none
-		1 = ObfuscateByte
+		1 = ByteObfuscate
 	U4 entryCnt
 	U8 datSize
 {VfsEntry}
@@ -76,7 +76,7 @@ public:
 			ret YES;
 		}, 0, &entryList, NUL)) retep;
 		// Get entry count
-		cx U4 entryCnt = entryList.Len();
+		cx U4 entryCnt = U4(entryList.Len());
 		// Get data size
 		U8 datSize = 0;
 		for (Entry* entry = entryList.GetFirst(); entry != NUL; entry = entryList.GetNext()) {
@@ -95,7 +95,7 @@ public:
 		ife (fileDst.Write(&datSize, siz(U8))) retep; // datSize
 		// Get path offset
 		CH src_[PATH_LEN_MAX];
-		StrCpy(src_, src);
+		StrSet(src_, src);
 		PathToAbsByWorkPath(src_);
 		cx SI pathOfs = StrLen(src_) + 1; // +1 for PATH_DIR_SEPARATOR
 		// Write entries
@@ -105,17 +105,17 @@ public:
 			ife (fileDst.Write("\x00\x00\x00\x00", siz(U4))) retep; // flags
 			ife (fileDst.Write(&entry->info.attrib, siz(U4))) retep; // attrib
 			ife (fileDst.Write(&entry->info.datSize, siz(U8))) retep; // datSize
-			datOfsList.Add(fileDst.CurPos());
+			datOfsList.Write(fileDst.CurPos());
 			ife (fileDst.Write("\x00\x00\x00\x00\x00\x00\x00\x00", siz(U8))) retep; // datOfs
 			CH path[PATH_LEN_MAX];
-			StrCpy(path, entry->path.Val() + pathOfs);
+			StrSet(path, entry->path.Get() + pathOfs);
 			cx U8 pathLen = entry->path.Len() + 1 - pathOfs;
 			MemObfuscate(path, path, pathLen * siz(CH));
 			ife (fileDst.Write(&pathLen, siz(U8))) retep; // pathLen
 			ife (fileDst.Write(path, pathLen * siz(CH))) retep; // path
 		}
 		// Write data
-		datOfsList.CurRewind();
+		datOfsList.CurClr();
 		FileMem fileSrc;
 		for (Entry* entry = entryList.GetFirst(); entry != NUL; entry = entryList.GetNext()) {
 			// Update data offset
@@ -128,7 +128,7 @@ public:
 			// Skip directory
 			if (entry->info.attrib & FILE_ATTRIB_DIR) continue;
 			// Open file
-			ife (fileSrc.OpenRead(entry->path.Val())) retep;
+			ife (fileSrc.OpenRead(entry->path.Get())) retep;
 			// Compress
 			if (compress == VFS_COMPRESS_NONE);
 			else rete(ERR_NO_SUPPORT);
@@ -149,7 +149,7 @@ public:
 	dfa ER Close() {
 		ife (m_file.Close()) retep;
 		m_fileList.Free();
-		MemSet(&m_hdr, 0, siz(m_hdr));
+		MemSet(&m_hdr, U1(0), siz(m_hdr));
 		rets;
 	}
 	dfa ER Open(cx CH* path) {
@@ -200,7 +200,7 @@ public:
 		cx VfsEntry* entry = m_fileList[path];
 		ifu (entry == NUL) rete(ERR_NO_EXIST);
 		ife (m_file.CurSet(entry->datOfs)) retep;
-		buf.Alloc(entry->datSize);
+		buf.New(entry->datSize);
 		if (entry->attrib & FILE_ATTRIB_DIR) rets;
 		ife (m_file.Read(buf.Ptr(), entry->datSize)) retep;
 		if (m_hdr.encrypt == VFS_ENCRYPT_OBFUSCATE) MemUnobfuscate(buf.Ptr(), buf.Ptr(), entry->datSize);

@@ -4,7 +4,7 @@ dfa HD WinCurHdlGet() {
 	ret HD(GetForegroundWindow());
 }
 dfa SI WinCurTitleStrGet(CH* str, SI strLenMax) {
-	cx SI strLen = GetWindowTextW(HWND(WinCurHdlGet()), str, strLenMax);
+	cx SI strLen = GetWindowTextW(HWND(WinCurHdlGet()), str, int(strLenMax));
 	ret strLen;
 }
 dfa ER WinCurTitleStrSet(cx CH* str) {
@@ -12,7 +12,7 @@ dfa ER WinCurTitleStrSet(cx CH* str) {
 	rets;
 }
 dfa SI WinCurClassStrGet(CH* str, SI strLenMax) {
-	cx SI strLen = GetClassNameW(HWND(WinCurHdlGet()), str, strLenMax);
+	cx SI strLen = GetClassNameW(HWND(WinCurHdlGet()), str, int(strLenMax));
 	ret strLen;
 }
 dfa BO WinIsValid(HD hdl) {

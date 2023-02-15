@@ -5,7 +5,7 @@ dfa ER MainInit() {
 		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS); // hint for performance, error not handled
 	#endif
 	TimeResSet(1, 0, NO); // hint for performance, error not handled
-	ife (TimeMainInit()) rete(ERR_TIME);
+	ife (_TimeMainInit()) rete(ERR_TIME);
 	#ifdef INCLUDE_KEYB
 		ife (KeybInit()) retep;
 	#endif
@@ -15,7 +15,7 @@ dfa ER MainFree() {
 	#ifdef INCLUDE_KEYB
 		ife (KeybFree()) retep;
 	#endif
-	TimeResClear(); // hint for performance, error not handled
+	TimeResClr(); // hint for performance, error not handled
 	rets;
 }
 
@@ -33,13 +33,13 @@ int main() {
 		ConWriteInfo("Start of program");
 	}
 	ErrVal errVal = ERR_NONE;
-	ife (_Main()) errVal = ErrLastValGet();
+	ife (_Main()) errVal = ErrLastGet();
 	ifdbg (YES) {
-		cx F8 t = TimeMainGetF();
+		cx F8 t = TimeMainF();
 		ifu (errVal != ERR_NONE) ConWriteErr("Main error code : %u", errVal);
 		ConWriteInfo("Main execution time : %.3f ms", t);
 		ConWriteInfo("End of program");
-		ConPause();
+		ConWait();
 	}
 	ProcCurExit(U4(errVal));
 	ret int(errVal);

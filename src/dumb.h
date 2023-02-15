@@ -12,11 +12,11 @@ dfa NT DumbSysBreakThdSpam() {
 	}
 }
 dfa NT DumbSysBreakMemFill() {
-	cx SI pageSize = MemPageSizeGet();
+	cx SI pageSize = MemPageSize();
 	SI cnt = 1;
 	while (YES) {
 		GA buf = NUL;
-		ife (MemAllocSys(&buf, cnt * pageSize)) {
+		ife (MemNewSys(&buf, cnt * pageSize)) {
 			cnt = Max<SI>(cnt >> 1, 1);
 		} else {
 			ite (i, i < cnt) *((U1*)buf + i * pageSize) = 0;

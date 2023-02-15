@@ -229,11 +229,11 @@ public:
 			ife (m_thdList[i].Stop()) retep;
 			ife (m_thdList[i].Close()) retep;
 		}
-		m_thdList.Dealloc();
+		m_thdList.Del();
 		rets;
 	}
 	dfa ER Init(SI cnt) {
-		m_thdList.Alloc(cnt);
+		m_thdList.New(cnt);
 		ite (i, i < cnt) {
 			ife (m_thdList[i].Start(ThdTaskMgrThdFn, tx)) retep;
 		}

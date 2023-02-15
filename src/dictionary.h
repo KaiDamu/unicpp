@@ -226,7 +226,7 @@ public:
 		ret YES;
 	}
 	dfa BO Add(cx Keyval<T1, T2>& keyval) {
-		ret tx->Add(keyval.KeyCx(), keyval.ValCx());
+		ret tx->Add(keyval.key, keyval.val);
 	}
 	dfa BO Replace(cx T1& key, cx T2& val) {
 		DictAvlElem* parent = NUL;
@@ -245,7 +245,7 @@ public:
 		ret NO;
 	}
 	dfa BO Replace(cx Keyval<T1, T2>& keyval) {
-		ret tx->Replace(keyval.KeyCx(), keyval.ValCx());
+		ret tx->Replace(keyval.key, keyval.val);
 	}
 	dfa BO Del(cx T1& key) {
 		DictAvlElem* elem = tx->Srch(key);
@@ -307,7 +307,7 @@ public:
 		SI hdrLen = 0;
 		while (file.ReadLine(line)) {
 			buf.Req(line.Len() + 1);
-			MemCpy(buf.Ptr(), line.Val(), (line.Len() + 1) * siz(CS));
+			MemSet(buf.Ptr(), line.Get(), (line.Len() + 1) * siz(CS));
 			CS* p = (CS*)StrFind(buf.Ptr(), '=');
 			if (p == NUL) {
 				p = (CS*)StrFind(buf.Ptr(), '[');
@@ -318,7 +318,7 @@ public:
 				*p2 = '\0';
 				hdrLen = StrTrimWspace(p);
 				hdr.Req(hdrLen + 1);
-				MemCpy(hdr.Ptr(), p, (hdrLen + 1) * siz(CS));
+				MemSet(hdr.Ptr(), p, (hdrLen + 1) * siz(CS));
 			} else {
 				*p = '\0';
 				CS* var = buf.Ptr();
@@ -330,9 +330,9 @@ public:
 					tx->Set(var, val);
 				} else {
 					buf2.Req(hdrLen + 1 + varLen + 1);
-					MemCpy(buf2.Ptr(), hdr.Ptr(), hdrLen * siz(CS));
+					MemSet(buf2.Ptr(), hdr.Ptr(), hdrLen * siz(CS));
 					buf2[hdrLen] = '.';
-					MemCpy(buf2.Ptr() + hdrLen + 1, var, (varLen + 1) * siz(CS));
+					MemSet(buf2.Ptr() + hdrLen + 1, var, (varLen + 1) * siz(CS));
 					tx->Set(buf2.Ptr(), val);
 				}
 			}

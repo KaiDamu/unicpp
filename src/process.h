@@ -1,6 +1,6 @@
 #pragma once
 
-dfa HANDLE ProcCurNtHdlGet() {
+dfa HANDLE _ProcHdlGetNt() {
 	ret reinterpret_cast<HANDLE>(-1);
 }
 dfa NT ProcCurCrash() {
@@ -13,7 +13,7 @@ dfa NT ProcCurExit(U4 retVal) {
 	ProcCurCrash();
 }
 dfa NT ProcCurExit() {
-	ProcCurExit(U4(ErrLastValGet()));
+	ProcCurExit(U4(ErrLastGet()));
 }
 dfa BO ProcCurIsElevated() {
 	SID_IDENTIFIER_AUTHORITY sia = {SECURITY_NT_AUTHORITY};
@@ -32,7 +32,7 @@ dfa SI ProcCurFilePathGet(CH* path) {
 }
 dfa SI ProcCurEnvvarGet(CH* val, cx CH* envvar, SI valLenMax) {
 	ifl (valLenMax > 0) val[0] = '\0';
-	cx SI r = GetEnvironmentVariableW(envvar, val, valLenMax);
+	cx SI r = GetEnvironmentVariableW(envvar, val, DWORD(valLenMax));
 	ifu (r >= valLenMax && valLenMax > 0) val[0] = '\0';
 	ret r;
 }
@@ -83,7 +83,7 @@ public:
 		if (tx->IsActive()) rete(ERR_YES_ACTIVE);
 		ifu (m_info.hThread != NUL && CloseHandle(m_info.hThread) == 0) rete(ERR_THD);
 		ifu (m_info.hProcess != NUL && CloseHandle(m_info.hProcess) == 0) rete(ERR_PROC);
-		MemSet(&m_info, 0, siz(m_info));
+		MemSet(&m_info, U1(0), siz(m_info));
 		m_args = L"";
 		rets;
 	}
@@ -102,12 +102,12 @@ public:
 			m_args += L" ";
 			m_args += args;
 		}
-		STARTUPINFOW tmp;
-		MemSet(&tmp, 0, siz(tmp));
+		STARTUPINFOW tmp = {};
+		MemSet(&tmp, U1(0), siz(tmp));
 		tmp.cb = siz(tmp);
-		cx BOOL result = CreateProcessW(path, const_cast<CH*>(m_args.Val()), NUL, NUL, NO, 0, NUL, workPath, &tmp, &m_info);
+		cx BOOL result = CreateProcessW(path, const_cast<CH*>(m_args.Get()), NUL, NUL, NO, 0, NUL, workPath, &tmp, &m_info);
 		ifu (result == 0) {
-			MemSet(&m_info, 0, siz(m_info));
+			MemSet(&m_info, U1(0), siz(m_info));
 			m_args = L"";
 			rete(ERR_PROC);
 		}
@@ -118,8 +118,8 @@ public:
 		ifu (tx->IsActive()) rete(ERR_YES_ACTIVE);
 		ife (tx->Close()) retep;
 		m_args = args;
-		SHELLEXECUTEINFOW sei;
-		MemSet(&sei, 0, siz(sei));
+		SHELLEXECUTEINFOW sei = {};
+		MemSet(&sei, U1(0), siz(sei));
 		sei.cbSize = siz(sei);
 		sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
 		sei.lpVerb = L"runas";
@@ -131,7 +131,7 @@ public:
 			m_args = L"";
 			rete(ERR_PROC);
 		}
-		MemSet(&m_info, 0, siz(m_info));
+		MemSet(&m_info, U1(0), siz(m_info));
 		m_info.hProcess = sei.hProcess;
 		rets;
 	}
@@ -143,7 +143,7 @@ public:
 	}
 public:
 	dfa Proc() {
-		MemSet(&m_info, 0, siz(m_info));
+		MemSet(&m_info, U1(0), siz(m_info));
 	}
 	dfa ~Proc() {
 		tx->Stop();
@@ -154,7 +154,7 @@ public:
 dfa ER ProcCurRestartElevated() {
 	if (ProcCurIsElevated()) rets;
 	Proc proc;
-	ife (proc.StartElevated(ProcCurFilePathGet(), StrSkipArg(ProcCurArgFullGet()), ProcCurWorkPathGet())) retep;
+	ife (proc.StartElevated(ProcCurFilePathGet(), StrArgSkip(ProcCurArgFullGet()), ProcCurWorkPathGet())) retep;
 	proc.__Drop();
 	ProcCurExit(0);
 	rets;
@@ -209,7 +209,7 @@ public:
 			m_hdl = NUL;
 			rete(ERR_YES_EXIST);
 		}
-		MemCpy(m_str, str, (strLen + 1) * siz(str[0]));
+		MemSet(m_str, str, (strLen + 1) * siz(str[0]));
 		rets;
 	}
 	dfa ER WaitIsClose(cx CH* str) const {

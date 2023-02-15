@@ -56,7 +56,7 @@ dfa ER PathEnvRelToAbs(CH* out, cx CH* in) {
 	cx SI size = GetEnvironmentVariableW(L"PATH", NUL, 0);
 	ifu (size == 0) rete(ERR_ENV);
 	Arr<CH> buf(size);
-	SI size2 = GetEnvironmentVariableW(L"PATH", buf.Ptr(), size);
+	SI size2 = GetEnvironmentVariableW(L"PATH", buf.Ptr(), DWORD(size));
 	if (size2 + 1 == size) ++size2; // weird Windows fix
 	ifu (size != size2) rete(ERR_ENV);
 	buf[size - 1] = ';';
@@ -77,9 +77,9 @@ dfa ER PathEnvRelToAbs(CH* out, cx CH* in) {
 				str[strLen - 1] = '\\';
 				str[strLen] = '\0';
 			}
-			StrCpy(str + strLen, in);
+			StrSet(str + strLen, in);
 			if (PathIsExist(str)) {
-				MemCpy(out, str, (strLen + StrLen(in) + 1) * siz(CH));
+				MemSet(out, str, (strLen + StrLen(in) + 1) * siz(CH));
 				rets;
 			}
 			strLen = 0;
@@ -102,7 +102,7 @@ dfa cx CH* ProcCurFilePathGet() {
 dfa cx CH* ProcCurDirPathGet() {
 	static CH s_cache[PATH_LEN_MAX] = {};
 	ifu (s_cache[0] == '\0') {
-		StrCpy(s_cache, ProcCurFilePathGet());
+		StrSet(s_cache, ProcCurFilePathGet());
 		PathDirUp(s_cache);
 	}
 	ret s_cache;
@@ -129,7 +129,7 @@ dfa BO PathToAbsByDirPath(CH* path) {
 		--i;
 	}
 	path[dirPathLen] = PATH_DIR_SEPARATOR;
-	MemCpy(path, ProcCurDirPathGet(), dirPathLen * siz(CH));
+	MemSet(path, ProcCurDirPathGet(), dirPathLen * siz(CH));
 	ret YES;
 }
 dfa BO PathToAbsByWorkPath(CH* path) {
@@ -142,7 +142,7 @@ dfa BO PathToAbsByWorkPath(CH* path) {
 		--i;
 	}
 	path[workPathLen] = PATH_DIR_SEPARATOR;
-	MemCpy(path, ProcCurWorkPathGet(), workPathLen * siz(CH));
+	MemSet(path, ProcCurWorkPathGet(), workPathLen * siz(CH));
 	ret YES;
 }
 
@@ -156,8 +156,8 @@ dfa BO PathToNtpathByDirPath(CH* path) {
 		--i;
 	}
 	path[dirPathLen + NTPATH_PRE_STR_LEN] = PATH_DIR_SEPARATOR;
-	MemCpy(path + NTPATH_PRE_STR_LEN, ProcCurDirPathGet(), dirPathLen * siz(CH));
-	MemCpy(path, NTPATH_PRE_STR, NTPATH_PRE_STR_LEN * siz(CH));
+	MemSet(path + NTPATH_PRE_STR_LEN, ProcCurDirPathGet(), dirPathLen * siz(CH));
+	MemSet(path, NTPATH_PRE_STR, NTPATH_PRE_STR_LEN * siz(CH));
 	ret YES;
 }
 
@@ -206,6 +206,6 @@ dfa SI PathEnvvarResolve(CH* path) {
 	ret p - path;
 }
 dfa SI PathEnvvarResolve(CH* dst, cx CH* src) {
-	StrCpy(dst, src);
+	StrSet(dst, src);
 	ret PathEnvvarResolve(dst);
 }

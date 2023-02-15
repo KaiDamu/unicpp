@@ -15,6 +15,8 @@ constexpr SI BYTE_IN_TB = BYTE_IN_GB * 1024;
 
 constexpr SI SEC_IN_HOUR = 3600;
 
+constexpr CS CS_VAL_MAX = 0x7F;
+
 #ifdef PROG_ADR_SIZE_4
 	constexpr SI SI_VAL_MAX = 0x7FFFFFFF;
 #endif

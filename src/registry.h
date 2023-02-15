@@ -59,7 +59,7 @@ dfa ER RegDirMove(cx CH* dst, cx CH* src) {
 
 dfa ER RegValSetStr(cx CH* path, cx CH* val) {
 	CH path_[PATH_LEN_MAX];
-	StrCpy(path_, path);
+	StrSet(path_, path);
 	CH* name = (CH*)StrFindLast(path_, L'\\');
 	ifu (name == NUL) rete(ERR_REG);
 	*name++ = '\0';
@@ -68,13 +68,13 @@ dfa ER RegValSetStr(cx CH* path, cx CH* val) {
 	ifu (subKey == NUL) rete(ERR_REG);
 	HKEY subKeyHdl;
 	ifu (RegOpenKeyExW(key, subKey, 0, KEY_WRITE, &subKeyHdl) != ERROR_SUCCESS) rete(ERR_REG);
-	ifu (RegSetValueExW(subKeyHdl, name, 0, REG_SZ, (BYTE*)val, (StrLen(val) + 1) * siz(val[0])) != ERROR_SUCCESS) rete(ERR_REG);
+	ifu (RegSetValueExW(subKeyHdl, name, 0, REG_SZ, (BYTE*)val, DWORD((StrLen(val) + 1) * siz(val[0]))) != ERROR_SUCCESS) rete(ERR_REG);
 	ifu (RegCloseKey(subKeyHdl) != ERROR_SUCCESS) rete(ERR_REG);
 	rets;
 }
 dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax) {
 	CH path_[PATH_LEN_MAX];
-	StrCpy(path_, path);
+	StrSet(path_, path);
 	CH* name = (CH*)StrFindLast(path_, L'\\');
 	ifu (name == NUL) ret -1;
 	*name++ = '\0';
@@ -84,7 +84,7 @@ dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax) {
 	HKEY subKeyHdl;
 	ifu (RegOpenKeyExW(key, subKey, 0, KEY_READ, &subKeyHdl) != ERROR_SUCCESS) ret -1;
 	DWORD type;
-	DWORD valLen = valLenMax * siz(val[0]);
+	DWORD valLen = DWORD(valLenMax * siz(val[0]));
 	ifu (RegQueryValueExW(subKeyHdl, name, NUL, &type, (BYTE*)val, &valLen) != ERROR_SUCCESS) ret -1;
 	ifu (RegCloseKey(subKeyHdl) != ERROR_SUCCESS) ret -1;
 	ifu (type != REG_SZ) ret -1;
@@ -92,7 +92,7 @@ dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax) {
 }
 dfa ER RegValSetU4(cx CH* path, U4 val) {
 	CH path_[PATH_LEN_MAX];
-	StrCpy(path_, path);
+	StrSet(path_, path);
 	CH* name = (CH*)StrFindLast(path_, L'\\');
 	ifu (name == NUL) rete(ERR_REG);
 	*name++ = '\0';
@@ -107,7 +107,7 @@ dfa ER RegValSetU4(cx CH* path, U4 val) {
 }
 dfa SI RegValGetU4(cx CH* path, U4& val) {
 	CH path_[PATH_LEN_MAX];
-	StrCpy(path_, path);
+	StrSet(path_, path);
 	CH* name = (CH*)StrFindLast(path_, L'\\');
 	ifu (name == NUL) ret -1;
 	*name++ = '\0';
@@ -133,26 +133,26 @@ dfa ER RegValDel(cx CH* path) {
 
 dfa ER RegSetExtOpenPath(cx CH* ext, cx CH* prog, cx CH* extName) {
 	CH name[PATH_LEN_MAX];
-	StrCpy(name, L"def.");
+	StrSet(name, L"def.");
 	StrAdd(name, ext);
 	CH path[PATH_LEN_MAX];
-	StrCpy(path, L"HKEY_CLASSES_ROOT\\.");
+	StrSet(path, L"HKEY_CLASSES_ROOT\\.");
 	StrAdd(path, ext);
 	ife (RegDirCreate(path)) retep;
 	StrAdd(path, L"\\");
 	ife (RegValSetStr(path, name)) retep;
-	StrCpy(path, L"HKEY_CLASSES_ROOT\\");
+	StrSet(path, L"HKEY_CLASSES_ROOT\\");
 	StrAdd(path, name);
 	ife (RegDirCreate(path)) retep;
 	StrAdd(path, L"\\");
 	ife (RegValSetStr(path, extName)) retep;
-	StrCpy(path, L"HKEY_CLASSES_ROOT\\");
+	StrSet(path, L"HKEY_CLASSES_ROOT\\");
 	StrAdd(path, name);
 	StrAdd(path, L"\\shell\\open\\command");
 	ife (RegDirCreate(path)) retep;
 	StrAdd(path, L"\\");
 	CH cmd[PATH_LEN_MAX + 10];
-	StrCpy(cmd, L"\"");
+	StrSet(cmd, L"\"");
 	StrAdd(cmd, prog);
 	StrAdd(cmd, L"\" \"%1\"");
 	ife (RegValSetStr(path, cmd)) retep;

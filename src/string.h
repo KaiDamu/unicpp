@@ -6,14 +6,14 @@ dfa SI StrLen(cx CS* str) {
 dfa SI StrLen(cx CH* str) {
 	ret wcslen(str);
 }
-dfa NT StrCpy(CS* dst, cx CS* src) {
+dfa NT StrSet(CS* dst, cx CS* src) {
 	#ifdef PROG_COMPILER_GCC
 		__builtin_strcpy(dst, src);
 	#else
 		strcpy(dst, src);
 	#endif
 }
-dfa NT StrCpy(CH* dst, cx CH* src) {
+dfa NT StrSet(CH* dst, cx CH* src) {
 	wcscpy(dst, src);
 }
 dfa NT StrAdd(CS* dst, cx CS* src) {
@@ -59,13 +59,13 @@ dfa cx CH* StrFind(cx CH* main, cx CH* sub) {
 
 tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right) {
 	cx SI leftLen = StrLen(left);
-	MemCpy(dst, left, leftLen * siz(T1));
+	MemSet(dst, left, leftLen * siz(T1));
 	dst += leftLen;
 	cx SI srcLen = StrLen(src);
-	MemCpy(dst, src, srcLen * siz(T1));
+	MemSet(dst, src, srcLen * siz(T1));
 	dst += srcLen;
 	cx SI rightLen = StrLen(right);
-	MemCpy(dst, right, rightLen * siz(T1));
+	MemSet(dst, right, rightLen * siz(T1));
 	dst += rightLen;
 	*dst = '\0';
 	ret leftLen + srcLen + rightLen;
@@ -83,37 +83,14 @@ tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len) {
 		*(dstP + strLen) = *dstP;
 		--dstP;
 	}
-	MemCpy(dst + i - len, str, (strLen + len) * siz(T1));
+	MemSet(dst + i - len, str, (strLen + len) * siz(T1));
 	ret dstLen + strLen;
 }
 tpl1 dfa SI StrInsert(T1* dst, cx T1* str, SI i) {
 	ret StrReplace(dst, str, i, 0);
 }
-tpl1 dfa cx T1* StrFind(cx T1* main, T1 c) {
-	cx T1* p = main;
-	while (*p != '\0') {
-		if (*p == c) ret p;
-		++p;
-	}
-	ret NUL;
-}
-tpl1 dfa cx T1* StrFindLast(cx T1* main, T1 c) {
-	cx T1* p = main + StrLen(main) - 1;
-	while (p >= main) {
-		if (*p == c) ret p;
-		--p;
-	}
-	ret NUL;
-}
-tpl1 dfa SI StrFindI(cx T1* main, T1 c) {
-	cx T1*cx p = StrFind(main, c);
-	ret (p == NUL) ? -1 : p - main;
-}
-tpl1 dfa SI StrFindI(cx T1* main, cx T1* sub) {
-	cx T1*cx p = StrFind(main, sub);
-	ret (p == NUL) ? -1 : p - main;
-}
-tpl1 dfa NT StrSubChar(T1* dst, cx T1* charList) {
+tpl1 dfa SI StrSubChar(T1* dst, cx T1* charList) {
+	cx T1*cx dstBase = dst;
 	cx SI charListLen = StrLen(charList);
 	cx T1* src = dst;
 	while (*src != '\0') {
@@ -132,6 +109,7 @@ tpl1 dfa NT StrSubChar(T1* dst, cx T1* charList) {
 		}
 	}
 	*dst = '\0';
+	ret dst - dstBase;
 }
 tpl1 dfa SI StrTrimWspace(T1* dst) {
 	cx T1* src = dst;
@@ -146,7 +124,31 @@ tpl1 dfa SI StrTrimWspace(T1* dst) {
 	*dstP = '\0';
 	ret dstP - dst;
 }
-tpl1 dfa cx T1* StrSkipArg(cx T1* str) {
+tpl1 dfa cx T1* StrFind(cx T1* main, cx T1& c) {
+	cx T1* p = main;
+	while (*p != '\0') {
+		if (*p == c) ret p;
+		++p;
+	}
+	ret NUL;
+}
+tpl1 dfa cx T1* StrFindLast(cx T1* main, cx T1& c) {
+	cx T1* p = main + StrLen(main) - 1;
+	while (p >= main) {
+		if (*p == c) ret p;
+		--p;
+	}
+	ret NUL;
+}
+tpl1 dfa SI StrFindI(cx T1* main, cx T1& c) {
+	cx T1*cx p = StrFind(main, c);
+	ret (p == NUL) ? -1 : p - main;
+}
+tpl1 dfa SI StrFindI(cx T1* main, cx T1* sub) {
+	cx T1*cx p = StrFind(main, sub);
+	ret (p == NUL) ? -1 : p - main;
+}
+tpl1 dfa cx T1* StrArgSkip(cx T1* str) {
 	cx T1* p = str;
 	if (*p == '\"') {
 		++p;
@@ -167,59 +169,59 @@ private:
 	Arr<T1> m_str;
 private:
 	dfa NT Init() {
-		m_str.Alloc(STR_INIT_ALLOC_CNT);
+		m_str.New(STR_INIT_ALLOC_CNT);
 		m_str.Set('\0');
 	}
 public:
 	dfa SI Len() const {
 		ret m_str.Pos() - 1;
 	}
-	dfa cx T1* Val() const {
+	dfa cx T1* Get() const {
 		ret m_str.Ptr();
 	}
 public:
 	dfa NT Set(cx T1* str, SI strLen) {
 		m_str.Req(strLen + 1, strLen + 1, 0);
 		m_str.Set(str, strLen);
-		m_str.Add('\0');
+		m_str.Write('\0');
 	}
 	dfa NT Add(cx T1* str, SI strLen) {
 		cx SI fullLen = tx->Len() + strLen + 1;
 		m_str.Req(fullLen, SI(F8(fullLen) * STR_ADD_ALLOC_SCALE), m_str.Pos());
 		m_str.CurMove(-1);
-		m_str.Add(str, strLen);
-		m_str.Add('\0');
+		m_str.Write(str, strLen);
+		m_str.Write('\0');
 	}
 public:
 	dfa cx T1* operator = (cx T1* str) {
 		tx->Set(str, StrLen(str));
-		ret tx->Val();
+		ret tx->Get();
 	}
 	dfa cx T1* operator += (cx T1* str) {
 		tx->Add(str, StrLen(str));
-		ret tx->Val();
+		ret tx->Get();
 	}
-	dfa BO operator == (cx T1* str) const { ret (StrCmp(tx->Val(), str) == 0); }
-	dfa BO operator != (cx T1* str) const { ret (StrCmp(tx->Val(), str) != 0); }
-	dfa BO operator <  (cx T1* str) const { ret (StrCmp(tx->Val(), str) <  0); }
-	dfa BO operator >  (cx T1* str) const { ret (StrCmp(tx->Val(), str) >  0); }
-	dfa BO operator <= (cx T1* str) const { ret (StrCmp(tx->Val(), str) <= 0); }
-	dfa BO operator >= (cx T1* str) const { ret (StrCmp(tx->Val(), str) >= 0); }
+	dfa BO operator == (cx T1* str) const { ret (StrCmp(tx->Get(), str) == 0); }
+	dfa BO operator != (cx T1* str) const { ret (StrCmp(tx->Get(), str) != 0); }
+	dfa BO operator <  (cx T1* str) const { ret (StrCmp(tx->Get(), str) <  0); }
+	dfa BO operator >  (cx T1* str) const { ret (StrCmp(tx->Get(), str) >  0); }
+	dfa BO operator <= (cx T1* str) const { ret (StrCmp(tx->Get(), str) <= 0); }
+	dfa BO operator >= (cx T1* str) const { ret (StrCmp(tx->Get(), str) >= 0); }
 public:
 	dfa cx T1* operator = (cx StrBase& str) {
-		tx->Set(str.Val(), str.Len());
-		ret tx->Val();
+		tx->Set(str.Get(), str.Len());
+		ret tx->Get();
 	}
 	dfa cx T1* operator += (cx StrBase& str) {
-		tx->Add(str.Val(), str.Len());
-		ret tx->Val();
+		tx->Add(str.Get(), str.Len());
+		ret tx->Get();
 	}
-	dfa BO operator == (cx StrBase& str) const { ret ((tx->Len() == str.Len()) && (StrCmp(tx->Val(), str.Val()) == 0)); }
-	dfa BO operator != (cx StrBase& str) const { ret ((tx->Len() != str.Len()) || (StrCmp(tx->Val(), str.Val()) != 0)); }
-	dfa BO operator <  (cx StrBase& str) const { ret (StrCmp(tx->Val(), str.Val()) <  0); }
-	dfa BO operator >  (cx StrBase& str) const { ret (StrCmp(tx->Val(), str.Val()) >  0); }
-	dfa BO operator <= (cx StrBase& str) const { ret (StrCmp(tx->Val(), str.Val()) <= 0); }
-	dfa BO operator >= (cx StrBase& str) const { ret (StrCmp(tx->Val(), str.Val()) >= 0); }
+	dfa BO operator == (cx StrBase& str) const { ret ((tx->Len() == str.Len()) && (StrCmp(tx->Get(), str.Get()) == 0)); }
+	dfa BO operator != (cx StrBase& str) const { ret ((tx->Len() != str.Len()) || (StrCmp(tx->Get(), str.Get()) != 0)); }
+	dfa BO operator <  (cx StrBase& str) const { ret (StrCmp(tx->Get(), str.Get()) <  0); }
+	dfa BO operator >  (cx StrBase& str) const { ret (StrCmp(tx->Get(), str.Get()) >  0); }
+	dfa BO operator <= (cx StrBase& str) const { ret (StrCmp(tx->Get(), str.Get()) <= 0); }
+	dfa BO operator >= (cx StrBase& str) const { ret (StrCmp(tx->Get(), str.Get()) >= 0); }
 public:
 	dfa StrBase() {
 		tx->Init();

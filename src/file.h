@@ -25,14 +25,14 @@ public:
 	}
 	dfa ER CurMove(SI cnt) {
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
-		LARGE_INTEGER tmp;
+		LARGE_INTEGER tmp = {};
 		tmp.QuadPart = cnt;
 		if (SetFilePointerEx(m_hdl, tmp, NUL, FILE_CURRENT) == 0) rete(ERR_FILE);
 		rets;
 	}
 	dfa ER CurSet(SI pos) {
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
-		LARGE_INTEGER tmp;
+		LARGE_INTEGER tmp = {};
 		tmp.QuadPart = pos;
 		if (SetFilePointerEx(m_hdl, tmp, NUL, FILE_BEGIN) == 0) rete(ERR_FILE);
 		rets;
@@ -62,7 +62,7 @@ public:
 		result = 0;
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
 		DWORD tmp;
-		ifu (ReadFile(m_hdl, buf, size, &tmp, NUL) == 0) rete(ERR_FILE);
+		ifu (ReadFile(m_hdl, buf, DWORD(size), &tmp, NUL) == 0) rete(ERR_FILE);
 		result = tmp;
 		rets;
 	}
@@ -70,7 +70,7 @@ public:
 		result = 0;
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
 		DWORD tmp;
-		ifu (WriteFile(m_hdl, buf, size, &tmp, NUL) == 0) rete(ERR_FILE);
+		ifu (WriteFile(m_hdl, buf, DWORD(size), &tmp, NUL) == 0) rete(ERR_FILE);
 		result = tmp;
 		rets;
 	}
@@ -114,12 +114,12 @@ public:
 		ret m_hdl != INVALID_HANDLE_VALUE;
 	}
 	/*dfa ER CurMove(SI cnt) {
-		rete(ERR_UNKNOWN);
+		rete(ERR_NA);
 	}*/
 	dfa ER CurSet(SI pos) {
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
 		IO_STATUS_BLOCK iosb;
-		FILE_POSITION_INFORMATION info;
+		FILE_POSITION_INFORMATION info = {};
 		info.CurrentByteOffset.QuadPart = pos;
 		cx NTSTATUS status = NtSetInformationFile(m_hdl, &iosb, &info, siz(FILE_POSITION_INFORMATION), FilePositionInformation);
 		ifu (status != STATUS_SUCCESS) rete(ERR_FILE);
@@ -128,13 +128,13 @@ public:
 	dfa ER Open(cx CH* path, ACCESS_MASK access, SI allocSize, ULONG attrib, ULONG share, ULONG openMode, ULONG flags) {
 		ifu (tx->IsOpen() == YES) rete(ERR_YES_INIT);
 		CH path_[PATH_LEN_MAX];
-		StrCpy(path_, path);
+		StrSet(path_, path);
 		PathToNtpathByDirPath(path_);
-		UNICODE_STRING us;
-		us.Length = StrLen(path_) * siz(CH);
+		UNICODE_STRING us = {};
+		us.Length = USHORT(StrLen(path_) * siz(CH));
 		us.MaximumLength = us.Length;
 		us.Buffer = path_;
-		OBJECT_ATTRIBUTES objAttrib;
+		OBJECT_ATTRIBUTES objAttrib = {};
 		objAttrib.Length = siz(OBJECT_ATTRIBUTES);
 		objAttrib.RootDirectory = NUL;
 		objAttrib.ObjectName = &us;
@@ -142,7 +142,7 @@ public:
 		objAttrib.SecurityDescriptor = NUL;
 		objAttrib.SecurityQualityOfService = NUL;
 		IO_STATUS_BLOCK iosb;
-		LARGE_INTEGER allocSize_;
+		LARGE_INTEGER allocSize_ = {};
 		allocSize_.QuadPart = allocSize;
 		cx NTSTATUS status = NtCreateFile(&m_hdl, access, &objAttrib, &iosb, &allocSize_, attrib, share, openMode, flags, NUL, 0);
 		ifu (status != STATUS_SUCCESS) {
@@ -171,13 +171,13 @@ public:
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
 		ifu ((size >> sizb(ULONG)) > 0) rete(ERR_HIGH_SIZE);
 		IO_STATUS_BLOCK iosb;
-		cx NTSTATUS status = NtReadFile(m_hdl, NUL, NUL, NUL, &iosb, buf, size, NUL, NUL);
+		cx NTSTATUS status = NtReadFile(m_hdl, NUL, NUL, NUL, &iosb, buf, ULONG(size), NUL, NUL);
 		ifu (status != STATUS_SUCCESS) rete(ERR_FILE);
 		result = iosb.Information;
 		rets;
 	}
 	/*dfa ER Write(CXGA buf, SI size, SI& result) {
-		rete(ERR_UNKNOWN);
+		rete(ERR_NA);
 	}*/
 	dfa ER SizeGet(SI& size) {
 		size = 0;
@@ -187,7 +187,7 @@ public:
 		jdst(again);
 		++infoCnt;
 		Arr<FILE_STREAM_INFORMATION> info(infoCnt);
-		cx NTSTATUS status = NtQueryInformationFile(m_hdl, &iosb, info.Ptr(), infoCnt * siz(FILE_STREAM_INFORMATION), FileStreamInformation);
+		cx NTSTATUS status = NtQueryInformationFile(m_hdl, &iosb, info.Ptr(), ULONG(infoCnt * siz(FILE_STREAM_INFORMATION)), FileStreamInformation);
 		ifu (status == STATUS_BUFFER_OVERFLOW) jsrc(again);
 		ifu (status != STATUS_SUCCESS) rete(ERR_FILE);
 		size = info[0].StreamSize.QuadPart;
@@ -298,7 +298,7 @@ public:
 		ife (m_file.OpenRead(path)) retep;
 		SI size = 0;
 		ife (m_file.SizeGet(size)) retep;
-		m_dat.Alloc(size);
+		m_dat.New(size);
 		ife (m_file.Read(m_dat.Ptr(), size)) retep;
 		m_dat.CurSet(size);
 		ife (m_file.Close()) retep;
@@ -317,8 +317,8 @@ public:
 		ife (m_file.OpenWrite(path)) retep;
 		SI size = 0;
 		ife (m_file.SizeGet(size)) retep;
-		m_dat.Alloc(SI(F8(size) * resizeMul + F8(resizeAdd)));
-		MemSet(m_dat.Ptr(), 0, size);
+		m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
+		MemSet(m_dat.Ptr(), U1(0), size);
 		m_dat.CurSet(size);
 		m_filePos = 0;
 		m_filePosOfs = 0;
@@ -335,7 +335,7 @@ public:
 		ife (m_file.OpenReadWrite(path)) retep;
 		SI size = 0;
 		ife (m_file.SizeGet(size)) retep;
-		m_dat.Alloc(SI(F8(size) * resizeMul + F8(resizeAdd)));
+		m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
 		ife (m_file.Read(m_dat.Ptr(), size)) retep;
 		m_dat.CurSet(size);
 		m_filePos = 0;
@@ -357,7 +357,7 @@ public:
 			}
 			ife (m_file.Close()) retep;
 		}
-		m_dat.Dealloc();
+		m_dat.Del();
 		m_filePos = 0;
 		m_filePosOfs = 0;
 		m_isOpen = NO;
@@ -371,7 +371,7 @@ public:
 	dfa ER Read(GA buf, SI size, SI& result) {
 		result = 0;
 		ifu (m_filePos + m_filePosOfs + size > m_dat.Pos()) rete(ERR_HIGH_SIZE);
-		MemCpy(buf, m_dat.Ptr() + m_filePos + m_filePosOfs, size);
+		MemSet(buf, m_dat.Ptr() + m_filePos + m_filePosOfs, size);
 		if (m_isWriteDirect) m_filePosOfs += size;
 		else m_filePos += size;
 		result = size;
@@ -392,7 +392,7 @@ public:
 			cx SI newCap = SI(F8(m_dat.Cap()) * m_resizeMul) + m_resizeAdd + size;
 			m_dat.Req(newCap, newCap, m_dat.Pos());
 		}
-		MemCpy(m_dat.Ptr() + m_filePos, buf, size);
+		MemSet(m_dat.Ptr() + m_filePos, buf, size);
 		m_filePos += size;
 		if (m_filePos > m_dat.Pos()) m_dat.CurSet(m_filePos);
 		result = size;

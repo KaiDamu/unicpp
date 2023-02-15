@@ -42,7 +42,7 @@ public:
 			rete(ERR_PIPE);
 		}
 		buf.Req(readSize, readSize, 0);
-		buf.CurRewind();
+		buf.CurClr();
 		SI readSizeRem = readSize;
 		while (readSizeRem != 0) {
 			ife (m_hdl.Read(buf.Cur(), readSizeRem, readResult)) {
@@ -89,7 +89,7 @@ public:
 		while (i < pieceCnt) {
 			cx U1* piece = (cx U1*)buf + (i * PIPE_BUF_SIZE);
 			cx SI pieceSize = (i + 1 == pieceCnt) ? (size % PIPE_BUF_SIZE) : PIPE_BUF_SIZE;
-			ifu (WriteFile(m_hdl, piece, pieceSize, &tmp, NUL) == 0) rete(ERR_FILE);
+			ifu (WriteFile(m_hdl, piece, DWORD(pieceSize), &tmp, NUL) == 0) rete(ERR_FILE);
 			result += tmp;
 			++i;
 		}

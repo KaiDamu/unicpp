@@ -1,3 +1,3 @@
 #pragma once
 
-dfa HANDLE ProcCurNtHdlGet();
+dfa HANDLE _ProcHdlGetNt();

@@ -37,7 +37,7 @@
 #define ite(i, cond) for (SI i = 0; (cond); ++i)
 
 #define rets ret ERR_NO
-#define rete(errVal) { ErrLastValSet(errVal); ret ERR_YES; }
+#define rete(errVal) { ErrLastSet(errVal); ret ERR_YES; }
 #define retep ret ERR_YES
 
 #ifdef PROG_BUILD_TYPE_DBG

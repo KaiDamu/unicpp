@@ -99,7 +99,7 @@ public:
 		}
 		case PRB_FIELD_TYPE_I64:
 		{
-			MemCpy(&m_valU8, m_bufCur, siz(m_valU8));
+			MemSet(&m_valU8, m_bufCur, siz(m_valU8));
 			m_bufCur += siz(m_valU8);
 			break;
 		}
@@ -120,7 +120,7 @@ public:
 		}
 		case PRB_FIELD_TYPE_I32:
 		{
-			MemCpy(&m_valU4, m_bufCur, siz(m_valU4));
+			MemSet(&m_valU4, m_bufCur, siz(m_valU4));
 			m_bufCur += siz(m_valU4);
 			break;
 		}

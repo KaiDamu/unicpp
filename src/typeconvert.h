@@ -1,11 +1,11 @@
 #pragma once
 
-dfa S4 F4ToS4(F4 val) {
+dfa S4 F4ToS4Fast(F4 val) {
 	S4 r;
 	#ifdef PROG_COMPILER_GCC
 		__asm__("fistpl %0" : "=m"(r) : "t"(val) : "st");
 	#else
-		r = S4(val + 0.5f);
+		r = S4(val);
 	#endif
 	ret r;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-enum : CS {
+enum : CH {
 	CH_NUL = 0,
 	CH_SOH = 1,
 	CH_STX = 2,
@@ -36,28 +36,28 @@ enum : CS {
 	CH_DEL = 127
 };
 
-constexpr CS CH_UNKNOWN = '?';
+constexpr CH CH_NA = '?';
 
 tpl1 dfa BO IsBetween(cx T1& c, cx T1& min, cx T1& max) {
 	ret c >= min && c <= max;
 }
 tpl1 dfa BO IsLowcase(cx T1& c) {
-	ret IsBetween(c, 'a', 'z');
+	ret IsBetween<T1>(c, 'a', 'z');
 }
 tpl1 dfa BO IsUpcase(cx T1& c) {
-	ret IsBetween(c, 'A', 'Z');
+	ret IsBetween<T1>(c, 'A', 'Z');
 }
 tpl1 dfa BO IsNumBase2(cx T1& c) {
-	ret IsBetween(c, '0', '1');
+	ret IsBetween<T1>(c, '0', '1');
 }
 tpl1 dfa BO IsNumBase8(cx T1& c) {
-	ret IsBetween(c, '0', '7');
+	ret IsBetween<T1>(c, '0', '7');
 }
 tpl1 dfa BO IsNumBase10(cx T1& c) {
-	ret IsBetween(c, '0', '9');
+	ret IsBetween<T1>(c, '0', '9');
 }
 tpl1 dfa BO IsNumBase16(cx T1& c) {
-	ret IsNumBase10(c) || IsBetween(c, 'A', 'F') || IsBetween(c, 'a', 'f');
+	ret IsNumBase10<T1>(c) || IsBetween<T1>(c, 'A', 'F') || IsBetween<T1>(c, 'a', 'f');
 }
 tpl1 dfa BO IsSpace(cx T1& c) {
 	ret c == ' ';
@@ -68,12 +68,17 @@ tpl1 dfa BO IsTab(cx T1& c) {
 tpl1 dfa BO IsEol(cx T1& c) {
 	ret c == CH_CR || c == CH_LF;
 }
-tpl1 dfa BO IsCntrl(cx T1& c) {
-	ret IsBetween(c, 0, 31) || c == 127;
+tpl1 dfa BO IsCtrl(cx T1& c) {
+	ret IsBetween<T1>(c, CH_NUL, CH_US) || c == CH_DEL;
 }
 tpl1 dfa BO IsAscii(cx T1& c) {
-	ret IsBetween(c, 0, 127);
+	ret IsBetween<T1>(c, CH_NUL, CH_DEL);
 }
 tpl1 dfa BO IsWspace(cx T1& c) {
-	ret IsSpace(c) || IsTab(c) || IsEol(c);
+	ret IsSpace<T1>(c) || IsTab<T1>(c) || IsEol<T1>(c);
+}
+
+dfa CS CHToCS(CH val) {
+	if (val > CS_VAL_MAX) ret CS(CH_NA);
+	ret CS(val);
 }

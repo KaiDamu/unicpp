@@ -4,11 +4,11 @@ U8 g_timeMainOfs = 0;
 U8 g_timeMainDivU = 0;
 F8 g_timeMainDivF = 0.0;
 
-dfa U8 TimeLdapToUnix(U8 ldap) {
+dfa U8 LdapToUnix(U8 ldap) {
 	ifu (ldap < 116444736000000000) ret 0;
 	ret ldap / 10000000 - 11644473600;
 }
-dfa U8 TimeUnixToLdap(U8 unix) {
+dfa U8 UnixToLdap(U8 unix) {
 	ret unix * 10000000 + 116444736000000000;
 }
 
@@ -25,7 +25,7 @@ dfa U8 CpuTsc() {
 	ret val;
 }
 
-dfa ER TimeResClear() {
+dfa ER TimeResClr() {
 	ULONG resNew;
 	ifu (NtSetTimerResolution(0, FALSE, &resNew) != STATUS_SUCCESS) {
 		rete(ERR_TIME_RES);
@@ -39,13 +39,13 @@ dfa ER TimeResSet(S4 ms, S4 us, BO force) {
 		rete(ERR_TIME_RES);
 	}
 	ifu (force && (resReq != resNew)) {
-		TimeResClear();
+		TimeResClr();
 		rete(ERR_TIME_RES);
 	}
 	rets;
 }
 
-dfa ER TimeMainInit() {
+dfa ER _TimeMainInit() {
 	LARGE_INTEGER val;
 	ifu (QueryPerformanceFrequency(&val) == 0) {
 		rete(ERR_TIME);
@@ -61,17 +61,17 @@ dfa ER TimeMainInit() {
 	g_timeMainDivF = timeMainDivF;
 	rets;
 }
-dfa U8 TimeMainGetU() {
+dfa U8 TimeMainU() {
 	LARGE_INTEGER val;
 	QueryPerformanceCounter(&val);
 	ret (val.QuadPart - g_timeMainOfs) / g_timeMainDivU;
 }
-dfa F8 TimeMainGetF() {
+dfa F8 TimeMainF() {
 	LARGE_INTEGER val;
 	QueryPerformanceCounter(&val);
 	ret U8ToF8(val.QuadPart - g_timeMainOfs) / g_timeMainDivF;
 }
 
-dfa U8 TimeUnixGetSecU() {
+dfa U8 TimeUnix() {
 	ret time(NUL);
 }

@@ -16,8 +16,10 @@ extern "C" {
 	_importfnwin(NTSTATUS)NtQueryInformationFile(HANDLE, PIO_STATUS_BLOCK, PVOID, ULONG, FILE_INFORMATION_CLASS);
 	_importfnwin(NTSTATUS)NtQueryDirectoryFileEx(HANDLE, HANDLE, PIO_APC_ROUTINE, PVOID, PIO_STATUS_BLOCK, PVOID, ULONG, FILE_INFORMATION_CLASS, ULONG, PUNICODE_STRING);
 	_importfnwin(VOID)RtlExitUserProcess(NTSTATUS);
-	_importfnwin(BOOL)SleepConditionVariableCS(PCONDITION_VARIABLE, PCRITICAL_SECTION, DWORD);
-	_importfnwin(void)WakeConditionVariable(PCONDITION_VARIABLE);
-	_importfnwin(void)WakeAllConditionVariable(PCONDITION_VARIABLE);
-	_importfnwin(void)InitializeConditionVariable(PCONDITION_VARIABLE);
+	#ifdef PROG_COMPILER_GCC
+		_importfnwin(BOOL)SleepConditionVariableCS(PCONDITION_VARIABLE, PCRITICAL_SECTION, DWORD);
+		_importfnwin(void)WakeConditionVariable(PCONDITION_VARIABLE);
+		_importfnwin(void)WakeAllConditionVariable(PCONDITION_VARIABLE);
+		_importfnwin(void)InitializeConditionVariable(PCONDITION_VARIABLE);
+	#endif
 }

@@ -1,0 +1,21 @@
+[naming]
+	[quantity]
+		size : size : size in bytes
+		sizeb : size bit : size in bits
+		len : length : size in count
+		lenx : length extra : size in count, including any extra characters
+	[operator]
+		init : initialize : set an object's value to the starting existential value
+		del : delete : make an object nonexistent (true removal)
+		new : create : make an object existing (true creation)
+		close : close : make an object nonexistent (while keeping the parent object)
+		open : open : make an object existing (based on a parent object)
+		req : require : make sure that the object is existing (/with given status)
+		get : get : get an object's value (absolute)
+		set : set : set an object's value (absolute)
+		read : read : get x from an object's value (from the cursor position by default)
+		write : write : add x to an object's value (to the cursor position by default)
+		sub : subtract : subtract x from an object's value (from the end by default)
+		add : add : add x to an object's value (to the end by default)
+		clr : clear : set an object's value to none/empty/default
+		cmp : compare : compare two objects, return x>0 if left-side object is bigger...

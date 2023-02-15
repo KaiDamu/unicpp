@@ -38,28 +38,28 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 	IO_STATUS_BLOCK isb;
 	U4 queryFlags = 0;
 	jdst(retry);
-	cx NTSTATUS status = NtQueryDirectoryFileEx(dir.Hdl(), NUL, NUL, NUL, &isb, buf.Ptr(), buf.Cap(), FileDirectoryInformation, queryFlags, NUL);
+	cx NTSTATUS status = NtQueryDirectoryFileEx(dir.Hdl(), NUL, NUL, NUL, &isb, buf.Ptr(), ULONG(buf.Cap()), FileDirectoryInformation, queryFlags, NUL);
 	ifu (status == STATUS_BUFFER_OVERFLOW) {
-		buf.Alloc(buf.Cap() * 2);
+		buf.New(buf.Cap() * 2);
 		queryFlags |= SL_RESTART_SCAN;
 		jsrc(retry);
 	}
 	queryFlags &= ~SL_RESTART_SCAN;
 	if (status == STATUS_NO_MORE_FILES) rets;
 	if (status != STATUS_SUCCESS) rete(ERR_DIR);
-	buf.CurRewind();
+	buf.CurClr();
 	while (YES) {
 		cx FILE_DIRECTORY_INFORMATION*cx info = (FILE_DIRECTORY_INFORMATION*)(buf.Cur());
 		cx BO isEx = ((info->FileNameLength == (1 * siz(CH))) && (MemCmp(info->FileName, L".", 1 * siz(CH)) == 0)) || ((info->FileNameLength == (2 * siz(CH))) && (MemCmp(info->FileName, L"..", 2 * siz(CH)) == 0));
 		if (!isEx) {
-			MemCpy(path + pathLen, info->FileName, info->FileNameLength);
+			MemSet(path + pathLen, info->FileName, info->FileNameLength);
 			pathLen += info->FileNameLength / siz(CH);
 			path[pathLen] = '\0';
 			FileInfo fileInfo;
-			fileInfo.createDate = TimeLdapToUnix(info->CreationTime.QuadPart);
-			fileInfo.accessDate = TimeLdapToUnix(info->LastAccessTime.QuadPart);
-			fileInfo.writeDate = TimeLdapToUnix(info->LastWriteTime.QuadPart);
-			fileInfo.changeDate = TimeLdapToUnix(info->ChangeTime.QuadPart);
+			fileInfo.createDate = LdapToUnix(info->CreationTime.QuadPart);
+			fileInfo.accessDate = LdapToUnix(info->LastAccessTime.QuadPart);
+			fileInfo.writeDate = LdapToUnix(info->LastWriteTime.QuadPart);
+			fileInfo.changeDate = LdapToUnix(info->ChangeTime.QuadPart);
 			fileInfo.datSize = info->EndOfFile.QuadPart;
 			fileInfo.allocSize = info->AllocationSize.QuadPart;
 			fileInfo.index = U8(info->FileIndex);
@@ -91,14 +91,14 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 		if (info->NextEntryOffset == 0) break;
 		buf.CurMove(info->NextEntryOffset);
 	}
-	buf.Alloc(buf.Cap() * 2);
+	buf.New(buf.Cap() * 2);
 	jsrc(retry);
 }
 
 dfa ER DirEnum(cx CH* path, SI depth, DirEnumCallbFnType callb, U4 flags, GA param1, GA param2) {
 	CH path2[PATH_LEN_MAX];
 	CH path3[PATH_LEN_MAX];
-	StrCpy(path2, path);
+	StrSet(path2, path);
 	PathToAbsByWorkPath(path2);
 	cx SI pathLen = StrEnclose(path3, path2, NTPATH_PRE_STR, PATH_DIR_SEPARATOR_STR);
 	ret _DirEnum(path3, pathLen, depth, callb, flags, param1, param2, pathLen - NTPATH_PRE_STR_LEN);
@@ -119,7 +119,7 @@ dfa ER DirCreate(cx CH* path) {
 			rete(ERR_DIR);
 		}
 		CH path_[PATH_LEN_MAX];
-		StrCpy(path_, path);
+		StrSet(path_, path);
 		CH* pathSep = (CH*)StrFindLast(path_, PATH_DIR_SEPARATOR);
 		ifu (pathSep == NUL) rete(ERR_DIR);
 		*pathSep = '\0';
@@ -130,7 +130,7 @@ dfa ER DirCreate(cx CH* path) {
 }
 dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 	CH dst_[PATH_LEN_MAX];
-	StrCpy(dst_, dst);
+	StrSet(dst_, dst);
 	PathToAbsByWorkPath(dst_);
 	ife (DirCreate(dst_)) retep;
 	struct Param {
@@ -142,16 +142,16 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 	ife (DirEnum(src, -1, [](cx FileInfo& fileInfo, GA param1, GA param2) {
 		unused(param2);
 		CH path[PATH_LEN_MAX];
-		StrCpy(path, ((Param*)param1)->dst);
+		StrSet(path, ((Param*)param1)->dst);
 		StrAdd(path, fileInfo.rel - 1); // hack: -1 for PATH_DIR_SEPARATOR
 		if (fileInfo.attrib & FILE_ATTRIB_DIR) {
 			ife (DirCreate(path)) {
-				((Param*)param1)->err = ErrLastValGet();
+				((Param*)param1)->err = ErrLastGet();
 				ret NO;
 			}
 		} else {
 			ife (FileCpy(path, fileInfo.path, ((Param*)param1)->isReplace)) {
-				((Param*)param1)->err = ErrLastValGet();
+				((Param*)param1)->err = ErrLastGet();
 				ret NO;
 			}
 		}
@@ -162,7 +162,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 }
 dfa ER DirDel(cx CH* path) {
 	CH path_[PATH_LEN_MAX];
-	StrCpy(path_, path);
+	StrSet(path_, path);
 	PathToAbsByWorkPath(path_);
 	struct Param {
 		ErrVal err;
@@ -172,12 +172,12 @@ dfa ER DirDel(cx CH* path) {
 		unused(param2);
 		if (fileInfo.attrib & FILE_ATTRIB_DIR) {
 			ife (_DirDel(fileInfo.path)) {
-				((Param*)param1)->err = ErrLastValGet();
+				((Param*)param1)->err = ErrLastGet();
 				ret NO;
 			}
 		} else {
 			ife (FileDel(fileInfo.path)) {
-				((Param*)param1)->err = ErrLastValGet();
+				((Param*)param1)->err = ErrLastGet();
 				ret NO;
 			}
 		}

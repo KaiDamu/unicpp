@@ -16,7 +16,7 @@ dfa ER PythonStart(cx CH* file, cx CH* args, BO wait) {
 		_args += args;
 	}
 	Proc proc;
-	ife (proc.Start(path, _args.Val(), NUL)) retep;
+	ife (proc.Start(path, _args.Get(), NUL)) retep;
 	if (wait) {
 		ife (proc.Wait()) retep;
 	} else {

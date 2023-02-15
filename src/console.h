@@ -63,7 +63,7 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen) {
 	cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
 	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_NO_EXIST);
 	DWORD result;
-	ifu (WriteConsoleA(hdl, buf, bufLen, &result, NUL) == 0) rete(ERR_CON);
+	ifu (WriteConsoleA(hdl, buf, DWORD(bufLen), &result, NUL) == 0) rete(ERR_CON);
 	ifu (result != bufLen) rete(ERR_CON);
 	rets;
 }
@@ -95,7 +95,7 @@ dfa ER ConTitleSet(cx CH* title) {
 	rets;
 }
 dfa SI ConTitleGet(CH* title, SI titleLenMax) {
-	cx SI titleLen = GetConsoleTitleW(title, titleLenMax);
+	cx SI titleLen = GetConsoleTitleW(title, DWORD(titleLenMax));
 	ret titleLen;
 }
 dfa ER ConCreate(cx CH* title = NUL) {
@@ -107,12 +107,12 @@ dfa ER ConCreate(cx CH* title = NUL) {
 	ife (_ConBufEmpty()) retep;
 	// font (extra)
 	cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_FONT_INFOEX font;
+	CONSOLE_FONT_INFOEX font = {};
 	font.cbSize = siz(font);
 	font.dwFontSize.X = 0;
 	font.dwFontSize.Y = 18;
 	font.FontWeight = FW_NORMAL;
-	StrCpy(font.FaceName, L"Lucida Console");
+	StrSet(font.FaceName, L"Lucida Console");
 	SetCurrentConsoleFontEx(hdl, NO, &font);
 	//
 	ife (WinFocusSet(HD(GetConsoleWindow()))) retep;
@@ -229,14 +229,14 @@ dfa SI ConReadStr(CS* str, SI strLenMax, BO isShow = YES) {
 			continue;
 		}
 		if (strLen < strLenMax - 1) {
-			str[strLen++] = ir.Event.KeyEvent.uChar.UnicodeChar;
+			str[strLen++] = CHToCS(CH(ir.Event.KeyEvent.uChar.UnicodeChar));
 			if (isShow) ife (ConWriteRaw("%c", ir.Event.KeyEvent.uChar.UnicodeChar)) ret -1;
 		}
 	}
 	str[strLen] = '\0';
 	ret strLen;
 }
-dfa ER ConPause() {
+dfa ER ConWait() {
 	ife (ConReq()) retep;
 	ife (_ConBufEmpty()) retep;
 	cx HANDLE hdl = GetStdHandle(STD_INPUT_HANDLE);
