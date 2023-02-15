@@ -5,17 +5,27 @@ constexpr SI RAND_CTX_VAL_CNT = 624;
 class RandCtx {
 private:
 	SI m_i;
-	U4 m_val[RAND_CTX_VAL_CNT];
+	Arr<U4> m_val;
+	U4 m_seed;
+	BO m_isPrep;
 private:
 	dfa NT Init(U4 seed) {
-		m_val[0] = seed;
+		m_i = RAND_CTX_VAL_CNT;
+		m_seed = seed;
+		m_isPrep = NO;
+	}
+	dfa NT Prep() {
+		m_val.New(RAND_CTX_VAL_CNT);
+		m_val[0] = m_seed;
 		for (m_i = 1; m_i < RAND_CTX_VAL_CNT; ++m_i) m_val[m_i] = m_val[m_i - 1] * 6069;
+		m_isPrep = YES;
 	}
 	dfa NT Roll(U4 i11, U4 i12, U4 i21, U4 i22) {
 		cx U4 val = (m_val[i11] & 0x80000000) | (m_val[i12] & 0x7FFFFFFF);
 		m_val[i21] = m_val[i22] ^ (val >> 1) ^ ((val & 0x01) * 0x9908B0DF);
 	}
 	dfa NT Gen() {
+		ifu (!m_isPrep) tx->Prep();
 		U4 i = 0;
 		while (i < 227) {
 			tx->Roll(i, i + 1, i, i + 397);

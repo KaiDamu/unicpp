@@ -35,10 +35,10 @@
 #include "char.h"
 #include "tuple.h"
 #include "time.h"
-#include "random.h"
 #include "memory.h"
 #include "pointer.h"
 #include "array.h"
+#include "random.h"
 #include "string.h"
 // rework done from here up
 #include "path.h"
