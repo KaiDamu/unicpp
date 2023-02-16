@@ -15,8 +15,8 @@ struct FileInfo {
 	U8 accessDate;
 	U8 writeDate;
 	U8 changeDate;
-	U8 datSize;
-	U8 allocSize;
+	SI datSize;
+	SI allocSize;
 	U4 index;
 	U4 attrib;
 	SI pathLen;
@@ -60,8 +60,8 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 			fileInfo.accessDate = LdapToUnix(info->LastAccessTime.QuadPart);
 			fileInfo.writeDate = LdapToUnix(info->LastWriteTime.QuadPart);
 			fileInfo.changeDate = LdapToUnix(info->ChangeTime.QuadPart);
-			fileInfo.datSize = info->EndOfFile.QuadPart;
-			fileInfo.allocSize = info->AllocationSize.QuadPart;
+			fileInfo.datSize = SI(info->EndOfFile.QuadPart);
+			fileInfo.allocSize = SI(info->AllocationSize.QuadPart);
 			fileInfo.index = U8(info->FileIndex);
 			fileInfo.attrib = 0;
 			if (info->FileAttributes & FILE_ATTRIBUTE_DIRECTORY) fileInfo.attrib |= FILE_ATTRIB_DIR;
