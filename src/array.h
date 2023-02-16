@@ -132,6 +132,12 @@ public:
 	dfa SI Pos() const {
 		ret m_cur - m_ptr.Get();
 	}
+	dfa T1 Read() {
+		Assert(tx->Pos() < m_cap);
+		T1 dat = *m_cur;
+		++m_cur;
+		ret dat;
+	}
 	dfa NT Read(T1& dat) {
 		Assert(tx->Pos() < m_cap);
 		dat = *m_cur;
