@@ -35,6 +35,7 @@
 #define jsrc(name) goto name
 #define jdst(name) name:
 #define ite(i, cond) for (SI i = 0; (cond); ++i)
+#define ited(elem, obj) for (AU elem = obj.GetFirst(); elem != NUL; elem = obj.GetNext())
 
 #define rets ret ERR_NO
 #define rete(errVal) { ErrLastSet(errVal); ret ERR_YES; }
