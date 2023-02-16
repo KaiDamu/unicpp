@@ -58,22 +58,22 @@ dfa SI MemPageSize() {
 }
 
 dfa NT MemObfuscate(GA dst, CXGA src, SI size) {
-	U1* _dst = (U1*)dst;
-	cx U1* _src = (cx U1*)src;
-	ite (i, i < size) {
-		*_dst = ByteObfuscate(*_src, U1(i));
-		++_dst;
-		++_src;
-	}
+	U1* dst_ = (U1*)dst;
+	cx U1* src_ = (cx U1*)src;
+	ite (i, i < size) dst_[i] = ByteObfuscate(src_[i], U1(i));
 }
 dfa NT MemUnobfuscate(GA dst, CXGA src, SI size) {
-	U1* _dst = (U1*)dst;
-	cx U1* _src = (cx U1*)src;
-	ite (i, i < size) {
-		*_dst = ByteUnobfuscate(*_src, U1(i));
-		++_dst;
-		++_src;
-	}
+	U1* dst_ = (U1*)dst;
+	cx U1* src_ = (cx U1*)src;
+	ite (i, i < size) dst_[i] = ByteUnobfuscate(src_[i], U1(i));
+}
+dfa NT MemObfuscate(GA dst, SI size) {
+	U1* dst_ = (U1*)dst;
+	ite (i, i < size) dst_[i] = ByteObfuscate(dst_[i], U1(i));
+}
+dfa NT MemUnobfuscate(GA dst, SI size) {
+	U1* dst_ = (U1*)dst;
+	ite (i, i < size) dst_[i] = ByteUnobfuscate(dst_[i], U1(i));
 }
 
 GA operator new (UA size) {
