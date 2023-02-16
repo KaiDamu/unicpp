@@ -128,10 +128,9 @@ public:
 	dfa ER Open(cx CH* path, ACCESS_MASK access, SI allocSize, ULONG attrib, ULONG share, ULONG openMode, ULONG flags) {
 		ifu (tx->IsOpen() == YES) rete(ERR_YES_INIT);
 		CH path_[PATH_LEN_MAX];
-		StrSet(path_, path);
-		PathToNtpathByDirPath(path_);
+		cx SI pathLen = PathToNtpath(path_, path);
 		UNICODE_STRING us = {};
-		us.Length = USHORT(StrLen(path_) * siz(CH));
+		us.Length = USHORT(pathLen * siz(CH));
 		us.MaximumLength = us.Length;
 		us.Buffer = path_;
 		OBJECT_ATTRIBUTES objAttrib = {};

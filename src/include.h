@@ -40,7 +40,7 @@
 #include "array.h"
 #include "random.h"
 #include "string.h"
-#include "path.h" // to rework
+#include "path.h"
 #include "process.h" // to rework
 #include "stack.h"
 #include "list.h"

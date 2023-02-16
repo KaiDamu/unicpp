@@ -1,7 +1,7 @@
 #pragma once
 
 dfa ER PythonExePathGet(CH* path) {
-	ife (PathEnvRelToAbs(path, L"python.exe")) retep;
+	ifu (PathEnvRelToAbs(path, L"python.exe") == 0) rete(ERR_ENV);
 	rets;
 }
 dfa ER PythonStart(cx CH* file, cx CH* args, BO wait) {

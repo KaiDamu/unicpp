@@ -1,5 +1,7 @@
 #pragma once
 
+constexpr SI STR_EX_LEN = 1;
+
 dfa SI StrLen(cx CS* str) {
 	ret __builtin_strlen(str);
 }
@@ -159,6 +161,22 @@ tpl1 dfa cx T1* StrArgSkip(cx T1* str) {
 	}
 	while (*p == ' ') ++p;
 	ret p;
+}
+tpl1 dfa BO StrIsFirst(cx T1* main, cx T1* sub) {
+	cx T1* p1 = main;
+	cx T1* p2 = sub;
+	while (*p1 != '\0' && *p2 != '\0' && *p1 == *p2) {
+		++p1;
+		++p2;
+	}
+	ret *p2 == '\0';
+}
+
+tpl1 dfa SI StrSetLenGet(T1* dst, cx T1* src) {
+	T1* p = dst;
+	while (*src != '\0') *p++ = *src++;
+	*p = '\0';
+	ret p - dst;
 }
 
 constexpr SI STR_INIT_ALLOC_CNT = 8;

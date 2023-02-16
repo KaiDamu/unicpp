@@ -95,9 +95,7 @@ public:
 		ife (fileDst.Write(&datSize, siz(U8))) retep; // datSize
 		// Get path offset
 		CH src_[PATH_LEN_MAX];
-		StrSet(src_, src);
-		PathToAbsByWorkPath(src_);
-		cx SI pathOfs = StrLen(src_) + 1; // +1 for PATH_DIR_SEPARATOR
+		cx SI pathOfs = PathToAbs(src_, src) + 1; // +1 for CH_PATH_DIR
 		// Write entries
 		Arr<U8> datOfsList(entryCnt);
 		for (Entry* entry = entryList.GetFirst(); entry != NUL; entry = entryList.GetNext()) {

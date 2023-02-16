@@ -1,45 +1,49 @@
 #pragma once
 
 constexpr SI PATH_LEN_MAX = 260;
+constexpr SI PATH_LENX_MAX = PATH_LEN_MAX + STR_EX_LEN;
 
-constexpr cx CH* NTPATH_PRE_STR = L"\\??\\";
-constexpr SI NTPATH_PRE_STR_LEN = 4;
+constexpr CH CH_PATH_DIR = '\\';
+constexpr CH CH_PATH_EXT = '.';
+constexpr CH CH_PATH_DRIVE = ':';
 
-constexpr CH PATH_DIR_SEPARATOR = '\\';
-constexpr CH PATH_EXT_SEPARATOR = '.';
-constexpr CH PATH_DRIVE_SEPARATOR = ':';
+constexpr cx CH* STR_PATH_DIR = L"\\";
+constexpr cx CH* STR_PATH_EXT = L".";
+constexpr cx CH* STR_PATH_DRIVE = L":";
 
-constexpr cx CH* PATH_DIR_SEPARATOR_STR = L"\\";
-constexpr cx CH* PATH_EXT_SEPARATOR_STR = L".";
-constexpr cx CH* PATH_DRIVE_SEPARATOR_STR = L":";
+constexpr CH CH_PATH_SANITIZE = '_';
+constexpr CH CH_PATH_ENVVAR = '%';
+
+constexpr cx CH* STR_NTPATH_PRE = L"\\??\\";
+constexpr SI STR_NTPATH_PRE_LEN = 4;
 
 dfa cx CH* PathExtPtr(cx CH* path) {
 	cx CH* last = NUL;
 	while (*path != '\0') {
-		if (*path == PATH_DIR_SEPARATOR || *path == PATH_EXT_SEPARATOR) last = path;
+		if (*path == CH_PATH_DIR || *path == CH_PATH_EXT) last = path;
 		++path;
 	}
 	if (last == NUL) ret path;
-	if (*last == PATH_DIR_SEPARATOR) ret path;
+	if (*last == CH_PATH_DIR) ret path;
 	ret last + 1;
 }
 
-dfa BO PathDirUp(CH* path) {
-	CH* last = NUL;
-	while (*path != '\0') {
-		if (*path == PATH_DIR_SEPARATOR) last = path;
-		++path;
+dfa SI PathDirUp(CH* dst, BO* isRoot = NUL) {
+	CH* last = (CH*)StrFindLast(dst, CH_PATH_DIR);
+	ifu (last == NUL) {
+		if (isRoot != NUL) *isRoot = YES;
+		ret StrLen(dst);
 	}
-	if (last == NUL) ret NO;
 	*last = '\0';
-	ret YES;
+	if (isRoot != NUL) *isRoot = NO;
+	ret last - dst;
 }
 
 dfa BO PathIsAbs(cx CH* path) {
-	ret (path[0] != '\0') && (path[1] == PATH_DRIVE_SEPARATOR);
+	ret (path[0] != '\0' && path[1] == CH_PATH_DRIVE);
 }
 dfa BO PathIsNtpath(cx CH* path) {
-	ret (MemCmp(path, NTPATH_PRE_STR, NTPATH_PRE_STR_LEN * siz(CH)) == 0);
+	ret StrIsFirst(path, STR_NTPATH_PRE);
 }
 
 dfa BO PathIsExist(cx CH* path) {
@@ -51,14 +55,14 @@ dfa BO PathIsDir(cx CH* path) {
 	ret (attrib & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
-dfa ER PathEnvRelToAbs(CH* out, cx CH* in) {
-	out[0] = '\0';
+dfa SI PathEnvRelToAbs(CH* dst, cx CH* src) {
+	dst[0] = '\0';
 	cx SI size = GetEnvironmentVariableW(L"PATH", NUL, 0);
-	ifu (size == 0) rete(ERR_ENV);
+	ifu (size == 0) ret 0;
 	Arr<CH> buf(size);
 	SI size2 = GetEnvironmentVariableW(L"PATH", buf.Ptr(), DWORD(size));
 	if (size2 + 1 == size) ++size2; // weird Windows fix
-	ifu (size != size2) rete(ERR_ENV);
+	ifu (size != size2) ret 0;
 	buf[size - 1] = ';';
 	CH str[PATH_LEN_MAX];
 	SI strLen = 0;
@@ -77,18 +81,19 @@ dfa ER PathEnvRelToAbs(CH* out, cx CH* in) {
 				str[strLen - 1] = '\\';
 				str[strLen] = '\0';
 			}
-			StrSet(str + strLen, in);
+			StrSet(str + strLen, src);
 			if (PathIsExist(str)) {
-				MemSet(out, str, (strLen + StrLen(in) + 1) * siz(CH));
-				rets;
+				cx SI dstLen = strLen + StrLen(src);
+				MemSet(dst, str, (dstLen + STR_EX_LEN) * siz(CH));
+				ret dstLen;
 			}
 			strLen = 0;
 		}
 	}
-	rete(ERR_NO_EXIST);
+	ret 0;
 }
 
-dfa cx CH* ProcCurFilePathGet() {
+dfa cx CH* ProcFilePath() {
 	static CH s_cache[PATH_LEN_MAX] = {};
 	ifu (s_cache[0] == '\0') {
 		cx DWORD result = GetModuleFileNameW(NUL, s_cache, PATH_LEN_MAX);
@@ -99,15 +104,15 @@ dfa cx CH* ProcCurFilePathGet() {
 	}
 	ret s_cache;
 }
-dfa cx CH* ProcCurDirPathGet() {
+dfa cx CH* ProcDirPath() {
 	static CH s_cache[PATH_LEN_MAX] = {};
 	ifu (s_cache[0] == '\0') {
-		StrSet(s_cache, ProcCurFilePathGet());
+		StrSet(s_cache, ProcFilePath());
 		PathDirUp(s_cache);
 	}
 	ret s_cache;
 }
-dfa cx CH* ProcCurWorkPathGet() {
+dfa cx CH* ProcWorkPath() {
 	static CH s_cache[PATH_LEN_MAX] = {};
 	ifu (s_cache[0] == '\0') {
 		cx DWORD result = GetCurrentDirectoryW(PATH_LEN_MAX, s_cache);
@@ -119,77 +124,71 @@ dfa cx CH* ProcCurWorkPathGet() {
 	ret s_cache;
 }
 
-dfa BO PathToAbsByDirPath(CH* path) {
-	if (PathIsAbs(path)) ret NO;
+dfa SI PathToAbs(CH* path) {
+	if (PathIsAbs(path)) ret StrLen(path);
 	cx SI pathLen = StrLen(path);
-	cx SI dirPathLen = StrLen(ProcCurDirPathGet());
+	cx SI workPathLen = StrLen(ProcWorkPath());
 	SI i = pathLen;
 	while (i > -1) {
-		path[i + dirPathLen + 1] = path[i]; // +1 to simulate the extra PATH_DIR_SEPARATOR
+		path[i + workPathLen + 1] = path[i]; // +1 to simulate the extra CH_PATH_DIR
 		--i;
 	}
-	path[dirPathLen] = PATH_DIR_SEPARATOR;
-	MemSet(path, ProcCurDirPathGet(), dirPathLen * siz(CH));
-	ret YES;
+	path[workPathLen] = CH_PATH_DIR;
+	MemSet(path, ProcWorkPath(), workPathLen * siz(CH));
+	ret pathLen + workPathLen + 1; // +1 for the CH_PATH_DIR
 }
-dfa BO PathToAbsByWorkPath(CH* path) {
-	if (PathIsAbs(path)) ret NO;
-	cx SI pathLen = StrLen(path);
-	cx SI workPathLen = StrLen(ProcCurWorkPathGet());
+dfa SI PathToAbs(CH* dst, cx CH* src) {
+	if (PathIsAbs(src)) ret StrSetLenGet(dst, src);
+	cx SI workPathLen = StrSetLenGet(dst, ProcWorkPath());
+	dst[workPathLen] = CH_PATH_DIR;
+	ret StrSetLenGet(dst + workPathLen + 1, src) + workPathLen + 1; // +1 for the CH_PATH_DIR
+}
+
+dfa SI PathToNtpath(CH* path) {
+	if (PathIsNtpath(path)) ret StrLen(path);
+	cx SI pathLen = PathToAbs(path);
 	SI i = pathLen;
 	while (i > -1) {
-		path[i + workPathLen + 1] = path[i]; // +1 to simulate the extra PATH_DIR_SEPARATOR
+		path[i + STR_NTPATH_PRE_LEN] = path[i];
 		--i;
 	}
-	path[workPathLen] = PATH_DIR_SEPARATOR;
-	MemSet(path, ProcCurWorkPathGet(), workPathLen * siz(CH));
-	ret YES;
+	MemSet(path, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
+	ret pathLen + STR_NTPATH_PRE_LEN;
+}
+dfa SI PathToNtpath(CH* dst, cx CH* src) {
+	if (PathIsNtpath(src)) ret StrSetLenGet(dst, src);
+	cx SI pathLen = PathToAbs(dst + STR_NTPATH_PRE_LEN, src);
+	MemSet(dst, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
+	ret pathLen + STR_NTPATH_PRE_LEN;
 }
 
-dfa BO PathToNtpathByDirPath(CH* path) {
-	if (PathIsNtpath(path)) ret NO;
-	cx SI pathLen = StrLen(path);
-	cx SI dirPathLen = StrLen(ProcCurDirPathGet());
-	SI i = pathLen;
-	while (i > -1) {
-		path[i + dirPathLen + 1 + NTPATH_PRE_STR_LEN] = path[i]; // +1 to simulate the extra PATH_DIR_SEPARATOR
-		--i;
-	}
-	path[dirPathLen + NTPATH_PRE_STR_LEN] = PATH_DIR_SEPARATOR;
-	MemSet(path + NTPATH_PRE_STR_LEN, ProcCurDirPathGet(), dirPathLen * siz(CH));
-	MemSet(path, NTPATH_PRE_STR, NTPATH_PRE_STR_LEN * siz(CH));
-	ret YES;
-}
-
-constexpr CH PATH_SANITIZE_CHAR = '_';
-
-dfa NT PathSanitize(CH* dst, cx CH* src) {
+dfa SI PathSanitize(CH* dst, cx CH* src) {
+	cx CH* base = dst;
 	while (*src != '\0') {
-		if (*src == '\\' || *src == '/' || *src == ':' || *src == '*' || *src == '?' || *src == '\"' || *src == '<' || *src == '>' || *src == '|') *dst = PATH_SANITIZE_CHAR;
+		if (*src == '\\' || *src == '/' || *src == ':' || *src == '*' || *src == '?' || *src == '\"' || *src == '<' || *src == '>' || *src == '|') *dst = CH_PATH_SANITIZE;
 		else *dst = *src;
 		++dst;
 		++src;
 	}
 	*dst = '\0';
+	ret dst - base;
 }
 
-SI ProcCurEnvvarGet(CH*, cx CH*, SI);
-
-constexpr CH PATH_ENVVAR_CHAR = '%';
+dfa SI ProcEnvvarGet(CH*, cx CH*, SI);
 
 dfa SI PathEnvvarResolve(CH* path) {
 	CH* p = path;
 	while (*p != '\0') {
-		if (*p == PATH_ENVVAR_CHAR) {
+		if (*p == CH_PATH_ENVVAR) {
 			CH*cx pFirst = p;
 			do {
 				++p;
-			} while (*p != PATH_ENVVAR_CHAR && *p != PATH_DIR_SEPARATOR && *p != '\0');
-			if (*p == PATH_ENVVAR_CHAR) {
+			} while (*p != CH_PATH_ENVVAR && *p != CH_PATH_DIR && *p != '\0');
+			if (*p == CH_PATH_ENVVAR) {
 				CH buf[PATH_LEN_MAX + 1];
 				*p = '\0';
-				cx SI bufLen = ProcCurEnvvarGet(buf, pFirst + 1, PATH_LEN_MAX + 1);
-				*p = PATH_ENVVAR_CHAR;
+				cx SI bufLen = ProcEnvvarGet(buf, pFirst + 1, PATH_LEN_MAX + 1);
+				*p = CH_PATH_ENVVAR;
 				if (bufLen > 0 && bufLen < PATH_LEN_MAX + 1) {
 					StrReplace(pFirst, buf, 0, SI(p - pFirst) + 1);
 					p = pFirst + bufLen;

@@ -24,13 +24,13 @@ dfa BO ProcCurIsElevated() {
 	FreeSid(sid);
 	ret BO(isElevated);
 }
-dfa SI ProcCurFilePathGet(CH* path) {
+dfa SI ProcFilePath(CH* path) {
 	path[0] = '\0';
 	cx SI r = GetModuleFileNameW(NUL, path, PATH_LEN_MAX);
 	ifu (r == PATH_LEN_MAX) ret r - 1;
 	ret r;
 }
-dfa SI ProcCurEnvvarGet(CH* val, cx CH* envvar, SI valLenMax) {
+dfa SI ProcEnvvarGet(CH* val, cx CH* envvar, SI valLenMax) {
 	ifl (valLenMax > 0) val[0] = '\0';
 	cx SI r = GetEnvironmentVariableW(envvar, val, DWORD(valLenMax));
 	ifu (r >= valLenMax && valLenMax > 0) val[0] = '\0';
@@ -154,7 +154,7 @@ public:
 dfa ER ProcCurRestartElevated() {
 	if (ProcCurIsElevated()) rets;
 	Proc proc;
-	ife (proc.StartElevated(ProcCurFilePathGet(), StrArgSkip(ProcCurArgFullGet()), ProcCurWorkPathGet())) retep;
+	ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcCurArgFullGet()), ProcWorkPath())) retep;
 	proc.__Drop();
 	ProcCurExit(0);
 	rets;
@@ -238,7 +238,7 @@ public:
 
 dfa BO ProcGlobalTake() {
 	CH path[PATH_LEN_MAX + 1];
-	ProcCurFilePathGet(path);
+	ProcFilePath(path);
 	PathSanitize(path, path);
 	ProcGlobalStr global;
 	ife (global.Open(path)) ret NO;
