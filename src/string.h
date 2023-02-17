@@ -59,6 +59,24 @@ dfa cx CH* StrFind(cx CH* main, cx CH* sub) {
 	ret wcsstr(main, sub);
 }
 
+dfa SI CsstrToChstr(CH* dst, cx CS* src) {
+	cx CH* cx dstBase = dst;
+	while (*src != '\0') *dst++ = *src++;
+	*dst = '\0';
+	ret SI(dst - dstBase);
+}
+dfa SI ChstrToCsstr(CS* dst, cx CH* src) {
+	cx CS* cx dstBase = dst;
+	while (*src != '\0') {
+		if (*src > CH(CS_VAL_MAX)) *dst = CH_NA;
+		else *dst = CS(*src);
+		++dst;
+		++src;
+	}
+	*dst = '\0';
+	ret SI(dst - dstBase);
+}
+
 tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right) {
 	cx SI leftLen = StrLen(left);
 	MemSet(dst, left, leftLen * siz(T1));
