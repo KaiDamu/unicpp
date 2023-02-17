@@ -43,3 +43,21 @@ dfa F4 U4ToF4(U4 val) {
 dfa F4 S4ToF4(S4 val) {
 	ret F4(val);
 }
+
+tpl1 SI U4ToStr(T1* dst, U4 src) {
+	cx SI len = LenU4(src);
+	*(dst += len) = '\0';
+	switch (len) {
+	case 10: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  9: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  8: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  7: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  6: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  5: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  4: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  3: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	case  2: *(--dst) = T1(src % 10 + '0'); src /= 10; falltru;
+	default: *(--dst) = T1(src % 10 + '0');
+	}
+	ret len;
+}

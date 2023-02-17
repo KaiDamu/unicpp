@@ -67,7 +67,7 @@ dfa U1 ByteUnobfuscate(U1 val, U1 i) {
 	ret U1(val - (i ^ 0xAA)) ^ 0x55;
 }
 
-dfa U4 LenU4(U4 val) {
+dfa SI LenU4(U4 val) {
 	ifu (val < 10) ret 1;
 	else ifu (val < 100) ret 2;
 	else ifu (val < 1000) ret 3;

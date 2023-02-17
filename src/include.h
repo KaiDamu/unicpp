@@ -28,8 +28,8 @@
 
 #include "value.h"
 #include "error.h"
-#include "typeconvert.h"
 #include "math.h"
+#include "typeconvert.h"
 #include "vector.h"
 #include "matrix.h"
 #include "char.h"
