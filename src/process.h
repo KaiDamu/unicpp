@@ -236,10 +236,14 @@ public:
 	}
 };
 
-dfa BO ProcGlobalTake() {
-	CH path[PATH_LEN_MAX + 1];
-	ProcFilePath(path);
-	PathSanitize(path, path);
+dfa BO ProcGlobalTake(cx CH* str = NUL) {
+	CH path[PATH_LENX_MAX];
+	if (str == NUL) {
+		ProcFilePath(path);
+		PathSanitize(path, path);
+	} else {
+		StrSet(path, str);
+	}
 	ProcGlobalStr global;
 	ife (global.Open(path)) ret NO;
 	global.__Drop();
