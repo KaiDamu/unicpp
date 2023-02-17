@@ -297,17 +297,16 @@ public:
 		if (val == NUL) ret SStr();
 		ret *val;
 	}
-	dfa ER LoadFileCfg(cx CH* path) {
-		FileMem file;
-		ife (file.OpenRead(path)) retep;
-		SStr line;
+	dfa SI LoadMemCfg(DatIte<U1> dat) {
+		DatIte<U1> dat_ = dat;
 		Arr<CS> buf;
 		Arr<CS> buf2;
 		Arr<CS> hdr;
 		SI hdrLen = 0;
-		while (file.ReadLine(line)) {
-			buf.Req(line.Len() + 1);
-			MemSet(buf.Ptr(), line.Get(), (line.Len() + 1) * siz(CS));
+		while (dat_.HasNextLine()) {
+			buf.Req(dat_.NextLineLen() + 1);
+			cx SI readLen = dat_.ReadLine((U1*)buf.Ptr());
+			buf[readLen] = '\0';
 			CS* p = (CS*)StrFind(buf.Ptr(), '=');
 			if (p == NUL) {
 				p = (CS*)StrFind(buf.Ptr(), '[');
@@ -337,6 +336,13 @@ public:
 				}
 			}
 		}
+		ret dat_.Pos() - dat.Pos();
+	}
+	dfa ER LoadFileCfg(cx CH* path) {
+		Arr<U1> fileDat;
+		ife (FileToArr(fileDat, path)) retep;
+		cx SI len = tx->LoadMemCfg(fileDat.ToDatIte());
+		unused(len);
 		rets;
 	}
 public:
