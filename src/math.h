@@ -66,3 +66,16 @@ dfa U1 ByteObfuscate(U1 val, U1 i) {
 dfa U1 ByteUnobfuscate(U1 val, U1 i) {
 	ret U1(val - (i ^ 0xAA)) ^ 0x55;
 }
+
+dfa U4 LenU4(U4 val) {
+	ifu (val < 10) ret 1;
+	else ifu (val < 100) ret 2;
+	else ifu (val < 1000) ret 3;
+	else ifu (val < 10000) ret 4;
+	else ifu (val < 100000) ret 5;
+	else ifu (val < 1000000) ret 6;
+	else ifu (val < 10000000) ret 7;
+	else ifu (val < 100000000) ret 8;
+	else ifu (val < 1000000000) ret 9;
+	ret 10;
+}
