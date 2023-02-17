@@ -70,6 +70,30 @@ public:
 		tx->Write(dat, cnt);
 	}
 public:
+	dfa SI ReadLine(T1* dat) {
+		AU curBase = m_cur;
+		AU curEnd = m_ptr + m_cap;
+		ifu (m_cur == curEnd) ret -1;
+		while ((m_cur != curEnd) && (IsEol<T1>(*m_cur) == NO)) *dat++ = *m_cur++;
+		cx SI len = m_cur - curBase;
+		if (m_cur != curEnd) {
+			++m_cur;
+			if ((m_cur != curEnd) && (*m_cur == CH_LF) && (*(m_cur - 1) == CH_CR)) ++m_cur;
+		}
+		ret len;
+	}
+	dfa SI NextLineLen() const {
+		AU cur = m_cur;
+		AU curBase = cur;
+		AU curEnd = m_ptr + m_cap;
+		ifu (cur == curEnd) ret -1;
+		while ((cur != curEnd) && (IsEol<T1>(*cur) == NO)) ++cur;
+		ret cur - curBase;
+	}
+	dfa BO HasNextLine() const {
+		ret (m_cur != m_ptr + m_cap);
+	}
+public:
 	dfa T1& operator [] (SI i) const {
 		Assert(i < m_cap);
 		ret m_ptr[i];
@@ -81,9 +105,6 @@ public:
 	dfa DatIte(SI cnt) {
 		tx->Init();
 		tx->New(cnt);
-	}
-	dfa ~DatIte() {
-		tx->Del();
 	}
 };
 
@@ -106,6 +127,13 @@ public:
 	}
 	dfa NT __CapMax() {
 		m_cap = SI_VAL_MAX;
+	}
+public:
+	dfa DatIte<T1> ToDatIte() const {
+		DatIte<T1> datIte;
+		datIte.Src(m_ptr.Get(), m_cap);
+		datIte.CurMove(m_cur - m_ptr.Get());
+		ret datIte;
 	}
 public:
 	dfa NT Del() {
@@ -195,6 +223,9 @@ public:
 	dfa T1& operator [] (SI i) const {
 		Assert(i < m_cap);
 		ret m_ptr[i];
+	}
+	dfa operator DatIte<T1>() const {
+		ret tx->ToDatIte();
 	}
 public:
 	dfa Arr() {
