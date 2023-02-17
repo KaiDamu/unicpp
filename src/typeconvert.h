@@ -44,7 +44,7 @@ dfa F4 S4ToF4(S4 val) {
 	ret F4(val);
 }
 
-SI U4ToStr(CH* dst, U4 src) {
+dfa SI U4ToStr(CH* dst, U4 src) {
 	cx SI len = LenU4(src);
 	*(dst += len) = '\0';
 	switch (len) {
@@ -60,4 +60,27 @@ SI U4ToStr(CH* dst, U4 src) {
 	default: *(--dst) = CH(src % 10 + '0');
 	}
 	ret len;
+}
+
+dfa SI StrToU4(U4& dst, cx CS* src) {
+	dst = 0;
+	cx CS* p = src;
+	while (IsNumBase10(*p)) dst = dst * 10 + (*p++) - '0';
+	ret SI(p - src);
+}
+dfa SI StrToU4(U4& dst, cx CS* src, SI len) {
+	dst = 0;
+	switch (len) {
+	case 10: dst += ((*src++) - '0') * 1000000000; falltru;
+	case  9: dst += ((*src++) - '0') * 100000000; falltru;
+	case  8: dst += ((*src++) - '0') * 10000000; falltru;
+	case  7: dst += ((*src++) - '0') * 1000000; falltru;
+	case  6: dst += ((*src++) - '0') * 100000; falltru;
+	case  5: dst += ((*src++) - '0') * 10000; falltru;
+	case  4: dst += ((*src++) - '0') * 1000; falltru;
+	case  3: dst += ((*src++) - '0') * 100; falltru;
+	case  2: dst += ((*src++) - '0') * 10; falltru;
+	case  1: dst += (*src) - '0'; falltru;
+	default: ret len;
+	}
 }
