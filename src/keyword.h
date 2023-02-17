@@ -16,15 +16,16 @@
 #define sizb4(_) S4(siz(_) * BIT_IN_BYTE)
 #define sizb8(_) S8(siz(_) * BIT_IN_BYTE)
 #define nooptimize __attribute__((optimize("O0")))
-#define falltru __attribute__((fallthrough))
 
 #define unused(var) static_cast<NT>(var)
 #define unimp Assert(!"unimplemented")
 
 #ifdef PROG_COMPILER_GCC
+	#define falltru __attribute__((fallthrough))
 	#define ifu(cond) if (__builtin_expect((cond), NO))
 	#define ifl(cond) if (__builtin_expect((cond), YES))
 #else
+	#define falltru
 	#define ifu(cond) if (cond)
 	#define ifl(cond) if (cond)
 #endif
