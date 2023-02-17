@@ -66,7 +66,7 @@
 #include "console.h" // to rework
 #include "network.h"
 #include "clipboard.h" // to rework
-#include "vfs.h" // to rework
+#include "vfs.h"
 #ifdef INCLUDE_KEYB
 	#include "keyboard.h" // to rework
 #endif
