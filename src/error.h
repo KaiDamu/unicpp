@@ -11,6 +11,7 @@ enum : ErrVal {
 	ERR_THD,
 	ERR_EVT,
 	ERR_DRV,
+	ERR_PATH,
 	ERR_FILE,
 	ERR_DIR,
 	ERR_PIPE,
