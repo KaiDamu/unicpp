@@ -451,3 +451,25 @@ public:
 		tx->Close();
 	}
 };
+
+dfa ER FileToDatIte(DatIte<U1>& datIte, cx CH* path) {
+	File file;
+	ife (file.OpenRead(path)) retep;
+	SI size;
+	ife (file.SizeGet(size)) retep;
+	Ptr<U1> buf(size);
+	ife (file.Read(buf.Get(), size)) retep;
+	datIte.Src(buf.Get(), size);
+	ife (file.Close()) retep;
+	rets;
+}
+dfa ER FileToArr(Arr<U1>& arr, cx CH* path) {
+	File file;
+	ife (file.OpenRead(path)) retep;
+	SI size;
+	ife (file.SizeGet(size)) retep;
+	arr.New(size);
+	ife (file.Read(arr.Ptr(), size)) retep;
+	ife (file.Close()) retep;
+	rets;
+}
