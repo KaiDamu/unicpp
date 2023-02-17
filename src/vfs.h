@@ -116,9 +116,9 @@ private:
 		rets;
 	}
 	dfa ER WriteEntryDat(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, cx VfsNewInfo& info) const {
+		cx SI datOfsHdr = datOfsList.Read();
 		if (fileEntry.info.datSize == 0) rets;
 		cx SI datOfsNow = fileDst.CurPos();
-		cx SI datOfsHdr = datOfsList.Read();
 		cx U8 datOfsNow_ = U8(datOfsNow);
 		ife (fileDst.CurSet(datOfsHdr)) retep;
 		ife (fileDst.Write(&datOfsNow_, siz(U8))) retep;
@@ -163,9 +163,6 @@ private:
 		entry.datOfs = SI(datOfs);
 		entry.datSize = SI(datSize);
 		entry.pathLen = SI(pathLen);
-		rets;
-	}
-	dfa ER ReadEntryDat(FileMem& fileSrc) {
 		rets;
 	}
 private:
