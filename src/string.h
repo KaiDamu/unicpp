@@ -274,3 +274,11 @@ public:
 
 using Str = StrBase<CH>;
 using SStr = StrBase<CS>;
+
+dfa Str ToStr(cx SStr& str) {
+	Str r;
+	Arr<CH> tmp(str.Len() + 1);
+	CsstrToChstr(tmp.Ptr(), str.Get());
+	r.Set(tmp.Ptr(), str.Len());
+	ret r;
+}
