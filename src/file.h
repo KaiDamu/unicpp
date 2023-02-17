@@ -473,3 +473,12 @@ dfa ER FileToArr(Arr<U1>& arr, cx CH* path) {
 	ife (file.Close()) retep;
 	rets;
 }
+
+dfa ER ArrToFile(cx CH* path, cx Arr<U1>& arr, BO isFull = NO) {
+	File file;
+	ife (file.OpenWrite(path)) retep;
+	cx SI size = isFull ? arr.Cap() : arr.Pos();
+	ife (file.Write(arr.Ptr(), size)) retep;
+	ife (file.Close()) retep;
+	rets;
+}
