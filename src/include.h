@@ -2,6 +2,12 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <type_traits>
+
+#include "import/stdc/type.h"
+#include "import/stdc/value.h"
+#include "import/stdc/function.h"
+
 #ifdef PROG_SYS_WIN
 	#define WINVER 0x0A00 // Windows 10
 	#ifdef PROG_COMPILER_MSVC
