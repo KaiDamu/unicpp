@@ -282,3 +282,8 @@ dfa Str ToStr(cx SStr& str) {
 	r.Set(tmp.Ptr(), str.Len());
 	ret r;
 }
+dfa Str ToStr(U4 val) {
+	CH buf[16];
+	U4ToStr(buf, val);
+	ret Str(buf);
+}
