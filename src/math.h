@@ -3,8 +3,14 @@
 tpl1 dfa T1 Min(T1 a, T1 b) {
 	ret ((a < b) ? a : b);
 }
+tpl1 dfa T1 Min(T1 a, T1 b, T1 c) {
+	ret Min<T1>(Min<T1>(a, b), c);
+}
 tpl1 dfa T1 Max(T1 a, T1 b) {
 	ret ((a > b) ? a : b);
+}
+tpl1 dfa T1 Max(T1 a, T1 b, T1 c) {
+	ret Max<T1>(Max<T1>(a, b), c);
 }
 tpl1 dfa T1 Clamp(T1 val, T1 min, T1 max) {
 	ret Min<T1>(Max<T1>(val, min), max);
@@ -15,8 +21,12 @@ tpl1 dfa T1 Abs(T1 val) {
 tpl1 dfa T1 Sign(T1 val) {
 	ret ((val < 0) ? -1 : 1);
 }
-tpl1 dfa T1 Square(T1 val) {
+tpl1 dfa T1 Pow2(T1 val) {
 	ret val * val;
+}
+tpl1 dfa T1 Sqrt(T1 val) {
+	ifu (val < 0) ret T1(-sqrt(-val)); // Non-standard
+	ret T1(sqrt(val));
 }
 tpl1 dfa T1 AlignBit(T1 val, T1 size) {
 	ret (val + (size - 1)) & ~(size - 1);
@@ -65,6 +75,13 @@ dfa U1 ByteObfuscate(U1 val, U1 i) {
 }
 dfa U1 ByteUnobfuscate(U1 val, U1 i) {
 	ret U1(val - (i ^ 0xAA)) ^ 0x55;
+}
+
+tpl1 dfa T1 RotL(T1 val, SI cnt) {
+	ret (val << cnt) | (val >> (sizb(T1) - cnt));
+}
+tpl1 dfa T1 RotR(T1 val, SI cnt) {
+	ret (val >> cnt) | (val << (sizb(T1) - cnt));
 }
 
 dfa SI LenU4(U4 val) {
