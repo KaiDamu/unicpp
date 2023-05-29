@@ -82,3 +82,12 @@ dfa CS CHToCS(CH val) {
 	if (val > CS_VAL_MAX) ret CS(CH_NA);
 	ret CS(val);
 }
+
+tpl1 dfa T1 ToLowcase(cx T1& c) {
+	if (IsUpcase<T1>(c)) ret c + 'a' - 'A';
+	ret c;
+}
+tpl1 dfa T1 ToUpcase(cx T1& c) {
+	if (IsLowcase<T1>(c)) ret c + 'A' - 'a';
+	ret c;
+}
