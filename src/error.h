@@ -17,6 +17,7 @@ enum : ErrVal {
 	ERR_PIPE,
 	ERR_CLIPB,
 	ERR_ENV,
+	ERR_TOKEN,
 	ERR_CUR,
 	ERR_HOOK,
 	ERR_LOCK,
