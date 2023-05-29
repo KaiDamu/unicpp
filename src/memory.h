@@ -76,17 +76,17 @@ dfa NT MemUnobfuscate(GA dst, SI size) {
 	ite (i, i < size) dst_[i] = ByteUnobfuscate(dst_[i], U1(i));
 }
 
-GA operator new (UA size) {
+GA operator new (size_t size) {
 	ret MemNew(size);
 }
-GA operator new[](UA size) {
+GA operator new[](size_t size) {
 	ret MemNew(size);
 }
-GA operator new (UA size, GA ptr) {
+GA operator new (size_t size, GA ptr) {
 	ret ptr;
 	unused(size);
 }
-GA operator new[](UA size, GA ptr) {
+GA operator new[](size_t size, GA ptr) {
 	ret ptr;
 	unused(size);
 }
@@ -96,11 +96,11 @@ NT operator delete (GA ptr) {
 NT operator delete[](GA ptr) {
 	MemDel(ptr);
 }
-NT operator delete (GA ptr, UA size) {
+NT operator delete (GA ptr, size_t size) {
 	unused(size);
 	MemDel(ptr);
 }
-NT operator delete[](GA ptr, UA size) {
+NT operator delete[](GA ptr, size_t size) {
 	unused(size);
 	MemDel(ptr);
 }
