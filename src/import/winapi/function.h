@@ -4,6 +4,7 @@
 
 #ifdef PROG_COMPILER_MSVC
 	#pragma comment(lib, "ntdll.lib")
+	#pragma comment(lib, "user32.lib")
 #endif
 
 extern "C" {

@@ -3,5 +3,7 @@
 #define _importfnstdc(retType) __declspec(dllimport) retType __cdecl
 
 extern "C" {
-	_importfnstdc(double)sqrt(double);
+	#ifdef PROG_COMPILER_GCC
+		_importfnstdc(double)sqrt(double);
+	#endif
 }
