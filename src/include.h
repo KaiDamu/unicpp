@@ -4,6 +4,8 @@
 #include <time.h>
 #include <type_traits>
 
+using namespace std;
+
 #include "import/stdc/type.h"
 #include "import/stdc/value.h"
 #include "import/stdc/function.h"
