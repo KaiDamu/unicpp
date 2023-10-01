@@ -24,6 +24,13 @@ public:
 		ret m_len;
 	}
 public:
+	dfa BO CurIsFirst() const {
+		ret m_cur == m_first;
+	}
+	dfa BO CurIsLast() const {
+		ret m_cur == m_last;
+	}
+public:
 	dfa T1* GetCur() const {
 		ret tx->CurDat();
 	}
@@ -210,12 +217,36 @@ public:
 		tx->DelAll();
 	}
 public:
-	dfa DList() {
-		m_first = NUL;
-		m_last = NUL;
-		m_cur = NUL;
-		m_len = 0;
+	dfa DList& operator = (cx DList& list) {
+		tx->Clr();
+		DListElem* elem = list.m_first;
+		while (elem != NUL) {
+			AU datPtr = tx->NewLast();
+			*datPtr = elem->dat;
+			elem = elem->next;
+		}
+		ret *tx;
 	}
+	dfa DList(cx DList& list) :
+		m_first(NUL),
+		m_last(NUL),
+		m_cur(NUL),
+		m_len(0) {
+		tx->Clr();
+		DListElem* elem = list.m_first;
+		while (elem != NUL) {
+			AU datPtr = tx->NewLast();
+			*datPtr = elem->dat;
+			elem = elem->next;
+		}
+	}
+public:
+	dfa DList() :
+		m_first(NUL),
+		m_last(NUL),
+		m_cur(NUL),
+		m_len(0)
+	{}
 	dfa ~DList() {
 		tx->Clr();
 	}

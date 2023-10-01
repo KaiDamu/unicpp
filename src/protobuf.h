@@ -139,7 +139,7 @@ public:
 		m_bufEnd = NUL;
 		m_fieldId = PRB_FIELD_ID_NONE;
 		m_stackLen = 0;
-		MemSet(m_stackHashByte, PRB_FIELD_ID_NONE, PRB_CTX_STACK_LEN_MAX);
+		MemSetVal(m_stackHashByte, PRB_FIELD_ID_NONE, PRB_CTX_STACK_LEN_MAX);
 		m_valU8 = 0;
 	}
 	dfa NT Init(cx U1* buf, SI bufSize) {

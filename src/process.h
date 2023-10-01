@@ -3,6 +3,7 @@
 dfa HANDLE _ProcHdlGetNt() {
 	ret reinterpret_cast<HANDLE>(-1);
 }
+
 dfa NT ProcCurCrash() {
 	volatile U1 x = U1(clock());
 	volatile U1 y = *reinterpret_cast<U1*>(UA(x ^ x));
@@ -48,6 +49,17 @@ dfa cx CH* ProcCurArgFullGet() {
 	ret GetCommandLineW();
 }
 
+dfa ER ProcNewFile(cx CH* path) {
+	SHELLEXECUTEINFOW info = {};
+	info.cbSize = siz(info);
+	info.fMask = SEE_MASK_NOCLOSEPROCESS;
+	info.lpVerb = L"open";
+	info.lpFile = path;
+	info.nShow = SW_SHOW;
+	ifu (ShellExecuteExW(&info) == NO || UA(info.hInstApp) <= 32 || info.hProcess == NUL) rete(ERR_PROC);
+	rets;
+}
+
 class Proc {
 private:
 	PROCESS_INFORMATION m_info;
@@ -83,7 +95,7 @@ public:
 		if (tx->IsActive()) rete(ERR_YES_ACTIVE);
 		ifu (m_info.hThread != NUL && CloseHandle(m_info.hThread) == 0) rete(ERR_THD);
 		ifu (m_info.hProcess != NUL && CloseHandle(m_info.hProcess) == 0) rete(ERR_PROC);
-		MemSet(&m_info, U1(0), siz(m_info));
+		MemSetVal(&m_info, 0, siz(m_info));
 		m_args = L"";
 		rets;
 	}
@@ -103,11 +115,11 @@ public:
 			m_args += args;
 		}
 		STARTUPINFOW tmp = {};
-		MemSet(&tmp, U1(0), siz(tmp));
+		MemSetVal(&tmp, 0, siz(tmp));
 		tmp.cb = siz(tmp);
 		cx BOOL result = CreateProcessW(path, const_cast<CH*>(m_args.Get()), NUL, NUL, NO, 0, NUL, workPath, &tmp, &m_info);
 		ifu (result == 0) {
-			MemSet(&m_info, U1(0), siz(m_info));
+			MemSetVal(&m_info, 0, siz(m_info));
 			m_args = L"";
 			rete(ERR_PROC);
 		}
@@ -119,7 +131,6 @@ public:
 		ife (tx->Close()) retep;
 		m_args = args;
 		SHELLEXECUTEINFOW sei = {};
-		MemSet(&sei, U1(0), siz(sei));
 		sei.cbSize = siz(sei);
 		sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
 		sei.lpVerb = L"runas";
@@ -131,7 +142,7 @@ public:
 			m_args = L"";
 			rete(ERR_PROC);
 		}
-		MemSet(&m_info, U1(0), siz(m_info));
+		MemSetVal(&m_info, 0, siz(m_info));
 		m_info.hProcess = sei.hProcess;
 		rets;
 	}
@@ -143,7 +154,7 @@ public:
 	}
 public:
 	dfa Proc() {
-		MemSet(&m_info, U1(0), siz(m_info));
+		MemSetVal(&m_info, 0, siz(m_info));
 	}
 	dfa ~Proc() {
 		tx->Stop();

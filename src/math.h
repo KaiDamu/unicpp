@@ -84,15 +84,38 @@ tpl1 dfa T1 RotR(T1 val, SI cnt) {
 	ret (val >> cnt) | (val << (sizb(T1) - cnt));
 }
 
-dfa SI LenU4(U4 val) {
-	ifu (val < 10) ret 1;
-	else ifu (val < 100) ret 2;
-	else ifu (val < 1000) ret 3;
-	else ifu (val < 10000) ret 4;
-	else ifu (val < 100000) ret 5;
-	else ifu (val < 1000000) ret 6;
-	else ifu (val < 10000000) ret 7;
-	else ifu (val < 100000000) ret 8;
-	else ifu (val < 1000000000) ret 9;
-	ret 10;
+tpl1 dfa T1 RevByte(T1 val) {
+	U1*cx b = (U1*)&val;
+	ite (i, i < siz(T1) / 2) Swap<U1>(b[i], b[siz(T1) - 1 - i]);
+	ret val;
+}
+
+tpl1 dfa SI LenInt(T1 val) {
+	SI sign = 0;
+	if (val < 0) {
+		val = -val;
+		sign = 1;
+	}
+	SI num = 0;
+	if (val < 10) num = 1;
+	else if (val < 100) num = 2;
+	else if (val < 1000) num = 3;
+	else if (val < 10000) num = 4;
+	else if (val < 100000) num = 5;
+	else if (val < 1000000) num = 6;
+	else if (val < 10000000) num = 7;
+	else if (val < 100000000) num = 8;
+	else if (val < 1000000000) num = 9;
+	else if (val < 10000000000ULL) num = 10;
+	else if (val < 100000000000ULL) num = 11;
+	else if (val < 1000000000000ULL) num = 12;
+	else if (val < 10000000000000ULL) num = 13;
+	else if (val < 100000000000000ULL) num = 14;
+	else if (val < 1000000000000000ULL) num = 15;
+	else if (val < 10000000000000000ULL) num = 16;
+	else if (val < 100000000000000000ULL) num = 17;
+	else if (val < 1000000000000000000ULL) num = 18;
+	else if (val < 10000000000000000000ULL) num = 19;
+	else num = 20;
+	ret num + sign;
 }

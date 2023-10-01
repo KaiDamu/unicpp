@@ -22,6 +22,7 @@ using CXGA = const void*;
 using NT = void;
 
 #define AU auto
+#define TO decltype
 
 #ifdef PROG_ADR_SIZE_4
 	using UA = U4;

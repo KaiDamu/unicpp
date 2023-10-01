@@ -2,11 +2,23 @@
 
 constexpr SI STR_EX_LEN = 1;
 
+#define CsstrSetForm sprintf
+#define ChstrSetForm swprintf
+
+#define CsstrGetForm sscanf
+#define ChstrGetForm swscanf
+
 dfa SI StrLen(cx CS* str) {
 	ret __builtin_strlen(str);
 }
 dfa SI StrLen(cx CH* str) {
 	ret wcslen(str);
+}
+dfa SI StrLenx(cx CS* str) {
+	ret StrLen(str) + STR_EX_LEN;
+}
+dfa SI StrLenx(cx CH* str) {
+	ret StrLen(str) + STR_EX_LEN;
 }
 dfa NT StrSet(CS* dst, cx CS* src) {
 	#ifdef PROG_COMPILER_GCC
@@ -90,7 +102,7 @@ tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right) {
 	*dst = '\0';
 	ret leftLen + srcLen + rightLen;
 }
-tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len) {
+tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len) { // insert 'str' at 'i' in 'dst' while overwriting 'len' characters
 	i += len;
 	SI dstLen = StrLen(dst);
 	cx SI strLen = StrLen(str) - len;
@@ -106,8 +118,17 @@ tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len) {
 	MemSet(dst + i - len, str, (strLen + len) * siz(T1));
 	ret dstLen + strLen;
 }
-tpl1 dfa SI StrInsert(T1* dst, cx T1* str, SI i) {
+tpl1 dfa SI StrInsert(T1* dst, cx T1* str, SI i) { // insert 'str' at 'i' in 'dst'
 	ret StrReplace(dst, str, i, 0);
+}
+tpl1 dfa SI StrRemove(T1* dst, SI i, SI len) { // remove 'len' characters from 'dst' starting at 'i'
+	T1* dstP = dst + i;
+	while (*dstP != '\0') {
+		*dstP = *(dstP + len);
+		++dstP;
+	}
+	*dstP = '\0';
+	ret SI(dstP - dst);
 }
 tpl1 dfa SI StrSubChar(T1* dst, cx T1* charList) {
 	cx T1*cx dstBase = dst;
@@ -259,6 +280,8 @@ public:
 	dfa BO operator <= (cx StrBase& str) const { ret (StrCmp(tx->Get(), str.Get()) <= 0); }
 	dfa BO operator >= (cx StrBase& str) const { ret (StrCmp(tx->Get(), str.Get()) >= 0); }
 public:
+	dfa operator cx T1* () const { ret tx->Get(); }
+public:
 	dfa StrBase() {
 		tx->Init();
 	}
@@ -281,9 +304,4 @@ dfa Str ToStr(cx SStr& str) {
 	CsstrToChstr(tmp.Ptr(), str.Get());
 	r.Set(tmp.Ptr(), str.Len());
 	ret r;
-}
-dfa Str ToStr(U4 val) {
-	CH buf[16];
-	U4ToStr(buf, val);
-	ret Str(buf);
 }

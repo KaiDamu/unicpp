@@ -20,6 +20,7 @@ enum class ConCol : U1 {
 };
 
 constexpr SI CON_BUF_LEN_MAX = 1024;
+constexpr SI CON_HISTORY_CNT_MAX = 32;
 
 ConCol g_conCol = ConCol::WHITE;
 ConCol g_conColReal = g_conCol;
@@ -62,9 +63,58 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen) {
 	ife (_ConColUpd()) retep;
 	cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
 	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_NO_EXIST);
-	DWORD result;
-	ifu (WriteConsoleA(hdl, buf, DWORD(bufLen), &result, NUL) == 0) rete(ERR_CON);
-	ifu (result != bufLen) rete(ERR_CON);
+	cx AU end = buf + bufLen;
+	AU cur = buf;
+	ConCol colOld;
+	ife (ConColGet(colOld));
+	while (cur != end) {
+		AU first = cur;
+		AU last = TO(first)(NUL);
+		while ((cur + 2 < end) && !((*cur == '&') && (*(cur + 2) == ';'))) ++cur;
+		ConCol colNew;
+		BO isColNew = NO;
+		if (cur + 2 < end) {
+			isColNew = YES;
+			cx AU code = *(cur + 1);
+			switch (code) {
+			case '0': colNew = ConCol::BLACK; break;
+			case '1': colNew = ConCol::DARK_BLUE; break;
+			case '2': colNew = ConCol::DARK_GREEN; break;
+			case '3': colNew = ConCol::DARK_CYAN; break;
+			case '4': colNew = ConCol::DARK_RED; break;
+			case '5': colNew = ConCol::PURPLE; break;
+			case '6': colNew = ConCol::BROWN; break;
+			case '7': colNew = ConCol::LIGHT_GRAY; break;
+			case '8': colNew = ConCol::DARK_GRAY; break;
+			case '9': colNew = ConCol::BLUE; break;
+			case 'a': colNew = ConCol::GREEN; break;
+			case 'b': colNew = ConCol::CYAN; break;
+			case 'c': colNew = ConCol::RED; break;
+			case 'd': colNew = ConCol::MAGENTA; break;
+			case 'e': colNew = ConCol::YELLOW; break;
+			case 'f': colNew = ConCol::WHITE; break;
+			default:  colNew = ConCol::WHITE; break;
+			}
+			last = cur;
+			cur += 3;
+		} else {
+			last = end;
+			cur = end;
+		}
+		DWORD result;
+		cx AU writeLen = DWORD(last - first);
+		if (writeLen > 0) {
+			ifu ((WriteConsoleA(hdl, first, writeLen, &result, NUL) == 0) || (result != writeLen)) {
+				ife (ConColSet(colOld)) retep;
+				rete(ERR_CON);
+			}
+		}
+		if (isColNew) {
+			ife (ConColSet(colNew)) retep;
+			ife (_ConColUpd()) retep;
+		}
+	}
+	ife (ConColSet(colOld)) retep;
 	rets;
 }
 dfa ER _ConWriteRawCol(ConCol col, cx CS* buf, SI bufLen) {
@@ -139,7 +189,7 @@ dfa ER ConColGet(ConCol& col) {
 dfa ER ConWriteRaw(cx CS* format, ...) {
 	ife (ConReq()) retep;
 	AL args;
-	AlCreate(args, format);
+	AlNew(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
 		retep;
@@ -150,7 +200,7 @@ dfa ER ConWriteRaw(cx CS* format, ...) {
 dfa ER ConWrite(cx CS* format, ...) {
 	ife (ConReq()) retep;
 	AL args;
-	AlCreate(args, format);
+	AlNew(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
 		retep;
@@ -159,11 +209,26 @@ dfa ER ConWrite(cx CS* format, ...) {
 	ife (_ConWriteRaw("\n", 1)) retep;
 	rets;
 }
+dfa ER ConWriteDbg(cx CS* format, ...) {
+	ifdbg (YES) {
+		ife (ConReq()) retep;
+		ife (_ConWriteRawCol(ConCol::LIGHT_GRAY, "[DBG] ", 6)) retep;
+		AL args;
+		AlNew(args, format);
+		ife (_ConWriteRawAl(format, args)) {
+			AlDel(args);
+			retep;
+		}
+		AlDel(args);
+		ife (_ConWriteRaw("\n", 1)) retep;
+	}
+	rets;
+}
 dfa ER ConWriteInfo(cx CS* format, ...) {
 	ife (ConReq()) retep;
 	ife (_ConWriteRawCol(ConCol::GREEN, "[INFO] ", 7)) retep;
 	AL args;
-	AlCreate(args, format);
+	AlNew(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
 		retep;
@@ -176,7 +241,7 @@ dfa ER ConWriteWarn(cx CS* format, ...) {
 	ife (ConReq()) retep;
 	ife (_ConWriteRawCol(ConCol::YELLOW, "[WARNING] ", 10)) retep;
 	AL args;
-	AlCreate(args, format);
+	AlNew(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
 		retep;
@@ -189,7 +254,7 @@ dfa ER ConWriteErr(cx CS* format, ...) {
 	ife (ConReq()) retep;
 	ife (_ConWriteRawCol(ConCol::RED, "[ERROR] ", 8)) retep;
 	AL args;
-	AlCreate(args, format);
+	AlNew(args, format);
 	ife (_ConWriteRawAl(format, args)) {
 		AlDel(args);
 		retep;
@@ -198,43 +263,155 @@ dfa ER ConWriteErr(cx CS* format, ...) {
 	ife (_ConWriteRaw("\n", 1)) retep;
 	rets;
 }
-dfa SI ConReadStr(CS* str, SI strLenMax, BO isShow = YES) {
-	ife (ConReq()) ret -1;
-	ife (_ConBufEmpty()) ret -1;
-	cx HANDLE hdl = GetStdHandle(STD_INPUT_HANDLE);
-	ifu (hdl == INVALID_HANDLE_VALUE) ret -1;
-	INPUT_RECORD ir;
-	DWORD irRead;
-	SI strLen = 0;
+dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES) {
+	strLen = -1;
+	ifu (strLenxMax < STR_EX_LEN) rete(ERR_LOW_SIZE);
+	strLen = 0;
+	str[strLen] = '\0';
+	ife (ConReq()) retep;
+	ife (_ConBufEmpty()) retep;
+	cx AU hdl = GetStdHandle(STD_INPUT_HANDLE);
+	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_CON);
+	SI strPos = 0;
+	static vector<string>* s_history = NUL;
+	if (s_history == NUL) s_history = new vector<string>;
+	SI historyPos = -1;
 	while (YES) {
-		ifu (PeekConsoleInputW(hdl, &ir, 1, &irRead) == 0) ret -1;
+		INPUT_RECORD ir;
+		DWORD irRead;
+		ifu (PeekConsoleInputW(hdl, &ir, 1, &irRead) == 0) rete(ERR_CON);
 		if (irRead == 0) {
 			ThdWait(1);
 			continue;
 		}
-		ifu (ReadConsoleInputW(hdl, &ir, 1, &irRead) == 0) ret -1;
-		if (ir.EventType != KEY_EVENT || !ir.Event.KeyEvent.bKeyDown) continue;
-		if (ir.Event.KeyEvent.wVirtualKeyCode == VK_RETURN) {
-			ife (_ConWriteRaw("\n", 1)) ret -1;
+		ifu (ReadConsoleInputW(hdl, &ir, 1, &irRead) == 0) rete(ERR_CON);
+		if (ir.EventType != KEY_EVENT || !ir.Event.KeyEvent.bKeyDown) continue; // only keep key down
+		cx AU& vkCode = ir.Event.KeyEvent.wVirtualKeyCode;
+		switch (vkCode) {
+		case VK_RETURN: {
+			if (historyPos != -1) {
+				s_history->pop_back();
+			}
+			if (s_history->size() == 0 || StrCmp(str, (*s_history)[s_history->size() - 1].c_str()) != 0) {
+				if (s_history->size() == CON_HISTORY_CNT_MAX) s_history->erase(s_history->begin());
+				s_history->push_back(str);
+			}
+			ife (_ConWriteRaw("\n", 1)) retep;
+			rets;
+		}
+		case VK_ESCAPE: {
+			if (strLen < 1) break;
+			if (isShow) {
+				cx AU writeLen = strLen;
+				vector<CS> buf(writeLen);
+				MemSetVal(buf.data(), '\b', strPos * siz(CS));
+				ife (_ConWriteRaw(buf.data(), strPos)) retep;
+				MemSetVal(buf.data(), ' ', buf.size() * siz(CS));
+				ife (_ConWriteRaw(buf.data(), buf.size())) retep;
+				MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+				ife (_ConWriteRaw(buf.data(), buf.size())) retep;
+			}
+			strPos = 0;
+			strLen = 0;
+			str[strLen] = '\0';
 			break;
 		}
-		if (ir.Event.KeyEvent.wVirtualKeyCode == VK_BACK || ir.Event.KeyEvent.wVirtualKeyCode == VK_LEFT) {
-			if (strLen > 0) {
-				str[--strLen] = '\0';
-				if (isShow) ife (_ConWriteRaw("\b \b", 3)) ret -1;
+		case VK_BACK: {
+			if (strPos < 1) break;
+			--strPos;
+			strLen = StrRemove(str, strPos, 1);
+			if (isShow) {
+				ife (_ConWriteRaw("\b", 1)) retep;
+				cx AU writeLen = strLen - strPos;
+				ife (_ConWriteRaw(str + strPos, writeLen)) retep;
+				ife (_ConWriteRaw(" ", 1)) retep;
+				vector<CS> buf(writeLen + 1);
+				MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+				ife (_ConWriteRaw(buf.data(), buf.size())) retep;
 			}
-			continue;
+			break;
 		}
-		if (ir.Event.KeyEvent.wVirtualKeyCode == VK_RIGHT || ir.Event.KeyEvent.wVirtualKeyCode == VK_UP || ir.Event.KeyEvent.wVirtualKeyCode == VK_DOWN) {
-			continue;
+		case VK_LEFT: {
+			if (strPos > 0) {
+				--strPos;
+				if (isShow) ife (_ConWriteRaw("\b", 1)) retep;
+			}
+			break;
 		}
-		if (strLen < strLenMax - 1) {
-			str[strLen++] = CHToCS(CH(ir.Event.KeyEvent.uChar.UnicodeChar));
-			if (isShow) ife (ConWriteRaw("%c", ir.Event.KeyEvent.uChar.UnicodeChar)) ret -1;
+		case VK_RIGHT: {
+			if (strPos < strLen) {
+				++strPos;
+				if (isShow) ife (_ConWriteRaw(str + strPos - 1, 1)) retep;
+			}
+			break;
+		}
+		case VK_UP:
+		case VK_DOWN: {
+			if (s_history->size() < 1) break;
+			if (vkCode == VK_UP) {
+				if (historyPos == -1) {
+					if (s_history->size() == CON_HISTORY_CNT_MAX) s_history->erase(s_history->begin());
+					s_history->push_back(str);
+					historyPos = s_history->size() - 2;
+				} else if (historyPos > 0) {
+					if (historyPos == SI(s_history->size()) - 1) {
+						(*s_history)[historyPos] = str;
+					}
+					--historyPos;
+				} else {
+					break;
+				}
+			} else {
+				if ((historyPos != -1) && (historyPos < SI(s_history->size()) - 1)) {
+					++historyPos;
+				} else {
+					break;
+				}
+			}
+			if (isShow) {
+				cx AU writeLen = strLen;
+				vector<CS> buf(writeLen);
+				MemSetVal(buf.data(), '\b', strPos * siz(CS));
+				ife (_ConWriteRaw(buf.data(), strPos)) retep;
+				MemSetVal(buf.data(), ' ', buf.size() * siz(CS));
+				ife (_ConWriteRaw(buf.data(), buf.size())) retep;
+				MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+				ife (_ConWriteRaw(buf.data(), buf.size())) retep;
+			}
+			cx AU& strHistory = (*s_history)[historyPos];
+			strLen = Min<SI>(strHistory.size(), strLenxMax - STR_EX_LEN);
+			MemSet(str, strHistory.c_str(), strLen * siz(CS));
+			str[strLen] = '\0';
+			strPos = strLen;
+			ife (_ConWriteRaw(str, strLen)) retep;
+			break;
+		}
+		default: {
+			if (strLen >= strLenxMax - STR_EX_LEN) break;
+			cx CS c = CHToCS(CH(ir.Event.KeyEvent.uChar.UnicodeChar));
+			if (c == '\0') break;
+			cx CS s[2] = {c, '\0'};
+			strLen = StrInsert(str, s, strPos);
+			if (isShow) {
+				cx AU writeLen = strLen - strPos;
+				ife (_ConWriteRaw(str + strPos, writeLen)) retep;
+				if (writeLen - 1 > 0) {
+					vector<CS> buf(writeLen - 1);
+					MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+					ife (_ConWriteRaw(buf.data(), buf.size())) retep;
+				}
+			}
+			++strPos;
+			break;
+		}
+		case VK_TAB:
+		case VK_SHIFT:
+		case VK_CONTROL:
+		case VK_MENU: {
+			break;
+		}
 		}
 	}
-	str[strLen] = '\0';
-	ret strLen;
 }
 dfa ER ConWait() {
 	ife (ConReq()) retep;

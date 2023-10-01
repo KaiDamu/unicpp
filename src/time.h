@@ -1,18 +1,22 @@
 #pragma once
 
-U8 g_timeMainOfs = 0;
-U8 g_timeMainDivU = 0;
-F8 g_timeMainDivF = 0.0;
+using TmUnix = U8;
+using TmLdap = U8;
+using TmCpu = U8;
+using TmMain = F8;
 
-dfa U8 LdapToUnix(U8 ldap) {
+U8 g_timeMainOfs = 0;
+F8 g_timeMainDiv = 0.0;
+
+dfa TmUnix LdapToUnix(TmLdap ldap) {
 	ifu (ldap < 116444736000000000) ret 0;
 	ret ldap / 10000000 - 11644473600;
 }
-dfa U8 UnixToLdap(U8 unix) {
+dfa TmLdap UnixToLdap(TmUnix unix) {
 	ret unix * 10000000 + 116444736000000000;
 }
 
-dfa U8 CpuTsc() {
+dfa TmCpu CpuTsc() {
 	union {
 		U8 val;
 		U4 part[2];
@@ -50,28 +54,69 @@ dfa ER _TimeMainInit() {
 	ifu (QueryPerformanceFrequency(&val) == 0) {
 		rete(ERR_TIME);
 	}
-	cx U8 timeMainDivU = val.QuadPart / 1000;
 	cx F8 timeMainDivF = S8ToF8(val.QuadPart) / 1000.0;
 	ifu (QueryPerformanceCounter(&val) == 0) {
 		rete(ERR_TIME);
 	}
 	cx U8 timeMainOfs = val.QuadPart;
 	g_timeMainOfs = timeMainOfs;
-	g_timeMainDivU = timeMainDivU;
-	g_timeMainDivF = timeMainDivF;
+	g_timeMainDiv = timeMainDivF;
 	rets;
 }
-dfa U8 TimeMainU() {
+
+dfa TmMain TimeMain() {
 	LARGE_INTEGER val;
 	QueryPerformanceCounter(&val);
-	ret (val.QuadPart - g_timeMainOfs) / g_timeMainDivU;
-}
-dfa F8 TimeMainF() {
-	LARGE_INTEGER val;
-	QueryPerformanceCounter(&val);
-	ret U8ToF8(val.QuadPart - g_timeMainOfs) / g_timeMainDivF;
+	ret U8ToF8(val.QuadPart - g_timeMainOfs) / g_timeMainDiv;
 }
 
-dfa U8 TimeUnix() {
+dfa TmUnix TimeUnix() {
 	ret time(NUL);
 }
+
+class Timer {
+private:
+	TmMain m_time;
+	TmMain m_timeStart;
+	BO m_isRunning;
+private:
+	dfa TmMain TimeGet() {
+		ret TimeMain();
+	}
+public:
+	dfa TmMain Read() {
+		if (m_isRunning) {
+			cx AU timeNow = tx->TimeGet();
+			m_time += timeNow - m_timeStart;
+			m_timeStart = timeNow;
+		}
+		ret m_time;
+	}
+	dfa NT Start() {
+		ifu (m_isRunning) ret;
+		m_isRunning = YES;
+		m_timeStart = tx->TimeGet();
+	}
+	dfa TmMain Pause() {
+		ifu (!m_isRunning) ret m_time;
+		m_isRunning = NO;
+		m_time += tx->TimeGet() - m_timeStart;
+		ret m_time;
+	}
+	dfa TmMain Restart() {
+		cx AU timeNow = tx->TimeGet();
+		cx AU timeRet = m_isRunning ? (m_time + timeNow - m_timeStart) : m_time;
+		m_isRunning = YES;
+		m_time = 0.0;
+		m_timeStart = timeNow;
+		ret timeRet;
+	}
+public:
+	dfa Timer() :
+		m_time(),
+		m_timeStart(),
+		m_isRunning() {
+		tx->Restart();
+	}
+	dfa ~Timer() {}
+};

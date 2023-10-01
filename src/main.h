@@ -35,7 +35,7 @@ int main() {
 	ErrVal errVal = ERR_NONE;
 	ife (_Main()) errVal = ErrLastGet();
 	ifdbg (YES) {
-		cx F8 t = TimeMainF();
+		cx AU t = TimeMain();
 		ifu (errVal != ERR_NONE) ConWriteErr("Main error code : %u", errVal);
 		ConWriteInfo("Main execution time : %.3f ms", t);
 		ConWriteInfo("End of program");

@@ -74,24 +74,26 @@ private:
 		ret PathToAbs(path_, path) + 1; // +1 for CH_PATH_DIR
 	}
 private:
-	dfa ER FileEntryListGet(DList<FileEntry>& fileEntryList, cx CH* path) const {
+	dfa ER FileEntryListGet(list<FileEntry>& fileEntryList, cx CH* path) const {
 		ife (DirEnum(path, -1, [](cx FileInfo& fileInfo, GA param1, GA param2) {
-			DList<FileEntry>& fileEntryList_ = *(DList<FileEntry>*)param1;
-			FileEntry& fileEntry = *fileEntryList_.NewLast();
+			list<FileEntry>& fileEntryList_ = *(list<FileEntry>*)param1;
+			FileEntry fileEntry = {};
 			fileEntry.info = fileInfo;
 			fileEntry.path = fileInfo.path;
 			if ((fileEntry.info.attrib & FILE_ATTRIB_DIR) != 0) fileEntry.info.datSize = 0;
+			fileEntryList_.emplace_back(fileEntry);
 			ret YES;
 			unused(param2);
 		}, 0, &fileEntryList, NUL)) retep;
 		rets;
 	}
-	dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, DList<FileEntry>& fileEntryList) const {
+	dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, list<FileEntry>& fileEntryList) const {
 		cx U4 compress = U4(info.compress);
 		cx U4 encrypt = U4(info.encrypt);
-		cx U8 entryCnt = U8(fileEntryList.Len());
+		cx U8 entryCnt = U8(fileEntryList.size());
 		U8 datSize = 0;
-		ited (fileEntry, fileEntryList) datSize += fileEntry->info.datSize;
+		//ited (fileEntry, fileEntryList) datSize += fileEntry->info.datSize;
+		for (cx AU& fileEntry : fileEntryList) datSize += fileEntry.info.datSize;
 		ife (fileDst.Write(VFS_MAGIC, VFS_MAGIC_SIZE)) retep;
 		ife (fileDst.Write(&VFS_FORMAT_NEW, siz(U1))) retep;
 		ife (fileDst.Write(&info.flags, siz(U4))) retep;
@@ -167,26 +169,30 @@ private:
 	}
 private:
 	dfa NT Init() {
-		MemSet(&m_hdr, U1(0), siz(m_hdr));
+		MemSetVal(&m_hdr, 0, siz(m_hdr));
 	}
 public:
 	dfa ER New(cx CH* dst, cx CH* src, cx VfsNewInfo& info) {
 		ife (tx->ChkInfo(info)) retep;
-		DList<FileEntry> fileEntryList;
+		list<FileEntry> fileEntryList;
 		ife (tx->FileEntryListGet(fileEntryList, src)) retep;
 		FileMem fileDst;
 		ife (fileDst.OpenWrite(dst)) retep;
 		ife (tx->WriteHdr(fileDst, info, fileEntryList)) retep;
-		Arr<SI> datOfsList(fileEntryList.Len());
-		ited (fileEntry, fileEntryList) ife (tx->WriteEntry(fileDst, datOfsList, *fileEntry, tx->PathOfs(src))) retep;
+		Arr<SI> datOfsList(fileEntryList.size());
+		for (cx AU& fileEntry : fileEntryList) {
+			ife (tx->WriteEntry(fileDst, datOfsList, fileEntry, tx->PathOfs(src))) retep;
+		}
 		datOfsList.CurClr();
-		ited (fileEntry, fileEntryList) ife (tx->WriteEntryDat(fileDst, datOfsList, *fileEntry, info)) retep;
+		for (cx AU& fileEntry : fileEntryList) {
+			ife (tx->WriteEntryDat(fileDst, datOfsList, fileEntry, info)) retep;
+		}
 		ife (fileDst.Close()) retep;
 		rets;
 	}
 	dfa ER Close() {
 		ife (m_file.Close()) retep;
-		MemSet(&m_hdr, U1(0), siz(m_hdr));
+		MemSetVal(&m_hdr, 0, siz(m_hdr));
 		m_entryList.Clr();
 		rets;
 	}

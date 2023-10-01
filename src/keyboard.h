@@ -4,176 +4,183 @@
 	#error "PROG_THD_CNT_SINGLE with INCLUDE_KEYB is not supported!"
 #endif
 
-constexpr SI KEYB_KEY_CNT = 256;
 constexpr SI KEYB_KEY_STR_LEN_MAX = 4;
 
 constexpr U1 KEYB_HOOK_THD_CODE_ERR_NO = 0;
 constexpr U1 KEYB_HOOK_THD_CODE_ERR_YES = 1;
 constexpr U1 KEYB_HOOK_THD_CODE_WAIT = 2;
 
-enum CodeVk : U4 {
-	MOUS_KEY_LEFT = 0x01,
-	MOUS_KEY_RIGHT = 0x02,
-	KEYB_KEY_CANCEL = 0x03,
-	MOUS_KEY_MID = 0x04,
-	MOUS_KEY_EX1 = 0x05,
-	MOUS_KEY_EX2 = 0x06,
-	KEYB_KEY_BACK = 0x08,
-	KEYB_KEY_TAB = 0x09,
-	KEYB_KEY_CLEAR = 0x0C,
-	KEYB_KEY_ENTER = 0x0D,
-	KEYB_KEY_SHIFT = 0x10,
-	KEYB_KEY_CTRL = 0x11,
-	KEYB_KEY_ALT = 0x12,
-	KEYB_KEY_PAUSE = 0x13,
-	KEYB_KEY_CAPSLOCK = 0x14,
-	KEYB_KEY_ESC = 0x1B,
-	KEYB_KEY_SPACE = 0x20,
-	KEYB_KEY_PAGEUP = 0x21,
-	KEYB_KEY_PAGEDOWN = 0x22,
-	KEYB_KEY_END = 0x23,
-	KEYB_KEY_HOME = 0x24,
-	KEYB_KEY_LEFT = 0x25,
-	KEYB_KEY_UP = 0x26,
-	KEYB_KEY_RIGHT = 0x27,
-	KEYB_KEY_DOWN = 0x28,
-	KEYB_KEY_SELECT = 0x29,
-	KEYB_KEY_PRINT = 0x2A,
-	KEYB_KEY_EXE = 0x2B,
-	KEYB_KEY_SNAPSHOT = 0x2C,
-	KEYB_KEY_INSERT = 0x2D,
-	KEYB_KEY_DEL = 0x2E,
-	KEYB_KEY_HELP = 0x2F,
-	KEYB_KEY_0 = 0x30,
-	KEYB_KEY_1 = 0x31,
-	KEYB_KEY_2 = 0x32,
-	KEYB_KEY_3 = 0x33,
-	KEYB_KEY_4 = 0x34,
-	KEYB_KEY_5 = 0x35,
-	KEYB_KEY_6 = 0x36,
-	KEYB_KEY_7 = 0x37,
-	KEYB_KEY_8 = 0x38,
-	KEYB_KEY_9 = 0x39,
-	KEYB_KEY_A = 0x41,
-	KEYB_KEY_B = 0x42,
-	KEYB_KEY_C = 0x43,
-	KEYB_KEY_D = 0x44,
-	KEYB_KEY_E = 0x45,
-	KEYB_KEY_F = 0x46,
-	KEYB_KEY_G = 0x47,
-	KEYB_KEY_H = 0x48,
-	KEYB_KEY_I = 0x49,
-	KEYB_KEY_J = 0x4A,
-	KEYB_KEY_K = 0x4B,
-	KEYB_KEY_L = 0x4C,
-	KEYB_KEY_M = 0x4D,
-	KEYB_KEY_N = 0x4E,
-	KEYB_KEY_O = 0x4F,
-	KEYB_KEY_P = 0x50,
-	KEYB_KEY_Q = 0x51,
-	KEYB_KEY_R = 0x52,
-	KEYB_KEY_S = 0x53,
-	KEYB_KEY_T = 0x54,
-	KEYB_KEY_U = 0x55,
-	KEYB_KEY_V = 0x56,
-	KEYB_KEY_W = 0x57,
-	KEYB_KEY_X = 0x58,
-	KEYB_KEY_Y = 0x59,
-	KEYB_KEY_Z = 0x5A,
-	KEYB_KEY_LWIN = 0x5B,
-	KEYB_KEY_RWIN = 0x5C,
-	KEYB_KEY_APPS = 0x5D,
-	KEYB_KEY_SLEEP = 0x5F,
-	KEYB_KEY_NUM0 = 0x60,
-	KEYB_KEY_NUM1 = 0x61,
-	KEYB_KEY_NUM2 = 0x62,
-	KEYB_KEY_NUM3 = 0x63,
-	KEYB_KEY_NUM4 = 0x64,
-	KEYB_KEY_NUM5 = 0x65,
-	KEYB_KEY_NUM6 = 0x66,
-	KEYB_KEY_NUM7 = 0x67,
-	KEYB_KEY_NUM8 = 0x68,
-	KEYB_KEY_NUM9 = 0x69,
-	KEYB_KEY_MUL = 0x6A,
-	KEYB_KEY_ADD = 0x6B,
-	KEYB_KEY_SEPA = 0x6C,
-	KEYB_KEY_SUB = 0x6D,
-	KEYB_KEY_DEC = 0x6E,
-	KEYB_KEY_DIV = 0x6F,
-	KEYB_KEY_F1 = 0x70,
-	KEYB_KEY_F2 = 0x71,
-	KEYB_KEY_F3 = 0x72,
-	KEYB_KEY_F4 = 0x73,
-	KEYB_KEY_F5 = 0x74,
-	KEYB_KEY_F6 = 0x75,
-	KEYB_KEY_F7 = 0x76,
-	KEYB_KEY_F8 = 0x77,
-	KEYB_KEY_F9 = 0x78,
-	KEYB_KEY_F10 = 0x79,
-	KEYB_KEY_F11 = 0x7A,
-	KEYB_KEY_F12 = 0x7B,
-	KEYB_KEY_F13 = 0x7C,
-	KEYB_KEY_F14 = 0x7D,
-	KEYB_KEY_F15 = 0x7E,
-	KEYB_KEY_F16 = 0x7F,
-	KEYB_KEY_F17 = 0x80,
-	KEYB_KEY_F18 = 0x81,
-	KEYB_KEY_F19 = 0x82,
-	KEYB_KEY_F20 = 0x83,
-	KEYB_KEY_F21 = 0x84,
-	KEYB_KEY_F22 = 0x85,
-	KEYB_KEY_F23 = 0x86,
-	KEYB_KEY_F24 = 0x87,
-	KEYB_KEY_NUMLOCK = 0x90,
-	KEYB_KEY_SCROLLLOCK = 0x91,
-	KEYB_KEY_LSHIFT = 0xA0,
-	KEYB_KEY_RSHIFT = 0xA1,
-	KEYB_KEY_LCTRL = 0xA2,
-	KEYB_KEY_RCTRL = 0xA3,
-	KEYB_KEY_LALT = 0xA4,
-	KEYB_KEY_RALT = 0xA5,
-	KEYB_KEY_BROWSER_PREV = 0xA6,
-	KEYB_KEY_BROWSER_NEXT = 0xA7,
-	KEYB_KEY_BROWSER_REFRESH = 0xA8,
-	KEYB_KEY_BROWSER_STOP = 0xA9,
-	KEYB_KEY_BROWSER_SRCH = 0xAA,
-	KEYB_KEY_BROWSER_FAV = 0xAB,
-	KEYB_KEY_BROWSER_HOME = 0xAC,
-	KEYB_KEY_VOL_MUTE = 0xAD,
-	KEYB_KEY_VOL_DOWN = 0xAE,
-	KEYB_KEY_VOL_UP = 0xAF,
-	KEYB_KEY_MEDIA_NEXT = 0xB0,
-	KEYB_KEY_MEDIA_PREV = 0xB1,
-	KEYB_KEY_MEDIA_STOP = 0xB2,
-	KEYB_KEY_MEDIA_PLAY = 0xB3,
-	KEYB_KEY_START_MAIL = 0xB4,
-	KEYB_KEY_START_MEDIA = 0xB5,
-	KEYB_KEY_START_APP1 = 0xB6,
-	KEYB_KEY_START_APP2 = 0xB7,
-	KEYB_KEY_OEM_1 = 0xBA,
-	KEYB_KEY_OEM_PLUS = 0xBB,
-	KEYB_KEY_OEM_COMMA = 0xBC,
-	KEYB_KEY_OEM_MINUS = 0xBD,
-	KEYB_KEY_OEM_PERIOD = 0xBE,
-	KEYB_KEY_OEM_2 = 0xBF,
-	KEYB_KEY_OEM_3 = 0xC0,
-	KEYB_KEY_OEM_4 = 0xDB,
-	KEYB_KEY_OEM_5 = 0xDC,
-	KEYB_KEY_OEM_6 = 0xDD,
-	KEYB_KEY_OEM_7 = 0xDE,
-	KEYB_KEY_OEM_8 = 0xDF,
-	KEYB_KEY_OEM_102 = 0xE2,
-	KEYB_KEY_PROCKEY = 0xE5,
-	KEYB_KEY_PACKET = 0xE7,
-	KEYB_KEY_ATTN = 0xF6,
-	KEYB_KEY_CRSEL = 0xF7,
-	KEYB_KEY_EXSEL = 0xF8,
-	KEYB_KEY_DELEOF = 0xF9,
-	KEYB_KEY_PLAY = 0xFA,
-	KEYB_KEY_ZOOM = 0xFB,
-	KEYB_KEY_PA1 = 0xFD,
-	KEYB_KEY_OEM_CLEAR = 0xFE,
+enum class InputKey : U1 {
+	NONE = 0x00,
+	MOUS_LEFT = 0x01,
+	MOUS_RIGHT = 0x02,
+	CANCEL = 0x03,
+	MOUS_MID = 0x04,
+	MOUS_EX1 = 0x05,
+	MOUS_EX2 = 0x06,
+	BACK = 0x08,
+	TAB = 0x09,
+	CLEAR = 0x0C,
+	ENTER = 0x0D,
+	SHIFT = 0x10,
+	CTRL = 0x11,
+	ALT = 0x12,
+	PAUSE = 0x13,
+	CAPSLOCK = 0x14,
+	ESC = 0x1B,
+	SPACE = 0x20,
+	PAGEUP = 0x21,
+	PAGEDOWN = 0x22,
+	END = 0x23,
+	HOME = 0x24,
+	LEFT = 0x25,
+	UP = 0x26,
+	RIGHT = 0x27,
+	DOWN = 0x28,
+	SELECT = 0x29,
+	PRINT = 0x2A,
+	EXE = 0x2B,
+	SNAPSHOT = 0x2C,
+	INSERT = 0x2D,
+	DEL = 0x2E,
+	HELP = 0x2F,
+	_0 = 0x30,
+	_1 = 0x31,
+	_2 = 0x32,
+	_3 = 0x33,
+	_4 = 0x34,
+	_5 = 0x35,
+	_6 = 0x36,
+	_7 = 0x37,
+	_8 = 0x38,
+	_9 = 0x39,
+	A = 0x41,
+	B = 0x42,
+	C = 0x43,
+	D = 0x44,
+	E = 0x45,
+	F = 0x46,
+	G = 0x47,
+	H = 0x48,
+	I = 0x49,
+	J = 0x4A,
+	K = 0x4B,
+	L = 0x4C,
+	M = 0x4D,
+	N = 0x4E,
+	O = 0x4F,
+	P = 0x50,
+	Q = 0x51,
+	R = 0x52,
+	S = 0x53,
+	T = 0x54,
+	U = 0x55,
+	V = 0x56,
+	W = 0x57,
+	X = 0x58,
+	Y = 0x59,
+	Z = 0x5A,
+	LWIN = 0x5B,
+	RWIN = 0x5C,
+	APPS = 0x5D,
+	SLEEP = 0x5F,
+	NUM0 = 0x60,
+	NUM1 = 0x61,
+	NUM2 = 0x62,
+	NUM3 = 0x63,
+	NUM4 = 0x64,
+	NUM5 = 0x65,
+	NUM6 = 0x66,
+	NUM7 = 0x67,
+	NUM8 = 0x68,
+	NUM9 = 0x69,
+	MUL = 0x6A,
+	ADD = 0x6B,
+	SEPA = 0x6C,
+	SUB = 0x6D,
+	DEC = 0x6E,
+	DIV = 0x6F,
+	F1 = 0x70,
+	F2 = 0x71,
+	F3 = 0x72,
+	F4 = 0x73,
+	F5 = 0x74,
+	F6 = 0x75,
+	F7 = 0x76,
+	F8 = 0x77,
+	F9 = 0x78,
+	F10 = 0x79,
+	F11 = 0x7A,
+	F12 = 0x7B,
+	F13 = 0x7C,
+	F14 = 0x7D,
+	F15 = 0x7E,
+	F16 = 0x7F,
+	F17 = 0x80,
+	F18 = 0x81,
+	F19 = 0x82,
+	F20 = 0x83,
+	F21 = 0x84,
+	F22 = 0x85,
+	F23 = 0x86,
+	F24 = 0x87,
+	NUMLOCK = 0x90,
+	SCROLLLOCK = 0x91,
+	LSHIFT = 0xA0,
+	RSHIFT = 0xA1,
+	LCTRL = 0xA2,
+	RCTRL = 0xA3,
+	LALT = 0xA4,
+	RALT = 0xA5,
+	BROWSER_PREV = 0xA6,
+	BROWSER_NEXT = 0xA7,
+	BROWSER_REFRESH = 0xA8,
+	BROWSER_STOP = 0xA9,
+	BROWSER_SRCH = 0xAA,
+	BROWSER_FAV = 0xAB,
+	BROWSER_HOME = 0xAC,
+	VOL_MUTE = 0xAD,
+	VOL_DOWN = 0xAE,
+	VOL_UP = 0xAF,
+	MEDIA_NEXT = 0xB0,
+	MEDIA_PREV = 0xB1,
+	MEDIA_STOP = 0xB2,
+	MEDIA_PLAY = 0xB3,
+	START_MAIL = 0xB4,
+	START_MEDIA = 0xB5,
+	START_APP1 = 0xB6,
+	START_APP2 = 0xB7,
+	OEM_1 = 0xBA,
+	OEM_PLUS = 0xBB,
+	OEM_COMMA = 0xBC,
+	OEM_MINUS = 0xBD,
+	OEM_PERIOD = 0xBE,
+	OEM_2 = 0xBF,
+	OEM_3 = 0xC0,
+	OEM_4 = 0xDB,
+	OEM_5 = 0xDC,
+	OEM_6 = 0xDD,
+	OEM_7 = 0xDE,
+	OEM_8 = 0xDF,
+	OEM_102 = 0xE2,
+	PROCKEY = 0xE5,
+	PACKET = 0xE7,
+	ATTN = 0xF6,
+	CRSEL = 0xF7,
+	EXSEL = 0xF8,
+	DELEOF = 0xF9,
+	PLAY = 0xFA,
+	ZOOM = 0xFB,
+	PA1 = 0xFD,
+	OEM_CLEAR = 0xFE,
 };
+
+constexpr SI INPUT_KEY_CNT = 256;
+
+// operator for InputKey to int
+inline int operator+(InputKey key) {
+	return (int)key;
+}
 
 struct KeybKeyEvt {
 	U8 infoDate;
@@ -184,7 +191,7 @@ struct KeybKeyEvt {
 };
 
 Thd g_keybThd;
-U1 g_keybKeyState[KEYB_KEY_CNT] = {};
+volatile U1 g_keybKeyState[INPUT_KEY_CNT] = {};
 DQueue<KeybKeyEvt> g_keybKeyEvtQueue;
 ThdLock g_keybKeyEvtQueueLock;
 S4 g_keybHookThdDelay = 0;
@@ -218,16 +225,16 @@ dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp) {
 	//cx BO isInjected = (info->flags & LLKHF_INJECTED) != 0;
 	//cx BO isAltDown = (info->flags & LLKHF_ALTDOWN) != 0;
 	//cx BO isUp = (info->flags & LLKHF_UP) != 0;
-	ifu (codeVk >= KEYB_KEY_CNT) jsrc(next);
+	ifu (codeVk >= INPUT_KEY_CNT) jsrc(next);
 	g_keybKeyState[codeVk] = (g_keybKeyState[codeVk] & (~0x80)) | (isDown * 0x80);
-	if (isDown) g_keybKeyState[codeVk] ^= 0x01;
-	switch (codeVk) {
-	case KEYB_KEY_LSHIFT: g_keybKeyState[KEYB_KEY_SHIFT] = g_keybKeyState[KEYB_KEY_LSHIFT]; break;
-	case KEYB_KEY_RSHIFT: g_keybKeyState[KEYB_KEY_SHIFT] = g_keybKeyState[KEYB_KEY_RSHIFT]; break;
-	case KEYB_KEY_LCTRL: g_keybKeyState[KEYB_KEY_CTRL] = g_keybKeyState[KEYB_KEY_LCTRL]; break;
-	case KEYB_KEY_RCTRL: g_keybKeyState[KEYB_KEY_CTRL] = g_keybKeyState[KEYB_KEY_RCTRL]; break;
-	case KEYB_KEY_LALT: g_keybKeyState[KEYB_KEY_ALT] = g_keybKeyState[KEYB_KEY_LALT]; break;
-	case KEYB_KEY_RALT: g_keybKeyState[KEYB_KEY_ALT] = g_keybKeyState[KEYB_KEY_RALT]; break;
+	if (isDown) g_keybKeyState[codeVk] = g_keybKeyState[codeVk] ^ 0x01;
+	switch ((InputKey)codeVk) {
+	case InputKey::LSHIFT: g_keybKeyState[(U1)InputKey::SHIFT] = g_keybKeyState[(U1)InputKey::LSHIFT]; break;
+	case InputKey::RSHIFT: g_keybKeyState[(U1)InputKey::SHIFT] = g_keybKeyState[(U1)InputKey::RSHIFT]; break;
+	case InputKey::LCTRL: g_keybKeyState[(U1)InputKey::CTRL] = g_keybKeyState[(U1)InputKey::LCTRL]; break;
+	case InputKey::RCTRL: g_keybKeyState[(U1)InputKey::CTRL] = g_keybKeyState[(U1)InputKey::RCTRL]; break;
+	case InputKey::LALT: g_keybKeyState[(U1)InputKey::ALT] = g_keybKeyState[(U1)InputKey::LALT]; break;
+	case InputKey::RALT: g_keybKeyState[(U1)InputKey::ALT] = g_keybKeyState[(U1)InputKey::RALT]; break;
 	default: break;
 	}
 	CH buf[KEYB_KEY_STR_LEN_MAX + 1];
@@ -254,7 +261,7 @@ dfa DWORD WINAPI _KeybHookThd(LPVOID code) {
 		ret 1;
 	}
 	*reinterpret_cast<U1*>(code) = KEYB_HOOK_THD_CODE_ERR_NO;
-	ite (i, i < KEYB_KEY_CNT) {
+	ite (i, i < INPUT_KEY_CNT) {
 		g_keybKeyState[i] = U1(GetKeyState(int(i)) & 0xFF);
 	}
 	g_keybHookThdDelay = 0;
@@ -290,8 +297,13 @@ dfa ER KeybFree() {
 	rets;
 }
 
-dfa BO KeybKeyIsDown(U4 codeVk) {
-	ifu (codeVk >= KEYB_KEY_CNT) ret NO;
+dfa U4 InputKeyToCodeVk(InputKey key) {
+	ret U4(key);
+}
+
+dfa BO KeybKeyIsDown(InputKey key) {
+	AU codeVk = InputKeyToCodeVk(key);
+	ifu (codeVk >= INPUT_KEY_CNT) ret NO;
 	ret BO(g_keybKeyState[codeVk] & 0x80);
 }
 dfa BO KeybKeyEvtGet(KeybKeyEvt& keybKeyEvt) {
@@ -303,4 +315,39 @@ dfa BO KeybKeyEvtGet(KeybKeyEvt& keybKeyEvt) {
 	g_keybKeyEvtQueue.Get(keybKeyEvt);
 	g_keybKeyEvtQueueLock.Unlock();
 	ret YES;
+}
+
+dfa ER KeybKeyWait(InputKey key, BO isSlow = NO, S4 checkRate = 1) {
+	if (isSlow == YES) while (KeybKeyIsDown(key) == YES) ThdWait(checkRate);
+	while (KeybKeyIsDown(key) == NO) ThdWait(checkRate);
+	if (isSlow == YES) while (KeybKeyIsDown(key) == YES) ThdWait(checkRate);
+	rets;
+}
+
+dfa ER KeybKeyPressDown(InputKey key) {
+	AU codeVk = InputKeyToCodeVk(key);
+	INPUT ip = {};
+	ip.type = INPUT_KEYBOARD;
+	ip.ki.wVk = codeVk;
+	ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
+	ip.ki.dwExtraInfo = GetMessageExtraInfo();
+	ifu (SendInput(1, &ip, siz(ip)) != 1) rete(ERR_KEYB);
+	rets;
+}
+dfa ER KeybKeyPressUp(InputKey key) {
+	AU codeVk = InputKeyToCodeVk(key);
+	INPUT ip = {};
+	ip.type = INPUT_KEYBOARD;
+	ip.ki.wVk = codeVk;
+	ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
+	ip.ki.dwFlags = KEYEVENTF_KEYUP;
+	ip.ki.dwExtraInfo = GetMessageExtraInfo();
+	ifu (SendInput(1, &ip, siz(ip)) != 1) rete(ERR_KEYB);
+	rets;
+}
+dfa ER KeybKeyPress(InputKey key, U4 delay = 50) {
+	ife (KeybKeyPressDown(key)) retep;
+	ThdWait(delay);
+	ife (KeybKeyPressUp(key)) retep;
+	rets;
 }

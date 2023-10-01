@@ -1,7 +1,28 @@
 #pragma once
 
+constexpr SI FILE_READ_SIZE_LOW = BYTE_IN_KB * 4;
+constexpr SI FILE_READ_SIZE_MED = BYTE_IN_KB * 256;
+constexpr SI FILE_READ_SIZE_HIGH = BYTE_IN_KB * 16384;
+
+dfa ER DirNew(cx CH* path); // referenced here for FileMove
+
 dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
-	ifu (CopyFileW(src, dst, !isReplace) == 0) rete(ERR_FILE);
+	SI tryCnt = 0;
+	jdst(retry);
+	cx AU result = CopyFileW(src, dst, !isReplace);
+	ifu (result == 0) {
+		++tryCnt;
+		ifu (tryCnt == 2) rete(ERR_FILE);
+		if (GetLastError() == ERROR_PATH_NOT_FOUND && PathIsExist(src)) {
+			CH dirPath[PATH_LENX_MAX];
+			PathToAbs(dirPath, dst);
+			PathDirUp(dirPath);
+			ife (DirNew(dirPath)) retep;
+			jsrc(retry);
+		} else {
+			rete(ERR_FILE);
+		}
+	}
 	rets;
 }
 dfa ER FileDel(cx CH* path) {
@@ -9,7 +30,44 @@ dfa ER FileDel(cx CH* path) {
 	rets;
 }
 dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES) {
-	ifu (MoveFileExW(src, dst, MOVEFILE_COPY_ALLOWED | (isReplace ? MOVEFILE_REPLACE_EXISTING : 0)) == 0) rete(ERR_FILE);
+	SI tryCnt = 0;
+	jdst(retry);
+	cx AU result = MoveFileExW(src, dst, MOVEFILE_COPY_ALLOWED | (isReplace ? MOVEFILE_REPLACE_EXISTING : 0));
+	ifu (result == 0) {
+		++tryCnt;
+		ifu (tryCnt == 2) rete(ERR_FILE);
+		if (GetLastError() == ERROR_PATH_NOT_FOUND && PathIsExist(src)) {
+			CH dirPath[PATH_LENX_MAX];
+			PathToAbs(dirPath, dst);
+			PathDirUp(dirPath);
+			ife (DirNew(dirPath)) retep;
+			jsrc(retry);
+		} else {
+			rete(ERR_FILE);
+		}
+	}
+	rets;
+}
+
+dfa ER FileTimeGet(TmUnix& time, cx CH* path) {
+	time = 0;
+	WIN32_FILE_ATTRIBUTE_DATA info = {};
+	ifu (GetFileAttributesExW(path, GetFileExInfoStandard, &info) == 0) rete(ERR_FILE);
+	time = LdapToUnix(U8(info.ftLastWriteTime.dwLowDateTime) | (U8(info.ftLastWriteTime.dwHighDateTime) << sizb(U4)));
+	rets;
+}
+dfa ER FileSizeSet(cx CH* path, SI size) {
+	cx AU hdl = CreateFileW(path, GENERIC_WRITE, 0, NUL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NUL);
+	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_FILE);
+	ifu (SetFilePointer(hdl, size, NUL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+		CloseHandle(hdl);
+		rete(ERR_FILE);
+	}
+	ifu (SetEndOfFile(hdl) == 0) {
+		CloseHandle(hdl);
+		rete(ERR_FILE);
+	}
+	CloseHandle(hdl);
 	rets;
 }
 
@@ -34,7 +92,15 @@ public:
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
 		LARGE_INTEGER tmp = {};
 		tmp.QuadPart = pos;
-		if (SetFilePointerEx(m_hdl, tmp, NUL, FILE_BEGIN) == 0) rete(ERR_FILE);
+		ifu (SetFilePointerEx(m_hdl, tmp, NUL, FILE_BEGIN) == 0) rete(ERR_FILE);
+		rets;
+	}
+	dfa ER CurGet(SI& pos) {
+		pos = 0;
+		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
+		LARGE_INTEGER tmp = {};
+		ifu (SetFilePointerEx(m_hdl, tmp, &tmp, FILE_CURRENT) == 0) rete(ERR_FILE);
+		pos = tmp.QuadPart;
 		rets;
 	}
 	dfa ER Open(cx CH* path, DWORD access, DWORD share, DWORD openMode, DWORD attrib) {
@@ -92,6 +158,19 @@ public:
 		LARGE_INTEGER tmp;
 		ifu (GetFileSizeEx(m_hdl, &tmp) == 0) rete(ERR_FILE);
 		size = tmp.QuadPart;
+		rets;
+	}
+	dfa ER TimeGet(TmUnix& time) {
+		time = 0;
+		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
+		FILETIME tmp;
+		ifu (GetFileTime(m_hdl, NUL, NUL, &tmp) == 0) rete(ERR_FILE);
+		time = LdapToUnix(U8(tmp.dwLowDateTime) | (U8(tmp.dwHighDateTime) << sizb(U4)));
+		rets;
+	}
+	dfa ER Flush() {
+		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
+		ifu (FlushFileBuffers(m_hdl) == 0) rete(ERR_FILE);
 		rets;
 	}
 public:
@@ -216,6 +295,9 @@ public:
 	dfa ER CurSet(SI pos) {
 		ret m_file.CurSet(pos);
 	}
+	dfa ER CurGet(SI& pos) {
+		ret m_file.CurGet(pos);
+	}
 	dfa ER OpenRead(cx CH* path) {
 		ret m_file.OpenRead(path);
 	}
@@ -242,6 +324,12 @@ public:
 	}
 	dfa ER SizeGet(SI& size) {
 		ret m_file.SizeGet(size);
+	}
+	dfa ER TimeGet(TmUnix& time) {
+		ret m_file.TimeGet(time);
+	}
+	dfa ER Flush() {
+		ret m_file.Flush();
 	}
 public:
 	dfa File() {
@@ -300,7 +388,7 @@ public:
 		m_dat.New(size);
 		ife (m_file.Read(m_dat.Ptr(), size)) retep;
 		m_dat.CurSet(size);
-		ife (m_file.Close()) retep;
+		//ife (m_file.Close()) retep;
 		m_filePos = 0;
 		m_filePosOfs = 0;
 		m_isOpen = YES;
@@ -317,7 +405,7 @@ public:
 		SI size = 0;
 		ife (m_file.SizeGet(size)) retep;
 		m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
-		MemSet(m_dat.Ptr(), U1(0), size);
+		MemSetVal(m_dat.Ptr(), 0, size);
 		m_dat.CurSet(size);
 		m_filePos = 0;
 		m_filePosOfs = 0;
@@ -354,8 +442,8 @@ public:
 				ife (m_file.CurSet(0)) retep;
 				ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retep;
 			}
-			ife (m_file.Close()) retep;
 		}
+		ife (m_file.Close()) retep;
 		m_dat.Del();
 		m_filePos = 0;
 		m_filePosOfs = 0;
@@ -436,6 +524,28 @@ public:
 		size = m_dat.Pos();
 		rets;
 	}
+	dfa SI SizeGet() {
+		SI size = 0;
+		tx->SizeGet(size);
+		ret size;
+	}
+	dfa ER TimeGet(TmUnix& time) {
+		ret m_file.TimeGet(time);
+	}
+	dfa ER Flush() {
+		ifu (!tx->IsOpen()) rets;
+		if (m_isWrite) {
+			if (!m_isWriteDirect) { // to optimize
+				SI curPos;
+				ife (m_file.CurGet(curPos)) retep;
+				ife (m_file.CurSet(0)) retep;
+				ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retep;
+				ife (m_file.CurSet(curPos)) retep;
+			}
+			ife (m_file.Flush()) retep;
+		}
+		rets;
+	}
 public:
 	dfa FileMem() {
 		m_filePos = 0;
@@ -463,14 +573,17 @@ dfa ER FileToDatIte(DatIte<U1>& datIte, cx CH* path) {
 	ife (file.Close()) retep;
 	rets;
 }
-dfa ER FileToArr(Arr<U1>& arr, cx CH* path) {
+tpl1 dfa ER FileToArr(Arr<T1>& arr, cx CH* path, cx CS* append = NUL) {
 	File file;
 	ife (file.OpenRead(path)) retep;
 	SI size;
 	ife (file.SizeGet(size)) retep;
-	arr.New(size);
+	SI sizeAppend = 0;
+	if (append != NUL) sizeAppend = StrLen(append) + 1;
+	arr.New(size + sizeAppend);
 	ife (file.Read(arr.Ptr(), size)) retep;
 	ife (file.Close()) retep;
+	if (sizeAppend != 0) MemSet(arr.Ptr() + size, append, sizeAppend);
 	rets;
 }
 

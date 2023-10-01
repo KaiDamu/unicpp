@@ -24,6 +24,7 @@ enum : ErrVal {
 	ERR_WIN,
 	ERR_CON,
 	ERR_REG,
+	ERR_KEYB,
 	//
 	ERR_MEM_NEW,
 	ERR_TIME_RES,

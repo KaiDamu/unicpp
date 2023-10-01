@@ -227,6 +227,9 @@ public:
 	dfa operator DatIte<T1>() const {
 		ret tx->ToDatIte();
 	}
+	dfa operator T1* () const {
+		ret m_ptr.Get();
+	}
 public:
 	dfa Arr() {
 		tx->Init();

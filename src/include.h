@@ -2,9 +2,19 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <type_traits>
 
-using namespace std;
+#include <type_traits>
+#include <new>
+#include <string>
+#include <vector>
+#include <list>
+#include <unordered_map>
+
+using std::string;
+using std::wstring;
+using std::vector;
+using std::list;
+using std::unordered_map;
 
 #include "import/stdc/type.h"
 #include "import/stdc/value.h"
@@ -27,64 +37,64 @@ using namespace std;
 	#include "import/winapi/function.h"
 #endif
 
-#include "keyword.h"
-#include "debug.h"
-#include "type.h"
+#include "keyword.h" // ...
+#include "debug.h" // ...
+#include "type.h" // ...
 
-#include "pre/process.h"
-#include "pre/console.h"
+#include "pre/process.h" // ...
+#include "pre/console.h" // ...
 
-#include "value.h"
-#include "error.h"
-#include "math.h"
-#include "vector.h"
-#include "matrix.h"
-#include "char.h"
-#include "typeconvert.h"
-#include "tuple.h"
-#include "time.h"
-#include "memory.h"
-#include "pointer.h"
-#include "array.h"
-#include "random.h"
-#include "string.h"
-#include "path.h"
-#include "process.h" // to rework
-#include "stack.h"
-#include "list.h"
-#include "queue.h" // to rework
-#include "event.h" // to rework
-#include "thread.h" // to rework
-#include "file.h" // to rework
-#include "dictionary.h" // to rework
-#include "pipe.h" // to rework
-#include "directory.h" // to rework
-#include "sort.h" // to rework
-#include "test.h" // to rework
-#include "arg.h" // to rework
-#include "python.h" // to rework
-#include "protobuf.h" // to rework
-#include "aes.h"
-#include "rsa.h"
-#include "sha256.h"
-#include "md5.h"
-#include "registry.h" // to rework
-#include "screen.h"
-#include "window.h" // to rework
-#include "console.h" // to rework
-#include "network.h"
-#include "clipboard.h" // to rework
-#include "vfs.h"
+#include "value.h" // ...
+#include "error.h" // ...
+#include "math.h" // ...
+#include "vector.h" // ...
+#include "matrix.h" // ...
+#include "char.h" // ...
+#include "typeconvert.h" // ...
+#include "tuple.h" // ...
+#include "time.h" // ...
+#include "memory.h" // ...
+#include "pointer.h" // ...
+#include "array.h" // ...
+#include "random.h" // ...
+#include "string.h" // ...
+#include "path.h" // ...
+#include "process.h" // to rework x2
+#include "stack.h" // ...
+#include "list.h" // ...
+#include "queue.h" // to rework x2
+#include "event.h" // to rework x2
+#include "thread.h" // to rework x2
+#include "file.h" // to rework x2
+#include "dictionary.h" // to rework x2
+#include "pipe.h" // to rework x2
+#include "directory.h" // to rework x2
+#include "sort.h" // to rework x2
+#include "test.h" // to rework x2
+#include "arg.h" // to rework x2
+#include "python.h" // to rework x2
+#include "protobuf.h" // to rework x2
+#include "aes.h" // ...
+#include "rsa.h" // ...
+#include "sha256.h" // ...
+#include "md5.h" // ...
+#include "registry.h" // to rework x2
+#include "screen.h" // ...
+#include "window.h" // to rework x2
+#include "console.h" // to rework x2
+#include "network.h" // ...
+#include "clipboard.h" // to rework x2
+#include "vfs.h" // ...
 #ifdef INCLUDE_KEYB
-	#include "keyboard.h" // to rework
+	#include "keyboard.h" // to rework x2
 #endif
-#include "cursor.h" // to rework
-#include "joystick.h"
-#include "opengl.h"
-#include "sound.h"
-#include "log.h"
+#include "cursor.h" // to rework x2
+#include "joystick.h" // ...
+#include "opengl.h" // ...
+#include "sound.h" // ...
+#include "log.h" // ...
 #ifdef INCLUDE_DUMB
-	#include "dumb.h" // to rework
+	#include "dumb.h" // to rework x2
 #endif
 
-#include "main.h" // to rework
+#include "main.h" // to rework x2

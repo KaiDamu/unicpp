@@ -25,7 +25,7 @@ dfa GA MemNew(SI size) {
 	ret malloc(size);
 }
 
-dfa NT MemSet(GA dst, U1 val, SI size) {
+dfa NT MemSetVal(GA dst, U1 val, SI size) {
 	#ifdef PROG_COMPILER_GCC
 		__builtin_memset(dst, val, size);
 	#else
@@ -82,25 +82,27 @@ GA operator new (size_t size) {
 GA operator new[](size_t size) {
 	ret MemNew(size);
 }
-GA operator new (size_t size, GA ptr) {
-	ret ptr;
-	unused(size);
-}
-GA operator new[](size_t size, GA ptr) {
-	ret ptr;
-	unused(size);
-}
-NT operator delete (GA ptr) {
+/*
+	GA operator new (size_t size, GA ptr) {
+		ret ptr;
+		unused(size);
+	}
+	GA operator new[](size_t size, GA ptr) {
+		ret ptr;
+		unused(size);
+	}
+*/
+NT operator delete (GA ptr) noexcept {
 	MemDel(ptr);
 }
-NT operator delete[](GA ptr) {
+NT operator delete[](GA ptr) noexcept {
 	MemDel(ptr);
 }
-NT operator delete (GA ptr, size_t size) {
+NT operator delete (GA ptr, size_t size) noexcept {
 	unused(size);
 	MemDel(ptr);
 }
-NT operator delete[](GA ptr, size_t size) {
+NT operator delete[](GA ptr, size_t size) noexcept {
 	unused(size);
 	MemDel(ptr);
 }
@@ -144,7 +146,7 @@ public:
 	dfa MemPoolTmp() {
 		tx->Init();
 		m_listPtr = new U1*[sizb(SI)];
-		MemSet(m_listPtr, U1(0), sizb(SI) * siz(U1*));
+		MemSetVal(m_listPtr, 0, sizb(SI) * siz(U1*));
 	}
 	dfa ~MemPoolTmp() {
 		tx->DelAll();

@@ -10,7 +10,8 @@ constexpr U4 FILE_ATTRIB_COMPRESS = 0x00000040;
 
 constexpr U4 DIR_ENUM_FLAG_POST = 0x00000001;
 
-struct FileInfo {
+class FileInfo {
+public:
 	U8 createDate;
 	U8 accessDate;
 	U8 writeDate;
@@ -25,6 +26,30 @@ struct FileInfo {
 	cx CH* rel;
 	SI nameLen;
 	cx CH* name;
+	SI extLen;
+	cx CH* ext;
+	SI bufSize;
+	CH* buf;
+public:
+	dfa NT Save() {
+		if (buf != NUL) delete[] buf;
+		bufSize = (pathLen + 1) * siz(CH);
+		buf = new CH[bufSize / siz(CH)];
+		cx SI bufOfs = buf - path;
+		MemSet(buf, path, pathLen * siz(CH));
+		buf[pathLen] = '\0';
+		ifl (path != NUL) path += bufOfs;
+		ifl (rel != NUL) rel += bufOfs;
+		ifl (name != NUL) name += bufOfs;
+		ifl (ext != NUL) ext += bufOfs;
+	}
+public:
+	dfa FileInfo() {
+		MemSetVal(tx, 0, siz(*tx));
+	}
+	dfa ~FileInfo() {
+		if (buf != NUL) delete[] buf;
+	}
 };
 
 using DirEnumCallbFnType = BO(*)(cx FileInfo& fileInfo, GA param1, GA param2); // ret: YES to continue, NO to stop
@@ -77,6 +102,15 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 			fileInfo.rel = fileInfo.path + pathLenBase;
 			fileInfo.nameLen = info->FileNameLength / siz(CH);
 			fileInfo.name = path + pathLen - fileInfo.nameLen;
+			fileInfo.extLen = 0;
+			fileInfo.ext = NUL;
+			for (SI i = fileInfo.nameLen - 1; i >= 0; --i) {
+				if (fileInfo.name[i] == CH_PATH_EXT) {
+					fileInfo.extLen = fileInfo.nameLen - i - 1;
+					fileInfo.ext = fileInfo.name + i + 1;
+					break;
+				}
+			}
 			if ((flags & DIR_ENUM_FLAG_POST) == 0) ifu (callb(fileInfo, param1, param2) == NO) rets;
 			if (fileInfo.attrib & FILE_ATTRIB_DIR) {
 				path[pathLen++] = CH_PATH_DIR;
@@ -111,7 +145,7 @@ dfa ER _DirDel(cx CH* path) {
 	rets;
 }
 
-dfa ER DirCreate(cx CH* path) {
+dfa ER DirNew(cx CH* path) {
 	ifu (CreateDirectoryW(path, NUL) == 0) {
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
 			if (PathIsDir(path)) rets;
@@ -122,7 +156,7 @@ dfa ER DirCreate(cx CH* path) {
 		CH* pathSep = (CH*)StrFindLast(path_, CH_PATH_DIR);
 		ifu (pathSep == NUL) rete(ERR_DIR);
 		*pathSep = '\0';
-		ife (DirCreate(path_)) retep;
+		ife (DirNew(path_)) retep;
 		ifu (CreateDirectoryW(path, NUL) == 0) rete(ERR_DIR);
 	}
 	rets;
@@ -130,7 +164,7 @@ dfa ER DirCreate(cx CH* path) {
 dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 	CH dst_[PATH_LEN_MAX];
 	PathToAbs(dst_, dst);
-	ife (DirCreate(dst_)) retep;
+	ife (DirNew(dst_)) retep;
 	struct Param {
 		CH* dst;
 		BO isReplace;
@@ -143,7 +177,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES) {
 		StrSet(path, ((Param*)param1)->dst);
 		StrAdd(path, fileInfo.rel - 1); // hack: -1 for CH_PATH_DIR
 		if (fileInfo.attrib & FILE_ATTRIB_DIR) {
-			ife (DirCreate(path)) {
+			ife (DirNew(path)) {
 				((Param*)param1)->err = ErrLastGet();
 				ret NO;
 			}
@@ -189,5 +223,17 @@ dfa ER DirMove(cx CH* dst, cx CH* src, BO isReplace = YES) {
 		ife (DirCpy(dst, src, isReplace)) retep;
 		ife (DirDel(src)) retep;
 	}
+	rets;
+}
+
+dfa ER DirList(list<FileInfo>& files, cx CH* path, SI depth = -1) {
+	files.clear();
+	cx DirEnumCallbFnType callb = [](cx FileInfo& fileInfo, GA param1, GA param2) {
+		unused(param2);
+		((list<FileInfo>*)param1)->emplace_back(fileInfo);
+		((list<FileInfo>*)param1)->back().Save();
+		ret YES;
+	};
+	ife (DirEnum(path, depth, callb, 0, &files, NUL)) retep;
 	rets;
 }

@@ -20,12 +20,40 @@ constexpr SI STR_NTPATH_PRE_LEN = 4;
 dfa cx CH* PathExtPtr(cx CH* path) {
 	cx CH* last = NUL;
 	while (*path != '\0') {
-		if (*path == CH_PATH_DIR || *path == CH_PATH_EXT) last = path;
+		if (*path == CH_PATH_DIR || *path == ' ' || *path == CH_PATH_EXT) last = path;
 		++path;
 	}
 	if (last == NUL) ret path;
-	if (*last == CH_PATH_DIR) ret path;
+	if (*last == CH_PATH_DIR || *last == ' ') ret path;
 	ret last + 1;
+}
+
+dfa cx CH* PathNamePtr(cx CH* path, SI& nameoLen) {
+	cx CH*cx pathBase = path;
+	cx CH* lastDir = NUL;
+	cx CH* lastExt = NUL;
+	while (*path != '\0') {
+		if (*path == CH_PATH_DIR) lastDir = path;
+		else if (*path == CH_PATH_EXT) lastExt = path;
+		else if (*path == ' ') lastExt = NUL;
+		++path;
+	}
+	cx CH*cx namePtr = (lastDir == NUL) ? pathBase : (lastDir + 1);
+	nameoLen = (lastExt == NUL) ? (path - namePtr) : (lastExt - namePtr);
+	ret namePtr;
+}
+
+dfa cx CH* PathNamePtr(cx CH* path) {
+	SI nameLen;
+	ret PathNamePtr(path, nameLen);
+}
+
+dfa SI PathNameo(CH* dst, cx CH* src) {
+	SI nameLen;
+	cx CH*cx namePtr = PathNamePtr(src, nameLen);
+	MemSet(dst, namePtr, nameLen * siz(CH));
+	dst[nameLen] = '\0';
+	ret nameLen;
 }
 
 dfa SI PathDirUp(CH* dst, BO* isRoot = NUL) {
