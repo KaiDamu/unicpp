@@ -63,7 +63,7 @@ dfa ER ProcNewFile(cx CH* path) {
 class Proc {
 private:
 	PROCESS_INFORMATION m_info;
-	Str m_args;
+	wstring m_args;
 public:
 	dfa NT __Drop() {
 		m_info.hProcess = NUL;
@@ -117,7 +117,7 @@ public:
 		STARTUPINFOW tmp = {};
 		MemSetVal(&tmp, 0, siz(tmp));
 		tmp.cb = siz(tmp);
-		cx BOOL result = CreateProcessW(path, const_cast<CH*>(m_args.Get()), NUL, NUL, NO, 0, NUL, workPath, &tmp, &m_info);
+		cx BOOL result = CreateProcessW(path, const_cast<CH*>(m_args.c_str()), NUL, NUL, NO, 0, NUL, workPath, &tmp, &m_info);
 		ifu (result == 0) {
 			MemSetVal(&m_info, 0, siz(m_info));
 			m_args = L"";

@@ -491,13 +491,13 @@ public:
 		ifu (size != result) rete(ERR_NO_FULL);
 		rets;
 	}
-	dfa BO ReadLine(SStr& str) {
+	dfa BO ReadLine(string& str) {
 		U1* ptrBase = m_dat.Ptr() + m_filePos;
 		U1* ptr = ptrBase;
 		U1* end = m_dat.Ptr() + m_dat.Pos();
 		while (ptr < end) {
 			if (*ptr == '\r' || *ptr == '\n') {
-				str.Set((CS*)ptrBase, ptr - ptrBase);
+				str.assign((CS*)ptrBase, SI(ptr - ptrBase));
 				m_filePos += ptr - ptrBase;
 				if ((*ptr == '\r') && (ptr + 1 < end) && (*(ptr + 1) == '\n')) ++m_filePos;
 				++m_filePos;
@@ -506,7 +506,7 @@ public:
 			++ptr;
 		}
 		if (ptr > ptrBase) {
-			str.Set((CS*)ptrBase, ptr - ptrBase);
+			str.assign((CS*)ptrBase, SI(ptr - ptrBase));
 			m_filePos += ptr - ptrBase;
 			ret YES;
 		}

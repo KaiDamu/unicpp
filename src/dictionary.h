@@ -284,17 +284,17 @@ public:
 
 class SVarBlock {
 private:
-	DictAvl<SStr, SStr> m_vars;
+	DictAvl<string, string> m_vars;
 public:
 	dfa NT Clr() {
 		m_vars.Clr();
 	}
-	dfa NT Set(cx SStr& var, cx SStr& val) {
+	dfa NT Set(cx string& var, cx string& val) {
 		m_vars.Replace(var, val);
 	}
-	dfa SStr Get(cx SStr& var) const {
-		cx SStr*cx val = m_vars[var];
-		if (val == NUL) ret SStr();
+	dfa string Get(cx string& var) const {
+		cx string*cx val = m_vars[var];
+		if (val == NUL) ret string();
 		ret *val;
 	}
 	dfa SI LoadMemCfg(DatIte<U1> dat) {
