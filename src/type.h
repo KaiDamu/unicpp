@@ -61,3 +61,16 @@ static_assert(siz(F8) == 8, "\"F8\" type size is not 8 byte!");
 static_assert(siz(bool) == 1, "\"bool\" type size is not 1 byte! (assumed)");
 static_assert(siz(char) == 1, "\"char\" type size is not 1 byte! (assumed)");
 static_assert(siz(wchar_t) == 2, "\"wchar_t\" type size is not 2 byte! (assumed)");
+
+enum class TimeUnit : U1 {
+	NONE = 0,
+	USEC,
+	MSEC,
+	SEC,
+	MINUTE,
+	HOUR,
+	DAY,
+	WEEK,
+	MONTH,
+	YEAR,
+};
