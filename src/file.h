@@ -59,7 +59,9 @@ dfa ER FileTimeGet(TmUnix& time, cx CH* path) {
 dfa ER FileSizeSet(cx CH* path, SI size) {
 	cx AU hdl = CreateFileW(path, GENERIC_WRITE, 0, NUL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NUL);
 	ifu (hdl == INVALID_HANDLE_VALUE) rete(ERR_FILE);
-	ifu (SetFilePointer(hdl, size, NUL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+	LARGE_INTEGER tmp = {};
+	tmp.QuadPart = size;
+	ifu (SetFilePointerEx(hdl, tmp, NUL, FILE_BEGIN) == 0) {
 		CloseHandle(hdl);
 		rete(ERR_FILE);
 	}

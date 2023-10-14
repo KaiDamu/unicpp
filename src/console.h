@@ -66,7 +66,7 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen) {
 	cx AU end = buf + bufLen;
 	AU cur = buf;
 	ConCol colOld;
-	ife (ConColGet(colOld));
+	ife (ConColGet(colOld)) retep;
 	while (cur != end) {
 		AU first = cur;
 		AU last = TO(first)(NUL);

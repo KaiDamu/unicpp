@@ -197,7 +197,7 @@ public:
 			SI i = 0;
 			SI j = (m_ex[0] >> 3) & 0x3F;
 			cx SI partSize = BLOCK_SIZE - j;
-			m_ex[0] += bufSize << 3;
+			m_ex[0] += U4(bufSize << 3);
 			if (m_ex[0] < (bufSize << 3)) ++m_ex[1];
 			m_ex[1] += bufSize >> (sizb(TO(bufSize)) - 3);
 			if (bufSize >= partSize) {

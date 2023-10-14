@@ -328,7 +328,7 @@ dfa ER KeybKeyPressDown(InputKey key) {
 	AU codeVk = InputKeyToCodeVk(key);
 	INPUT ip = {};
 	ip.type = INPUT_KEYBOARD;
-	ip.ki.wVk = codeVk;
+	ip.ki.wVk = TO(ip.ki.wVk)(codeVk);
 	ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
 	ip.ki.dwExtraInfo = GetMessageExtraInfo();
 	ifu (SendInput(1, &ip, siz(ip)) != 1) rete(ERR_KEYB);
@@ -338,7 +338,7 @@ dfa ER KeybKeyPressUp(InputKey key) {
 	AU codeVk = InputKeyToCodeVk(key);
 	INPUT ip = {};
 	ip.type = INPUT_KEYBOARD;
-	ip.ki.wVk = codeVk;
+	ip.ki.wVk = TO(ip.ki.wVk)(codeVk);
 	ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
 	ip.ki.dwFlags = KEYEVENTF_KEYUP;
 	ip.ki.dwExtraInfo = GetMessageExtraInfo();
