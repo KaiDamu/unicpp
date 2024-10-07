@@ -6,11 +6,14 @@
 #include <type_traits>
 #include <new>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <list>
 #include <unordered_map>
+#include <algorithm>
 
 using std::string;
+using std::string_view;
 using std::wstring;
 using std::vector;
 using std::list;
@@ -31,6 +34,8 @@ using std::unordered_map;
 	#include <winternl.h>
 	#include <shellapi.h>
 	#include <shlobj.h>
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
 
 	#include "import/winapi/type.h"
 	#include "import/winapi/value.h"
