@@ -162,6 +162,14 @@ public:
 		size = tmp.QuadPart;
 		rets;
 	}
+	dfa ER SizeSet(SI size) {
+		SI curPos;
+		ife (tx->CurGet(curPos)) retep;
+		ife (tx->CurSet(size)) retep;
+		ifu (SetEndOfFile(m_hdl) == 0) rete(ERR_FILE);
+		if (size > curPos) ife (tx->CurSet(curPos)) retep;
+		rets;
+	}
 	dfa ER TimeGet(TmUnix& time) {
 		time = 0;
 		ifu (tx->IsOpen() == NO) rete(ERR_NO_INIT);
@@ -327,6 +335,9 @@ public:
 	dfa ER SizeGet(SI& size) {
 		ret m_file.SizeGet(size);
 	}
+	dfa ER SizeSet(SI size) {
+		ret m_file.SizeSet(size);
+	}
 	dfa ER TimeGet(TmUnix& time) {
 		ret m_file.TimeGet(time);
 	}
@@ -421,11 +432,16 @@ public:
 	}
 	dfa ER OpenReadWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA) {
 		ifu (tx->IsOpen()) rete(ERR_YES_INIT);
-		ife (m_file.OpenReadWrite(path)) retep;
 		SI size = 0;
-		ife (m_file.SizeGet(size)) retep;
-		m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
-		ife (m_file.Read(m_dat.Ptr(), size)) retep;
+		if (path == NUL) {
+			ifu (isWriteDirect) rete(ERR_NO_VALID);
+			m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
+		} else {
+			ife (m_file.OpenReadWrite(path)) retep;
+			ife (m_file.SizeGet(size)) retep;
+			m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
+			ife (m_file.Read(m_dat.Ptr(), size)) retep;
+		}
 		m_dat.CurSet(size);
 		m_filePos = 0;
 		m_filePosOfs = 0;
@@ -439,13 +455,11 @@ public:
 	}
 	dfa ER Close() {
 		ifu (!tx->IsOpen()) rets;
-		if (m_isWrite) {
-			if (!m_isWriteDirect) {
-				ife (m_file.CurSet(0)) retep;
-				ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retep;
-			}
+		if (m_isWrite && !m_isWriteDirect && m_file.IsOpen()) {
+			ife (m_file.CurSet(0)) retep;
+			ife (m_file.Write(m_dat.Ptr(), m_dat.Pos())) retep;
 		}
-		ife (m_file.Close()) retep;
+		if (m_file.IsOpen()) ife (m_file.Close()) retep;
 		m_dat.Del();
 		m_filePos = 0;
 		m_filePosOfs = 0;
@@ -527,9 +541,31 @@ public:
 		rets;
 	}
 	dfa SI SizeGet() {
-		SI size = 0;
-		tx->SizeGet(size);
+		SI size;
+		ife (tx->SizeGet(size)) size = -1;
 		ret size;
+	}
+	dfa ER SizeSet(SI size) { // TODO: TO TEST!
+		ifu (!m_isWrite) rete(ERR_NO_INIT);
+		if (m_isWriteDirect) {
+			if (m_filePosOfs != 0) {
+				ife (m_file.CurMove(m_filePosOfs)) retep;
+				m_filePos += m_filePosOfs;
+				m_filePosOfs = 0;
+			}
+			ife (m_file.SizeSet(size)) retep;
+		}
+		cx AU isExtend = size > m_dat.Pos();
+		if (isExtend) {
+			ifu (size > m_dat.Cap()) {
+				cx SI newCap = SI(F8(size) * m_resizeMul) + m_resizeAdd;
+				m_dat.Req(newCap, newCap, m_dat.Pos());
+			}
+			MemSetVal(m_dat.Ptr() + m_dat.Pos(), 0, size - m_dat.Pos());
+		}
+		m_filePos = Min(m_filePos, size);
+		m_dat.CurSet(m_filePos); // set virtual size
+		rets;
 	}
 	dfa ER TimeGet(TmUnix& time) {
 		ret m_file.TimeGet(time);
