@@ -2,11 +2,20 @@
 
 constexpr SI STR_EX_LEN = 1;
 
-#define CsstrSetForm sprintf
-#define ChstrSetForm swprintf
+#ifdef PROG_COMPILER_GCC
+	#define CsstrSetForm sprintf
+	#define ChstrSetForm swprintf
+	#define CsstrGetForm sscanf
+	#define ChstrGetForm swscanf
+#endif
 
-#define CsstrGetForm sscanf
-#define ChstrGetForm swscanf
+// has some bugs
+#ifdef PROG_COMPILER_MSVC
+	#define CsstrSetForm sprintf
+	#define ChstrSetForm swprintf
+	#define CsstrGetForm sscanf
+	#define ChstrGetForm swscanf
+#endif
 
 dfa SI StrLen(cx CS* str) {
 	ret __builtin_strlen(str);
@@ -70,7 +79,6 @@ dfa cx CS* StrFind(cx CS* main, cx CS* sub) {
 dfa cx CH* StrFind(cx CH* main, cx CH* sub) {
 	ret wcsstr(main, sub);
 }
-
 dfa SI CsstrToChstr(CH* dst, cx CS* src) {
 	cx CH* cx dstBase = dst;
 	while (*src != '\0') *dst++ = *src++;
@@ -89,6 +97,17 @@ dfa SI ChstrToCsstr(CS* dst, cx CH* src) {
 	ret SI(dst - dstBase);
 }
 
+tpl1 dfa SA StrCmpCi(cx T1* strA, cx T1* strB) {
+	SI i = 0;
+	while (IsSameCi(strA[i], strB[i]) && strA[i] != '\0' && strB[i] != '\0') ++i;
+	ret SA(strA[i] - strB[i]);
+}
+tpl1 dfa SA StrCmpCi(cx T1* strA, cx T1* strB, SI len) {
+	SI i = 0;
+	while (i < len && IsSameCi(strA[i], strB[i]) && strA[i] != '\0' && strB[i] != '\0') ++i;
+	if (i == len) ret 0;
+	ret SA(strA[i] - strB[i]);
+}
 tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right) {
 	cx SI leftLen = StrLen(left);
 	MemSet(dst, left, leftLen * siz(T1));
@@ -189,6 +208,15 @@ tpl1 dfa SI StrFindI(cx T1* main, cx T1* sub) {
 	cx T1*cx p = StrFind(main, sub);
 	ret (p == NUL) ? -1 : p - main;
 }
+tpl1 dfa cx T1* StrFindCi(cx T1* main, cx T1* sub) {
+	cx T1* p = main;
+	cx SI subLen = StrLen(sub);
+	while (*p != '\0') {
+		if (StrCmpCi(p, sub, subLen) == 0) ret p;
+		++p;
+	}
+	ret NUL;
+}
 tpl1 dfa cx T1* StrArgSkip(cx T1* str) {
 	cx T1* p = str;
 	if (*p == '\"') {
@@ -211,12 +239,29 @@ tpl1 dfa BO StrIsFirst(cx T1* main, cx T1* sub) {
 	ret *p2 == '\0';
 }
 
+tpl1 dfa SI StrFindReplace(T1* dst, cx T1* src, cx T1* strReplace, cx T1* strFind) { // replace (all) 'strFind' with 'strReplace' in 'src' and store in 'dst'
+	cx SI strFindLen = StrLen(strFind);
+	cx SI strReplaceLen = StrLen(strReplace);
+	cx T1* srcP = src;
+	T1* dstP = dst;
+	while (*srcP != '\0') {
+		if (StrCmp(srcP, strFind, strFindLen) == 0) {
+			MemSet(dstP, strReplace, strReplaceLen * siz(T1));
+			srcP += strFindLen;
+			dstP += strReplaceLen;
+		} else {
+			*dstP = *srcP;
+			++srcP;
+			++dstP;
+		}
+	}
+	*dstP = '\0';
+	ret dstP - dst;
+}
+
 tpl1 dfa SI StrSetLenGet(T1* dst, cx T1* src) {
 	T1* p = dst;
 	while (*src != '\0') *p++ = *src++;
 	*p = '\0';
 	ret p - dst;
 }
-
-constexpr SI STR_INIT_ALLOC_CNT = 8;
-constexpr F8 STR_ADD_ALLOC_SCALE = 1.5;

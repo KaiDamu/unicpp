@@ -91,3 +91,7 @@ tpl1 dfa T1 ToUpcase(cx T1& c) {
 	if (IsLowcase<T1>(c)) ret c + 'A' - 'a';
 	ret c;
 }
+
+tpl1 dfa BO IsSameCi(cx T1& c1, cx T1& c2) {
+	ret c1 == (IsLowcase<T1>(c1) ? ToLowcase<T1>(c2) : ToUpcase<T1>(c2));
+}
