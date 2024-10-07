@@ -18,6 +18,13 @@ tpl1 dfa T1 Clamp(T1 val, T1 min, T1 max) {
 tpl1 dfa T1 Abs(T1 val) {
 	ret ((val < 0) ? -val : val);
 }
+tpl1 dfa T1 Diff(T1 a, T1 b) {
+    ret Abs<T1>(a - b);
+}
+tpl1 dfa T1 DiffWrap(T1 a, T1 b, T1 wrapAt) {
+	cx AU diff = Diff<T1>(a, b);
+	ret Min<T1>(diff, wrapAt - diff);
+}
 tpl1 dfa T1 Sign(T1 val) {
 	ret ((val < 0) ? -1 : 1);
 }
@@ -25,8 +32,25 @@ tpl1 dfa T1 Pow2(T1 val) {
 	ret val * val;
 }
 tpl1 dfa T1 Sqrt(T1 val) {
-	ifu (val < 0) ret T1(-sqrt(-val)); // Non-standard
-	ret T1(sqrt(val));
+	#ifdef PROG_COMPILER_GCC
+		ifu (val < 0) ret T1(-__builtin_sqrt(-val)); // Non-standard
+		ret T1(__builtin_sqrt(val));
+	#else
+		ifu (val < 0) ret T1(-sqrt(-val)); // Non-standard
+		ret T1(sqrt(val));
+	#endif
+}
+tpl0 dfa F4 Sqrt<F4>(F4 val) {
+	#ifdef PROG_COMPILER_GCC
+		ifu (val < 0) ret - __builtin_sqrtf(-val); // Non-standard
+		ret __builtin_sqrtf(val);
+	#else
+		ifu (val < 0) ret -sqrtf(-val); // Non-standard
+		ret sqrtf(val);
+	#endif
+}
+tpl1 dfa T1 Dist0(T1 x, T1 y) {
+	ret Sqrt<T1>(Pow2<T1>(x) + Pow2<T1>(y));
 }
 tpl1 dfa T1 AlignBit(T1 val, T1 size) {
 	ret (val + (size - 1)) & ~(size - 1);

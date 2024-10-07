@@ -5,5 +5,6 @@
 extern "C" {
 	#ifdef PROG_COMPILER_GCC
 		_importfnstdc(double)sqrt(double);
+		_importfnstdc(float)sqrtf(float);
 	#endif
 }
