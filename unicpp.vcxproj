@@ -169,6 +169,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>INCLUDE_DUMB;INCLUDE_KEYB;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_DBG;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -183,6 +184,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>INCLUDE_DUMB;INCLUDE_KEYB;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_RELEASE;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
