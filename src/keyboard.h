@@ -345,9 +345,10 @@ dfa ER KeybKeyPressUp(InputKey key) {
 	ifu (SendInput(1, &ip, siz(ip)) != 1) rete(ERR_KEYB);
 	rets;
 }
-dfa ER KeybKeyPress(InputKey key, U4 delay = 50) {
+dfa ER KeybKeyPress(InputKey key, U4 hold = 50, U4 delay = 50) {
 	ife (KeybKeyPressDown(key)) retep;
-	ThdWait(delay);
+	ThdWait(hold);
 	ife (KeybKeyPressUp(key)) retep;
+	ThdWait(delay);
 	rets;
 }
