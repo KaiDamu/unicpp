@@ -74,6 +74,18 @@ dfa TmUnix TimeUnix() {
 	ret time(NUL);
 }
 
+dfa TmUnix TmUnixBuild(U4 year = 0, U4 month = 0, U4 day = 0, U4 hour = 0, U4 minute = 0, U4 second = 0) {
+	tm tm;
+	tm.tm_year = year - 1900;
+	tm.tm_mon = month - 1;
+	tm.tm_mday = day;
+	tm.tm_hour = hour;
+	tm.tm_min = minute;
+	tm.tm_sec = second;
+	tm.tm_isdst = -1;
+	ret TmUnix(mktime(&tm));
+}
+
 class Timer {
 private:
 	TmMain m_time;
