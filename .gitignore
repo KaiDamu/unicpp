@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Manual
+tests/compile_gcc.exe
+tests/Compile C++.lnk
+
 # User-specific files
 *.rsuser
 *.suo
