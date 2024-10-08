@@ -52,6 +52,12 @@ tpl0 dfa F4 Sqrt<F4>(F4 val) {
 tpl1 dfa T1 Dist0(T1 x, T1 y) {
 	ret Sqrt<T1>(Pow2<T1>(x) + Pow2<T1>(y));
 }
+tpl1 dfa T1 Dist0Fast(T1 x, T1 y) {
+	// ~2.05% error rate in equal input distribution
+	cx AU xa = Abs<T1>(x);
+	cx AU ya = Abs<T1>(y);
+	ret (xa > ya) ? (T1(0.947543) * xa + T1(0.392485) * ya) : (T1(0.947543) * ya + T1(0.392485) * xa);
+}
 tpl1 dfa T1 AlignBit(T1 val, T1 size) {
 	ret (val + (size - 1)) & ~(size - 1);
 }
