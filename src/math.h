@@ -143,3 +143,43 @@ tpl1 dfa SI LenInt(T1 val) {
 	else num = 20;
 	ret num + sign;
 }
+
+tpl1 dfa T1 NormalizeMinmax(T1* arr, SI cnt)
+{
+    ifu (cnt < 1) ret T1(0);
+    AU min = arr[0];
+    AU max = arr[0];
+    for (SI i = 1; i < cnt; ++i)
+    {
+        min = Min<T1>(min, arr[i]);
+        max = Max<T1>(max, arr[i]);
+    }
+    cx AU range = max - min;
+    if (max == min)
+    {
+        ite (i, i < cnt) arr[i] = T1(0);
+    }
+    else
+    {
+        ite (i, i < cnt) arr[i] = (arr[i] - min) / range;
+    }
+    ret range;
+}
+tpl1 dfa T1 NormalizeMax(T1* arr, SI cnt)
+{
+    ifu (cnt < 1) ret T1(0);
+    AU max = arr[0];
+    for (SI i = 1; i < cnt; ++i)
+    {
+        max = Max<T1>(max, arr[i]);
+    }
+    if (max == T1(0))
+    {
+        ite (i, i < cnt) arr[i] = T1(0);
+    }
+    else
+    {
+        ite (i, i < cnt) arr[i] /= max;
+    }
+    ret max;
+}
