@@ -13,22 +13,94 @@ struct ColRgb
     U1 g; // range: 0 - 255
     U1 b; // range: 0 - 255
 
-    dfa ColRgb operator + (cx ColRgb& col) { ret ColRgb(r + col.r, g + col.g, b + col.b); }
-    dfa ColRgb operator - (cx ColRgb& col) { ret ColRgb(r - col.r, g - col.g, b - col.b); }
-    dfa ColRgb operator * (cx ColRgb& col) { ret ColRgb(r * col.r, g * col.g, b * col.b); }
-    dfa ColRgb operator / (cx ColRgb& col) { ret ColRgb(r / col.r, g / col.g, b / col.b); }
-    dfa ColRgb operator + (U1 val) { ret ColRgb(r + val, g + val, b + val); }
-    dfa ColRgb operator - (U1 val) { ret ColRgb(r - val, g - val, b - val); }
-    dfa ColRgb operator * (U1 val) { ret ColRgb(r * val, g * val, b * val); }
-    dfa ColRgb operator / (U1 val) { ret ColRgb(r / val, g / val, b / val); }
-    dfa ColRgb& operator += (cx ColRgb& col) { r += col.r; g += col.g; b += col.b; ret *tx; }
-    dfa ColRgb& operator -= (cx ColRgb& col) { r -= col.r; g -= col.g; b -= col.b; ret *tx; }
-    dfa ColRgb& operator *= (cx ColRgb& col) { r *= col.r; g *= col.g; b *= col.b; ret *tx; }
-    dfa ColRgb& operator /= (cx ColRgb& col) { r /= col.r; g /= col.g; b /= col.b; ret *tx; }
-    dfa ColRgb& operator += (U1 val) { r += val; g += val; b += val; ret *tx; }
-    dfa ColRgb& operator -= (U1 val) { r -= val; g -= val; b -= val; ret *tx; }
-    dfa ColRgb& operator *= (U1 val) { r *= val; g *= val; b *= val; ret *tx; }
-    dfa ColRgb& operator /= (U1 val) { r /= val; g /= val; b /= val; ret *tx; }
+    dfa ColRgb operator+(cx ColRgb& col)
+    {
+        ret ColRgb(r + col.r, g + col.g, b + col.b);
+    }
+    dfa ColRgb operator-(cx ColRgb& col)
+    {
+        ret ColRgb(r - col.r, g - col.g, b - col.b);
+    }
+    dfa ColRgb operator*(cx ColRgb& col)
+    {
+        ret ColRgb(r * col.r, g * col.g, b * col.b);
+    }
+    dfa ColRgb operator/(cx ColRgb& col)
+    {
+        ret ColRgb(r / col.r, g / col.g, b / col.b);
+    }
+    dfa ColRgb operator+(U1 val)
+    {
+        ret ColRgb(r + val, g + val, b + val);
+    }
+    dfa ColRgb operator-(U1 val)
+    {
+        ret ColRgb(r - val, g - val, b - val);
+    }
+    dfa ColRgb operator*(U1 val)
+    {
+        ret ColRgb(r * val, g * val, b * val);
+    }
+    dfa ColRgb operator/(U1 val)
+    {
+        ret ColRgb(r / val, g / val, b / val);
+    }
+    dfa ColRgb& operator+=(cx ColRgb& col)
+    {
+        r += col.r;
+        g += col.g;
+        b += col.b;
+        ret *tx;
+    }
+    dfa ColRgb& operator-=(cx ColRgb& col)
+    {
+        r -= col.r;
+        g -= col.g;
+        b -= col.b;
+        ret *tx;
+    }
+    dfa ColRgb& operator*=(cx ColRgb& col)
+    {
+        r *= col.r;
+        g *= col.g;
+        b *= col.b;
+        ret *tx;
+    }
+    dfa ColRgb& operator/=(cx ColRgb& col)
+    {
+        r /= col.r;
+        g /= col.g;
+        b /= col.b;
+        ret *tx;
+    }
+    dfa ColRgb& operator+=(U1 val)
+    {
+        r += val;
+        g += val;
+        b += val;
+        ret *tx;
+    }
+    dfa ColRgb& operator-=(U1 val)
+    {
+        r -= val;
+        g -= val;
+        b -= val;
+        ret *tx;
+    }
+    dfa ColRgb& operator*=(U1 val)
+    {
+        r *= val;
+        g *= val;
+        b *= val;
+        ret *tx;
+    }
+    dfa ColRgb& operator/=(U1 val)
+    {
+        r /= val;
+        g /= val;
+        b /= val;
+        ret *tx;
+    }
 
     dfa ColRgb()
     {
@@ -43,22 +115,94 @@ struct ColRgbN
     F4 g; // range: 0.0 - 1.0
     F4 b; // range: 0.0 - 1.0
 
-    dfa ColRgbN operator + (cx ColRgbN& col) { ret ColRgbN(r + col.r, g + col.g, b + col.b); }
-    dfa ColRgbN operator - (cx ColRgbN& col) { ret ColRgbN(r - col.r, g - col.g, b - col.b); }
-    dfa ColRgbN operator * (cx ColRgbN& col) { ret ColRgbN(r * col.r, g * col.g, b * col.b); }
-    dfa ColRgbN operator / (cx ColRgbN& col) { ret ColRgbN(r / col.r, g / col.g, b / col.b); }
-    dfa ColRgbN operator + (F4 val) { ret ColRgbN(r + val, g + val, b + val); }
-    dfa ColRgbN operator - (F4 val) { ret ColRgbN(r - val, g - val, b - val); }
-    dfa ColRgbN operator * (F4 val) { ret ColRgbN(r * val, g * val, b * val); }
-    dfa ColRgbN operator / (F4 val) { ret ColRgbN(r / val, g / val, b / val); }
-    dfa ColRgbN& operator += (cx ColRgbN& col) { r += col.r; g += col.g; b += col.b; ret *tx; }
-    dfa ColRgbN& operator -= (cx ColRgbN& col) { r -= col.r; g -= col.g; b -= col.b; ret *tx; }
-    dfa ColRgbN& operator *= (cx ColRgbN& col) { r *= col.r; g *= col.g; b *= col.b; ret *tx; }
-    dfa ColRgbN& operator /= (cx ColRgbN& col) { r /= col.r; g /= col.g; b /= col.b; ret *tx; }
-    dfa ColRgbN& operator += (F4 val) { r += val; g += val; b += val; ret *tx; }
-    dfa ColRgbN& operator -= (F4 val) { r -= val; g -= val; b -= val; ret *tx; }
-    dfa ColRgbN& operator *= (F4 val) { r *= val; g *= val; b *= val; ret *tx; }
-    dfa ColRgbN& operator /= (F4 val) { r /= val; g /= val; b /= val; ret *tx; }
+    dfa ColRgbN operator+(cx ColRgbN& col)
+    {
+        ret ColRgbN(r + col.r, g + col.g, b + col.b);
+    }
+    dfa ColRgbN operator-(cx ColRgbN& col)
+    {
+        ret ColRgbN(r - col.r, g - col.g, b - col.b);
+    }
+    dfa ColRgbN operator*(cx ColRgbN& col)
+    {
+        ret ColRgbN(r * col.r, g * col.g, b * col.b);
+    }
+    dfa ColRgbN operator/(cx ColRgbN& col)
+    {
+        ret ColRgbN(r / col.r, g / col.g, b / col.b);
+    }
+    dfa ColRgbN operator+(F4 val)
+    {
+        ret ColRgbN(r + val, g + val, b + val);
+    }
+    dfa ColRgbN operator-(F4 val)
+    {
+        ret ColRgbN(r - val, g - val, b - val);
+    }
+    dfa ColRgbN operator*(F4 val)
+    {
+        ret ColRgbN(r * val, g * val, b * val);
+    }
+    dfa ColRgbN operator/(F4 val)
+    {
+        ret ColRgbN(r / val, g / val, b / val);
+    }
+    dfa ColRgbN& operator+=(cx ColRgbN& col)
+    {
+        r += col.r;
+        g += col.g;
+        b += col.b;
+        ret *tx;
+    }
+    dfa ColRgbN& operator-=(cx ColRgbN& col)
+    {
+        r -= col.r;
+        g -= col.g;
+        b -= col.b;
+        ret *tx;
+    }
+    dfa ColRgbN& operator*=(cx ColRgbN& col)
+    {
+        r *= col.r;
+        g *= col.g;
+        b *= col.b;
+        ret *tx;
+    }
+    dfa ColRgbN& operator/=(cx ColRgbN& col)
+    {
+        r /= col.r;
+        g /= col.g;
+        b /= col.b;
+        ret *tx;
+    }
+    dfa ColRgbN& operator+=(F4 val)
+    {
+        r += val;
+        g += val;
+        b += val;
+        ret *tx;
+    }
+    dfa ColRgbN& operator-=(F4 val)
+    {
+        r -= val;
+        g -= val;
+        b -= val;
+        ret *tx;
+    }
+    dfa ColRgbN& operator*=(F4 val)
+    {
+        r *= val;
+        g *= val;
+        b *= val;
+        ret *tx;
+    }
+    dfa ColRgbN& operator/=(F4 val)
+    {
+        r /= val;
+        g /= val;
+        b /= val;
+        ret *tx;
+    }
 
     dfa ColRgbN& Set(cx ColRgb& rgb)
     {
@@ -85,22 +229,94 @@ struct ColHsvN
     F4 s; // range: 0.0 - 1.0
     F4 v; // range: 0.0 - 1.0
 
-    dfa ColHsvN operator + (cx ColHsvN& col) { ret ColHsvN(h + col.h, s + col.s, v + col.v); }
-    dfa ColHsvN operator - (cx ColHsvN& col) { ret ColHsvN(h - col.h, s - col.s, v - col.v); }
-    dfa ColHsvN operator * (cx ColHsvN& col) { ret ColHsvN(h * col.h, s * col.s, v * col.v); }
-    dfa ColHsvN operator / (cx ColHsvN& col) { ret ColHsvN(h / col.h, s / col.s, v / col.v); }
-    dfa ColHsvN operator + (F4 val) { ret ColHsvN(h + val, s + val, v + val); }
-    dfa ColHsvN operator - (F4 val) { ret ColHsvN(h - val, s - val, v - val); }
-    dfa ColHsvN operator * (F4 val) { ret ColHsvN(h * val, s * val, v * val); }
-    dfa ColHsvN operator / (F4 val) { ret ColHsvN(h / val, s / val, v / val); }
-    dfa ColHsvN& operator += (cx ColHsvN& col) { h += col.h; s += col.s; v += col.v; ret *tx; }
-    dfa ColHsvN& operator -= (cx ColHsvN& col) { h -= col.h; s -= col.s; v -= col.v; ret *tx; }
-    dfa ColHsvN& operator *= (cx ColHsvN& col) { h *= col.h; s *= col.s; v *= col.v; ret *tx; }
-    dfa ColHsvN& operator /= (cx ColHsvN& col) { h /= col.h; s /= col.s; v /= col.v; ret *tx; }
-    dfa ColHsvN& operator += (F4 val) { h += val; s += val; v += val; ret *tx; }
-    dfa ColHsvN& operator -= (F4 val) { h -= val; s -= val; v -= val; ret *tx; }
-    dfa ColHsvN& operator *= (F4 val) { h *= val; s *= val; v *= val; ret *tx; }
-    dfa ColHsvN& operator /= (F4 val) { h /= val; s /= val; v /= val; ret *tx; }
+    dfa ColHsvN operator+(cx ColHsvN& col)
+    {
+        ret ColHsvN(h + col.h, s + col.s, v + col.v);
+    }
+    dfa ColHsvN operator-(cx ColHsvN& col)
+    {
+        ret ColHsvN(h - col.h, s - col.s, v - col.v);
+    }
+    dfa ColHsvN operator*(cx ColHsvN& col)
+    {
+        ret ColHsvN(h * col.h, s * col.s, v * col.v);
+    }
+    dfa ColHsvN operator/(cx ColHsvN& col)
+    {
+        ret ColHsvN(h / col.h, s / col.s, v / col.v);
+    }
+    dfa ColHsvN operator+(F4 val)
+    {
+        ret ColHsvN(h + val, s + val, v + val);
+    }
+    dfa ColHsvN operator-(F4 val)
+    {
+        ret ColHsvN(h - val, s - val, v - val);
+    }
+    dfa ColHsvN operator*(F4 val)
+    {
+        ret ColHsvN(h * val, s * val, v * val);
+    }
+    dfa ColHsvN operator/(F4 val)
+    {
+        ret ColHsvN(h / val, s / val, v / val);
+    }
+    dfa ColHsvN& operator+=(cx ColHsvN& col)
+    {
+        h += col.h;
+        s += col.s;
+        v += col.v;
+        ret *tx;
+    }
+    dfa ColHsvN& operator-=(cx ColHsvN& col)
+    {
+        h -= col.h;
+        s -= col.s;
+        v -= col.v;
+        ret *tx;
+    }
+    dfa ColHsvN& operator*=(cx ColHsvN& col)
+    {
+        h *= col.h;
+        s *= col.s;
+        v *= col.v;
+        ret *tx;
+    }
+    dfa ColHsvN& operator/=(cx ColHsvN& col)
+    {
+        h /= col.h;
+        s /= col.s;
+        v /= col.v;
+        ret *tx;
+    }
+    dfa ColHsvN& operator+=(F4 val)
+    {
+        h += val;
+        s += val;
+        v += val;
+        ret *tx;
+    }
+    dfa ColHsvN& operator-=(F4 val)
+    {
+        h -= val;
+        s -= val;
+        v -= val;
+        ret *tx;
+    }
+    dfa ColHsvN& operator*=(F4 val)
+    {
+        h *= val;
+        s *= val;
+        v *= val;
+        ret *tx;
+    }
+    dfa ColHsvN& operator/=(F4 val)
+    {
+        h /= val;
+        s /= val;
+        v /= val;
+        ret *tx;
+    }
 
     dfa ColHsvN()
     {
@@ -116,7 +332,10 @@ tpl1 struct ColGrid
     vector<T1> pixels;
     Size2<SI> size;
 
-    dfa T1& Pixel(cx Pos2<SI>& pos) { ret pixels[pos.y * size.w + pos.x]; }
+    dfa T1& Pixel(cx Pos2<SI>& pos)
+    {
+        ret pixels[pos.y * size.w + pos.x];
+    }
 };
 
 /// [convert color]

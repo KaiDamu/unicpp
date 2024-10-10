@@ -1,0 +1,18 @@
+Language: Cpp
+
+BasedOnStyle: Microsoft
+
+IndentWidth: 4
+UseTab: Never
+DerivePointerAlignment: false
+PointerAlignment: Left
+IndentPPDirectives: BeforeHash
+AlignEscapedNewlines: Left
+SortIncludes: Never
+ColumnLimit: 200
+
+IfMacros: ['ifu', 'ifl', 'ifs', 'ife']
+ForEachMacros: ['ite']
+
+Macros:
+- ret=return

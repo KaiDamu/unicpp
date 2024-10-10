@@ -49,13 +49,13 @@ constexpr SI S4_LEN_MAX = 11;
 constexpr SI S8_LEN_MAX = 20;
 
 #ifdef PROG_ADR_SIZE_4
-	constexpr SI SI_VAL_MAX = S4_VAL_MAX;
-	constexpr SI SI_LEN_MAX = S4_LEN_MAX;
+constexpr SI SI_VAL_MAX = S4_VAL_MAX;
+constexpr SI SI_LEN_MAX = S4_LEN_MAX;
 #endif
 
 #ifdef PROG_ADR_SIZE_8
-	constexpr SI SI_VAL_MAX = S8_VAL_MAX;
-	constexpr SI SI_LEN_MAX = S8_LEN_MAX;
+constexpr SI SI_VAL_MAX = S8_VAL_MAX;
+constexpr SI SI_LEN_MAX = S8_LEN_MAX;
 #endif
 
 #define NUL 0

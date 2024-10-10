@@ -1,6 +1,7 @@
 #include "../src/unicpp.h"
 
-ER Main() {
-	ConWrite("Hello, world!");
-	rets;
+ER Main()
+{
+    ConWrite("Hello, world!");
+    rets;
 }
