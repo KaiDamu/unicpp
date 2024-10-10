@@ -48,6 +48,26 @@ dfa ER ProcCurEnvvarClear(cx CH* envvar) {
 dfa cx CH* ProcCurArgFullGet() {
 	ret GetCommandLineW();
 }
+dfa ER ProcDpiAwareSet() {
+	static BO s_isSet = NO;
+	if (s_isSet) rets;
+	HMODULE lib = NUL;
+	if (lib = LoadLibraryW(L"shcore.dll"))
+	{
+		typedef HRESULT(WINAPI* FnSetProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
+		cx FnSetProcessDpiAwareness setProcessDpiAwareness = (FnSetProcessDpiAwareness)GetProcAddress(lib, "SetProcessDpiAwareness");
+		if (setProcessDpiAwareness && (setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE) == S_OK)) s_isSet = YES;
+	}
+	else if (lib = LoadLibraryW(L"user32.dll"))
+	{
+		typedef BOOL(WINAPI* FnSetProcessDPIAware)();
+		cx FnSetProcessDPIAware setProcessDPIAware = (FnSetProcessDPIAware)GetProcAddress(lib, "SetProcessDPIAware");
+		if (setProcessDPIAware && (setProcessDPIAware() != 0)) s_isSet = YES;
+	}
+	if (lib != NUL) FreeLibrary(lib);
+	ifu (s_isSet == NO) rete(ERR_PROC);
+	rets;
+}
 
 dfa ER ProcNewFile(cx CH* path) {
 	SHELLEXECUTEINFOW info = {};

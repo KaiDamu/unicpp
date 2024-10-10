@@ -33,6 +33,7 @@ using std::unordered_map;
 	#include <windows.h>
 	#include <winternl.h>
 	#include <shellapi.h>
+	#include <shellscalingapi.h>
 	#include <shlobj.h>
 	#include <winsock2.h>
 	#include <ws2tcpip.h>

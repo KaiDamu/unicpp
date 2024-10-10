@@ -27,6 +27,7 @@ enum : ErrVal {
 	ERR_KEYB,
 	ERR_MOUS,
 	ERR_NET,
+	ERR_SCN,
 	//
 	ERR_MEM_NEW,
 	ERR_TIME_RES,
