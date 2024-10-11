@@ -113,20 +113,20 @@ GA operator new[](size_t size)
         unused(size);
     }
 */
-NT operator delete(GA ptr) noexcept
+NT operator delete(GA ptr) noex
 {
     MemDel(ptr);
 }
-NT operator delete[](GA ptr) noexcept
+NT operator delete[](GA ptr) noex
 {
     MemDel(ptr);
 }
-NT operator delete(GA ptr, size_t size) noexcept
+NT operator delete(GA ptr, size_t size) noex
 {
     unused(size);
     MemDel(ptr);
 }
-NT operator delete[](GA ptr, size_t size) noexcept
+NT operator delete[](GA ptr, size_t size) noex
 {
     unused(size);
     MemDel(ptr);

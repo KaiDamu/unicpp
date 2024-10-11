@@ -16,11 +16,11 @@ tpl1 class DQueue
     SI m_len;
 
   public:
-    dfa BO IsEmpty() const
+    dfa BO IsEmpty() cx
     {
         ret m_first == NUL;
     }
-    dfa SI Len() const
+    dfa SI Len() cx
     {
         ret m_len;
     }

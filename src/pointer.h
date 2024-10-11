@@ -17,7 +17,7 @@ tpl1 class Ptr
         Assert(m_val == NUL);
         m_val = new T1[cnt];
     }
-    dfa T1* Get() const
+    dfa T1* Get() cx
     {
         ret m_val;
     }
@@ -34,7 +34,7 @@ tpl1 class Ptr
     }
 
   public:
-    dfa T1& operator[](SI i) const
+    dfa T1& operator[](SI i) cx
     {
         ret m_val[i];
     }

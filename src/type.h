@@ -17,7 +17,7 @@ using BO = bool;
 using ER = bool;
 
 using GA = void*;
-using CXGA = const void*;
+using CXGA = cx void*;
 
 using NT = void;
 

@@ -8,15 +8,15 @@ tpl1 class DStack
     Arr<T1> m_arr;
 
   public:
-    dfa SI Len() const
+    dfa SI Len() cx
     {
         ret m_arr.Pos();
     }
-    dfa BO IsEmpty() const
+    dfa BO IsEmpty() cx
     {
         ret (tx->Len() == 0);
     }
-    dfa T1* Get() const
+    dfa T1* Get() cx
     {
         ifu (tx->IsEmpty())
             ret NUL;

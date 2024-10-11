@@ -17,33 +17,33 @@ tpl1 class DList
     SI m_len;
 
   private:
-    dfa T1* CurDat() const
+    dfa T1* CurDat() cx
     {
         ret m_cur == NUL ? NUL : &m_cur->dat;
     }
 
   public:
-    dfa BO IsEmpty() const
+    dfa BO IsEmpty() cx
     {
         ret m_first == NUL;
     }
-    dfa SI Len() const
+    dfa SI Len() cx
     {
         ret m_len;
     }
 
   public:
-    dfa BO CurIsFirst() const
+    dfa BO CurIsFirst() cx
     {
         ret m_cur == m_first;
     }
-    dfa BO CurIsLast() const
+    dfa BO CurIsLast() cx
     {
         ret m_cur == m_last;
     }
 
   public:
-    dfa T1* GetCur() const
+    dfa T1* GetCur() cx
     {
         ret tx->CurDat();
     }
@@ -71,7 +71,7 @@ tpl1 class DList
     }
 
   public:
-    dfa BO GetCur(T1& dat) const
+    dfa BO GetCur(T1& dat) cx
     {
         ifu (m_cur == NUL)
             ret NO;

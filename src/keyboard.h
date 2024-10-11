@@ -179,9 +179,9 @@ enum class InputKey : U1
 constexpr SI INPUT_KEY_CNT = 256;
 
 // operator for InputKey to int
-inline int operator+(InputKey key)
+dfa int operator+(InputKey key)
 {
-    return (int)key;
+    ret (int)key;
 }
 
 struct KeybKeyEvt

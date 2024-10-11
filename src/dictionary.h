@@ -17,7 +17,7 @@ tpl2 class DictAvl
     DictAvlElem* m_root;
 
   private:
-    dfa DictAvlElem& ElemAlloc(cx T1& key, cx T2& val, DictAvlElem* parent) const
+    dfa DictAvlElem& ElemAlloc(cx T1& key, cx T2& val, DictAvlElem* parent) cx
     {
         DictAvlElem& elem = *(new DictAvlElem);
         elem.parent = parent;
@@ -28,19 +28,19 @@ tpl2 class DictAvl
         elem.val = val;
         ret elem;
     }
-    dfa U1 LvGet(cx DictAvlElem* elem) const
+    dfa U1 LvGet(cx DictAvlElem* elem) cx
     {
         ret (elem != NUL) ? elem->lv : 0;
     }
-    dfa NT LvUpd(DictAvlElem& elem) const
+    dfa NT LvUpd(DictAvlElem& elem) cx
     {
         elem.lv = 1 + Max<U1>(tx->LvGet(elem.left), tx->LvGet(elem.right));
     }
-    dfa S1 BalGet(cx DictAvlElem& elem) const
+    dfa S1 BalGet(cx DictAvlElem& elem) cx
     {
         ret tx->LvGet(elem.left) - tx->LvGet(elem.right);
     }
-    dfa NT RotLL(DictAvlElem*& elem) const
+    dfa NT RotLL(DictAvlElem*& elem) cx
     {
         DictAvlElem& e = *elem;
         if (e.parent != NUL)
@@ -59,7 +59,7 @@ tpl2 class DictAvl
         e.lv -= 2;
         elem = e.parent;
     }
-    dfa NT RotRR(DictAvlElem*& elem) const
+    dfa NT RotRR(DictAvlElem*& elem) cx
     {
         DictAvlElem& e = *elem;
         if (e.parent != NUL)
@@ -78,7 +78,7 @@ tpl2 class DictAvl
         e.lv -= 2;
         elem = e.parent;
     }
-    dfa NT RotLR(DictAvlElem*& elem) const
+    dfa NT RotLR(DictAvlElem*& elem) cx
     {
         DictAvlElem& e = *elem;
         if (e.parent != NUL)
@@ -104,7 +104,7 @@ tpl2 class DictAvl
         elem->left->lv -= 1;
         elem->right->lv -= 2;
     }
-    dfa NT RotRL(DictAvlElem*& elem) const
+    dfa NT RotRL(DictAvlElem*& elem) cx
     {
         DictAvlElem& e = *elem;
         if (e.parent != NUL)
@@ -130,7 +130,7 @@ tpl2 class DictAvl
         elem->right->lv -= 1;
         elem->left->lv -= 2;
     }
-    dfa DictAvlElem* Bal(DictAvlElem* elem) const
+    dfa DictAvlElem* Bal(DictAvlElem* elem) cx
     {
         cx S1 bal = tx->BalGet(*elem);
         if (bal > 1)
@@ -166,7 +166,7 @@ tpl2 class DictAvl
             elem = elem->parent;
         }
     }
-    dfa DictAvlElem* Srch(cx T1& key) const
+    dfa DictAvlElem* Srch(cx T1& key) cx
     {
         DictAvlElem* elem = m_root;
         while (elem != NUL)
@@ -180,7 +180,7 @@ tpl2 class DictAvl
         }
         ret elem;
     }
-    dfa cx DictAvlElem* ElemMin(cx DictAvlElem* elem) const
+    dfa cx DictAvlElem* ElemMin(cx DictAvlElem* elem) cx
     {
         ifu (elem == NUL)
             ret NUL;
@@ -188,7 +188,7 @@ tpl2 class DictAvl
             elem = elem->left;
         ret elem;
     }
-    dfa cx DictAvlElem* ElemMax(cx DictAvlElem* elem) const
+    dfa cx DictAvlElem* ElemMax(cx DictAvlElem* elem) cx
     {
         ifu (elem == NUL)
             ret NUL;
@@ -196,7 +196,7 @@ tpl2 class DictAvl
             elem = elem->right;
         ret elem;
     }
-    dfa cx DictAvlElem* ElemPrev(cx T1& key) const
+    dfa cx DictAvlElem* ElemPrev(cx T1& key) cx
     {
         cx DictAvlElem* elem = tx->Srch(key);
         ifu (elem == NUL)
@@ -207,7 +207,7 @@ tpl2 class DictAvl
             elem = elem->parent;
         ret elem->parent;
     }
-    dfa cx DictAvlElem* ElemNext(cx T1& key) const
+    dfa cx DictAvlElem* ElemNext(cx T1& key) cx
     {
         cx DictAvlElem* elem = tx->Srch(key);
         ifu (elem == NUL)
@@ -279,19 +279,19 @@ tpl2 class DictAvl
         }
         delete replace;
     }
-    dfa SI _Len(cx DictAvlElem* elem) const
+    dfa SI _Len(cx DictAvlElem* elem) cx
     {
         if (elem == NUL)
             ret 0;
         ret 1 + tx->_Len(elem->left) + tx->_Len(elem->right);
     }
-    dfa SI _Height(cx DictAvlElem* elem) const
+    dfa SI _Height(cx DictAvlElem* elem) cx
     {
         if (elem == NUL)
             ret 0;
         ret 1 + Max<SI>(tx->_Height(elem->left), tx->_Height(elem->right));
     }
-    dfa NT _Clr(DictAvlElem* elem) const
+    dfa NT _Clr(DictAvlElem* elem) cx
     {
         if (elem == NUL)
             ret;
@@ -356,18 +356,18 @@ tpl2 class DictAvl
         tx->Del(elem);
         ret YES;
     }
-    dfa T2* Get(cx T1& key) const
+    dfa T2* Get(cx T1& key) cx
     {
         DictAvlElem* elem = tx->Srch(key);
         ifu (elem == NUL)
             ret NUL;
         ret &(elem->val);
     }
-    dfa SI Len() const
+    dfa SI Len() cx
     {
         ret tx->_Len(m_root);
     }
-    dfa SI Height() const
+    dfa SI Height() cx
     {
         ret tx->_Height(m_root);
     }
@@ -388,7 +388,7 @@ tpl2 class DictAvl
     {
         ret tx->Del(key);
     }
-    dfa T2* operator[](cx T1& key) const
+    dfa T2* operator[](cx T1& key) cx
     {
         ret tx->Get(key);
     }
@@ -408,7 +408,7 @@ class SVarBlock
     {
         m_vars.Replace(var, val);
     }
-    dfa string Get(cx string& var) const
+    dfa string Get(cx string& var) cx
     {
         cx string* cx val = m_vars[var];
         if (val == NUL)

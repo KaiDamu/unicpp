@@ -47,19 +47,19 @@ tpl2 class Tuple2
         dat1 /= dat.dat1;
         dat2 /= dat.dat2;
     }
-    dfa Tuple2<T1, T2> operator+(cx Tuple2<T1, T2>& dat) const
+    dfa Tuple2<T1, T2> operator+(cx Tuple2<T1, T2>& dat) cx
     {
         ret Tuple2<T1, T2>(dat1 + dat.dat1, dat2 + dat.dat2);
     }
-    dfa Tuple2<T1, T2> operator-(cx Tuple2<T1, T2>& dat) const
+    dfa Tuple2<T1, T2> operator-(cx Tuple2<T1, T2>& dat) cx
     {
         ret Tuple2<T1, T2>(dat1 - dat.dat1, dat2 - dat.dat2);
     }
-    dfa Tuple2<T1, T2> operator*(cx Tuple2<T1, T2>& dat) const
+    dfa Tuple2<T1, T2> operator*(cx Tuple2<T1, T2>& dat) cx
     {
         ret Tuple2<T1, T2>(dat1 * dat.dat1, dat2 * dat.dat2);
     }
-    dfa Tuple2<T1, T2> operator/(cx Tuple2<T1, T2>& dat) const
+    dfa Tuple2<T1, T2> operator/(cx Tuple2<T1, T2>& dat) cx
     {
         ret Tuple2<T1, T2>(dat1 / dat.dat1, dat2 / dat.dat2);
     }
@@ -112,19 +112,19 @@ tpl2 class Keyval
         key /= keyval.key;
         val /= keyval.val;
     }
-    dfa Keyval<T1, T2> operator+(cx Keyval<T1, T2>& keyval) const
+    dfa Keyval<T1, T2> operator+(cx Keyval<T1, T2>& keyval) cx
     {
         ret Keyval<T1, T2>(key + keyval.key, val + keyval.val);
     }
-    dfa Keyval<T1, T2> operator-(cx Keyval<T1, T2>& keyval) const
+    dfa Keyval<T1, T2> operator-(cx Keyval<T1, T2>& keyval) cx
     {
         ret Keyval<T1, T2>(key - keyval.key, val - keyval.val);
     }
-    dfa Keyval<T1, T2> operator*(cx Keyval<T1, T2>& keyval) const
+    dfa Keyval<T1, T2> operator*(cx Keyval<T1, T2>& keyval) cx
     {
         ret Keyval<T1, T2>(key * keyval.key, val * keyval.val);
     }
-    dfa Keyval<T1, T2> operator/(cx Keyval<T1, T2>& keyval) const
+    dfa Keyval<T1, T2> operator/(cx Keyval<T1, T2>& keyval) cx
     {
         ret Keyval<T1, T2>(key / keyval.key, val / keyval.val);
     }

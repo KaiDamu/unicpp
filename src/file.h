@@ -492,17 +492,17 @@ class FileMem
     SI m_resizeAdd;
 
   public:
-    dfa U1* _Dat() const
+    dfa U1* _Dat() cx
     {
         ret m_dat.Ptr();
     }
 
   public:
-    dfa BO IsOpen() const
+    dfa BO IsOpen() cx
     {
         ret m_isOpen;
     }
-    dfa SI CurPos() const
+    dfa SI CurPos() cx
     {
         ret m_filePos + m_filePosOfs;
     }

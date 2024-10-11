@@ -1,1 +1,2 @@
 #define cx const
+#define noex noexcept

@@ -58,7 +58,7 @@ class Vfs
     DictAvl<wstring, VfsEntry> m_entryList;
 
   private:
-    dfa ER ChkInfo(cx VfsNewInfo& info) const
+    dfa ER ChkInfo(cx VfsNewInfo& info) cx
     {
         ifu (info.flags != 0)
             rete(ERR_NO_SUPPORT);
@@ -68,7 +68,7 @@ class Vfs
             rete(ERR_NO_SUPPORT);
         rets;
     }
-    dfa ER ChkHdr(cx VfsHdr& hdr) const
+    dfa ER ChkHdr(cx VfsHdr& hdr) cx
     {
         ifu (MemCmp(hdr.magic, VFS_MAGIC, VFS_MAGIC_SIZE) != 0)
             rete(ERR_NO_VALID);
@@ -82,7 +82,7 @@ class Vfs
             rete(ERR_NO_SUPPORT);
         rets;
     }
-    dfa ER ChkEntry(cx VfsEntry& entry) const
+    dfa ER ChkEntry(cx VfsEntry& entry) cx
     {
         ifu (entry.flags != 0)
             rete(ERR_NO_SUPPORT);
@@ -92,14 +92,14 @@ class Vfs
             rete(ERR_NO_VALID);
         rets;
     }
-    dfa SI PathOfs(cx CH* path) const
+    dfa SI PathOfs(cx CH* path) cx
     {
         CH path_[PATH_LENX_MAX];
         ret PathToAbs(path_, path) + 1; // +1 for CH_PATH_DIR
     }
 
   private:
-    dfa ER FileEntryListGet(list<FileEntry>& fileEntryList, cx CH* path) const
+    dfa ER FileEntryListGet(list<FileEntry>& fileEntryList, cx CH* path) cx
     {
         ife (DirEnum(
                  path, -1,
@@ -118,7 +118,7 @@ class Vfs
             retep;
         rets;
     }
-    dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, list<FileEntry>& fileEntryList) const
+    dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, list<FileEntry>& fileEntryList) cx
     {
         cx U4 compress = U4(info.compress);
         cx U4 encrypt = U4(info.encrypt);
@@ -143,7 +143,7 @@ class Vfs
             retep;
         rets;
     }
-    dfa ER WriteEntry(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, SI pathOfs) const
+    dfa ER WriteEntry(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, SI pathOfs) cx
     {
         cx U8 datSize = U8(fileEntry.info.datSize);
         cx U8 pathLen = U8(fileEntry.path.size() - pathOfs);
@@ -164,7 +164,7 @@ class Vfs
             retep;
         rets;
     }
-    dfa ER WriteEntryDat(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, cx VfsNewInfo& info) const
+    dfa ER WriteEntryDat(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, cx VfsNewInfo& info) cx
     {
         cx SI datOfsHdr = datOfsList.Read();
         if (fileEntry.info.datSize == 0)

@@ -44,7 +44,7 @@ class ThdTask
         m_param2 = param2;
         m_param3 = param3;
     }
-    dfa SA Call() const
+    dfa SA Call() cx
     {
         ret m_fn(m_param1, m_param2, m_param3);
     }
@@ -181,15 +181,15 @@ class Thd
     }
 
   public:
-    dfa HANDLE Hdl() const
+    dfa HANDLE Hdl() cx
     {
         ret m_hdl;
     }
-    dfa U4 Id() const
+    dfa U4 Id() cx
     {
         ret m_id;
     }
-    dfa ER RetVal(U4& out) const
+    dfa ER RetVal(U4& out) cx
     {
         out = -1;
         ifu (m_hdl == NUL)
@@ -203,7 +203,7 @@ class Thd
         out = r;
         rets;
     }
-    dfa BO IsActive() const
+    dfa BO IsActive() cx
     {
         ifu (m_hdl == NUL)
             ret NO;
@@ -227,7 +227,7 @@ class Thd
         m_id = 0;
         rets;
     }
-    dfa ER Wait() const
+    dfa ER Wait() cx
     {
         if (tx->IsActive() == NO)
             rets;
@@ -247,7 +247,7 @@ class Thd
             rete(ERR_THD);
         rets;
     }
-    dfa ER Stop() const
+    dfa ER Stop() cx
     {
         if (tx->IsActive() == NO)
             rets;
@@ -291,7 +291,7 @@ class ThdTaskMgr
         m_lock.Unlock();
         m_lock.PassOne();
     }
-    dfa SI TaskCnt() const
+    dfa SI TaskCnt() cx
     {
         ret m_taskCnt;
     }

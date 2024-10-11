@@ -118,11 +118,11 @@ class Proc
     }
 
   public:
-    dfa HANDLE Hdl() const
+    dfa HANDLE Hdl() cx
     {
         ret m_info.hProcess;
     }
-    dfa ER RetVal(U4& out) const
+    dfa ER RetVal(U4& out) cx
     {
         out = -1;
         ifu (m_info.hProcess == NUL)
@@ -136,7 +136,7 @@ class Proc
         out = r;
         rets;
     }
-    dfa BO IsActive() const
+    dfa BO IsActive() cx
     {
         ifu (m_info.hProcess == NUL)
             ret NO;
@@ -162,7 +162,7 @@ class Proc
         m_args = L"";
         rets;
     }
-    dfa ER Wait() const
+    dfa ER Wait() cx
     {
         if (tx->IsActive() == NO)
             rets;
@@ -222,7 +222,7 @@ class Proc
         m_info.hProcess = sei.hProcess;
         rets;
     }
-    dfa ER Stop() const
+    dfa ER Stop() cx
     {
         if (tx->IsActive() == NO)
             rets;
@@ -279,15 +279,15 @@ class ProcGlobalStr
     }
 
   public:
-    dfa BO IsOpenCur() const
+    dfa BO IsOpenCur() cx
     {
         ret m_hdl != NUL;
     }
-    dfa cx CH* Str() const
+    dfa cx CH* Str() cx
     {
         ret m_str;
     }
-    dfa BO IsOpen(cx CH* str) const
+    dfa BO IsOpen(cx CH* str) cx
     {
         SetLastError(0);
         cx HANDLE hdl = CreateMutexW(NUL, NO, str);
@@ -328,7 +328,7 @@ class ProcGlobalStr
         MemSet(m_str, str, (strLen + 1) * siz(str[0]));
         rets;
     }
-    dfa ER WaitIsClose(cx CH* str) const
+    dfa ER WaitIsClose(cx CH* str) cx
     {
         SetLastError(0);
         cx HANDLE hdl = CreateMutexW(NUL, NO, str);

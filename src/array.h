@@ -16,19 +16,19 @@ tpl1 class DatIte
     }
 
   public:
-    dfa T1* Ptr() const
+    dfa T1* Ptr() cx
     {
         ret m_ptr;
     }
-    dfa T1* Cur() const
+    dfa T1* Cur() cx
     {
         ret m_cur;
     }
-    dfa SI Cap() const
+    dfa SI Cap() cx
     {
         ret m_cap;
     }
-    dfa SI Pos() const
+    dfa SI Pos() cx
     {
         ret m_cur - m_ptr;
     }
@@ -107,7 +107,7 @@ tpl1 class DatIte
         }
         ret len;
     }
-    dfa SI NextLineLen() const
+    dfa SI NextLineLen() cx
     {
         AU cur = m_cur;
         AU curBase = cur;
@@ -118,13 +118,13 @@ tpl1 class DatIte
             ++cur;
         ret cur - curBase;
     }
-    dfa BO HasNextLine() const
+    dfa BO HasNextLine() cx
     {
         ret (m_cur != m_ptr + m_cap);
     }
 
   public:
-    dfa T1& operator[](SI i) const
+    dfa T1& operator[](SI i) cx
     {
         Assert(i < m_cap);
         ret m_ptr[i];
@@ -171,7 +171,7 @@ tpl1 class Arr
     }
 
   public:
-    dfa DatIte<T1> ToDatIte() const
+    dfa DatIte<T1> ToDatIte() cx
     {
         DatIte<T1> datIte;
         datIte.Src(m_ptr.Get(), m_cap);
@@ -196,19 +196,19 @@ tpl1 class Arr
         m_cur = m_ptr.Get();
         m_cap = cnt;
     }
-    dfa T1* Ptr() const
+    dfa T1* Ptr() cx
     {
         ret m_ptr.Get();
     }
-    dfa T1* Cur() const
+    dfa T1* Cur() cx
     {
         ret m_cur;
     }
-    dfa SI Cap() const
+    dfa SI Cap() cx
     {
         ret m_cap;
     }
-    dfa SI Pos() const
+    dfa SI Pos() cx
     {
         ret m_cur - m_ptr.Get();
     }
@@ -290,16 +290,16 @@ tpl1 class Arr
     }
 
   public:
-    dfa T1& operator[](SI i) const
+    dfa T1& operator[](SI i) cx
     {
         Assert(i < m_cap);
         ret m_ptr[i];
     }
-    dfa operator DatIte<T1>() const
+    dfa operator DatIte<T1>() cx
     {
         ret tx->ToDatIte();
     }
-    dfa operator T1*() const
+    dfa operator T1*() cx
     {
         ret m_ptr.Get();
     }
