@@ -71,14 +71,14 @@ dfa ER ProcDpiAwareSet()
     if (s_isSet)
         rets;
     HMODULE lib = NUL;
-    if (lib = LoadLibraryW(L"shcore.dll"))
+    if ((lib = LoadLibraryW(L"shcore.dll")))
     {
         typedef HRESULT(WINAPI * FnSetProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
         cx FnSetProcessDpiAwareness setProcessDpiAwareness = (FnSetProcessDpiAwareness)GetProcAddress(lib, "SetProcessDpiAwareness");
         if (setProcessDpiAwareness && (setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE) == S_OK))
             s_isSet = YES;
     }
-    else if (lib = LoadLibraryW(L"user32.dll"))
+    else if ((lib = LoadLibraryW(L"user32.dll")))
     {
         typedef BOOL(WINAPI * FnSetProcessDPIAware)();
         cx FnSetProcessDPIAware setProcessDPIAware = (FnSetProcessDPIAware)GetProcAddress(lib, "SetProcessDPIAware");
