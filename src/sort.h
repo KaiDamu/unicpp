@@ -2,11 +2,11 @@
 
 tpl1 dfa BO _CmpAsc(cx T1& a, cx T1& b)
 {
-    ret (b - a) > 0;
+    ret a < b;
 }
 tpl1 dfa BO _CmpDesc(cx T1& a, cx T1& b)
 {
-    ret (a - b) > 0;
+    ret a > b;
 }
 
 tpl<typename T1, BO Cmp(cx T1&, cx T1&)> dfa NT SortQuick(T1* low, T1* high)
@@ -36,16 +36,12 @@ tpl<typename T1, BO Cmp(cx T1&, cx T1&)> dfa NT SortQuick(T1* low, T1* high)
             if (Cmp(*ptrB, val))
             {
                 ++ptrA;
-                cx T1 tmp = *ptrA;
-                *ptrA = *ptrB;
-                *ptrB = tmp;
+                Swap<T1>(*ptrA, *ptrB);
             }
             ++ptrB;
         }
         ++ptrA;
-        cx T1 tmp = *ptrA;
-        *ptrA = *high;
-        *high = tmp;
+        Swap<T1>(*ptrA, *high);
         if (ptrA - 1 > low)
         {
             *(s_stack++) = low;

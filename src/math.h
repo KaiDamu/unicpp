@@ -139,10 +139,12 @@ dfa U1 ByteUnobfuscate(U1 val, U1 i)
 
 tpl1 dfa T1 RotL(T1 val, SI cnt)
 {
+    //cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
     ret (val << cnt) | (val >> (sizb(T1) - cnt));
 }
 tpl1 dfa T1 RotR(T1 val, SI cnt)
 {
+    //cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
     ret (val >> cnt) | (val << (sizb(T1) - cnt));
 }
 
