@@ -112,6 +112,11 @@ class ThdCondVar
     {
         WakeConditionVariable(&m_hdl);
     }
+    dfa NT PassCnt(SI cnt)
+    {
+        ite (i, i < cnt)
+            WakeConditionVariable(&m_hdl);
+    }
     dfa NT PassAll()
     {
         WakeAllConditionVariable(&m_hdl);
@@ -150,6 +155,10 @@ class ThdLockMulti
     dfa NT PassOne()
     {
         m_condVar.PassOne();
+    }
+    dfa NT PassCnt(SI cnt)
+    {
+        m_condVar.PassCnt(cnt);
     }
     dfa NT PassAll()
     {
@@ -290,6 +299,14 @@ class ThdTaskMgr
         ++m_taskCnt;
         m_lock.Unlock();
         m_lock.PassOne();
+    }
+    dfa NT TaskAdd(cx span<ThdTask>& tasks)
+    {
+        m_lock.Lock();
+        m_taskQueue.Add(tasks);
+        m_taskCnt += tasks.size();
+        m_lock.Unlock();
+        m_lock.PassCnt(tasks.size());
     }
     dfa SI TaskCnt() cx
     {

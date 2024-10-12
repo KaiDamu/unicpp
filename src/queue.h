@@ -1,78 +1,41 @@
 #pragma once
 
+#include <deque>
+
 tpl1 class DQueue
 {
   private:
-    struct DQueueElem
-    {
-        DQueueElem* prev;
-        DQueueElem* next;
-        T1 dat;
-    };
-
-  private:
-    DQueueElem* m_first;
-    DQueueElem* m_last;
-    SI m_len;
+    std::deque<T1> m_dat;
 
   public:
     dfa BO IsEmpty() cx
     {
-        ret m_first == NUL;
+        ret m_dat.empty();
     }
     dfa SI Len() cx
     {
-        ret m_len;
+        ret m_dat.size();
     }
     dfa NT Add(cx T1& dat)
     {
-        DQueueElem* elem = new DQueueElem;
-        elem->prev = m_last;
-        elem->next = NUL;
-        elem->dat = dat;
-        ifu (m_last == NUL)
-            m_first = elem;
-        else
-            m_last->next = elem;
-        m_last = elem;
-        ++m_len;
+        m_dat.emplace_back(dat);
+    }
+    dfa NT Add(cx span<T1>& dat)
+    {
+        m_dat.insert(m_dat.end(), dat.begin(), dat.end());
     }
     dfa T1& Get(T1& dat)
     {
-        Assert(tx->IsEmpty() == NO);
-        DQueueElem* elem = m_first;
-        m_first = elem->next;
-        ifu (m_first == NUL)
-            m_last = NUL;
-        else
-            m_first->prev = NUL;
-        dat = elem->dat;
-        delete elem;
-        --m_len;
+        Assert(!tx->IsEmpty());
+        dat = move(m_dat.front());
+        m_dat.pop_front();
         ret dat;
     }
     dfa NT Clr()
     {
-        DQueueElem* elem;
-        while ((elem = m_first) != NUL)
-        {
-            m_first = elem->next;
-            delete elem;
-        }
-        m_first = NUL;
-        m_last = NUL;
-        m_len = 0;
+        m_dat.clear();
     }
 
-  public:
-    dfa DQueue()
-    {
-        m_first = NUL;
-        m_last = NUL;
-        m_len = 0;
-    }
-    dfa ~DQueue()
-    {
-        tx->Clr();
-    }
+    DQueue() = default;
+    ~DQueue() = default;
 };

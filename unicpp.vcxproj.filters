@@ -212,5 +212,11 @@
     <ClInclude Include="src\import\stdc\value.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

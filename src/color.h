@@ -223,6 +223,117 @@ struct ColRgbN
         tx->Set(rgb);
     }
 };
+struct ColRgba
+{
+    U1 r; // range: 0 - 255
+    U1 g; // range: 0 - 255
+    U1 b; // range: 0 - 255
+    U1 a; // range: 0 - 255
+
+    dfa ColRgba operator+(cx ColRgba& col)
+    {
+        ret ColRgba(r + col.r, g + col.g, b + col.b, a + col.a);
+    }
+    dfa ColRgba operator-(cx ColRgba& col)
+    {
+        ret ColRgba(r - col.r, g - col.g, b - col.b, a - col.a);
+    }
+    dfa ColRgba operator*(cx ColRgba& col)
+    {
+        ret ColRgba(r * col.r, g * col.g, b * col.b, a * col.a);
+    }
+    dfa ColRgba operator/(cx ColRgba& col)
+    {
+        ret ColRgba(r / col.r, g / col.g, b / col.b, a / col.a);
+    }
+    dfa ColRgba operator+(U1 val)
+    {
+        ret ColRgba(r + val, g + val, b + val, a + val);
+    }
+    dfa ColRgba operator-(U1 val)
+    {
+        ret ColRgba(r - val, g - val, b - val, a - val);
+    }
+    dfa ColRgba operator*(U1 val)
+    {
+        ret ColRgba(r * val, g * val, b * val, a * val);
+    }
+    dfa ColRgba operator/(U1 val)
+    {
+        ret ColRgba(r / val, g / val, b / val, a / val);
+    }
+    dfa ColRgba& operator+=(cx ColRgba& col)
+    {
+        r += col.r;
+        g += col.g;
+        b += col.b;
+        a += col.a;
+        ret *tx;
+    }
+    dfa ColRgba& operator-=(cx ColRgba& col)
+    {
+        r -= col.r;
+        g -= col.g;
+        b -= col.b;
+        a -= col.a;
+        ret *tx;
+    }
+    dfa ColRgba& operator*=(cx ColRgba& col)
+    {
+        r *= col.r;
+        g *= col.g;
+        b *= col.b;
+        a *= col.a;
+        ret *tx;
+    }
+    dfa ColRgba& operator/=(cx ColRgba& col)
+    {
+        r /= col.r;
+        g /= col.g;
+        b /= col.b;
+        a /= col.a;
+        ret *tx;
+    }
+    dfa ColRgba& operator+=(U1 val)
+    {
+        r += val;
+        g += val;
+        b += val;
+        a += val;
+        ret *tx;
+    }
+    dfa ColRgba& operator-=(U1 val)
+    {
+        r -= val;
+        g -= val;
+        b -= val;
+        a -= val;
+        ret *tx;
+    }
+    dfa ColRgba& operator*=(U1 val)
+    {
+        r *= val;
+        g *= val;
+        b *= val;
+        a *= val;
+        ret *tx;
+    }
+    dfa ColRgba& operator/=(U1 val)
+    {
+        r /= val;
+        g /= val;
+        b /= val;
+        a /= val;
+        ret *tx;
+    }
+
+    dfa ColRgba()
+    {
+    }
+    dfa ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
+    {
+    }
+};
 struct ColHsvN
 {
     F4 h; // range: 0.0 - 1.0
@@ -335,6 +446,14 @@ tpl1 struct ColGrid
     dfa T1& Pixel(cx Pos2<SI>& pos)
     {
         ret pixels[pos.y * size.w + pos.x];
+    }
+
+    dfa ColGrid()
+    {
+    }
+    dfa ColGrid(cx Size2<SI>& size) : size(size)
+    {
+        pixels.resize(size.Area());
     }
 };
 

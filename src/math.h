@@ -139,12 +139,12 @@ dfa U1 ByteUnobfuscate(U1 val, U1 i)
 
 tpl1 dfa T1 RotL(T1 val, SI cnt)
 {
-    //cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
+    // cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
     ret (val << cnt) | (val >> (sizb(T1) - cnt));
 }
 tpl1 dfa T1 RotR(T1 val, SI cnt)
 {
-    //cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
+    // cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
     ret (val >> cnt) | (val << (sizb(T1) - cnt));
 }
 
@@ -252,4 +252,27 @@ tpl1 dfa T1 NormalizeMax(T1* arr, SI cnt)
             arr[i] /= max;
     }
     ret max;
+}
+
+tpl1 dfa T1 ValPrev(cx T1& val)
+{
+    if constexpr (std::is_integral<T1>::value)
+    {
+        ret val - 1;
+    }
+    else if constexpr (std::is_floating_point<T1>::value)
+    {
+        T1 epsilonScaled = std::numeric_limits<T1>::epsilon() * val;
+        /*
+        if (Abs<T1>(val) <= std::numeric_limits<T1>::min())
+        {
+            ret val - std::numeric_limits<T1>::min();
+        }
+        */
+        ret val - epsilonScaled;
+    }
+    else
+    {
+        ret val;
+    }
 }

@@ -14,8 +14,8 @@ tpl1 class Pos2
     }
     dfa Pos2& operator=(Pos2&& other)
     {
-        x = std::move(other.x);
-        y = std::move(other.y);
+        x = move(other.x);
+        y = move(other.y);
         ret *tx;
     }
     dfa BO operator==(cx Pos2& other) cx
@@ -56,7 +56,7 @@ tpl1 class Pos2
     dfa Pos2(cx Pos2& other) : x(other.x), y(other.y)
     {
     }
-    dfa Pos2(Pos2&& other) : x(std::move(other.x)), y(std::move(other.y))
+    dfa Pos2(Pos2&& other) : x(move(other.x)), y(move(other.y))
     {
     }
     dfa ~Pos2() = default;
@@ -76,8 +76,8 @@ tpl1 class Size2
     }
     dfa Size2& operator=(Size2&& other)
     {
-        w = std::move(other.w);
-        h = std::move(other.h);
+        w = move(other.w);
+        h = move(other.h);
         ret *tx;
     }
     dfa BO operator==(cx Size2& other) cx
@@ -118,7 +118,7 @@ tpl1 class Size2
     dfa Size2(cx Size2& other) : w(other.w), h(other.h)
     {
     }
-    dfa Size2(Size2&& other) : w(std::move(other.w)), h(std::move(other.h))
+    dfa Size2(Size2&& other) : w(move(other.w)), h(move(other.h))
     {
     }
     dfa ~Size2() = default;
