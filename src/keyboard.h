@@ -195,6 +195,7 @@ struct KeybKeyEvt
 
 Thd g_keybThd;
 volatile U1 g_keybKeyState[INPUT_KEY_CNT] = {};
+volatile BO g_keybKeyStateTake[INPUT_KEY_CNT] = {};
 DQueue<KeybKeyEvt> g_keybKeyEvtQueue;
 ThdLock g_keybKeyEvtQueueLock;
 S4 g_keybHookThdDelay = 0;
@@ -235,9 +236,13 @@ dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp)
     // cx BO isUp = (info->flags & LLKHF_UP) != 0;
     ifu (codeVk >= INPUT_KEY_CNT)
         jsrc(next);
+    cx AU wasDown = BO(g_keybKeyState[codeVk] & 0x80);
     g_keybKeyState[codeVk] = (g_keybKeyState[codeVk] & (~0x80)) | (isDown * 0x80);
-    if (isDown)
+    if (!wasDown && isDown)
+    {
         g_keybKeyState[codeVk] = g_keybKeyState[codeVk] ^ 0x01;
+        g_keybKeyStateTake[codeVk] = YES;
+    }
     switch ((InputKey)codeVk)
     {
     case InputKey::LSHIFT:
@@ -291,6 +296,7 @@ dfa DWORD WINAPI _KeybHookThd(LPVOID code)
     ite (i, i < INPUT_KEY_CNT)
     {
         g_keybKeyState[i] = U1(GetKeyState(int(i)) & 0xFF);
+        g_keybKeyStateTake[i] = NO;
     }
     g_keybHookThdDelay = 0;
     MSG msg;
@@ -346,10 +352,26 @@ dfa U4 InputKeyToCodeVk(InputKey key)
 
 dfa BO KeybKeyIsDown(InputKey key)
 {
-    AU codeVk = InputKeyToCodeVk(key);
+    cx AU codeVk = InputKeyToCodeVk(key);
     ifu (codeVk >= INPUT_KEY_CNT)
         ret NO;
     ret BO(g_keybKeyState[codeVk] & 0x80);
+}
+dfa BO KeybKeyIsDownTake(InputKey key)
+{
+    cx AU codeVk = InputKeyToCodeVk(key);
+    ifu (codeVk >= INPUT_KEY_CNT)
+        ret NO;
+    if (!BO(g_keybKeyState[codeVk] & 0x80))
+    {
+        ret NO;
+    }
+    if (g_keybKeyStateTake[codeVk] == NO)
+    {
+        ret NO;
+    }
+    g_keybKeyStateTake[codeVk] = NO;
+    ret YES;
 }
 dfa BO KeybKeyEvtGet(KeybKeyEvt& keybKeyEvt)
 {
