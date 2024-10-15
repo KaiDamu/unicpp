@@ -357,12 +357,12 @@ dfa BO KeybKeyIsDown(InputKey key)
         ret NO;
     ret BO(g_keybKeyState[codeVk] & 0x80);
 }
-dfa BO KeybKeyIsDownTake(InputKey key)
+dfa BO KeybKeyIsDownTake(InputKey key, BO isDownReq = NO)
 {
     cx AU codeVk = InputKeyToCodeVk(key);
     ifu (codeVk >= INPUT_KEY_CNT)
         ret NO;
-    if (!BO(g_keybKeyState[codeVk] & 0x80))
+    if (isDownReq && !BO(g_keybKeyState[codeVk] & 0x80))
     {
         ret NO;
     }
