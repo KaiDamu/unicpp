@@ -79,11 +79,11 @@ class RandCtx
     }
     dfa F4 RandF4(F4 min, F4 max)
     {
-        ret min + F8ToF4(F4ToF8(max - min + 1) * tx->RandNormal());
+        ret min + F8ToF4(F4ToF8(max - min) * tx->RandNormal());
     }
     dfa F8 RandF8(F8 min, F8 max)
     {
-        ret min + ((max - min + 1) * tx->RandNormal());
+        ret min + ((max - min) * tx->RandNormal());
     }
 
   public:
