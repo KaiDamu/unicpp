@@ -12,9 +12,11 @@
 #include <unordered_map>
 #include <algorithm>
 #include <span>
+#include <array>
 
 using std::move;
 
+using std::array;
 using std::list;
 using std::span;
 using std::string;
@@ -103,7 +105,9 @@ using std::wstring;
 #endif
 #include "cursor.h"
 #include "joystick.h" // ...
-#include "graphics.h"
+#ifdef INCLUDE_GR
+    #include "graphics.h"
+#endif
 #include "opengl.h" // ...
 #include "sound.h"  // ...
 #include "log.h"    // ...

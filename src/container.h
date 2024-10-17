@@ -13,6 +13,10 @@ tpl1 struct Rect2
     {
         ret pos.y + size.h;
     }
+    dfa BO IsIn(cx Pos2<T1>& pos) cx
+    {
+        ret pos.x >= tx->pos.x && pos.x < XMax() && pos.y >= tx->pos.y && pos.y < YMax();
+    }
 
     dfa Rect2()
     {
@@ -29,6 +33,11 @@ tpl1 struct Line2
 {
     Pos2<T1> a;
     Pos2<T1> b;
+
+    dfa T1 Len() cx
+    {
+        ret Dist<T1>(a, b);
+    }
 
     dfa Line2()
     {

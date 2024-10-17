@@ -58,4 +58,6 @@ constexpr SI SI_VAL_MAX = S8_VAL_MAX;
 constexpr SI SI_LEN_MAX = S8_LEN_MAX;
 #endif
 
+constexpr F4 PI_F4 = 3.14159265f;
+
 #define NUL 0

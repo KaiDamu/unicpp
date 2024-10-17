@@ -1,9 +1,9 @@
 #pragma once
 
-using TmUnix = U8;
-using TmLdap = U8;
-using TmCpu = U8;
-using TmMain = F8;
+using TmUnix = U8; // time in unix format
+using TmLdap = U8; // time in ldap format
+using TmCpu = U8;  // time in cpu cycles
+using TmMain = F8; // time in milliseconds, since the start of the program
 
 U8 g_timeMainOfs = 0;
 F8 g_timeMainDiv = 0.0;

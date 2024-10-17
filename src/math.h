@@ -273,6 +273,7 @@ tpl1 dfa T1 ValPrev(cx T1& val)
     }
     else
     {
+        Assert(!"ValPrev: Unsupported type");
         ret val;
     }
 }

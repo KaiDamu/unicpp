@@ -254,13 +254,13 @@ struct ColRgba
     {
         ret ColRgba(r - val, g - val, b - val, a - val);
     }
-    dfa ColRgba operator*(U1 val)
+    dfa ColRgba operator*(F4 val)
     {
-        ret ColRgba(r * val, g * val, b * val, a * val);
+        ret ColRgba(U1(r * val), U1(g * val), U1(b * val), U1(a * val));
     }
-    dfa ColRgba operator/(U1 val)
+    dfa ColRgba operator/(F4 val)
     {
-        ret ColRgba(r / val, g / val, b / val, a / val);
+        ret ColRgba(U1(r / val), U1(g / val), U1(b / val), U1(a / val));
     }
     dfa ColRgba& operator+=(cx ColRgba& col)
     {
@@ -517,6 +517,16 @@ dfa NT ColVNToRgbN(ColRgbN& rgbN, cx ColVN& vN)
 }
 
 /// [convert color grid]
+dfa NT ColGridRgbToRgbN(ColGrid<ColRgbN>& rgbN, cx ColGrid<ColRgb>& rgb)
+{
+    rgbN.size = rgb.size;
+    rgbN.pixels.resize(rgb.pixels.size());
+    cx AU iEnd = SI(rgb.pixels.size());
+    ite (i, i < iEnd)
+    {
+        rgbN.pixels[i].Set(rgb.pixels[i]);
+    }
+}
 dfa NT ColGridRgbNToVNLumi(ColGrid<ColVN>& vN, cx ColGrid<ColRgbN>& rgbN)
 {
     vN.size = rgbN.size;

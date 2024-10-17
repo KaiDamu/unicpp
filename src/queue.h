@@ -24,6 +24,10 @@ tpl1 class DQueue
     {
         m_dat.insert(m_dat.end(), dat.begin(), dat.end());
     }
+    dfa NT AddFirst(cx T1& dat)
+    {
+        m_dat.emplace_front(dat);
+    }
     dfa T1& Get(T1& dat)
     {
         Assert(!tx->IsEmpty());
@@ -31,9 +35,18 @@ tpl1 class DQueue
         m_dat.pop_front();
         ret dat;
     }
+    dfa NT DelLast()
+    {
+        m_dat.pop_back();
+    }
     dfa NT Clr()
     {
         m_dat.clear();
+    }
+
+    dfa T1& operator[](SI i)
+    {
+        ret m_dat[i];
     }
 
     DQueue() = default;
