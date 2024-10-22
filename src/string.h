@@ -116,6 +116,27 @@ dfa SI ChstrToCsstr(CS* dst, cx CH* src)
     *dst = '\0';
     ret SI(dst - dstBase);
 }
+dfa NT CsstrToChstrN(CH* dst, cx CS* src, SI len)
+{
+    cx AU end = src + len;
+    while (src != end)
+        *dst++ = *src++;
+    *dst = '\0';
+}
+dfa NT ChstrToCsstrN(CS* dst, cx CH* src, SI len)
+{
+    cx AU end = src + len;
+    while (src != end)
+    {
+        if (*src > CH(CS_VAL_MAX))
+            *dst = CH_NA;
+        else
+            *dst = CS(*src);
+        ++dst;
+        ++src;
+    }
+    *dst = '\0';
+}
 
 tpl1 dfa SA StrCmpCi(cx T1* strA, cx T1* strB)
 {
@@ -299,6 +320,27 @@ tpl1 dfa BO StrIsFirst(cx T1* main, cx T1* sub)
         ++p2;
     }
     ret *p2 == '\0';
+}
+
+tpl1 dfa SI StrToLowcase(T1* str)
+{
+    cx CS* cx strBase = str;
+    while (*str != '\0')
+    {
+        *str = ToLowcase<T1>(*str);
+        ++str;
+    }
+    ret SI(str - strBase);
+}
+tpl1 dfa SI StrToUpcase(T1* str)
+{
+    cx CS* cx strBase = str;
+    while (*str != '\0')
+    {
+        *str = ToUpcase<T1>(*str);
+        ++str;
+    }
+    ret SI(str - strBase);
 }
 
 tpl1 dfa SI StrFindReplace(T1* dst, cx T1* src, cx T1* strReplace, cx T1* strFind)
