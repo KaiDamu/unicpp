@@ -24,6 +24,8 @@ dfa ER MainFree()
     rets;
 }
 
+#ifndef UCPP_MAIN_NO
+
 dfa ER Main();
 
 dfa ER _Main()
@@ -37,7 +39,7 @@ dfa ER _Main()
     rets;
 }
 
-int main()
+int main() // define UCPP_MAIN_NO if you're using your own main function
 {
     ifdbg (YES)
     {
@@ -58,3 +60,5 @@ int main()
     ProcCurExit(U4(errVal));
     ret int(errVal);
 }
+
+#endif
