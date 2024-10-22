@@ -314,7 +314,7 @@ dfa ER ConWrite(cx CS* format, ...)
 }
 dfa ER ConWriteDbg(cx CS* format, ...)
 {
-    ifdbg(YES)
+    ifdbg (YES)
     {
         ife (ConReq())
             retep;

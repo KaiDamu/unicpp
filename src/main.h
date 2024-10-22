@@ -39,14 +39,14 @@ dfa ER _Main()
 
 int main()
 {
-    ifdbg(YES)
+    ifdbg (YES)
     {
         ConWriteInfo("Start of program");
     }
     ErrVal errVal = ERR_NONE;
     ife (_Main())
         errVal = ErrLastGet();
-    ifdbg(YES)
+    ifdbg (YES)
     {
         cx AU t = TimeMain();
         ifu (errVal != ERR_NONE)
