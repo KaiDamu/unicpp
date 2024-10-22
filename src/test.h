@@ -6,27 +6,27 @@
         volatile SI n = 1;                                                               \
         do                                                                               \
         {                                                                                \
-            t = TimeMainF();                                                             \
+            t = TimeMain();                                                              \
             for (SI i = 0; i < n; ++i)                                                   \
             {                                                                            \
                 code;                                                                    \
             }                                                                            \
-            t = TimeMainF() - t;                                                         \
+            t = TimeMain() - t;                                                          \
             n = n * 2;                                                                   \
         } while (t < 250.0);                                                             \
         n = Max<U8>(U8(F8(n / 2) * (1000.0 / t)), 1);                                    \
-        t = TimeMainF();                                                                 \
+        t = TimeMain();                                                                  \
         for (SI i = 0; i < n; ++i)                                                       \
         {                                                                                \
             ;                                                                            \
         }                                                                                \
-        cx F8 tEmpty = TimeMainF() - t;                                                  \
-        t = TimeMainF();                                                                 \
+        cx F8 tEmpty = TimeMain() - t;                                                   \
+        t = TimeMain();                                                                  \
         for (SI i = 0; i < n; ++i)                                                       \
         {                                                                                \
             code;                                                                        \
         }                                                                                \
-        cx F8 tFull = TimeMainF() - t;                                                   \
+        cx F8 tFull = TimeMain() - t;                                                    \
         cx F8 tPayload = tFull - tEmpty;                                                 \
         cx F8 perf = F8(n) / (tPayload / 1000.0);                                        \
         if (perf < 1000.0)                                                               \

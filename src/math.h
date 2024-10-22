@@ -4,17 +4,17 @@ tpl1 dfa T1 Min(T1 a, T1 b)
 {
     ret ((a < b) ? a : b);
 }
-tpl1 dfa T1 Min(T1 a, T1 b, T1 c)
+tpl<typename T1, typename... Args> dfa T1 Min(T1 a, T1 b, Args... args)
 {
-    ret Min<T1>(Min<T1>(a, b), c);
+    ret Min<T1>(Min<T1>(a, b), args...);
 }
 tpl1 dfa T1 Max(T1 a, T1 b)
 {
     ret ((a > b) ? a : b);
 }
-tpl1 dfa T1 Max(T1 a, T1 b, T1 c)
+tpl<typename T1, typename... Args> dfa T1 Max(T1 a, T1 b, Args... args)
 {
-    ret Max<T1>(Max<T1>(a, b), c);
+    ret Max<T1>(Max<T1>(a, b), args...);
 }
 tpl1 dfa T1 Clamp(T1 val, T1 min, T1 max)
 {
@@ -40,6 +40,10 @@ tpl1 dfa T1 Sign(T1 val)
 tpl1 dfa T1 Pow2(T1 val)
 {
     ret val * val;
+}
+tpl1 dfa T1 Pow3(T1 val)
+{
+    ret val * val * val;
 }
 tpl1 dfa T1 Sqrt(T1 val)
 {

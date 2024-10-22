@@ -509,6 +509,66 @@ dfa NT ColRgbToHsvN(ColHsvN& hsvN, cx ColRgb& rgb)
 {
     ColRgbNToHsvN(hsvN, ColRgbN(rgb));
 }
+dfa NT ColHsvNToRgbN(ColRgbN& rgbN, cx ColHsvN& hsvN)
+{
+    if (hsvN.s < 0.00001f)
+    {
+        rgbN.r = hsvN.v;
+        rgbN.g = hsvN.v;
+        rgbN.b = hsvN.v;
+        ret;
+    }
+
+    AU h = hsvN.h * 6.0f;
+    if (h >= 6.0f)
+    {
+        h = 0.0f;
+    }
+    cx AU i = h;
+    cx AU f = h - i;
+    cx AU p = hsvN.v * (1.0f - hsvN.s);
+    cx AU q = hsvN.v * (1.0f - hsvN.s * f);
+    cx AU t = hsvN.v * (1.0f - hsvN.s * (1.0f - f));
+
+    switch (SI(i))
+    {
+    case 0:
+        rgbN.r = hsvN.v;
+        rgbN.g = t;
+        rgbN.b = p;
+        break;
+    case 1:
+        rgbN.r = q;
+        rgbN.g = hsvN.v;
+        rgbN.b = p;
+        break;
+    case 2:
+        rgbN.r = p;
+        rgbN.g = hsvN.v;
+        rgbN.b = t;
+        break;
+    case 3:
+        rgbN.r = p;
+        rgbN.g = q;
+        rgbN.b = hsvN.v;
+        break;
+    case 4:
+        rgbN.r = t;
+        rgbN.g = p;
+        rgbN.b = hsvN.v;
+        break;
+    case 5:
+        rgbN.r = hsvN.v;
+        rgbN.g = p;
+        rgbN.b = q;
+        break;
+    default:
+        rgbN.r = 0.0f;
+        rgbN.g = 0.0f;
+        rgbN.b = 0.0f;
+        break;
+    }
+}
 dfa NT ColVNToRgbN(ColRgbN& rgbN, cx ColVN& vN)
 {
     rgbN.r = vN;

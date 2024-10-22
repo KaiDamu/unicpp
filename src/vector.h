@@ -1,5 +1,67 @@
 #pragma once
 
+tpl1 class Vec2
+{
+  public:
+    T1 a;
+    T1 b;
+
+    dfa Vec2& operator=(cx Vec2& other)
+    {
+        a = other.a;
+        b = other.b;
+        ret *tx;
+    }
+    dfa Vec2& operator=(Vec2&& other)
+    {
+        a = move(other.a);
+        b = move(other.b);
+        ret *tx;
+    }
+    dfa BO operator==(cx Vec2& other) cx
+    {
+        ret a == other.a && b == other.b;
+    }
+    dfa BO operator!=(cx Vec2& other) cx
+    {
+        ret !(*tx == other);
+    }
+    dfa Vec2 operator+(cx Vec2& other) cx
+    {
+        ret Vec2(a + other.a, b + other.b);
+    }
+    dfa Vec2 operator-(cx Vec2& other) cx
+    {
+        ret Vec2(a - other.a, b - other.b);
+    }
+    dfa Vec2 operator*(T1 scalar) cx
+    {
+        ret Vec2(a * scalar, b * scalar);
+    }
+    dfa Vec2 operator/(T1 scalar) cx
+    {
+        ret Vec2(a / scalar, b / scalar);
+    }
+    dfa Vec2 operator-() cx
+    {
+        ret Vec2(-a, -b);
+    }
+
+    dfa Vec2() : a(T1(0)), b(T1(0))
+    {
+    }
+    dfa Vec2(T1 a, T1 b) : a(a), b(b)
+    {
+    }
+    dfa Vec2(cx Vec2& other) : a(other.a), b(other.b)
+    {
+    }
+    dfa Vec2(Vec2&& other) : a(move(other.a)), b(move(other.b))
+    {
+    }
+    dfa ~Vec2() = default;
+};
+
 tpl1 class Pos2
 {
   public:
@@ -45,6 +107,31 @@ tpl1 class Pos2
     dfa Pos2 operator-() cx
     {
         ret Pos2(-x, -y);
+    }
+
+    dfa Pos2& operator+=(cx Pos2& other)
+    {
+        x += other.x;
+        y += other.y;
+        ret *tx;
+    }
+    dfa Pos2& operator-=(cx Pos2& other)
+    {
+        x -= other.x;
+        y -= other.y;
+        ret *tx;
+    }
+    dfa Pos2& operator*=(T1 scalar)
+    {
+        x *= scalar;
+        y *= scalar;
+        ret *tx;
+    }
+    dfa Pos2& operator/=(T1 scalar)
+    {
+        x /= scalar;
+        y /= scalar;
+        ret *tx;
     }
 
     dfa Pos2() : x(T1(0)), y(T1(0))
@@ -128,3 +215,13 @@ tpl1 class Size2
         ret w * h;
     }
 };
+
+tpl1 dfa T1 Dist(cx Pos2<T1>& p1, cx Pos2<T1>& p2)
+{
+    ret Sqrt<T1>(Pow2<T1>(p1.x - p2.x) + Pow2<T1>(p1.y - p2.y));
+}
+
+tpl1 dfa T1 Dist0(cx Pos2<T1>& p)
+{
+    ret Dist0(p.x, p.y);
+}
