@@ -1,4 +1,6 @@
 #define PROG_BUILD_TYPE_DBG
-#define PROG_THD_CNT_MULTI
+
+#define INCLUDE_KEYB
+#define INCLUDE_GR
 
 #include "compile.cpp"

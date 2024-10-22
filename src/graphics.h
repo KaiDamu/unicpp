@@ -682,7 +682,8 @@ dfa ER ScnDrawMainEnd(ScnDrawCtx& ctx)
     cx ColRgba* srcPixels = ctx.scnGrid.pixels.data();
     RGBQUAD* dstPixels = static_cast<RGBQUAD*>(ctx.pBits);
 
-    ite (i, i < ctx.scnGrid.pixels.size())
+    cx AU pixelCnt = SI(ctx.scnGrid.pixels.size());
+    ite (i, i < pixelCnt)
     {
         dstPixels[i].rgbRed = srcPixels[i].r;
         dstPixels[i].rgbGreen = srcPixels[i].g;
@@ -691,7 +692,7 @@ dfa ER ScnDrawMainEnd(ScnDrawCtx& ctx)
     }
 
     POINT ptPos = {0, 0};
-    SIZE sizeWnd = {ctx.scnGrid.size.w, ctx.scnGrid.size.h};
+    SIZE sizeWnd = {LONG(ctx.scnGrid.size.w), LONG(ctx.scnGrid.size.h)};
     POINT ptSrc = {0, 0};
     BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
 
