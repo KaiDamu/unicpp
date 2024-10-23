@@ -1,6 +1,10 @@
 # UniCPP
 ### *The unique universal C++ framework for off-brand codery*
 
+<div align="center">
+<img src="res/brand/main_logo_wide_250.png" alt="main_logo_wide_250" />
+</div>
+
 ## About UniCPP
 UniCPP is an experimental framework maintained by KaiDamu, a compilation of useful code applicable for many situations.
 
