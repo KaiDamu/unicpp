@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef PROG_THD_CNT_SINGLE
-    #error "PROG_THD_CNT_SINGLE with INCLUDE_KEYB is not supported!"
+    #error "PROG_THD_CNT_SINGLE with UCPP_INCLUDE_KEYB is not supported!"
 #endif
 
 constexpr SI KEYB_KEY_STR_LEN_MAX = 4;

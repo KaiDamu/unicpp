@@ -102,18 +102,18 @@ using std::wstring;
 #include "network.h"    // ...
 #include "clipboard.h"  // to rework x2
 #include "vfs.h"        // ...
-#ifdef INCLUDE_KEYB
+#ifdef UCPP_INCLUDE_KEYB
     #include "keyboard.h" // to rework x2
 #endif
 #include "cursor.h"
 #include "joystick.h" // ...
-#ifdef INCLUDE_GR
+#ifdef UCPP_INCLUDE_GR
     #include "graphics.h"
 #endif
 #include "opengl.h" // ...
 #include "sound.h"  // ...
 #include "log.h"    // ...
-#ifdef INCLUDE_DUMB
+#ifdef UCPP_INCLUDE_DUMB
     #include "dumb.h" // to rework x2
 #endif
 

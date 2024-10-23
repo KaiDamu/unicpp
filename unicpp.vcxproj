@@ -173,7 +173,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>INCLUDE_GR;INCLUDE_DUMB;INCLUDE_KEYB;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_DBG;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UCPP_INCLUDE_GR;UCPP_INCLUDE_DUMB;UCPP_INCLUDE_KEYB;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_DBG;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -188,7 +188,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>INCLUDE_GR;INCLUDE_DUMB;INCLUDE_KEYB;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_RELEASE;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UCPP_INCLUDE_GR;UCPP_INCLUDE_DUMB;UCPP_INCLUDE_KEYB;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_RELEASE;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>

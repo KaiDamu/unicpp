@@ -8,7 +8,7 @@ dfa ER MainInit()
     TimeResSet(1, 0, NO); // hint for performance, error not handled
     ife (_TimeMainInit())
         rete(ERR_TIME);
-#ifdef INCLUDE_KEYB
+#ifdef UCPP_INCLUDE_KEYB
     ife (KeybInit())
         retep;
 #endif
@@ -16,7 +16,7 @@ dfa ER MainInit()
 }
 dfa ER MainFree()
 {
-#ifdef INCLUDE_KEYB
+#ifdef UCPP_INCLUDE_KEYB
     ife (KeybFree())
         retep;
 #endif

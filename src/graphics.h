@@ -581,7 +581,7 @@ tpl1 dfa NT ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1& 
 }
 
 #ifdef PROG_THD_CNT_SINGLE
-    #error "PROG_THD_CNT_SINGLE with INCLUDE_GR is not supported!"
+    #error "PROG_THD_CNT_SINGLE with UCPP_INCLUDE_GR is not supported!"
 #endif
 
 constexpr U1 SCN_DRAW_THD_CODE_ERR_NO = 0;

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef PROG_THD_CNT_SINGLE
-    #error "PROG_THD_CNT_SINGLE with INCLUDE_DUMB is not supported!"
+    #error "PROG_THD_CNT_SINGLE with UCPP_INCLUDE_DUMB is not supported!"
 #endif
 
 dfa NT DumbSysBreakThdSpam()
