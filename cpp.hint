@@ -1,2 +1,6 @@
 #define cx const
 #define noex noexcept
+#define tpl0 template<>
+#define tpl1 template<typename T1>
+#define tpl2 template<typename T1, typename T2>
+#define tpl3 template<typename T1, typename T2, typename T3>

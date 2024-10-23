@@ -1,5 +1,15 @@
 #pragma once
 
+enum class GrShape : U1
+{
+    NONE = 0,
+    PT = 1,
+    LINE = 2,
+    RECT = 3,
+    TRIANGLE = 4,
+    CIRCLE = 5,
+};
+
 const ColRgba COL_GRID_FILLIN_WALL = ColRgba(0xFE, 0x02, 0xFC, 0x04);
 
 tpl1 dfa BO Line2Clip(Line2<T1>& dst, cx Line2<T1>& src, cx Rect2<T1>& keep)
@@ -107,12 +117,12 @@ tpl1 dfa BO Line2IsDiscard(cx Line2<T1>& line, cx Rect2<T1>& keep)
 
         if (pt.x < keep.pos.x)
             outCode |= OutCode::LEFT;
-        else if (pt.x >= keep.XMax())
+        else if (pt.x >= keep.XEnd())
             outCode |= OutCode::RIGHT;
 
         if (pt.y < keep.pos.y)
             outCode |= OutCode::BOTTOM;
-        else if (pt.y >= keep.YMax())
+        else if (pt.y >= keep.YEnd())
             outCode |= OutCode::TOP;
 
         ret outCode;
@@ -394,22 +404,22 @@ tpl1 dfa NT _ColGridDrawRect(ColGrid<T1>& grid, cx Line2<SI>& lineCross, cx Line
 
 tpl1 dfa NT ColGridDrawRect(ColGrid<T1>& grid, cx Rect2<SI>& rect, cx T1& col, BO doFill)
 {
-    Line2<SI> lineCross(Pos2<SI>(rect.pos.x, rect.pos.y), Pos2<SI>(ValPrev(rect.XMax()), ValPrev(rect.YMax())));
+    Line2<SI> lineCross(Pos2<SI>(rect.pos.x, rect.pos.y), Pos2<SI>(ValPrev(rect.XEnd()), ValPrev(rect.YEnd())));
     Line2<SI> lineClipped;
     if (Line2Clip(lineClipped, lineCross, Rect2<SI>(Pos2<SI>(0, 0), grid.size)))
         ret;
     _ColGridDrawRect(grid, lineCross, lineClipped, col, doFill, doFill);
 }
 
-tpl1 dfa NT _ColGridDrawTriangle(ColGrid<T1>& grid, cx Pos2<SI>& pt1, cx Pos2<SI>& pt2, cx Pos2<SI>& pt3, cx T1& col, BO doClamp, BO doFill)
+tpl1 dfa NT _ColGridDrawTriangle(ColGrid<T1>& grid, cx Triangle2<SI>& triangle, cx T1& col, BO doClamp, BO doFill)
 {
     T1 colUse = doFill ? COL_GRID_FILLIN_WALL : col;
 
     constexpr SI lineCnt = 3;
     array<Line2<SI>, lineCnt> lines;
-    lines[0] = Line2<SI>(pt1, pt2);
-    lines[1] = Line2<SI>(pt2, pt3);
-    lines[2] = Line2<SI>(pt3, pt1);
+    lines[0] = Line2<SI>(triangle.a, triangle.b);
+    lines[1] = Line2<SI>(triangle.b, triangle.c);
+    lines[2] = Line2<SI>(triangle.c, triangle.a);
     array<Line2<SI>, lineCnt> linesClipped;
     array<BO, lineCnt> isKeep;
     SI keepCnt = 0;
@@ -454,7 +464,7 @@ tpl1 dfa NT _ColGridDrawTriangle(ColGrid<T1>& grid, cx Pos2<SI>& pt1, cx Pos2<SI
 
     if (doFill)
     {
-        Pos2<SI> ptTopLeft = Pos2<SI>(Min<SI>(pt1.x, pt2.x, pt3.x), Min<SI>(pt1.y, pt2.y, pt3.y));
+        Pos2<SI> ptTopLeft = Pos2<SI>(Min<SI>(triangle.a.x, triangle.b.x, triangle.c.x), Min<SI>(triangle.a.y, triangle.b.y, triangle.c.y));
         cx AU keep = Rect2<SI>(Pos2<SI>(0, 0), grid.size);
         if (ptTopLeft.x < keep.pos.x)
             ptTopLeft.x = keep.pos.x;
@@ -464,20 +474,20 @@ tpl1 dfa NT _ColGridDrawTriangle(ColGrid<T1>& grid, cx Pos2<SI>& pt1, cx Pos2<SI
     }
 }
 
-tpl1 dfa NT ColGridDrawTriangle(ColGrid<T1>& grid, cx Pos2<SI>& pt1, cx Pos2<SI>& pt2, cx Pos2<SI>& pt3, cx T1& col, BO doFill)
+tpl1 dfa NT ColGridDrawTriangle(ColGrid<T1>& grid, cx Triangle2<SI>& triangle, cx T1& col, BO doFill)
 {
-    _ColGridDrawTriangle(grid, pt1, pt2, pt3, col, doFill, doFill);
+    _ColGridDrawTriangle(grid, triangle, col, doFill, doFill);
 }
 
-tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Pos2<SI>& center, SI radius, cx T1& col, BO doClamp, BO doFill)
+tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1& col, BO doClamp, BO doFill)
 {
     T1 colUse = doFill ? COL_GRID_FILLIN_WALL : col;
 
     constexpr SI pointCnt = 8;
 
-    SI x = radius;
+    SI x = circle.radius;
     SI y = 0;
-    SI p = 1 - radius;
+    SI p = 1 - circle.radius;
     do
     {
         cx SI xt[pointCnt] = {x, -x, x, -x, y, -y, y, -y};
@@ -485,7 +495,7 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Pos2<SI>& center, SI radius
 
         ite (i, i < pointCnt)
         {
-            cx Pos2<SI> p2 = move(Pos2<SI>(center.x + xt[i], center.y + yt[i]));
+            cx Pos2<SI> p2 = move(Pos2<SI>(circle.center.x + xt[i], circle.center.y + yt[i]));
             ifl (p2.x >= 0 && p2.x < grid.size.w && p2.y >= 0 && p2.y < grid.size.h)
                 grid.Pixel(p2) = colUse;
         }
@@ -505,43 +515,43 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Pos2<SI>& center, SI radius
     if (doClamp)
     {
         // left clamp
-        if (center.x - radius < 0)
+        if (circle.center.x - circle.radius < 0)
         {
-            cx AU xDist = Sqrt(Pow2(radius) - Pow2(center.x));
-            cx AU yMin = Max<SI>(SI(0), center.y - xDist);
-            cx AU yMax = Min<SI>(SI(grid.size.h - 1), center.y + xDist);
+            cx AU xDist = Sqrt(Pow2(circle.radius) - Pow2(circle.center.x));
+            cx AU yMin = Max<SI>(SI(0), circle.center.y - xDist);
+            cx AU yMax = Min<SI>(SI(grid.size.h - 1), circle.center.y + xDist);
             cx Line2<SI> line(Pos2<SI>(0, yMin), Pos2<SI>(0, yMax));
             _ColGridDrawLineN(grid, line, 1, colUse, NO, NO);
         }
 
         // right clamp
-        if (center.x + radius >= grid.size.w)
+        if (circle.center.x + circle.radius >= grid.size.w)
         {
-            cx AU distToEdge = grid.size.w - 1 - center.x;
-            cx AU xDist = Sqrt(Pow2(radius) - Pow2(distToEdge));
-            cx AU yMin = Max<SI>(SI(0), center.y - xDist);
-            cx AU yMax = Min<SI>(SI(grid.size.h - 1), center.y + xDist);
+            cx AU distToEdge = grid.size.w - 1 - circle.center.x;
+            cx AU xDist = Sqrt(Pow2(circle.radius) - Pow2(distToEdge));
+            cx AU yMin = Max<SI>(SI(0), circle.center.y - xDist);
+            cx AU yMax = Min<SI>(SI(grid.size.h - 1), circle.center.y + xDist);
             cx Line2<SI> line(Pos2<SI>(grid.size.w - 1, yMin), Pos2<SI>(grid.size.w - 1, yMax));
             _ColGridDrawLineN(grid, line, 1, colUse, NO, NO);
         }
 
         // top clamp
-        if (center.y - radius < 0)
+        if (circle.center.y - circle.radius < 0)
         {
-            cx AU yDist = Sqrt(Pow2(radius) - Pow2(center.y));
-            cx AU xMin = Max<SI>(SI(0), center.x - yDist);
-            cx AU xMax = Min<SI>(SI(grid.size.w - 1), center.x + yDist);
+            cx AU yDist = Sqrt(Pow2(circle.radius) - Pow2(circle.center.y));
+            cx AU xMin = Max<SI>(SI(0), circle.center.x - yDist);
+            cx AU xMax = Min<SI>(SI(grid.size.w - 1), circle.center.x + yDist);
             cx Line2<SI> line(Pos2<SI>(xMin, 0), Pos2<SI>(xMax, 0));
             _ColGridDrawLineN(grid, line, 1, colUse, NO, NO);
         }
 
         // bottom clamp
-        if (center.y + radius >= grid.size.h)
+        if (circle.center.y + circle.radius >= grid.size.h)
         {
-            cx AU distToEdge = grid.size.h - 1 - center.y;
-            cx AU yDist = Sqrt(Pow2(radius) - Pow2(distToEdge));
-            cx AU xMin = Max<SI>(SI(0), center.x - yDist);
-            cx AU xMax = Min<SI>(SI(grid.size.w - 1), center.x + yDist);
+            cx AU distToEdge = grid.size.h - 1 - circle.center.y;
+            cx AU yDist = Sqrt(Pow2(circle.radius) - Pow2(distToEdge));
+            cx AU xMin = Max<SI>(SI(0), circle.center.x - yDist);
+            cx AU xMax = Min<SI>(SI(grid.size.w - 1), circle.center.x + yDist);
             cx Line2<SI> line(Pos2<SI>(xMin, grid.size.h - 1), Pos2<SI>(xMax, grid.size.h - 1));
             _ColGridDrawLineN(grid, line, 1, colUse, NO, NO);
         }
@@ -549,7 +559,7 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Pos2<SI>& center, SI radius
 
     if (doFill)
     {
-        Pos2<SI> ptTopLeft = Pos2<SI>(center.x - radius, center.y - radius);
+        Pos2<SI> ptTopLeft = Pos2<SI>(circle.center.x - circle.radius, circle.center.y - circle.radius);
         cx AU keep = Rect2<SI>(Pos2<SI>(0, 0), grid.size);
         if (ptTopLeft.x < keep.pos.x)
             ptTopLeft.x = keep.pos.x;
@@ -559,14 +569,15 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Pos2<SI>& center, SI radius
     }
 }
 
-tpl1 dfa NT ColGridDrawCircle(ColGrid<T1>& grid, cx Pos2<SI>& center, SI radius, cx T1& col, BO doFill)
+tpl1 dfa NT ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1& col, BO doFill)
 {
     cx AU keep = Rect2<SI>(Pos2<SI>(0, 0), grid.size);
-    ifu ((center.x + radius) < keep.pos.x || (center.x - radius) >= keep.XMax() || (center.y + radius) < keep.pos.y || (center.y - radius) >= keep.YMax())
+    ifu ((circle.center.x + circle.radius) < keep.pos.x || (circle.center.x - circle.radius) >= keep.XEnd() || (circle.center.y + circle.radius) < keep.pos.y ||
+         (circle.center.y - circle.radius) >= keep.YEnd())
         ret;
-    ifu (radius <= 0)
+    ifu (circle.radius <= 0)
         ret;
-    _ColGridDrawCircle(grid, center, radius, col, doFill, doFill);
+    _ColGridDrawCircle(grid, circle, col, doFill, doFill);
 }
 
 #ifdef PROG_THD_CNT_SINGLE

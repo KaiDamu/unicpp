@@ -13,35 +13,35 @@ struct ColRgb
     U1 g; // range: 0 - 255
     U1 b; // range: 0 - 255
 
-    dfa ColRgb operator+(cx ColRgb& col)
+    dfa ColRgb operator+(cx ColRgb& col) cx
     {
         ret ColRgb(r + col.r, g + col.g, b + col.b);
     }
-    dfa ColRgb operator-(cx ColRgb& col)
+    dfa ColRgb operator-(cx ColRgb& col) cx
     {
         ret ColRgb(r - col.r, g - col.g, b - col.b);
     }
-    dfa ColRgb operator*(cx ColRgb& col)
+    dfa ColRgb operator*(cx ColRgb& col) cx
     {
         ret ColRgb(r * col.r, g * col.g, b * col.b);
     }
-    dfa ColRgb operator/(cx ColRgb& col)
+    dfa ColRgb operator/(cx ColRgb& col) cx
     {
         ret ColRgb(r / col.r, g / col.g, b / col.b);
     }
-    dfa ColRgb operator+(U1 val)
+    dfa ColRgb operator+(U1 val) cx
     {
         ret ColRgb(r + val, g + val, b + val);
     }
-    dfa ColRgb operator-(U1 val)
+    dfa ColRgb operator-(U1 val) cx
     {
         ret ColRgb(r - val, g - val, b - val);
     }
-    dfa ColRgb operator*(U1 val)
+    dfa ColRgb operator*(U1 val) cx
     {
         ret ColRgb(r * val, g * val, b * val);
     }
-    dfa ColRgb operator/(U1 val)
+    dfa ColRgb operator/(U1 val) cx
     {
         ret ColRgb(r / val, g / val, b / val);
     }
@@ -115,35 +115,35 @@ struct ColRgbN
     F4 g; // range: 0.0 - 1.0
     F4 b; // range: 0.0 - 1.0
 
-    dfa ColRgbN operator+(cx ColRgbN& col)
+    dfa ColRgbN operator+(cx ColRgbN& col) cx
     {
         ret ColRgbN(r + col.r, g + col.g, b + col.b);
     }
-    dfa ColRgbN operator-(cx ColRgbN& col)
+    dfa ColRgbN operator-(cx ColRgbN& col) cx
     {
         ret ColRgbN(r - col.r, g - col.g, b - col.b);
     }
-    dfa ColRgbN operator*(cx ColRgbN& col)
+    dfa ColRgbN operator*(cx ColRgbN& col) cx
     {
         ret ColRgbN(r * col.r, g * col.g, b * col.b);
     }
-    dfa ColRgbN operator/(cx ColRgbN& col)
+    dfa ColRgbN operator/(cx ColRgbN& col) cx
     {
         ret ColRgbN(r / col.r, g / col.g, b / col.b);
     }
-    dfa ColRgbN operator+(F4 val)
+    dfa ColRgbN operator+(F4 val) cx
     {
         ret ColRgbN(r + val, g + val, b + val);
     }
-    dfa ColRgbN operator-(F4 val)
+    dfa ColRgbN operator-(F4 val) cx
     {
         ret ColRgbN(r - val, g - val, b - val);
     }
-    dfa ColRgbN operator*(F4 val)
+    dfa ColRgbN operator*(F4 val) cx
     {
         ret ColRgbN(r * val, g * val, b * val);
     }
-    dfa ColRgbN operator/(F4 val)
+    dfa ColRgbN operator/(F4 val) cx
     {
         ret ColRgbN(r / val, g / val, b / val);
     }
@@ -230,35 +230,35 @@ struct ColRgba
     U1 b; // range: 0 - 255
     U1 a; // range: 0 - 255
 
-    dfa ColRgba operator+(cx ColRgba& col)
+    dfa ColRgba operator+(cx ColRgba& col) cx
     {
         ret ColRgba(r + col.r, g + col.g, b + col.b, a + col.a);
     }
-    dfa ColRgba operator-(cx ColRgba& col)
+    dfa ColRgba operator-(cx ColRgba& col) cx
     {
         ret ColRgba(r - col.r, g - col.g, b - col.b, a - col.a);
     }
-    dfa ColRgba operator*(cx ColRgba& col)
+    dfa ColRgba operator*(cx ColRgba& col) cx
     {
         ret ColRgba(r * col.r, g * col.g, b * col.b, a * col.a);
     }
-    dfa ColRgba operator/(cx ColRgba& col)
+    dfa ColRgba operator/(cx ColRgba& col) cx
     {
         ret ColRgba(r / col.r, g / col.g, b / col.b, a / col.a);
     }
-    dfa ColRgba operator+(U1 val)
+    dfa ColRgba operator+(U1 val) cx
     {
         ret ColRgba(r + val, g + val, b + val, a + val);
     }
-    dfa ColRgba operator-(U1 val)
+    dfa ColRgba operator-(U1 val) cx
     {
         ret ColRgba(r - val, g - val, b - val, a - val);
     }
-    dfa ColRgba operator*(F4 val)
+    dfa ColRgba operator*(F4 val) cx
     {
         ret ColRgba(U1(r * val), U1(g * val), U1(b * val), U1(a * val));
     }
-    dfa ColRgba operator/(F4 val)
+    dfa ColRgba operator/(F4 val) cx
     {
         ret ColRgba(U1(r / val), U1(g / val), U1(b / val), U1(a / val));
     }
@@ -340,35 +340,35 @@ struct ColHsvN
     F4 s; // range: 0.0 - 1.0
     F4 v; // range: 0.0 - 1.0
 
-    dfa ColHsvN operator+(cx ColHsvN& col)
+    dfa ColHsvN operator+(cx ColHsvN& col) cx
     {
         ret ColHsvN(h + col.h, s + col.s, v + col.v);
     }
-    dfa ColHsvN operator-(cx ColHsvN& col)
+    dfa ColHsvN operator-(cx ColHsvN& col) cx
     {
         ret ColHsvN(h - col.h, s - col.s, v - col.v);
     }
-    dfa ColHsvN operator*(cx ColHsvN& col)
+    dfa ColHsvN operator*(cx ColHsvN& col) cx
     {
         ret ColHsvN(h * col.h, s * col.s, v * col.v);
     }
-    dfa ColHsvN operator/(cx ColHsvN& col)
+    dfa ColHsvN operator/(cx ColHsvN& col) cx
     {
         ret ColHsvN(h / col.h, s / col.s, v / col.v);
     }
-    dfa ColHsvN operator+(F4 val)
+    dfa ColHsvN operator+(F4 val) cx
     {
         ret ColHsvN(h + val, s + val, v + val);
     }
-    dfa ColHsvN operator-(F4 val)
+    dfa ColHsvN operator-(F4 val) cx
     {
         ret ColHsvN(h - val, s - val, v - val);
     }
-    dfa ColHsvN operator*(F4 val)
+    dfa ColHsvN operator*(F4 val) cx
     {
         ret ColHsvN(h * val, s * val, v * val);
     }
-    dfa ColHsvN operator/(F4 val)
+    dfa ColHsvN operator/(F4 val) cx
     {
         ret ColHsvN(h / val, s / val, v / val);
     }
