@@ -24,6 +24,17 @@ tpl1 dfa T1 Abs(T1 val)
 {
     ret ((val < 0) ? -val : val);
 }
+tpl0 dfa F4 Abs(F4 val)
+{
+    cx U4& valBits = AsType<U4>(val);
+    ret AsType<F4>(valBits & U4(0x7FFFFFFF));
+}
+tpl0 dfa F8 Abs(F8 val)
+{
+    cx U8& valBits = AsType<U8>(val);
+    ret AsType<F8>(valBits & U8(0x7FFFFFFFFFFFFFFF));
+}
+
 tpl1 dfa T1 Diff(T1 a, T1 b)
 {
     ret Abs<T1>(a - b);
@@ -95,13 +106,22 @@ tpl2 dfa T1 Lerp(T1 a, T1 b, T2 t)
     ret a + T1(T2(b - a) * t);
 }
 
+tpl1 T1 DegToRad(T1 deg)
+{
+    ret deg * (Pi<T1>() / static_cast<T1>(180));
+}
+tpl1 T1 RadToDeg(T1 rad)
+{
+    ret rad * (static_cast<T1>(180) / Pi<T1>());
+}
+
 dfa S4 RoundF4ToS4(F4 val)
 {
-    ret S4((val < 0.0f) ? (val - 0.5f) : (val + 0.5f));
+    ret _mm_cvtss_si32(_mm_set_ss(val));
 }
 dfa S8 RoundF8ToS8(F8 val)
 {
-    ret S8((val < 0.0) ? (val - 0.5) : (val + 0.5));
+    ret _mm_cvtsd_si64(_mm_set_sd(val));
 }
 
 tpl1 dfa SI VarintEncode(U1* out, T1 in)

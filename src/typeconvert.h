@@ -1,11 +1,5 @@
 #pragma once
 
-tpl2 dfa cx T1& AsType(cx T2& src)
-{
-    static_assert(siz(T1) == siz(T2), "AsType: size of types must be the same");
-    ret reinterpret_cast<cx T1&>(src);
-}
-
 dfa S4 F4ToS4Fast(F4 val)
 {
     S4 r;

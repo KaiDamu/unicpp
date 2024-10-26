@@ -58,6 +58,17 @@ constexpr SI SI_VAL_MAX = S8_VAL_MAX;
 constexpr SI SI_LEN_MAX = S8_LEN_MAX;
 #endif
 
-constexpr F4 PI_F4 = 3.14159265f;
+tpl1 T1 Pi()
+{
+    ret static_cast<T1>(3.14159265358979323846);
+}
+tpl0 F4 Pi<F4>()
+{
+    ret 3.14159265358979f;
+}
+tpl0 F8 Pi<F8>()
+{
+    ret 3.14159265358979323846;
+}
 
 #define NUL 0

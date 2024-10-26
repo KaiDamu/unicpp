@@ -580,6 +580,83 @@ tpl1 dfa NT ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1& 
     _ColGridDrawCircle(grid, circle, col, doFill, doFill);
 }
 
+tpl1 dfa NT ColGridDrawUcppLogo(ColGrid<T1>& grid, cx Rect2<SI>& rect)
+{
+    cx SI shapeCnt = 11;
+    cx SI valCnt = 40;
+
+    // clang-format off
+    cx GrShape shapes[shapeCnt] = {
+        GrShape::CIRCLE,
+        GrShape::CIRCLE,
+        GrShape::RECT,
+        GrShape::RECT,
+        GrShape::CIRCLE,
+        GrShape::CIRCLE,
+        GrShape::RECT,
+        GrShape::RECT,
+        GrShape::RECT,
+        GrShape::RECT,
+        GrShape::RECT,
+    };
+    cx F4 vals[valCnt] = {
+        0.199f, 0.350f, 0.199f,
+        0.499f, 0.650f, 0.199f,
+        0.199f, 0.151f, 0.101f, 0.399f,
+        0.300f, 0.550f, 0.399f, 0.101f,
+        0.199f, 0.350f, 0.099f,
+        0.499f, 0.650f, 0.099f,
+        0.199f, 0.251f, 0.101f, 0.199f,
+        0.400f, 0.450f, 0.199f, 0.201f,
+        0.300f, 0.151f, 0.100f, 0.399f,
+        0.599f, 0.151f, 0.100f, 0.399f,
+        0.699f, 0.450f, 0.300f, 0.100f,
+    };
+    cx ColRgba cols[shapeCnt] = {
+        ColRgba(0xFF892716),
+        ColRgba(0xFFB2331C),
+        ColRgba(0xFF892716),
+        ColRgba(0xFFB2331C),
+        ColRgba(0x00000000),
+        ColRgba(0x00000000),
+        ColRgba(0x00000000),
+        ColRgba(0x00000000),
+        ColRgba(0xFF030BA3),
+        ColRgba(0xFF040ECC),
+        ColRgba(0xFF892716),
+    };
+    // clang-format on
+
+    cx F4 rectSize = F4(Min(rect.size.w, rect.size.h));
+
+    SI valsUnnorm[valCnt];
+    ite (i, i < valCnt)
+    {
+        valsUnnorm[i] = SI(RoundF4ToS4(vals[i] * rectSize));
+    }
+
+    cx SI* valCur = valsUnnorm;
+    ite (i, i < shapeCnt)
+    {
+        switch (shapes[i])
+        {
+        case GrShape::RECT: {
+            ColGridDrawRect(grid, Rect2<SI>({valCur[0] + rect.pos.x, valCur[1] + rect.pos.y}, {valCur[2], valCur[3]}), cols[i], YES);
+            valCur += 4;
+            break;
+        }
+        case GrShape::CIRCLE: {
+            ColGridDrawCircle(grid, Circle2<SI>({valCur[0] + rect.pos.x, valCur[1] + rect.pos.y}, valCur[2]), cols[i], YES);
+            valCur += 3;
+            break;
+        }
+        default: {
+            break;
+        }
+        }
+    }
+}
+
 #ifdef PROG_THD_CNT_SINGLE
     #error "PROG_THD_CNT_SINGLE with UCPP_INCLUDE_GR is not supported!"
 #endif

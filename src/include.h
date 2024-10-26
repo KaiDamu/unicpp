@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <emmintrin.h>
 
 #include <type_traits>
 #include <new>

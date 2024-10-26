@@ -225,10 +225,16 @@ struct ColRgbN
 };
 struct ColRgba
 {
-    U1 r; // range: 0 - 255
-    U1 g; // range: 0 - 255
-    U1 b; // range: 0 - 255
-    U1 a; // range: 0 - 255
+    union {
+        struct
+        {
+            U1 r; // range: 0 - 255
+            U1 g; // range: 0 - 255
+            U1 b; // range: 0 - 255
+            U1 a; // range: 0 - 255
+        };
+        U4 val;
+    };
 
     dfa ColRgba operator+(cx ColRgba& col) cx
     {
@@ -327,10 +333,19 @@ struct ColRgba
         ret *tx;
     }
 
+    dfa ColRgba& operator=(cx ColRgba& col)
+    {
+        val = col.val;
+        ret *tx;
+    }
+
     dfa ColRgba()
     {
     }
     dfa ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
+    {
+    }
+    dfa ColRgba(U4 val) : val(val)
     {
     }
 };
