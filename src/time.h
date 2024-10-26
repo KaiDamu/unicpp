@@ -5,6 +5,20 @@ using TmLdap = U8; // time in ldap format
 using TmCpu = U8;  // time in cpu cycles
 using TmMain = F8; // time in milliseconds, since the start of the program
 
+enum class TimeUnit : U1
+{
+    NONE = 0,
+    USEC,
+    MSEC,
+    SEC,
+    MINUTE,
+    HOUR,
+    DAY,
+    WEEK,
+    MONTH,
+    YEAR,
+};
+
 U8 g_timeMainOfs = 0;
 F8 g_timeMainDiv = 0.0;
 

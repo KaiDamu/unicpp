@@ -34,7 +34,6 @@ tpl0 dfa F8 Abs(F8 val)
     cx U8& valBits = AsType<U8>(val);
     ret AsType<F8>(valBits & U8(0x7FFFFFFFFFFFFFFF));
 }
-
 tpl1 dfa T1 Diff(T1 a, T1 b)
 {
     ret Abs<T1>(a - b);
@@ -59,24 +58,24 @@ tpl1 dfa T1 Pow3(T1 val)
 tpl1 dfa T1 Sqrt(T1 val)
 {
 #ifdef PROG_COMPILER_GCC
-    ifu (val < 0)
-        ret T1(-__builtin_sqrt(-val)); // Non-standard
+    ifu (val < T1(0))
+        ret T1(-__builtin_sqrt(-val)); // non-standard
     ret T1(__builtin_sqrt(val));
 #else
-    ifu (val < 0)
-        ret T1(-sqrt(-val)); // Non-standard
+    ifu (val < T1(0))
+        ret T1(-sqrt(-val)); // non-standard
     ret T1(sqrt(val));
 #endif
 }
 tpl0 dfa F4 Sqrt<F4>(F4 val)
 {
 #ifdef PROG_COMPILER_GCC
-    ifu (val < 0)
-        ret -__builtin_sqrtf(-val); // Non-standard
+    ifu (val < F4(0))
+        ret -__builtin_sqrtf(-val); // non-standard
     ret __builtin_sqrtf(val);
 #else
-    ifu (val < 0)
-        ret -sqrtf(-val); // Non-standard
+    ifu (val < F4(0))
+        ret -sqrtf(-val); // non-standard
     ret sqrtf(val);
 #endif
 }
@@ -105,7 +104,6 @@ tpl2 dfa T1 Lerp(T1 a, T1 b, T2 t)
 {
     ret a + T1(T2(b - a) * t);
 }
-
 tpl1 T1 DegToRad(T1 deg)
 {
     ret deg * (Pi<T1>() / static_cast<T1>(180));
@@ -114,7 +112,6 @@ tpl1 T1 RadToDeg(T1 rad)
 {
     ret rad * (static_cast<T1>(180) / Pi<T1>());
 }
-
 dfa S4 RoundF4ToS4(F4 val)
 {
     ret _mm_cvtss_si32(_mm_set_ss(val));
@@ -123,7 +120,6 @@ dfa S8 RoundF8ToS8(F8 val)
 {
     ret _mm_cvtsd_si64(_mm_set_sd(val));
 }
-
 tpl1 dfa SI VarintEncode(U1* out, T1 in)
 {
     cx U1* cx outBase = out;
@@ -151,7 +147,6 @@ tpl1 dfa SI VarintDecode(T1& out, cx U1* in)
     } while (YES);
     ret SI(in - inBase);
 }
-
 dfa U1 ByteObfuscate(U1 val, U1 i)
 {
     ret U1((val ^ 0x55) + (i ^ 0xAA));
@@ -160,7 +155,6 @@ dfa U1 ByteUnobfuscate(U1 val, U1 i)
 {
     ret U1(val - (i ^ 0xAA)) ^ 0x55;
 }
-
 tpl1 dfa T1 RotL(T1 val, SI cnt)
 {
     // cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
@@ -171,7 +165,6 @@ tpl1 dfa T1 RotR(T1 val, SI cnt)
     // cnt &= sizb(T1) - 1; // disabled since 'cnt' is expected to be valid
     ret (val >> cnt) | (val << (sizb(T1) - cnt));
 }
-
 tpl1 dfa T1 RevByte(T1 val)
 {
     U1* cx b = (U1*)&val;
@@ -179,7 +172,6 @@ tpl1 dfa T1 RevByte(T1 val)
         Swap<U1>(b[i], b[siz(T1) - 1 - i]);
     ret val;
 }
-
 tpl1 dfa SI LenInt(T1 val)
 {
     SI sign = 0;
@@ -231,7 +223,6 @@ tpl1 dfa SI LenInt(T1 val)
         num = 20;
     ret num + sign;
 }
-
 tpl1 dfa T1 NormalizeMinmax(T1* arr, SI cnt)
 {
     ifu (cnt < 1)
@@ -277,7 +268,6 @@ tpl1 dfa T1 NormalizeMax(T1* arr, SI cnt)
     }
     ret max;
 }
-
 tpl1 dfa T1 ValPrev(cx T1& val)
 {
     if constexpr (std::is_integral<T1>::value)
@@ -286,18 +276,27 @@ tpl1 dfa T1 ValPrev(cx T1& val)
     }
     else if constexpr (std::is_floating_point<T1>::value)
     {
-        T1 epsilonScaled = std::numeric_limits<T1>::epsilon() * val;
-        /*
-        if (Abs<T1>(val) <= std::numeric_limits<T1>::min())
-        {
-            ret val - std::numeric_limits<T1>::min();
-        }
-        */
-        ret val - epsilonScaled;
+        ret val - (std::numeric_limits<T1>::epsilon() * Abs<T1>(val)); // 'val == 0' is not handled!
     }
     else
     {
-        Assert(!"ValPrev: Unsupported type");
+        Assert(!"ValPrev: unsupported type");
+        ret val;
+    }
+}
+tpl1 dfa T1 ValNext(cx T1& val)
+{
+    if constexpr (std::is_integral<T1>::value)
+    {
+        ret val + 1;
+    }
+    else if constexpr (std::is_floating_point<T1>::value)
+    {
+        ret val + (std::numeric_limits<T1>::epsilon() * Abs<T1>(val)); // 'val == 0' is not handled!
+    }
+    else
+    {
+        Assert(!"ValNext: unsupported type");
         ret val;
     }
 }

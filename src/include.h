@@ -53,69 +53,69 @@ using std::wstring;
     #include "import/winapi/function.h"
 #endif
 
-#include "keyword.h" // ...
-#include "debug.h"   // ...
-#include "type.h"    // ...
+#include "keyword.h"
+#include "debug.h"
+#include "type.h"
 
-#include "pre/process.h" // ...
-#include "pre/console.h" // ...
+#include "pre/process.h"
+#include "pre/console.h"
 
-#include "value.h" // ...
-#include "error.h" // ...
-#include "math.h"  // ...
+#include "value.h"
+#include "error.h"
+#include "math.h"
 #include "vector.h"
-#include "matrix.h"      // ...
-#include "char.h"        // ...
-#include "typeconvert.h" // ...
-#include "tuple.h"       // ...
-#include "time.h"        // ...
-#include "memory.h"      // ...
-#include "pointer.h"     // ...
-#include "array.h"       // ...
+#include "matrix.h"
+#include "char.h"
+#include "typeconvert.h"
+#include "tuple.h"
+#include "time.h"
+#include "memory.h"
+#include "pointer.h"
+#include "array.h"
 #include "container.h"
-#include "random.h" // ...
-#include "string.h" // ...
-#include "path.h"   // ...
+#include "random.h"
+#include "string.h"
+#include "path.h"
 #include "color.h"
-#include "process.h"    // to rework x2
-#include "stack.h"      // ...
-#include "list.h"       // ...
-#include "queue.h"      // to rework x2
-#include "event.h"      // to rework x2
-#include "thread.h"     // to rework x2
-#include "file.h"       // to rework x2
-#include "dictionary.h" // to rework x2
-#include "pipe.h"       // to rework x2
-#include "directory.h"  // to rework x2
-#include "sort.h"       // to rework x2
-#include "test.h"       // to rework x2
-#include "arg.h"        // to rework x2
-#include "python.h"     // to rework x2
-#include "protobuf.h"   // to rework x2
-#include "aes.h"        // ...
-#include "rsa.h"        // ...
-#include "sha256.h"     // ...
-#include "md5.h"        // ...
-#include "registry.h"   // to rework x2
-#include "screen.h"     // ...
-#include "window.h"     // to rework x2
-#include "console.h"    // to rework x2
-#include "network.h"    // ...
-#include "clipboard.h"  // to rework x2
-#include "vfs.h"        // ...
+#include "process.h"
+#include "stack.h"
+#include "list.h"
+#include "queue.h"
+#include "event.h"
+#include "thread.h"
+#include "file.h"
+#include "dictionary.h"
+#include "pipe.h"
+#include "directory.h"
+#include "sort.h"
+#include "test.h"
+#include "arg.h"
+#include "python.h"
+#include "protobuf.h"
+#include "aes.h"
+#include "rsa.h"
+#include "sha256.h"
+#include "md5.h"
+#include "registry.h"
+#include "screen.h"
+#include "window.h"
+#include "console.h"
+#include "network.h"
+#include "clipboard.h"
+#include "vfs.h"
 #ifdef UCPP_INCLUDE_KEYB
-    #include "keyboard.h" // to rework x2
+    #include "keyboard.h"
 #endif
 #include "cursor.h"
-#include "joystick.h" // ...
+#include "joystick.h"
 #ifdef UCPP_INCLUDE_GR
     #include "graphics.h"
 #endif
-#include "opengl.h" // ...
-#include "sound.h"  // ...
-#include "log.h"    // ...
+#include "opengl.h"
+#include "sound.h"
+#include "log.h"
 #ifdef UCPP_INCLUDE_DUMB
-    #include "dumb.h" // to rework x2
+    #include "dumb.h"
 #endif
 
-#include "main.h" // to rework x2
+#include "main.h"
