@@ -106,7 +106,7 @@ using std::wstring;
 #ifdef UCPP_INCLUDE_KEYB
     #include "keyboard.h"
 #endif
-#include "cursor.h"
+#include "mouse.h"
 #include "joystick.h"
 #ifdef UCPP_INCLUDE_GR
     #include "graphics.h"

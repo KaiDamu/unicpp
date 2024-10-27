@@ -155,7 +155,7 @@
     <ClInclude Include="src\keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\cursor.h">
+    <ClInclude Include="src\mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\joystick.h">

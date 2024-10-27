@@ -30,7 +30,7 @@
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\console.h" />
     <ClInclude Include="src\container.h" />
-    <ClInclude Include="src\cursor.h" />
+    <ClInclude Include="src\mouse.h" />
     <ClInclude Include="src\debug.h" />
     <ClInclude Include="src\dictionary.h" />
     <ClInclude Include="src\directory.h" />
