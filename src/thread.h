@@ -1,17 +1,13 @@
 #pragma once
 
-dfa NT ThdWait(S4 ms, S4 us)
+dfa NT ThdWait(TmMain ms)
 {
-    cx S8 t = S8(ms) * 1000 + S8(us);
-    ifu (t <= 0)
+    ifu (ms <= TmMain(0))
         ret;
-    LARGE_INTEGER tmp;
-    tmp.QuadPart = t * -10;
+    cx AU t = S8(ms * TmMain(-10000));
+    LARGE_INTEGER tmp = {};
+    tmp.QuadPart = t;
     NtDelayExecution(FALSE, &tmp);
-}
-dfa NT ThdWait(S4 ms)
-{
-    ThdWait(ms, 0);
 }
 
 dfa SI CpuThdCnt()

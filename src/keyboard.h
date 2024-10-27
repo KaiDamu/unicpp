@@ -307,7 +307,7 @@ dfa DWORD WINAPI _KeybHookThd(LPVOID code)
             ++g_keybHookThdDelay;
             if (g_keybHookThdDelay <= 0)
                 continue;
-            cx S4 delay = Clamp<S4>(g_keybHookThdDelay / 100 - 500, 1, 100); // maybe this should be configurable
+            cx AU delay = Clamp<TmMain>(TmMain(g_keybHookThdDelay) / 100 - 500, 1, 100); // maybe this should be configurable
             ThdWait(delay);
         }
         else
@@ -386,7 +386,7 @@ dfa BO KeybKeyEvtGet(KeybKeyEvt& keybKeyEvt)
     ret YES;
 }
 
-dfa ER KeybKeyWait(InputKey key, BO isSlow = NO, S4 checkRate = 1)
+dfa ER KeybKeyWait(InputKey key, BO isSlow = NO, TmMain checkRate = 1)
 {
     if (isSlow == YES)
         while (KeybKeyIsDown(key) == YES)
@@ -424,7 +424,7 @@ dfa ER KeybKeyPressUp(InputKey key)
         rete(ERR_KEYB);
     rets;
 }
-dfa ER KeybKeyPress(InputKey key, U4 hold = 50, U4 delay = 50)
+dfa ER KeybKeyPress(InputKey key, TmMain hold = 50, TmMain delay = 40)
 {
     ife (KeybKeyPressDown(key))
         retep;

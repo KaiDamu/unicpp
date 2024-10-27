@@ -736,7 +736,7 @@ dfa DWORD WINAPI _ScnDrawThd(LPVOID code)
             ++g_scnDrawThdDelay;
             if (g_scnDrawThdDelay <= 0)
                 continue;
-            cx S4 delay = Clamp<S4>(g_scnDrawThdDelay / 100 - 75, 1, 100); // maybe this should be configurable
+            cx AU delay = Clamp<TmMain>(TmMain(g_scnDrawThdDelay) / 100 - 75, 1, 100); // maybe this should be configurable
             ThdWait(delay);
         }
         else
@@ -792,8 +792,8 @@ dfa ER ScnDrawMainEnd(ScnDrawCtx& ctx)
 
     if (ctx.fpsMax > 0)
     {
-        TmMain timeElapsedMs = TimeMain() - ctx.fpsTimer;
-        TmMain timeSleepMs = TmMain(1000) / ctx.fpsMax - timeElapsedMs;
+        cx AU timeElapsedMs = TimeMain() - ctx.fpsTimer;
+        cx AU timeSleepMs = TmMain(1000) / TmMain(ctx.fpsMax) - timeElapsedMs;
         ThdWait(timeSleepMs);
         ctx.fpsTimer = TimeMain();
     }

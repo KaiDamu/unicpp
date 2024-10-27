@@ -25,7 +25,7 @@ class PipeIn
     {
         ret m_hdl.IsOpen();
     }
-    dfa ER Connect(cx CH* pipeName, SI tryCntMax, S4 tryDelay)
+    dfa ER Connect(cx CH* pipeName, SI tryCntMax, TmMain tryDelay)
     {
         SI tryCnt = 0;
         while (tryCnt != tryCntMax)
