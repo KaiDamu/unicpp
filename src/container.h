@@ -82,3 +82,32 @@ tpl1 struct Circle2
     {
     }
 };
+
+tpl1 Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio)
+{
+    if ((F4(rect.size.w) / F4(rect.size.h)) > ratio)
+    {
+        ret Rect2<T1>({rect.pos.x, rect.pos.y}, {T1(rect.size.h * ratio), rect.size.h});
+    }
+    else
+    {
+        ret Rect2<T1>({rect.pos.x, rect.pos.y}, {rect.size.w, T1(rect.size.w / ratio)});
+    }
+}
+tpl1 Rect2<T1> Rect2Center(cx Rect2<T1>& rect, cx Rect2<T1>& rectOuter)
+{
+    ret Rect2<T1>({rectOuter.pos.x + (rectOuter.size.w - rect.size.w) / 2, rectOuter.pos.y + (rectOuter.size.h - rect.size.h) / 2}, rect.size);
+}
+tpl1 Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio)
+{
+    if ((F4(rect.size.w) / F4(rect.size.h)) > ratio)
+    {
+        cx AU w = T1(rect.size.h * ratio);
+        ret Rect2<T1>({rect.pos.x + (rect.size.w - w) / 2, rect.pos.y}, {w, rect.size.h});
+    }
+    else
+    {
+        cx AU h = T1(rect.size.w / ratio);
+        ret Rect2<T1>({rect.pos.x, rect.pos.y + (rect.size.h - h) / 2}, {rect.size.w, h});
+    }
+}
