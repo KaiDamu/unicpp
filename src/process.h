@@ -5,22 +5,22 @@ dfa HANDLE _ProcHdlGetNt()
     ret reinterpret_cast<HANDLE>(-1);
 }
 
-dfa NT ProcCurCrash()
+dfa NT ProcCrash()
 {
     volatile U1 x = U1(clock());
     volatile U1 y = *reinterpret_cast<U1*>(UA(x ^ x));
     y = y / (x ^ x);
 }
-dfa NT ProcCurExit(U4 retVal)
+dfa NT ProcExit(U4 retVal)
 {
     RtlExitUserProcess(retVal);
-    ProcCurCrash();
+    ProcCrash();
 }
-dfa NT ProcCurExit()
+dfa NT ProcExit()
 {
-    ProcCurExit(U4(ErrLastGet()));
+    ProcExit(U4(ErrLastGet()));
 }
-dfa BO ProcCurIsElevated()
+dfa BO ProcIsElevated()
 {
     SID_IDENTIFIER_AUTHORITY sia = {SECURITY_NT_AUTHORITY};
     PSID sid;
@@ -49,19 +49,19 @@ dfa SI ProcEnvvarGet(CH* val, cx CH* envvar, SI valLenMax)
         val[0] = '\0';
     ret r;
 }
-dfa ER ProcCurEnvvarSet(cx CH* val, cx CH* envvar)
+dfa ER ProcEnvvarSet(cx CH* val, cx CH* envvar)
 {
     ifu (SetEnvironmentVariableW(envvar, val) == 0)
         rete(ERR_PROC);
     rets;
 }
-dfa ER ProcCurEnvvarClear(cx CH* envvar)
+dfa ER ProcEnvvarClr(cx CH* envvar)
 {
     ifu (SetEnvironmentVariableW(envvar, NUL) == 0)
         rete(ERR_PROC);
     rets;
 }
-dfa cx CH* ProcCurArgFullGet()
+dfa cx CH* ProcArgFullGet()
 {
     ret GetCommandLineW();
 }
@@ -198,7 +198,7 @@ class Proc
     }
     dfa ER StartElevated(cx CH* path, cx CH* args, cx CH* workPath)
     {
-        if (ProcCurIsElevated())
+        if (ProcIsElevated())
             ret tx->Start(path, args, workPath);
         ifu (tx->IsActive())
             rete(ERR_YES_ACTIVE);
@@ -245,15 +245,15 @@ class Proc
     }
 };
 
-dfa ER ProcCurRestartElevated()
+dfa ER ProcRestartElevated()
 {
-    if (ProcCurIsElevated())
+    if (ProcIsElevated())
         rets;
     Proc proc;
-    ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcCurArgFullGet()), ProcWorkPath()))
+    ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcArgFullGet()), ProcWorkPath()))
         retep;
     proc.__Drop();
-    ProcCurExit(0);
+    ProcExit(0);
     rets;
 }
 

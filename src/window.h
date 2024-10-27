@@ -1,23 +1,23 @@
 #pragma once
 
-dfa HD WinCurHdlGet()
+dfa HD WinHdlGet()
 {
     ret HD(GetForegroundWindow());
 }
-dfa SI WinCurTitleStrGet(CH* str, SI strLenMax)
+dfa SI WinTitleStrGet(CH* str, SI strLenMax)
 {
-    cx SI strLen = GetWindowTextW(HWND(WinCurHdlGet()), str, int(strLenMax));
+    cx SI strLen = GetWindowTextW(HWND(WinHdlGet()), str, int(strLenMax));
     ret strLen;
 }
-dfa ER WinCurTitleStrSet(cx CH* str)
+dfa ER WinTitleStrSet(cx CH* str)
 {
-    ifu (SetWindowTextW(HWND(WinCurHdlGet()), str) == 0)
+    ifu (SetWindowTextW(HWND(WinHdlGet()), str) == 0)
         rete(ERR_WIN);
     rets;
 }
-dfa SI WinCurClassStrGet(CH* str, SI strLenMax)
+dfa SI WinClassStrGet(CH* str, SI strLenMax)
 {
-    cx SI strLen = GetClassNameW(HWND(WinCurHdlGet()), str, int(strLenMax));
+    cx SI strLen = GetClassNameW(HWND(WinHdlGet()), str, int(strLenMax));
     ret strLen;
 }
 dfa BO WinIsValid(HD hdl)

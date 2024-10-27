@@ -13,7 +13,7 @@ dfa NT _ArgInit()
     ifl (g_argVal != NUL)
         ret;
     int tmp = 0;
-    g_argVal = CommandLineToArgvW(ProcCurArgFullGet(), &tmp);
+    g_argVal = CommandLineToArgvW(ProcArgFullGet(), &tmp);
     g_argCnt = tmp;
     Assert(g_argVal != NUL);
 }

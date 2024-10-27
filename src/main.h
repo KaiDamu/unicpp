@@ -57,7 +57,7 @@ int main() // define UCPP_MAIN_NO if you're using your own main function
         ConWriteInfo("End of program");
         ConWait();
     }
-    ProcCurExit(U4(errVal));
+    ProcExit(U4(errVal));
     ret int(errVal);
 }
 
