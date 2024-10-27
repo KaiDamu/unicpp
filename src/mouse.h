@@ -30,3 +30,46 @@ dfa ER CurPosMove(cx Pos2<F4>& pos)
         retep;
     rets;
 }
+
+dfa ER _MousKeyPress(InputKey key, BO isDown)
+{
+    AU codeVk = InputKeyToCodeVk(key);
+    INPUT ip = {};
+    ip.type = INPUT_MOUSE;
+    switch (codeVk)
+    {
+    case VK_LBUTTON:
+        ip.mi.dwFlags = isDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+        break;
+    case VK_RBUTTON:
+        ip.mi.dwFlags = isDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+        break;
+    case VK_MBUTTON:
+        ip.mi.dwFlags = isDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+        break;
+    default:
+        rete(ERR_MOUS);
+    }
+    ip.mi.dwExtraInfo = GetMessageExtraInfo();
+    ifu (SendInput(1, &ip, siz(ip)) != 1)
+        rete(ERR_MOUS);
+    rets;
+}
+dfa ER MousKeyPressDown(InputKey key)
+{
+    ret _MousKeyPress(key, YES);
+}
+dfa ER MousKeyPressUp(InputKey key)
+{
+    ret _MousKeyPress(key, NO);
+}
+dfa ER MousKeyPress(InputKey key, TmMain hold = 50, TmMain delay = 40)
+{
+    ife (MousKeyPressDown(key))
+        retep;
+    ThdWait(hold);
+    ife (MousKeyPressUp(key))
+        retep;
+    ThdWait(delay);
+    rets;
+}
