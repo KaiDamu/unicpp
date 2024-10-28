@@ -760,7 +760,7 @@ dfa NT ScnDrawFpsMax(ScnDrawCtx& ctx, SI fpsMax)
 
 dfa ER ScnDrawMainBegin(ScnDrawCtx& ctx)
 {
-    MemSetVal(ctx.scnGrid.pixels.data(), 0, ctx.scnGrid.pixels.size() * siz(ctx.scnGrid.pixels[0]));
+    MemSet(ctx.scnGrid.pixels.data(), 0, ctx.scnGrid.pixels.size() * siz(ctx.scnGrid.pixels[0]));
     rets;
 }
 dfa ER ScnDrawMainEnd(ScnDrawCtx& ctx)

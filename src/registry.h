@@ -88,7 +88,7 @@ dfa ER RegDirMove(cx CH* dst, cx CH* src)
 dfa ER RegValSetStr(cx CH* path, cx CH* val)
 {
     CH path_[PATH_LEN_MAX];
-    StrSet(path_, path);
+    StrCpy(path_, path);
     CH* name = (CH*)StrFindLast(path_, L'\\');
     ifu (name == NUL)
         rete(ERR_REG);
@@ -109,7 +109,7 @@ dfa ER RegValSetStr(cx CH* path, cx CH* val)
 dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax)
 {
     CH path_[PATH_LEN_MAX];
-    StrSet(path_, path);
+    StrCpy(path_, path);
     CH* name = (CH*)StrFindLast(path_, L'\\');
     ifu (name == NUL)
         ret -1;
@@ -134,7 +134,7 @@ dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax)
 dfa ER RegValSetU4(cx CH* path, U4 val)
 {
     CH path_[PATH_LEN_MAX];
-    StrSet(path_, path);
+    StrCpy(path_, path);
     CH* name = (CH*)StrFindLast(path_, L'\\');
     ifu (name == NUL)
         rete(ERR_REG);
@@ -155,7 +155,7 @@ dfa ER RegValSetU4(cx CH* path, U4 val)
 dfa SI RegValGetU4(cx CH* path, U4& val)
 {
     CH path_[PATH_LEN_MAX];
-    StrSet(path_, path);
+    StrCpy(path_, path);
     CH* name = (CH*)StrFindLast(path_, L'\\');
     ifu (name == NUL)
         ret -1;
@@ -191,31 +191,31 @@ dfa ER RegValDel(cx CH* path)
 dfa ER RegSetExtOpenPath(cx CH* ext, cx CH* prog, cx CH* extName)
 {
     CH name[PATH_LEN_MAX];
-    StrSet(name, L"def.");
+    StrCpy(name, L"def.");
     StrAdd(name, ext);
     CH path[PATH_LEN_MAX];
-    StrSet(path, L"HKEY_CLASSES_ROOT\\.");
+    StrCpy(path, L"HKEY_CLASSES_ROOT\\.");
     StrAdd(path, ext);
     ife (RegDirCreate(path))
         retep;
     StrAdd(path, L"\\");
     ife (RegValSetStr(path, name))
         retep;
-    StrSet(path, L"HKEY_CLASSES_ROOT\\");
+    StrCpy(path, L"HKEY_CLASSES_ROOT\\");
     StrAdd(path, name);
     ife (RegDirCreate(path))
         retep;
     StrAdd(path, L"\\");
     ife (RegValSetStr(path, extName))
         retep;
-    StrSet(path, L"HKEY_CLASSES_ROOT\\");
+    StrCpy(path, L"HKEY_CLASSES_ROOT\\");
     StrAdd(path, name);
     StrAdd(path, L"\\shell\\open\\command");
     ife (RegDirCreate(path))
         retep;
     StrAdd(path, L"\\");
     CH cmd[PATH_LEN_MAX + 10];
-    StrSet(cmd, L"\"");
+    StrCpy(cmd, L"\"");
     StrAdd(cmd, prog);
     StrAdd(cmd, L"\" \"%1\"");
     ife (RegValSetStr(path, cmd))

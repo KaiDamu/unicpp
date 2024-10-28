@@ -80,10 +80,10 @@ class Md5
         }
 
       public:
-        // dfa NT operator = (cx Val& val) { MemSet(tx, val.B1(), siz(*tx)); }
+        // dfa NT operator = (cx Val& val) { MemCpy(tx, val.B1(), siz(*tx)); }
         dfa NT operator=(cx U1* val)
         {
-            MemSet(tx, val, siz(*tx));
+            MemCpy(tx, val, siz(*tx));
         }
         dfa operator U1*()
         {
@@ -129,7 +129,7 @@ class Md5
       public:
         dfa Val()
         {
-            MemSetVal(tx, 0, siz(*tx));
+            MemSet(tx, 0, siz(*tx));
         }
         dfa Val(cx CS* str)
         {
@@ -259,14 +259,14 @@ class Md5
             m_ex[0] = 0;
             m_ex[1] = 0;
             m_isFinal = NO;
-            MemSetVal(m_buf, 0, siz(m_buf));
+            MemSet(m_buf, 0, siz(m_buf));
         }
         dfa NT Final()
         {
             if (m_isFinal)
                 ret;
             U1 ex[siz(m_ex)];
-            MemSet(ex, m_ex, siz(m_ex));
+            MemCpy(ex, m_ex, siz(m_ex));
             cx SI ofs = (m_ex[0] >> 3) & 0x3f;
             cx SI padLen = (ofs < 56) ? (56 - ofs) : (120 - ofs);
             cx U1 pad[BLOCK_SIZE] = {0x80};
@@ -291,7 +291,7 @@ class Md5
             m_ex[1] += bufSize >> (sizb(TO(bufSize)) - 3);
             if (bufSize >= partSize)
             {
-                MemSet(&m_buf[j], buf, partSize);
+                MemCpy(&m_buf[j], buf, partSize);
                 tx->Trans(m_buf);
                 for (i = partSize; i + BLOCK_SIZE <= bufSize; i += BLOCK_SIZE)
                 {
@@ -299,7 +299,7 @@ class Md5
                 }
                 j = 0;
             }
-            MemSet(&m_buf[j], &buf[i], bufSize - i);
+            MemCpy(&m_buf[j], &buf[i], bufSize - i);
         }
         dfa NT Clr()
         {

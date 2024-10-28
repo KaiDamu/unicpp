@@ -33,7 +33,7 @@ dfa SI StrLenx(cx CH* str)
 {
     ret StrLen(str) + STR_EX_LEN;
 }
-dfa NT StrSet(CS* dst, cx CS* src)
+dfa NT StrCpy(CS* dst, cx CS* src)
 {
 #ifdef PROG_COMPILER_GCC
     __builtin_strcpy(dst, src);
@@ -41,7 +41,7 @@ dfa NT StrSet(CS* dst, cx CS* src)
     strcpy(dst, src);
 #endif
 }
-dfa NT StrSet(CH* dst, cx CH* src)
+dfa NT StrCpy(CH* dst, cx CH* src)
 {
     wcscpy(dst, src);
 }
@@ -157,13 +157,13 @@ tpl1 dfa SA StrCmpCi(cx T1* strA, cx T1* strB, SI len)
 tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right)
 {
     cx SI leftLen = StrLen(left);
-    MemSet(dst, left, leftLen * siz(T1));
+    MemCpy(dst, left, leftLen * siz(T1));
     dst += leftLen;
     cx SI srcLen = StrLen(src);
-    MemSet(dst, src, srcLen * siz(T1));
+    MemCpy(dst, src, srcLen * siz(T1));
     dst += srcLen;
     cx SI rightLen = StrLen(right);
-    MemSet(dst, right, rightLen * siz(T1));
+    MemCpy(dst, right, rightLen * siz(T1));
     dst += rightLen;
     *dst = '\0';
     ret leftLen + srcLen + rightLen;
@@ -184,7 +184,7 @@ tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len)
         *(dstP + strLen) = *dstP;
         --dstP;
     }
-    MemSet(dst + i - len, str, (strLen + len) * siz(T1));
+    MemCpy(dst + i - len, str, (strLen + len) * siz(T1));
     ret dstLen + strLen;
 }
 tpl1 dfa SI StrInsert(T1* dst, cx T1* str, SI i)
@@ -353,7 +353,7 @@ tpl1 dfa SI StrFindReplace(T1* dst, cx T1* src, cx T1* strReplace, cx T1* strFin
     {
         if (StrCmp(srcP, strFind, strFindLen) == 0)
         {
-            MemSet(dstP, strReplace, strReplaceLen * siz(T1));
+            MemCpy(dstP, strReplace, strReplaceLen * siz(T1));
             srcP += strFindLen;
             dstP += strReplaceLen;
         }

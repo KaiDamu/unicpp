@@ -63,7 +63,7 @@ dfa SI PathNameo(CH* dst, cx CH* src)
 {
     SI nameLen;
     cx CH* cx namePtr = PathNamePtr(src, nameLen);
-    MemSet(dst, namePtr, nameLen * siz(CH));
+    MemCpy(dst, namePtr, nameLen * siz(CH));
     dst[nameLen] = '\0';
     ret nameLen;
 }
@@ -140,11 +140,11 @@ dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)
                 str[strLen - 1] = '\\';
                 str[strLen] = '\0';
             }
-            StrSet(str + strLen, src);
+            StrCpy(str + strLen, src);
             if (PathIsExist(str))
             {
                 cx SI dstLen = strLen + StrLen(src);
-                MemSet(dst, str, (dstLen + STR_EX_LEN) * siz(CH));
+                MemCpy(dst, str, (dstLen + STR_EX_LEN) * siz(CH));
                 ret dstLen;
             }
             strLen = 0;
@@ -171,7 +171,7 @@ dfa cx CH* ProcDirPath()
     static CH s_cache[PATH_LEN_MAX] = {};
     ifu (s_cache[0] == '\0')
     {
-        StrSet(s_cache, ProcFilePath());
+        StrCpy(s_cache, ProcFilePath());
         PathDirUp(s_cache);
     }
     ret s_cache;
@@ -203,7 +203,7 @@ dfa SI PathToAbs(CH* path)
         --i;
     }
     path[workPathLen] = CH_PATH_DIR;
-    MemSet(path, ProcWorkPath(), workPathLen * siz(CH));
+    MemCpy(path, ProcWorkPath(), workPathLen * siz(CH));
     ret pathLen + workPathLen + 1; // +1 for the CH_PATH_DIR
 }
 dfa SI PathToAbs(CH* dst, cx CH* src)
@@ -226,7 +226,7 @@ dfa SI PathToNtpath(CH* path)
         path[i + STR_NTPATH_PRE_LEN] = path[i];
         --i;
     }
-    MemSet(path, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
+    MemCpy(path, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
     ret pathLen + STR_NTPATH_PRE_LEN;
 }
 dfa SI PathToNtpath(CH* dst, cx CH* src)
@@ -234,7 +234,7 @@ dfa SI PathToNtpath(CH* dst, cx CH* src)
     if (PathIsNtpath(src))
         ret StrSetLenGet(dst, src);
     cx SI pathLen = PathToAbs(dst + STR_NTPATH_PRE_LEN, src);
-    MemSet(dst, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
+    MemCpy(dst, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
     ret pathLen + STR_NTPATH_PRE_LEN;
 }
 
@@ -298,6 +298,6 @@ dfa SI PathEnvvarResolve(CH* path)
 }
 dfa SI PathEnvvarResolve(CH* dst, cx CH* src)
 {
-    StrSet(dst, src);
+    StrCpy(dst, src);
     ret PathEnvvarResolve(dst);
 }

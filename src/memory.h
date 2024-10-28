@@ -31,7 +31,7 @@ dfa GA MemNew(SI size)
     ret malloc(size);
 }
 
-dfa NT MemSetVal(GA dst, U1 val, SI size)
+dfa NT MemSet(GA dst, U1 val, SI size)
 {
 #ifdef PROG_COMPILER_GCC
     __builtin_memset(dst, val, size);
@@ -39,7 +39,7 @@ dfa NT MemSetVal(GA dst, U1 val, SI size)
     memset(dst, val, size);
 #endif
 }
-dfa NT MemSet(GA dst, CXGA src, SI size)
+dfa NT MemCpy(GA dst, CXGA src, SI size)
 {
 #ifdef PROG_COMPILER_GCC
     __builtin_memcpy(dst, src, size);
@@ -55,7 +55,7 @@ dfa SA MemCmp(CXGA ptr1, CXGA ptr2, SI size)
 dfa GA MemResize(GA ptr, SI sizeAlloc, SI sizeCpy)
 {
     GA r = MemNew(sizeAlloc);
-    MemSet(r, ptr, sizeCpy);
+    MemCpy(r, ptr, sizeCpy);
     MemDel(ptr);
     ret r;
 }
@@ -182,7 +182,7 @@ class MemPoolTmp
     {
         tx->Init();
         m_listPtr = new U1*[sizb(SI)];
-        MemSetVal(m_listPtr, 0, sizb(SI) * siz(U1*));
+        MemSet(m_listPtr, 0, sizb(SI) * siz(U1*));
     }
     dfa ~MemPoolTmp()
     {

@@ -242,7 +242,7 @@ class Vfs
   private:
     dfa NT Init()
     {
-        MemSetVal(&m_hdr, 0, siz(m_hdr));
+        MemSet(&m_hdr, 0, siz(m_hdr));
     }
 
   public:
@@ -278,7 +278,7 @@ class Vfs
     {
         ife (m_file.Close())
             retep;
-        MemSetVal(&m_hdr, 0, siz(m_hdr));
+        MemSet(&m_hdr, 0, siz(m_hdr));
         m_entryList.Clr();
         rets;
     }

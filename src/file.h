@@ -564,7 +564,7 @@ class FileMem
         ife (m_file.SizeGet(size))
             retep;
         m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
-        MemSetVal(m_dat.Ptr(), 0, size);
+        MemSet(m_dat.Ptr(), 0, size);
         m_dat.CurSet(size);
         m_filePos = 0;
         m_filePosOfs = 0;
@@ -638,7 +638,7 @@ class FileMem
         result = 0;
         ifu (m_filePos + m_filePosOfs + size > m_dat.Pos())
             rete(ERR_HIGH_SIZE);
-        MemSet(buf, m_dat.Ptr() + m_filePos + m_filePosOfs, size);
+        MemCpy(buf, m_dat.Ptr() + m_filePos + m_filePosOfs, size);
         if (m_isWriteDirect)
             m_filePosOfs += size;
         else
@@ -668,7 +668,7 @@ class FileMem
             cx SI newCap = SI(F8(m_dat.Cap()) * m_resizeMul) + m_resizeAdd + size;
             m_dat.Req(newCap, newCap, m_dat.Pos());
         }
-        MemSet(m_dat.Ptr() + m_filePos, buf, size);
+        MemCpy(m_dat.Ptr() + m_filePos, buf, size);
         m_filePos += size;
         if (m_filePos > m_dat.Pos())
             m_dat.CurSet(m_filePos);
@@ -758,7 +758,7 @@ class FileMem
                 cx SI newCap = SI(F8(size) * m_resizeMul) + m_resizeAdd;
                 m_dat.Req(newCap, newCap, m_dat.Pos());
             }
-            MemSetVal(m_dat.Ptr() + m_dat.Pos(), 0, size - m_dat.Pos());
+            MemSet(m_dat.Ptr() + m_dat.Pos(), 0, size - m_dat.Pos());
         }
         m_filePos = Min(m_filePos, size);
         m_dat.CurSet(m_filePos); // set virtual size
@@ -843,7 +843,7 @@ tpl1 dfa ER FileToArr(Arr<T1>& arr, cx CH* path, cx CS* append = NUL)
     ife (file.Close())
         retep;
     if (sizeAppend != 0)
-        MemSet(arr.Ptr() + size, append, sizeAppend);
+        MemCpy(arr.Ptr() + size, append, sizeAppend);
     rets;
 }
 

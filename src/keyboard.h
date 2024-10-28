@@ -276,7 +276,7 @@ dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp)
     keybKey.codeVk = codeVk;
     keybKey.codeScan = codeScan;
     keybKey.isDown = isDown;
-    MemSet(keybKey.str, buf, (bufSize + 1) * siz(buf[0]));
+    MemCpy(keybKey.str, buf, (bufSize + 1) * siz(buf[0]));
     g_keybKeyEvtQueueLock.Lock();
     g_keybKeyEvtQueue.Add(keybKey);
     g_keybKeyEvtQueueLock.Unlock();

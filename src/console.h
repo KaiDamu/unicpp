@@ -249,7 +249,7 @@ dfa ER ConCreate(cx CH* title = NUL)
     font.dwFontSize.X = 0;
     font.dwFontSize.Y = 18;
     font.FontWeight = FW_NORMAL;
-    StrSet(font.FaceName, L"Lucida Console");
+    StrCpy(font.FaceName, L"Lucida Console");
     SetCurrentConsoleFontEx(hdl, NO, &font);
     //
     ife (WinFocusSet(HD(GetConsoleWindow())))
@@ -446,13 +446,13 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
             {
                 cx AU writeLen = strLen;
                 vector<CS> buf(writeLen);
-                MemSetVal(buf.data(), '\b', strPos * siz(CS));
+                MemSet(buf.data(), '\b', strPos * siz(CS));
                 ife (_ConWriteRaw(buf.data(), strPos))
                     retep;
-                MemSetVal(buf.data(), ' ', buf.size() * siz(CS));
+                MemSet(buf.data(), ' ', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size()))
                     retep;
-                MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+                MemSet(buf.data(), '\b', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size()))
                     retep;
             }
@@ -476,7 +476,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
                 ife (_ConWriteRaw(" ", 1))
                     retep;
                 vector<CS> buf(writeLen + 1);
-                MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+                MemSet(buf.data(), '\b', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size()))
                     retep;
             }
@@ -543,19 +543,19 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
             {
                 cx AU writeLen = strLen;
                 vector<CS> buf(writeLen);
-                MemSetVal(buf.data(), '\b', strPos * siz(CS));
+                MemSet(buf.data(), '\b', strPos * siz(CS));
                 ife (_ConWriteRaw(buf.data(), strPos))
                     retep;
-                MemSetVal(buf.data(), ' ', buf.size() * siz(CS));
+                MemSet(buf.data(), ' ', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size()))
                     retep;
-                MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+                MemSet(buf.data(), '\b', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size()))
                     retep;
             }
             cx AU& strHistory = (*s_history)[historyPos];
             strLen = Min<SI>(strHistory.size(), strLenxMax - STR_EX_LEN);
-            MemSet(str, strHistory.c_str(), strLen * siz(CS));
+            MemCpy(str, strHistory.c_str(), strLen * siz(CS));
             str[strLen] = '\0';
             strPos = strLen;
             ife (_ConWriteRaw(str, strLen))
@@ -578,7 +578,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
                 if (writeLen - 1 > 0)
                 {
                     vector<CS> buf(writeLen - 1);
-                    MemSetVal(buf.data(), '\b', buf.size() * siz(CS));
+                    MemSet(buf.data(), '\b', buf.size() * siz(CS));
                     ife (_ConWriteRaw(buf.data(), buf.size()))
                         retep;
                 }

@@ -158,7 +158,7 @@ class Proc
             rete(ERR_THD);
         ifu (m_info.hProcess != NUL && CloseHandle(m_info.hProcess) == 0)
             rete(ERR_PROC);
-        MemSetVal(&m_info, 0, siz(m_info));
+        MemSet(&m_info, 0, siz(m_info));
         m_args = L"";
         rets;
     }
@@ -185,12 +185,12 @@ class Proc
             m_args += args;
         }
         STARTUPINFOW tmp = {};
-        MemSetVal(&tmp, 0, siz(tmp));
+        MemSet(&tmp, 0, siz(tmp));
         tmp.cb = siz(tmp);
         cx BOOL result = CreateProcessW(path, const_cast<CH*>(m_args.c_str()), NUL, NUL, NO, 0, NUL, workPath, &tmp, &m_info);
         ifu (result == 0)
         {
-            MemSetVal(&m_info, 0, siz(m_info));
+            MemSet(&m_info, 0, siz(m_info));
             m_args = L"";
             rete(ERR_PROC);
         }
@@ -218,7 +218,7 @@ class Proc
             m_args = L"";
             rete(ERR_PROC);
         }
-        MemSetVal(&m_info, 0, siz(m_info));
+        MemSet(&m_info, 0, siz(m_info));
         m_info.hProcess = sei.hProcess;
         rets;
     }
@@ -236,7 +236,7 @@ class Proc
   public:
     dfa Proc()
     {
-        MemSetVal(&m_info, 0, siz(m_info));
+        MemSet(&m_info, 0, siz(m_info));
     }
     dfa ~Proc()
     {
@@ -325,7 +325,7 @@ class ProcGlobalStr
             m_hdl = NUL;
             rete(ERR_YES_EXIST);
         }
-        MemSet(m_str, str, (strLen + 1) * siz(str[0]));
+        MemCpy(m_str, str, (strLen + 1) * siz(str[0]));
         rets;
     }
     dfa ER WaitIsClose(cx CH* str) cx
@@ -369,7 +369,7 @@ dfa BO ProcGlobalTake(cx CH* str = NUL)
     }
     else
     {
-        StrSet(path, str);
+        StrCpy(path, str);
     }
     ProcGlobalStr global;
     ife (global.Open(path))

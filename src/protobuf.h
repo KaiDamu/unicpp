@@ -118,7 +118,7 @@ class PrbCtx
             break;
         }
         case PRB_FIELD_TYPE_I64: {
-            MemSet(&m_valU8, m_bufCur, siz(m_valU8));
+            MemCpy(&m_valU8, m_bufCur, siz(m_valU8));
             m_bufCur += siz(m_valU8);
             break;
         }
@@ -135,7 +135,7 @@ class PrbCtx
             break;
         }
         case PRB_FIELD_TYPE_I32: {
-            MemSet(&m_valU4, m_bufCur, siz(m_valU4));
+            MemCpy(&m_valU4, m_bufCur, siz(m_valU4));
             m_bufCur += siz(m_valU4);
             break;
         }
@@ -155,7 +155,7 @@ class PrbCtx
         m_bufEnd = NUL;
         m_fieldId = PRB_FIELD_ID_NONE;
         m_stackLen = 0;
-        MemSetVal(m_stackHashByte, PRB_FIELD_ID_NONE, PRB_CTX_STACK_LEN_MAX);
+        MemSet(m_stackHashByte, PRB_FIELD_ID_NONE, PRB_CTX_STACK_LEN_MAX);
         m_valU8 = 0;
     }
     dfa NT Init(cx U1* buf, SI bufSize)

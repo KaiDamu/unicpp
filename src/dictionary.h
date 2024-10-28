@@ -440,7 +440,7 @@ class SVarBlock
                 *p2 = '\0';
                 hdrLen = StrTrimWspace(p);
                 hdr.Req(hdrLen + 1);
-                MemSet(hdr.Ptr(), p, (hdrLen + 1) * siz(CS));
+                MemCpy(hdr.Ptr(), p, (hdrLen + 1) * siz(CS));
             }
             else
             {
@@ -458,9 +458,9 @@ class SVarBlock
                 else
                 {
                     buf2.Req(hdrLen + 1 + varLen + 1);
-                    MemSet(buf2.Ptr(), hdr.Ptr(), hdrLen * siz(CS));
+                    MemCpy(buf2.Ptr(), hdr.Ptr(), hdrLen * siz(CS));
                     buf2[hdrLen] = '.';
-                    MemSet(buf2.Ptr() + hdrLen + 1, var, (varLen + 1) * siz(CS));
+                    MemCpy(buf2.Ptr() + hdrLen + 1, var, (varLen + 1) * siz(CS));
                     tx->Set(buf2.Ptr(), val);
                 }
             }

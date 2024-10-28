@@ -40,7 +40,7 @@ class FileInfo
         bufSize = (pathLen + 1) * siz(CH);
         buf = new CH[bufSize / siz(CH)];
         cx SI bufOfs = buf - path;
-        MemSet(buf, path, pathLen * siz(CH));
+        MemCpy(buf, path, pathLen * siz(CH));
         buf[pathLen] = '\0';
         ifl (path != NUL)
             path += bufOfs;
@@ -55,7 +55,7 @@ class FileInfo
   public:
     dfa FileInfo()
     {
-        MemSetVal(tx, 0, siz(*tx));
+        MemSet(tx, 0, siz(*tx));
     }
     dfa ~FileInfo()
     {
@@ -98,7 +98,7 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
                      ((info->FileNameLength == (2 * siz(CH))) && (MemCmp(info->FileName, L"..", 2 * siz(CH)) == 0));
         if (!isEx)
         {
-            MemSet(path + pathLen, info->FileName, info->FileNameLength);
+            MemCpy(path + pathLen, info->FileName, info->FileNameLength);
             pathLen += info->FileNameLength / siz(CH);
             path[pathLen] = '\0';
             FileInfo fileInfo;
@@ -197,7 +197,7 @@ dfa ER DirNew(cx CH* path)
             rete(ERR_DIR);
         }
         CH path_[PATH_LEN_MAX];
-        StrSet(path_, path);
+        StrCpy(path_, path);
         CH* pathSep = (CH*)StrFindLast(path_, CH_PATH_DIR);
         ifu (pathSep == NUL)
             rete(ERR_DIR);
@@ -227,7 +227,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
              [](cx FileInfo& fileInfo, GA param1, GA param2) {
                  unused(param2);
                  CH path[PATH_LEN_MAX];
-                 StrSet(path, ((Param*)param1)->dst);
+                 StrCpy(path, ((Param*)param1)->dst);
                  StrAdd(path, fileInfo.rel - 1); // hack: -1 for CH_PATH_DIR
                  if (fileInfo.attrib & FILE_ATTRIB_DIR)
                  {

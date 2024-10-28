@@ -23,7 +23,7 @@ dfa ER ClipbSetText(cx CH* text)
         CloseClipboard();
         rete(ERR_LOCK);
     }
-    MemSet(textGlobal, text, textSize);
+    MemCpy(textGlobal, text, textSize);
     GlobalUnlock(textGlobalObj);
     ifu (SetClipboardData(CF_UNICODETEXT, textGlobalObj) == NUL)
     {
@@ -59,7 +59,7 @@ dfa SI ClipbGetText(CH* text, SI textLenMax)
         CloseClipboard();
         ret textLen;
     }
-    MemSet(text, textGlobal, textSize);
+    MemCpy(text, textGlobal, textSize);
     GlobalUnlock(textGlobalObj);
     CloseClipboard();
     ret textLen - 1;
