@@ -6,107 +6,95 @@ constexpr F4 COL_HSV_WEIGHT_S = 0.3f;
 constexpr F4 COL_HSV_WEIGHT_V = 0.2f;
 
 /// [color]
-using ColVN = F4; // range: 0.0 - 1.0
 struct ColRgb
 {
     U1 r; // range: 0 - 255
     U1 g; // range: 0 - 255
     U1 b; // range: 0 - 255
 
-    dfa ColRgb operator+(cx ColRgb& col) cx
+    dfa constexpr ColRgb() : r(), g(), b()
     {
-        ret ColRgb(r + col.r, g + col.g, b + col.b);
     }
-    dfa ColRgb operator-(cx ColRgb& col) cx
+    dfa constexpr ColRgb(U1 r, U1 g, U1 b) : r(r), g(g), b(b)
     {
-        ret ColRgb(r - col.r, g - col.g, b - col.b);
     }
-    dfa ColRgb operator*(cx ColRgb& col) cx
+    dfa constexpr ColRgb(cx ColRgb& other) : r(other.r), g(other.g), b(other.b)
     {
-        ret ColRgb(r * col.r, g * col.g, b * col.b);
     }
-    dfa ColRgb operator/(cx ColRgb& col) cx
+    dfa constexpr ColRgb(ColRgb&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
     {
-        ret ColRgb(r / col.r, g / col.g, b / col.b);
     }
-    dfa ColRgb operator+(U1 val) cx
-    {
-        ret ColRgb(r + val, g + val, b + val);
-    }
-    dfa ColRgb operator-(U1 val) cx
-    {
-        ret ColRgb(r - val, g - val, b - val);
-    }
-    dfa ColRgb operator*(U1 val) cx
-    {
-        ret ColRgb(r * val, g * val, b * val);
-    }
-    dfa ColRgb operator/(U1 val) cx
-    {
-        ret ColRgb(r / val, g / val, b / val);
-    }
-    dfa ColRgb& operator+=(cx ColRgb& col)
-    {
-        r += col.r;
-        g += col.g;
-        b += col.b;
-        ret *tx;
-    }
-    dfa ColRgb& operator-=(cx ColRgb& col)
-    {
-        r -= col.r;
-        g -= col.g;
-        b -= col.b;
-        ret *tx;
-    }
-    dfa ColRgb& operator*=(cx ColRgb& col)
-    {
-        r *= col.r;
-        g *= col.g;
-        b *= col.b;
-        ret *tx;
-    }
-    dfa ColRgb& operator/=(cx ColRgb& col)
-    {
-        r /= col.r;
-        g /= col.g;
-        b /= col.b;
-        ret *tx;
-    }
-    dfa ColRgb& operator+=(U1 val)
-    {
-        r += val;
-        g += val;
-        b += val;
-        ret *tx;
-    }
-    dfa ColRgb& operator-=(U1 val)
-    {
-        r -= val;
-        g -= val;
-        b -= val;
-        ret *tx;
-    }
-    dfa ColRgb& operator*=(U1 val)
-    {
-        r *= val;
-        g *= val;
-        b *= val;
-        ret *tx;
-    }
-    dfa ColRgb& operator/=(U1 val)
-    {
-        r /= val;
-        g /= val;
-        b /= val;
-        ret *tx;
-    }
+    dfa ~ColRgb() = default;
 
-    dfa ColRgb()
+    dfa ColRgb& operator=(cx ColRgb& other)
     {
+        r = other.r;
+        g = other.g;
+        b = other.b;
+        ret *tx;
     }
-    dfa ColRgb(U1 r, U1 g, U1 b) : r(r), g(g), b(b)
+    dfa ColRgb& operator=(ColRgb&& other) noex
     {
+        r = move(other.r);
+        g = move(other.g);
+        b = move(other.b);
+        ret *tx;
+    }
+    dfa constexpr BO operator==(cx ColRgb& other) cx
+    {
+        ret r == other.r && g == other.g && b == other.b;
+    }
+    dfa constexpr BO operator!=(cx ColRgb& other) cx
+    {
+        ret r != other.r || g != other.g || b != other.b;
+    }
+    dfa constexpr ColRgb operator+(cx ColRgb& other) cx
+    {
+        ret ColRgb(r + other.r, g + other.g, b + other.b);
+    }
+    dfa constexpr ColRgb operator-(cx ColRgb& other) cx
+    {
+        ret ColRgb(r - other.r, g - other.g, b - other.b);
+    }
+    dfa constexpr ColRgb operator*(F4 scalar) cx
+    {
+        ret ColRgb(r * scalar, g * scalar, b * scalar);
+    }
+    dfa constexpr ColRgb operator/(F4 scalar) cx
+    {
+        ret ColRgb(r / scalar, g / scalar, b / scalar);
+    }
+    dfa constexpr ColRgb operator-() cx
+    {
+        ret ColRgb(-r, -g, -b);
+    }
+    dfa ColRgb& operator+=(cx ColRgb& other)
+    {
+        r += other.r;
+        g += other.g;
+        b += other.b;
+        ret *tx;
+    }
+    dfa ColRgb& operator-=(cx ColRgb& other)
+    {
+        r -= other.r;
+        g -= other.g;
+        b -= other.b;
+        ret *tx;
+    }
+    dfa ColRgb& operator*=(F4 scalar)
+    {
+        r *= scalar;
+        g *= scalar;
+        b *= scalar;
+        ret *tx;
+    }
+    dfa ColRgb& operator/=(F4 scalar)
+    {
+        r /= scalar;
+        g /= scalar;
+        b /= scalar;
+        ret *tx;
     }
 };
 struct ColRgbN
@@ -115,112 +103,89 @@ struct ColRgbN
     F4 g; // range: 0.0 - 1.0
     F4 b; // range: 0.0 - 1.0
 
-    dfa ColRgbN operator+(cx ColRgbN& col) cx
+    dfa constexpr ColRgbN() : r(), g(), b()
     {
-        ret ColRgbN(r + col.r, g + col.g, b + col.b);
     }
-    dfa ColRgbN operator-(cx ColRgbN& col) cx
+    dfa constexpr ColRgbN(F4 r, F4 g, F4 b) : r(r), g(g), b(b)
     {
-        ret ColRgbN(r - col.r, g - col.g, b - col.b);
     }
-    dfa ColRgbN operator*(cx ColRgbN& col) cx
+    dfa constexpr ColRgbN(cx ColRgbN& other) : r(other.r), g(other.g), b(other.b)
     {
-        ret ColRgbN(r * col.r, g * col.g, b * col.b);
     }
-    dfa ColRgbN operator/(cx ColRgbN& col) cx
+    dfa constexpr ColRgbN(ColRgbN&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
     {
-        ret ColRgbN(r / col.r, g / col.g, b / col.b);
     }
-    dfa ColRgbN operator+(F4 val) cx
-    {
-        ret ColRgbN(r + val, g + val, b + val);
-    }
-    dfa ColRgbN operator-(F4 val) cx
-    {
-        ret ColRgbN(r - val, g - val, b - val);
-    }
-    dfa ColRgbN operator*(F4 val) cx
-    {
-        ret ColRgbN(r * val, g * val, b * val);
-    }
-    dfa ColRgbN operator/(F4 val) cx
-    {
-        ret ColRgbN(r / val, g / val, b / val);
-    }
-    dfa ColRgbN& operator+=(cx ColRgbN& col)
-    {
-        r += col.r;
-        g += col.g;
-        b += col.b;
-        ret *tx;
-    }
-    dfa ColRgbN& operator-=(cx ColRgbN& col)
-    {
-        r -= col.r;
-        g -= col.g;
-        b -= col.b;
-        ret *tx;
-    }
-    dfa ColRgbN& operator*=(cx ColRgbN& col)
-    {
-        r *= col.r;
-        g *= col.g;
-        b *= col.b;
-        ret *tx;
-    }
-    dfa ColRgbN& operator/=(cx ColRgbN& col)
-    {
-        r /= col.r;
-        g /= col.g;
-        b /= col.b;
-        ret *tx;
-    }
-    dfa ColRgbN& operator+=(F4 val)
-    {
-        r += val;
-        g += val;
-        b += val;
-        ret *tx;
-    }
-    dfa ColRgbN& operator-=(F4 val)
-    {
-        r -= val;
-        g -= val;
-        b -= val;
-        ret *tx;
-    }
-    dfa ColRgbN& operator*=(F4 val)
-    {
-        r *= val;
-        g *= val;
-        b *= val;
-        ret *tx;
-    }
-    dfa ColRgbN& operator/=(F4 val)
-    {
-        r /= val;
-        g /= val;
-        b /= val;
-        ret *tx;
-    }
+    dfa ~ColRgbN() = default;
 
-    dfa ColRgbN& Set(cx ColRgb& rgb)
+    dfa ColRgbN& operator=(cx ColRgbN& other)
     {
-        r = F4(rgb.r) / 255.0f;
-        g = F4(rgb.g) / 255.0f;
-        b = F4(rgb.b) / 255.0f;
+        r = other.r;
+        g = other.g;
+        b = other.b;
         ret *tx;
     }
-
-    dfa ColRgbN()
+    dfa ColRgbN& operator=(ColRgbN&& other) noex
     {
+        r = move(other.r);
+        g = move(other.g);
+        b = move(other.b);
+        ret *tx;
     }
-    dfa ColRgbN(F4 r, F4 g, F4 b) : r(r), g(g), b(b)
+    dfa constexpr BO operator==(cx ColRgbN& other) cx
     {
+        ret r == other.r && g == other.g && b == other.b;
     }
-    dfa ColRgbN(cx ColRgb& rgb)
+    dfa constexpr BO operator!=(cx ColRgbN& other) cx
     {
-        tx->Set(rgb);
+        ret r != other.r || g != other.g || b != other.b;
+    }
+    dfa constexpr ColRgbN operator+(cx ColRgbN& other) cx
+    {
+        ret ColRgbN(r + other.r, g + other.g, b + other.b);
+    }
+    dfa constexpr ColRgbN operator-(cx ColRgbN& other) cx
+    {
+        ret ColRgbN(r - other.r, g - other.g, b - other.b);
+    }
+    dfa constexpr ColRgbN operator*(F4 scalar) cx
+    {
+        ret ColRgbN(r * scalar, g * scalar, b * scalar);
+    }
+    dfa constexpr ColRgbN operator/(F4 scalar) cx
+    {
+        ret ColRgbN(r / scalar, g / scalar, b / scalar);
+    }
+    dfa constexpr ColRgbN operator-() cx
+    {
+        ret ColRgbN(-r, -g, -b);
+    }
+    dfa ColRgbN& operator+=(cx ColRgbN& other)
+    {
+        r += other.r;
+        g += other.g;
+        b += other.b;
+        ret *tx;
+    }
+    dfa ColRgbN& operator-=(cx ColRgbN& other)
+    {
+        r -= other.r;
+        g -= other.g;
+        b -= other.b;
+        ret *tx;
+    }
+    dfa ColRgbN& operator*=(F4 scalar)
+    {
+        r *= scalar;
+        g *= scalar;
+        b *= scalar;
+        ret *tx;
+    }
+    dfa ColRgbN& operator/=(F4 scalar)
+    {
+        r /= scalar;
+        g /= scalar;
+        b /= scalar;
+        ret *tx;
     }
 };
 struct ColRgba
@@ -236,117 +201,201 @@ struct ColRgba
         U4 val;
     };
 
-    dfa ColRgba operator+(cx ColRgba& col) cx
+    dfa constexpr ColRgba() : r(), g(), b(), a()
     {
-        ret ColRgba(r + col.r, g + col.g, b + col.b, a + col.a);
     }
-    dfa ColRgba operator-(cx ColRgba& col) cx
+    dfa constexpr ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
     {
-        ret ColRgba(r - col.r, g - col.g, b - col.b, a - col.a);
     }
-    dfa ColRgba operator*(cx ColRgba& col) cx
+    dfa constexpr ColRgba(cx ColRgba& other) : val(other.val)
     {
-        ret ColRgba(r * col.r, g * col.g, b * col.b, a * col.a);
     }
-    dfa ColRgba operator/(cx ColRgba& col) cx
+    dfa constexpr ColRgba(ColRgba&& other) noex : val(move(other.val))
     {
-        ret ColRgba(r / col.r, g / col.g, b / col.b, a / col.a);
     }
-    dfa ColRgba operator+(U1 val) cx
+    dfa ~ColRgba() = default;
+
+    dfa ColRgba& operator=(cx ColRgba& other)
     {
-        ret ColRgba(r + val, g + val, b + val, a + val);
-    }
-    dfa ColRgba operator-(U1 val) cx
-    {
-        ret ColRgba(r - val, g - val, b - val, a - val);
-    }
-    dfa ColRgba operator*(F4 val) cx
-    {
-        ret ColRgba(U1(r * val), U1(g * val), U1(b * val), U1(a * val));
-    }
-    dfa ColRgba operator/(F4 val) cx
-    {
-        ret ColRgba(U1(r / val), U1(g / val), U1(b / val), U1(a / val));
-    }
-    dfa ColRgba& operator+=(cx ColRgba& col)
-    {
-        r += col.r;
-        g += col.g;
-        b += col.b;
-        a += col.a;
+        val = other.val;
         ret *tx;
     }
-    dfa ColRgba& operator-=(cx ColRgba& col)
+    dfa ColRgba& operator=(ColRgba&& other) noex
     {
-        r -= col.r;
-        g -= col.g;
-        b -= col.b;
-        a -= col.a;
+        val = move(other.val);
         ret *tx;
     }
-    dfa ColRgba& operator*=(cx ColRgba& col)
+    dfa constexpr BO operator==(cx ColRgba& other) cx
     {
-        r *= col.r;
-        g *= col.g;
-        b *= col.b;
-        a *= col.a;
+        ret val == other.val;
+    }
+    dfa constexpr BO operator!=(cx ColRgba& other) cx
+    {
+        ret val != other.val;
+    }
+    dfa constexpr ColRgba operator+(cx ColRgba& other) cx
+    {
+        ret ColRgba(r + other.r, g + other.g, b + other.b, a + other.a);
+    }
+    dfa constexpr ColRgba operator-(cx ColRgba& other) cx
+    {
+        ret ColRgba(r - other.r, g - other.g, b - other.b, a - other.a);
+    }
+    dfa constexpr ColRgba operator*(F4 scalar) cx
+    {
+        ret ColRgba(r * scalar, g * scalar, b * scalar, a * scalar);
+    }
+    dfa constexpr ColRgba operator/(F4 scalar) cx
+    {
+        ret ColRgba(r / scalar, g / scalar, b / scalar, a / scalar);
+    }
+    dfa constexpr ColRgba operator-() cx
+    {
+        ret ColRgba(-r, -g, -b, -a);
+    }
+    dfa ColRgba& operator+=(cx ColRgba& other)
+    {
+        r += other.r;
+        g += other.g;
+        b += other.b;
+        a += other.a;
         ret *tx;
     }
-    dfa ColRgba& operator/=(cx ColRgba& col)
+    dfa ColRgba& operator-=(cx ColRgba& other)
     {
-        r /= col.r;
-        g /= col.g;
-        b /= col.b;
-        a /= col.a;
+        r -= other.r;
+        g -= other.g;
+        b -= other.b;
+        a -= other.a;
         ret *tx;
     }
-    dfa ColRgba& operator+=(U1 val)
+    dfa ColRgba& operator*=(F4 scalar)
     {
-        r += val;
-        g += val;
-        b += val;
-        a += val;
+        r *= scalar;
+        g *= scalar;
+        b *= scalar;
+        a *= scalar;
         ret *tx;
     }
-    dfa ColRgba& operator-=(U1 val)
+    dfa ColRgba& operator/=(F4 scalar)
     {
-        r -= val;
-        g -= val;
-        b -= val;
-        a -= val;
+        r /= scalar;
+        g /= scalar;
+        b /= scalar;
+        a /= scalar;
         ret *tx;
     }
-    dfa ColRgba& operator*=(U1 val)
+};
+struct ColVN
+{
+    F4 v; // range: 0.0 - 1.0
+
+    dfa constexpr ColVN() : v()
     {
-        r *= val;
-        g *= val;
-        b *= val;
-        a *= val;
+    }
+    dfa constexpr ColVN(F4 v) : v(v)
+    {
+    }
+    dfa constexpr ColVN(cx ColVN& other) : v(other.v)
+    {
+    }
+    dfa constexpr ColVN(ColVN&& other) noex : v(move(other.v))
+    {
+    }
+    dfa ~ColVN() = default;
+
+    dfa ColVN& operator=(cx ColVN& other)
+    {
+        v = other.v;
         ret *tx;
     }
-    dfa ColRgba& operator/=(U1 val)
+    dfa ColVN& operator=(ColVN&& other) noex
     {
-        r /= val;
-        g /= val;
-        b /= val;
-        a /= val;
+        v = move(other.v);
+        ret *tx;
+    }
+    dfa constexpr BO operator==(cx ColVN& other) cx
+    {
+        ret v == other.v;
+    }
+    dfa constexpr BO operator!=(cx ColVN& other) cx
+    {
+        ret v != other.v;
+    }
+    dfa constexpr ColVN operator+(cx ColVN& other) cx
+    {
+        ret ColVN(v + other.v);
+    }
+    dfa constexpr ColVN operator-(cx ColVN& other) cx
+    {
+        ret ColVN(v - other.v);
+    }
+    dfa constexpr ColVN operator*(F4 scalar) cx
+    {
+        ret ColVN(v * scalar);
+    }
+    dfa constexpr ColVN operator/(F4 scalar) cx
+    {
+        ret ColVN(v / scalar);
+    }
+    dfa constexpr ColVN operator-() cx
+    {
+        ret ColVN(-v);
+    }
+    dfa ColVN& operator+=(cx ColVN& other)
+    {
+        v += other.v;
+        ret *tx;
+    }
+    dfa ColVN& operator-=(cx ColVN& other)
+    {
+        v -= other.v;
+        ret *tx;
+    }
+    dfa ColVN& operator*=(F4 scalar)
+    {
+        v *= scalar;
+        ret *tx;
+    }
+    dfa ColVN& operator/=(F4 scalar)
+    {
+        v /= scalar;
         ret *tx;
     }
 
-    dfa ColRgba& operator=(cx ColRgba& col)
+    dfa constexpr BO operator<(cx ColVN& other) cx
     {
-        val = col.val;
+        ret v < other.v;
+    }
+    dfa constexpr BO operator>(cx ColVN& other) cx
+    {
+        ret v > other.v;
+    }
+    dfa constexpr BO operator<=(cx ColVN& other) cx
+    {
+        ret v <= other.v;
+    }
+    dfa constexpr BO operator>=(cx ColVN& other) cx
+    {
+        ret v >= other.v;
+    }
+    dfa constexpr ColVN operator*(cx ColVN& other) cx
+    {
+        ret ColVN(v * other.v);
+    }
+    dfa constexpr ColVN operator/(cx ColVN& other) cx
+    {
+        ret ColVN(v / other.v);
+    }
+    dfa ColVN& operator*=(cx ColVN& other)
+    {
+        v *= other.v;
         ret *tx;
     }
-
-    dfa ColRgba()
+    dfa ColVN& operator/=(cx ColVN& other)
     {
-    }
-    dfa ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
-    {
-    }
-    dfa ColRgba(U4 val) : val(val)
-    {
+        v /= other.v;
+        ret *tx;
     }
 };
 struct ColHsvN
@@ -355,100 +404,89 @@ struct ColHsvN
     F4 s; // range: 0.0 - 1.0
     F4 v; // range: 0.0 - 1.0
 
-    dfa ColHsvN operator+(cx ColHsvN& col) cx
+    dfa constexpr ColHsvN() : h(), s(), v()
     {
-        ret ColHsvN(h + col.h, s + col.s, v + col.v);
     }
-    dfa ColHsvN operator-(cx ColHsvN& col) cx
+    dfa constexpr ColHsvN(F4 h, F4 s, F4 v) : h(h), s(s), v(v)
     {
-        ret ColHsvN(h - col.h, s - col.s, v - col.v);
     }
-    dfa ColHsvN operator*(cx ColHsvN& col) cx
+    dfa constexpr ColHsvN(cx ColHsvN& other) : h(other.h), s(other.s), v(other.v)
     {
-        ret ColHsvN(h * col.h, s * col.s, v * col.v);
     }
-    dfa ColHsvN operator/(cx ColHsvN& col) cx
+    dfa constexpr ColHsvN(ColHsvN&& other) noex : h(move(other.h)), s(move(other.s)), v(move(other.v))
     {
-        ret ColHsvN(h / col.h, s / col.s, v / col.v);
     }
-    dfa ColHsvN operator+(F4 val) cx
-    {
-        ret ColHsvN(h + val, s + val, v + val);
-    }
-    dfa ColHsvN operator-(F4 val) cx
-    {
-        ret ColHsvN(h - val, s - val, v - val);
-    }
-    dfa ColHsvN operator*(F4 val) cx
-    {
-        ret ColHsvN(h * val, s * val, v * val);
-    }
-    dfa ColHsvN operator/(F4 val) cx
-    {
-        ret ColHsvN(h / val, s / val, v / val);
-    }
-    dfa ColHsvN& operator+=(cx ColHsvN& col)
-    {
-        h += col.h;
-        s += col.s;
-        v += col.v;
-        ret *tx;
-    }
-    dfa ColHsvN& operator-=(cx ColHsvN& col)
-    {
-        h -= col.h;
-        s -= col.s;
-        v -= col.v;
-        ret *tx;
-    }
-    dfa ColHsvN& operator*=(cx ColHsvN& col)
-    {
-        h *= col.h;
-        s *= col.s;
-        v *= col.v;
-        ret *tx;
-    }
-    dfa ColHsvN& operator/=(cx ColHsvN& col)
-    {
-        h /= col.h;
-        s /= col.s;
-        v /= col.v;
-        ret *tx;
-    }
-    dfa ColHsvN& operator+=(F4 val)
-    {
-        h += val;
-        s += val;
-        v += val;
-        ret *tx;
-    }
-    dfa ColHsvN& operator-=(F4 val)
-    {
-        h -= val;
-        s -= val;
-        v -= val;
-        ret *tx;
-    }
-    dfa ColHsvN& operator*=(F4 val)
-    {
-        h *= val;
-        s *= val;
-        v *= val;
-        ret *tx;
-    }
-    dfa ColHsvN& operator/=(F4 val)
-    {
-        h /= val;
-        s /= val;
-        v /= val;
-        ret *tx;
-    }
+    dfa ~ColHsvN() = default;
 
-    dfa ColHsvN()
+    dfa ColHsvN& operator=(cx ColHsvN& other)
     {
+        h = other.h;
+        s = other.s;
+        v = other.v;
+        ret *tx;
     }
-    dfa ColHsvN(F4 h, F4 s, F4 v) : h(h), s(s), v(v)
+    dfa ColHsvN& operator=(ColHsvN&& other) noex
     {
+        h = move(other.h);
+        s = move(other.s);
+        v = move(other.v);
+        ret *tx;
+    }
+    dfa constexpr BO operator==(cx ColHsvN& other) cx
+    {
+        ret h == other.h && s == other.s && v == other.v;
+    }
+    dfa constexpr BO operator!=(cx ColHsvN& other) cx
+    {
+        ret h != other.h || s != other.s || v != other.v;
+    }
+    dfa constexpr ColHsvN operator+(cx ColHsvN& other) cx
+    {
+        ret ColHsvN(h + other.h, s + other.s, v + other.v);
+    }
+    dfa constexpr ColHsvN operator-(cx ColHsvN& other) cx
+    {
+        ret ColHsvN(h - other.h, s - other.s, v - other.v);
+    }
+    dfa constexpr ColHsvN operator*(F4 scalar) cx
+    {
+        ret ColHsvN(h * scalar, s * scalar, v * scalar);
+    }
+    dfa constexpr ColHsvN operator/(F4 scalar) cx
+    {
+        ret ColHsvN(h / scalar, s / scalar, v / scalar);
+    }
+    dfa constexpr ColHsvN operator-() cx
+    {
+        ret ColHsvN(-h, -s, -v);
+    }
+    dfa ColHsvN& operator+=(cx ColHsvN& other)
+    {
+        h += other.h;
+        s += other.s;
+        v += other.v;
+        ret *tx;
+    }
+    dfa ColHsvN& operator-=(cx ColHsvN& other)
+    {
+        h -= other.h;
+        s -= other.s;
+        v -= other.v;
+        ret *tx;
+    }
+    dfa ColHsvN& operator*=(F4 scalar)
+    {
+        h *= scalar;
+        s *= scalar;
+        v *= scalar;
+        ret *tx;
+    }
+    dfa ColHsvN& operator/=(F4 scalar)
+    {
+        h /= scalar;
+        s /= scalar;
+        v /= scalar;
+        ret *tx;
     }
 };
 
@@ -473,183 +511,157 @@ tpl1 struct ColGrid
 };
 
 /// [convert color]
-dfa ColVN ColRgbNToVNLumi(cx ColRgbN& rgbN)
+tpl0 dfa NT ToType(ColVN& dst, cx ColRgbN& src)
 {
-    ret rgbN.r * 0.299f + rgbN.g * 0.587f + rgbN.b * 0.114f;
+    dst.v = src.r * 0.299f + src.g * 0.587f + src.b * 0.114f;
 }
-dfa ColVN ColRgbToVNLumi(cx ColRgb& rgb)
+tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgbN& src)
 {
-    ret ColRgbNToVNLumi(ColRgbN(rgb));
-}
-dfa NT ColRgbNToHsvN(ColHsvN& hsvN, cx ColRgbN& rgbN)
-{
-    cx AU max = Max(rgbN.r, rgbN.g, rgbN.b);
-    hsvN.v = max;
+    cx AU max = Max(src.r, src.g, src.b);
+    dst.v = max;
     if (max < 0.00001f)
     {
-        hsvN.h = 0.0f;
-        hsvN.s = 0.0f;
+        dst.h = 0.0f;
+        dst.s = 0.0f;
         ret;
     }
 
-    cx AU min = Min(rgbN.r, rgbN.g, rgbN.b);
+    cx AU min = Min(src.r, src.g, src.b);
     cx AU delta = max - min;
     if (delta < 0.00001f)
     {
-        hsvN.h = 0.0f;
-        hsvN.s = 0.0f;
+        dst.h = 0.0f;
+        dst.s = 0.0f;
         ret;
     }
-    hsvN.s = delta / max;
+    dst.s = delta / max;
 
-    if (rgbN.r >= max)
+    if (src.r >= max)
     {
-        hsvN.h = (rgbN.g - rgbN.b) / delta;
+        dst.h = (src.g - src.b) / delta;
     }
-    else if (rgbN.g >= max)
+    else if (src.g >= max)
     {
-        hsvN.h = (rgbN.b - rgbN.r) / delta + 2.0f;
+        dst.h = (src.b - src.r) / delta + 2.0f;
     }
     else
     {
-        hsvN.h = (rgbN.r - rgbN.g) / delta + 4.0f;
+        dst.h = (src.r - src.g) / delta + 4.0f;
     }
-    hsvN.h /= 6.0f;
-    if (hsvN.h < 0.0f)
+    dst.h /= 6.0f;
+    if (dst.h < 0.0f)
     {
-        hsvN.h += 1.0f;
+        dst.h += 1.0f;
     }
 }
-dfa NT ColRgbToHsvN(ColHsvN& hsvN, cx ColRgb& rgb)
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColHsvN& src)
 {
-    ColRgbNToHsvN(hsvN, ColRgbN(rgb));
-}
-dfa NT ColHsvNToRgbN(ColRgbN& rgbN, cx ColHsvN& hsvN)
-{
-    if (hsvN.s < 0.00001f)
+    if (src.s < 0.00001f)
     {
-        rgbN.r = hsvN.v;
-        rgbN.g = hsvN.v;
-        rgbN.b = hsvN.v;
+        dst.r = src.v;
+        dst.g = src.v;
+        dst.b = src.v;
         ret;
     }
 
-    AU h = hsvN.h * 6.0f;
+    AU h = src.h * 6.0f;
     if (h >= 6.0f)
     {
         h = 0.0f;
     }
     cx AU i = h;
     cx AU f = h - i;
-    cx AU p = hsvN.v * (1.0f - hsvN.s);
-    cx AU q = hsvN.v * (1.0f - hsvN.s * f);
-    cx AU t = hsvN.v * (1.0f - hsvN.s * (1.0f - f));
+    cx AU p = src.v * (1.0f - src.s);
+    cx AU q = src.v * (1.0f - src.s * f);
+    cx AU t = src.v * (1.0f - src.s * (1.0f - f));
 
     switch (SI(i))
     {
     case 0:
-        rgbN.r = hsvN.v;
-        rgbN.g = t;
-        rgbN.b = p;
+        dst.r = src.v;
+        dst.g = t;
+        dst.b = p;
         break;
     case 1:
-        rgbN.r = q;
-        rgbN.g = hsvN.v;
-        rgbN.b = p;
+        dst.r = q;
+        dst.g = src.v;
+        dst.b = p;
         break;
     case 2:
-        rgbN.r = p;
-        rgbN.g = hsvN.v;
-        rgbN.b = t;
+        dst.r = p;
+        dst.g = src.v;
+        dst.b = t;
         break;
     case 3:
-        rgbN.r = p;
-        rgbN.g = q;
-        rgbN.b = hsvN.v;
+        dst.r = p;
+        dst.g = q;
+        dst.b = src.v;
         break;
     case 4:
-        rgbN.r = t;
-        rgbN.g = p;
-        rgbN.b = hsvN.v;
+        dst.r = t;
+        dst.g = p;
+        dst.b = src.v;
         break;
     case 5:
-        rgbN.r = hsvN.v;
-        rgbN.g = p;
-        rgbN.b = q;
+        dst.r = src.v;
+        dst.g = p;
+        dst.b = q;
         break;
     default:
-        rgbN.r = 0.0f;
-        rgbN.g = 0.0f;
-        rgbN.b = 0.0f;
+        dst.r = 0.0f;
+        dst.g = 0.0f;
+        dst.b = 0.0f;
         break;
     }
 }
-dfa NT ColVNToRgbN(ColRgbN& rgbN, cx ColVN& vN)
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColVN& src)
 {
-    rgbN.r = vN;
-    rgbN.g = vN;
-    rgbN.b = vN;
+    dst.r = src.v;
+    dst.g = src.v;
+    dst.b = src.v;
+}
+tpl0 dfa NT ToType(ColRgb& dst, cx ColRgb& src)
+{
+    dst = move(src);
+}
+tpl0 dfa NT ToType(ColRgb& dst, cx ColRgbN& src)
+{
+    dst.r = U1(src.r * 255.0f);
+    dst.g = U1(src.g * 255.0f);
+    dst.b = U1(src.b * 255.0f);
+}
+tpl0 dfa NT ToType(ColRgb& dst, cx ColVN& src)
+{
+    dst.r = U1(src.v * 255.0f);
+    dst.g = U1(src.v * 255.0f);
+    dst.b = U1(src.v * 255.0f);
+}
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgb& src)
+{
+    dst.r = F4(src.r) / 255.0f;
+    dst.g = F4(src.g) / 255.0f;
+    dst.b = F4(src.b) / 255.0f;
+}
+tpl0 dfa NT ToType(ColVN& dst, cx ColRgb& src)
+{
+    dst.v = (F4(src.r) * 0.299f + F4(src.g) * 0.587f + F4(src.b) * 0.114f) / 255.0f;
+}
+tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgb& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
 }
 
 /// [convert color grid]
-dfa NT ColGridRgbToRgbN(ColGrid<ColRgbN>& rgbN, cx ColGrid<ColRgb>& rgb)
+tpl2 dfa NT ColGridToType(ColGrid<T1>& dst, cx ColGrid<T2>& src)
 {
-    rgbN.size = rgb.size;
-    rgbN.pixels.resize(rgb.pixels.size());
-    cx AU iEnd = SI(rgb.pixels.size());
+    dst.size = src.size;
+    dst.pixels.resize(src.pixels.size());
+    cx AU iEnd = SI(src.pixels.size());
     ite (i, i < iEnd)
     {
-        rgbN.pixels[i].Set(rgb.pixels[i]);
-    }
-}
-dfa NT ColGridRgbNToVNLumi(ColGrid<ColVN>& vN, cx ColGrid<ColRgbN>& rgbN)
-{
-    vN.size = rgbN.size;
-    vN.pixels.resize(rgbN.pixels.size());
-    cx AU iEnd = SI(rgbN.pixels.size());
-    ite (i, i < iEnd)
-    {
-        vN.pixels[i] = ColRgbNToVNLumi(rgbN.pixels[i]);
-    }
-}
-dfa NT ColGridRgbToVNLumi(ColGrid<ColVN>& vN, cx ColGrid<ColRgb>& rgb)
-{
-    vN.size = rgb.size;
-    vN.pixels.resize(rgb.pixels.size());
-    cx AU iEnd = SI(rgb.pixels.size());
-    ite (i, i < iEnd)
-    {
-        vN.pixels[i] = ColRgbToVNLumi(rgb.pixels[i]);
-    }
-}
-dfa NT ColGridRgbNToHsvN(ColGrid<ColHsvN>& hsvN, cx ColGrid<ColRgbN>& rgbN)
-{
-    hsvN.size = rgbN.size;
-    hsvN.pixels.resize(rgbN.pixels.size());
-    cx AU iEnd = SI(rgbN.pixels.size());
-    ite (i, i < iEnd)
-    {
-        ColRgbNToHsvN(hsvN.pixels[i], rgbN.pixels[i]);
-    }
-}
-dfa NT ColGridRgbToHsvN(ColGrid<ColHsvN>& hsvN, cx ColGrid<ColRgb>& rgb)
-{
-    hsvN.size = rgb.size;
-    hsvN.pixels.resize(rgb.pixels.size());
-    cx AU iEnd = SI(rgb.pixels.size());
-    ite (i, i < iEnd)
-    {
-        ColRgbToHsvN(hsvN.pixels[i], rgb.pixels[i]);
-    }
-}
-dfa NT ColGridVNToRgbN(ColGrid<ColRgbN>& rgbN, cx ColGrid<ColVN>& vN)
-{
-    rgbN.size = vN.size;
-    rgbN.pixels.resize(vN.pixels.size());
-    cx AU iEnd = SI(vN.pixels.size());
-    ite (i, i < iEnd)
-    {
-        ColVNToRgbN(rgbN.pixels[i], vN.pixels[i]);
+        ToType<T1, T2>(dst.pixels[i], src.pixels[i]);
     }
 }
 
@@ -726,20 +738,20 @@ dfa ER ColGridHsvNCmp(F4& resultDiff, cx ColGrid<ColHsvN>& subGrid, cx ColGrid<C
         }
         else
         {
-            cx AU& maskVal = info.subGridMask->pixels[i];
+            cx AU& maskVal = info.subGridMask->pixels[i].v;
             diffSum += diff * info.wCol * maskVal;
             diffCnt += maskVal;
         }
         if (doEdgesProc)
         {
-            cx AU diffEdge = Diff(info.subGridEdges->pixels[i], info.mainGridEdges->pixels[iMain]);
+            cx AU diffEdge = Diff(info.subGridEdges->pixels[i].v, info.mainGridEdges->pixels[iMain].v);
             if (info.subGridMask == NUL)
             {
                 diffSum += diffEdge * info.wEdges;
             }
             else
             {
-                cx AU& maskVal = info.subGridMask->pixels[i];
+                cx AU& maskVal = info.subGridMask->pixels[i].v;
                 diffSum += diffEdge * info.wEdges * maskVal;
             }
         }
@@ -764,32 +776,32 @@ dfa NT ColGridEdgesSobel1(ColGrid<ColVN>& out, cx ColGrid<ColVN>& in)
     {
         for (SI x = 1; x < w - 1; ++x)
         {
-            cx AU p00 = in.pixels[(y - 1) * w + (x - 1)];
-            cx AU p01 = in.pixels[(y - 1) * w + x];
-            cx AU p02 = in.pixels[(y - 1) * w + (x + 1)];
-            cx AU p10 = in.pixels[y * w + (x - 1)];
-            cx AU p12 = in.pixels[y * w + (x + 1)];
-            cx AU p20 = in.pixels[(y + 1) * w + (x - 1)];
-            cx AU p21 = in.pixels[(y + 1) * w + x];
-            cx AU p22 = in.pixels[(y + 1) * w + (x + 1)];
+            cx AU p00 = in.pixels[(y - 1) * w + (x - 1)].v;
+            cx AU p01 = in.pixels[(y - 1) * w + x].v;
+            cx AU p02 = in.pixels[(y - 1) * w + (x + 1)].v;
+            cx AU p10 = in.pixels[y * w + (x - 1)].v;
+            cx AU p12 = in.pixels[y * w + (x + 1)].v;
+            cx AU p20 = in.pixels[(y + 1) * w + (x - 1)].v;
+            cx AU p21 = in.pixels[(y + 1) * w + x].v;
+            cx AU p22 = in.pixels[(y + 1) * w + (x + 1)].v;
 
             cx AU gX = (-p00) + p02 + (-2.0f * p10) + (2.0f * p12) + (-p20) + p22;
             cx AU gY = (-p00) + (-2.0f * p01) + (-p02) + p20 + (2.0f * p21) + p22;
 
-            out.pixels[y * w + x] = Dist0(gX, gY);
+            out.pixels[y * w + x].v = Dist0Fast(gX, gY);
         }
     }
 
     // set borders to zero
     for (SI x = 0; x < w; ++x)
     {
-        out.pixels[x] = 0;
-        out.pixels[(h - 1) * w + x] = 0;
+        out.pixels[x].v = 0;
+        out.pixels[(h - 1) * w + x].v = 0;
     }
     for (SI y = 0; y < h; ++y)
     {
-        out.pixels[y * w] = 0;
-        out.pixels[y * w + (w - 1)] = 0;
+        out.pixels[y * w].v = 0;
+        out.pixels[y * w + (w - 1)].v = 0;
     }
 
     NormalizeMax<ColVN>(out.pixels.data(), out.pixels.size());
