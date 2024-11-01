@@ -17,52 +17,50 @@ UniCPP is an experimental framework maintained by KaiDamu, a compilation of usef
 - **Lightweight** - The code aims to be short and concise
 
 ## Features
-- Easy main function args
+- AVL tree implementation
 - Character processing
 - Clipboard read/write
 - Color and color grid processing
-- Console mixed colored write & input history
-- Primitive types functions (Line, Rect, etc.)
-- Mouse cursor get/set
-- Detailed debug assert
-- AVL tree implementation
 - Config file reading
+- Console mixed colored write & input history
+- Deque abstraction
+- Detailed debug assert
 - Directory/folder operations
-- System break functions
-- Simple error handling frame
+- Easy data pipes
+- Easy main function args
+- Easy protobuf
 - Event object for synchronization
-- Many helpful file functions
-- Memory-only file support
-- Quick primitives drawing on CPU
-- Screen overlay with supported transparency
+- Fast MD5 hashing
+- Fast type conversions (string to int, etc.)
 - Keyboard input reading and emulating
 - Keywords which simplify common code
 - Main function frame for easy init/free/debug
-- Many helpful math functions
-- Fast MD5 hashing
+- Many functions for: files, math, string, thread, process, window
 - Memory operations and memory pool
+- Memory-only file support
+- Mouse cursor get/set
 - Network and socket tools
-- Many helpful file path functions
-- Easy data pipes
-- Many helpful system process functions
-- Easy protobuf
-- Deque abstraction
-- Optimal random number generator
-- System registry get/set
-- Screen tools
 - Non-recursive quick sort
-- Many helpful string functions
+- Optimal random number generator
+- Primitive types functions (Line, Rect, etc.)
 - Quick performance test
-- Many helpful system thread functions
+- Quick primitives drawing on CPU
+- Screen overlay with supported transparency
+- Screen tools
+- Simple error handling frame
+- System registry get/set
 - Thread task manager for multithreading
 - Time tools and timer
-- Variable types which simplify common code
-- Fast type conversions (string to int, etc.)
 - Values which simplify common code
+- Variable types which simplify common code
 - Vector tools
 - Virtual file system (several files in one file)
-- Many helpful window functions
 - And more / more to come...
 
 ## Links
 - [Trailer](https://www.youtube.com/watch?v=iklTSxr35Qc) (symbolism)
+
+## Disclaimer
+This framework is released as an experimental project and is provided on an "AS IS" basis without any warranties.
+By using this framework, you acknowledge and agree to the terms and limitations outlined in the full disclaimer.
+For the complete terms and usage guidelines, please refer to file "DISCLAIMER.md".
