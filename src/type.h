@@ -78,5 +78,5 @@ tpl2 dfa T1 ToType(cx T2& src)
 {
     T1 dst;
     ToType<T1, T2>(dst, src);
-    ret move(dst);
+    ret dst;
 }
