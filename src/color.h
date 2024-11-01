@@ -207,6 +207,9 @@ struct ColRgba
     dfa constexpr ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
     {
     }
+    dfa constexpr ColRgba(U4 val) : val(val)
+    {
+    }
     dfa constexpr ColRgba(cx ColRgba& other) : val(other.val)
     {
     }
@@ -805,4 +808,134 @@ dfa NT ColGridEdgesSobel1(ColGrid<ColVN>& out, cx ColGrid<ColVN>& in)
     }
 
     NormalizeMax<ColVN>(out.pixels.data(), out.pixels.size());
+}
+
+/// [save/load color grid]
+tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
+{
+    cx AU pathExt = PathExtPtr(path);
+    ifu (StrCmp(pathExt, L"bmp") != 0)
+    {
+        rete(ERR_NO_SUPPORT);
+    }
+
+    FileMem file;
+    ife (file.OpenWrite(path))
+    {
+        rete(ERR_FILE);
+    }
+
+    cx AU rowSize = AlignBit(colGrid.size.w * siz(ColRgb), siz(U4));
+    cx AU imgSize = rowSize * colGrid.size.h;
+
+    BITMAPINFOHEADER infoHdr = {};
+    infoHdr.biSize = U4(siz(infoHdr));
+    infoHdr.biWidth = S4(colGrid.size.w);
+    infoHdr.biHeight = S4(colGrid.size.h);
+    infoHdr.biPlanes = 1;
+    infoHdr.biBitCount = sizb(ColRgb);
+    infoHdr.biCompression = BI_RGB;
+    infoHdr.biSizeImage = U4(imgSize);
+
+    BITMAPFILEHEADER fileHdr = {};
+    fileHdr.bfType = 0x4D42;
+    fileHdr.bfOffBits = U4(siz(fileHdr) + siz(infoHdr));
+    fileHdr.bfSize = fileHdr.bfOffBits + U4(imgSize);
+
+    ife (file.Write(&fileHdr, siz(fileHdr)))
+        retep;
+    ife (file.Write(&infoHdr, siz(infoHdr)))
+        retep;
+
+    vector<U1> rowDat(rowSize);
+    for (SI y = colGrid.size.h - 1; y >= 0; --y)
+    {
+        AU curIn = colGrid.pixels.data() + (y * colGrid.size.w);
+        AU curOut = rowDat.data();
+
+        ite (x, x < colGrid.size.w)
+        {
+            cx AU colRgb = ToType<ColRgb, T1>(*curIn++);
+            *curOut++ = colRgb.b;
+            *curOut++ = colRgb.g;
+            *curOut++ = colRgb.r;
+        }
+
+        cx AU padSize = rowSize - colGrid.size.w * siz(ColRgb);
+        MemSet(curOut, 0, padSize);
+
+        ife (file.Write(rowDat.data(), rowDat.size()))
+            retep;
+    }
+
+    ife (file.Close())
+    {
+        rete(ERR_FILE);
+    }
+    rets;
+}
+tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
+{
+    cx AU pathExt = PathExtPtr(path);
+    ifu (StrCmp(pathExt, L"bmp") != 0)
+    {
+        rete(ERR_NO_SUPPORT);
+    }
+
+    FileMem file;
+    ife (file.OpenRead(path))
+    {
+        rete(ERR_FILE);
+    }
+
+    BITMAPFILEHEADER fileHdr = {};
+    ife (file.Read(&fileHdr, siz(fileHdr)))
+        retep;
+
+    ifu (fileHdr.bfType != 0x4D42)
+    {
+        rete(ERR_FILE);
+    }
+
+    BITMAPINFOHEADER infoHdr = {};
+    ife (file.Read(&infoHdr, siz(infoHdr)))
+        retep;
+
+    ifu (infoHdr.biPlanes != 1 || infoHdr.biBitCount != sizb(ColRgb) || infoHdr.biCompression != BI_RGB)
+    {
+        rete(ERR_NO_SUPPORT);
+    }
+    cx AU imgW = SI(infoHdr.biWidth);
+    cx AU imgH = SI(Abs(infoHdr.biHeight));
+    cx AU isTopDown = (infoHdr.biHeight < 0);
+    cx AU rowSize = AlignBit(imgW * siz(ColRgb), siz(U4));
+
+    colGrid.size.w = imgW;
+    colGrid.size.h = imgH;
+    colGrid.pixels.resize(imgW * imgH);
+
+    ife (file.CurSet(SI(fileHdr.bfOffBits)))
+        retep;
+
+    vector<U1> rowDat(rowSize);
+    ite (i, i < imgH)
+    {
+        ife (file.Read(rowDat.data(), rowDat.size()))
+            retep;
+
+        AU curIn = rowDat.data();
+        AU curOut = colGrid.pixels.data() + ((isTopDown ? i : (imgH - 1 - i)) * imgW);
+
+        ite (x, x < imgW)
+        {
+            ToType<T1, ColRgb>(*curOut++, ColRgb(*(curIn + 2), *(curIn + 1), *curIn));
+            curIn += siz(ColRgb);
+        }
+    }
+
+    ife (file.Close())
+    {
+        rete(ERR_FILE);
+    }
+    rets;
 }
