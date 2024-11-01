@@ -252,7 +252,7 @@ dfa ER ConCreate(cx CH* title = NUL)
     StrCpy(font.FaceName, L"Lucida Console");
     SetCurrentConsoleFontEx(hdl, NO, &font);
     //
-    ife (WinFocusSet(HD(GetConsoleWindow())))
+    ife (Win(Win::SelType::CON).Focus())
         retep;
     rets;
 }
