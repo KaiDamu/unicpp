@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <span>
 #include <array>
+#include <memory>
 
 using std::move;
 
