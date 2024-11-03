@@ -21,3 +21,20 @@ dfa ER ScnSizeGet(Size2<SI>& size)
     size.h = info.rcMonitor.bottom - info.rcMonitor.top;
     rets;
 }
+dfa F4 ScnDpiMulGet(BO doUpd = NO)
+{
+    static F4 dpiMul;
+    static BO doUpd_ = YES;
+
+    doUpd_ |= doUpd;
+    ifu (doUpd_)
+    {
+        doUpd_ = NO;
+        ife (ProcDpiAwareSet())
+            ret F4(0);
+        cx UINT dpi = GetDpiForSystem();
+        dpiMul = F4(dpi) / F4(96);
+    }
+
+    ret dpiMul;
+}

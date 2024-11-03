@@ -39,6 +39,11 @@ class Win
         TITLE_CLASS = 2,
         CON = 3,
     };
+    enum class CaptureMode : U1
+    {
+        GDI_WIN = 0,
+        GDI_SCN = 1,
+    };
 
   public:
     dfa HD Hdl() cx
@@ -106,6 +111,52 @@ class Win
             ret wstring(L"");
         ret wstring(str.data());
     }
+    dfa ER RectOuterGet(Rect2<SI>& rect)
+    {
+        ife (ProcDpiAwareSet())
+            retep;
+        RECT rect_;
+        ifu (GetWindowRect(m_hdl, &rect_) == 0)
+            rete(ERR_WIN);
+        rect.pos.x = SI(rect_.left);
+        rect.pos.y = SI(rect_.top);
+        rect.size.w = SI(rect_.right) - SI(rect_.left);
+        rect.size.h = SI(rect_.bottom) - SI(rect_.top);
+        rets;
+    }
+    dfa ER RectOuterSet(cx Rect2<SI>& rect)
+    {
+        ife (ProcDpiAwareSet())
+            retep;
+        cx AU doSetPos = (rect.pos.x != -1) && (rect.pos.y != -1);
+        cx AU doSetSize = (rect.size.w != -1) && (rect.size.h != -1);
+        if (doSetPos)
+        {
+            if (doSetSize)
+            {
+                ifu (MoveWindow(m_hdl, rect.pos.x, rect.pos.y, rect.size.w, rect.size.h, TRUE) == 0)
+                    rete(ERR_WIN);
+            }
+            else
+            {
+                ifu (SetWindowPos(m_hdl, NUL, rect.pos.x, rect.pos.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER) == 0)
+                    rete(ERR_WIN);
+            }
+        }
+        else
+        {
+            if (doSetSize)
+            {
+                ifu (SetWindowPos(m_hdl, NUL, 0, 0, rect.size.w, rect.size.h, SWP_NOMOVE | SWP_NOZORDER) == 0)
+                    rete(ERR_WIN);
+            }
+            else
+            {
+                rets;
+            }
+        }
+        rets;
+    }
     dfa ER RectInnerSizeGet(Size2<SI>& size)
     {
         ife (ProcDpiAwareSet())
@@ -121,33 +172,58 @@ class Win
     {
         ife (tx->RectInnerSizeGet(rect.size))
             retep;
-        POINT pt = {0, 0};
-        ifu (ClientToScreen(m_hdl, &pt) == 0)
-            rete(ERR_WIN);
-        rect.pos.x = SI(pt.x);
-        rect.pos.y = SI(pt.y);
+
+        // if (IsNearZero(FractionPart(ScnDpiMulGet())))
+        if (YES)
+        {
+            POINT pt = {0, 0};
+            ifu (ClientToScreen(m_hdl, &pt) == 0)
+                rete(ERR_WIN);
+            rect.pos.x = SI(pt.x);
+            rect.pos.y = SI(pt.y);
+        }
+        else
+        {
+            // we have to do it manually to avoid rounding errors
+
+            Rect2<SI> rectOuter;
+            ife (tx->RectOuterGet(rectOuter))
+                retep;
+
+            RECT rectOfs = {0, 0, rect.size.w, rect.size.h};
+            ifu (AdjustWindowRectEx(&rectOfs, GetWindowLongW(m_hdl, GWL_STYLE), FALSE, GetWindowLongW(m_hdl, GWL_EXSTYLE)) == 0)
+                rete(ERR_WIN);
+
+            Pos2<SI> posBase;
+            posBase.x = rectOuter.pos.x - SI(rectOfs.left);
+            posBase.y = rectOuter.pos.y - SI(rectOfs.top);
+
+            cx SI ofsEx = 0; // correct value varied between 0 and 6 while testing...
+
+            rect.pos.x = posBase.x + ofsEx;
+            rect.pos.y = posBase.y + ofsEx;
+        }
+
         rets;
     }
-    dfa ER RectOuterGet(Rect2<SI>& rect)
-    {
-        ife (ProcDpiAwareSet())
-            retep;
-        RECT rect_;
-        ifu (GetWindowRect(m_hdl, &rect_) == 0)
-            rete(ERR_WIN);
-        rect.pos.x = SI(rect_.left);
-        rect.pos.y = SI(rect_.top);
-        rect.size.w = SI(rect_.right) - SI(rect_.left);
-        rect.size.h = SI(rect_.bottom) - SI(rect_.top);
-        rets;
-    }
-    tpl1 dfa ER ColGridGet(ColGrid<T1>& colGrid)
+    tpl1 dfa ER ColGridGet(ColGrid<T1>& colGrid, CaptureMode captureMode = CaptureMode::GDI_WIN)
     {
         ifu (m_cache == NUL)
         {
             m_cache = std::make_unique<Cache>();
 
-            m_cache->curDC = GetWindowDC(m_hdl);
+            switch (captureMode)
+            {
+            case CaptureMode::GDI_WIN:
+                m_cache->curDC = GetWindowDC(m_hdl);
+                break;
+            case CaptureMode::GDI_SCN:
+                m_cache->curDC = GetDC(NUL);
+                break;
+            default:
+                m_cache->curDC = NUL;
+                break;
+            }
             ifu (m_cache->curDC == NUL)
                 rete(ERR_WIN);
 
@@ -157,17 +233,40 @@ class Win
         }
 
         Rect2<SI> rectInner;
-        ife (tx->RectInnerGet(rectInner))
-            retep;
+        switch (captureMode)
+        {
+        case CaptureMode::GDI_WIN:
+            ife (tx->RectInnerGet(rectInner))
+                retep;
+            break;
+        case CaptureMode::GDI_SCN:
+            ife (tx->RectInnerGet(rectInner))
+                retep;
+            break;
+        default:
+            rectInner = Rect2<SI>(0, 0, 0, 0);
+            break;
+        }
 
         ifu (rectInner.size != m_cache->size)
         {
             m_cache->size = rectInner.size;
 
             Rect2<SI> rectOuter;
-            ife (tx->RectOuterGet(rectOuter))
-                retep;
-            m_cache->ofs = rectInner.pos - rectOuter.pos;
+            switch (captureMode)
+            {
+            case CaptureMode::GDI_WIN:
+                ife (tx->RectOuterGet(rectOuter))
+                    retep;
+                m_cache->ofs = rectInner.pos - rectOuter.pos;
+                break;
+            case CaptureMode::GDI_SCN:
+                m_cache->ofs = rectInner.pos;
+                break;
+            default:
+                m_cache->ofs = Pos2<SI>(0, 0);
+                break;
+            }
 
             if (m_cache->bmp != NUL)
                 DeleteObject(m_cache->bmp);

@@ -47,6 +47,14 @@ tpl1 dfa T1 Sign(T1 val)
 {
     ret ((val < 0) ? -1 : 1);
 }
+tpl1 dfa T1 FractionPart(T1 val)
+{
+    ret val - T1(S8(val));
+}
+tpl1 dfa BO IsNearZero(T1 val)
+{
+    ret (Abs<T1>(val) < std::numeric_limits<T1>::epsilon());
+}
 tpl1 dfa T1 Pow2(T1 val)
 {
     ret val * val;
