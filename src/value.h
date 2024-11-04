@@ -58,6 +58,14 @@ constexpr SI SI_VAL_MAX = S8_VAL_MAX;
 constexpr SI SI_LEN_MAX = S8_LEN_MAX;
 #endif
 
+#ifdef PROG_THD_CNT_SINGLE
+constexpr BO IS_THD_SUPPORT = NO;
+#endif
+
+#ifdef PROG_THD_CNT_MULTI
+constexpr BO IS_THD_SUPPORT = YES;
+#endif
+
 tpl1 constexpr T1 Pi()
 {
     ret static_cast<T1>(3.14159265358979323846);

@@ -657,10 +657,6 @@ tpl1 dfa NT ColGridDrawUcppLogo(ColGrid<T1>& grid, cx Rect2<SI>& rect)
     }
 }
 
-#ifdef PROG_THD_CNT_SINGLE
-    #error "PROG_THD_CNT_SINGLE with UCPP_INCLUDE_GR is not supported!"
-#endif
-
 constexpr U1 SCN_DRAW_THD_CODE_ERR_NO = 0;
 constexpr U1 SCN_DRAW_THD_CODE_ERR_YES = 1;
 constexpr U1 SCN_DRAW_THD_CODE_WAIT = 2;

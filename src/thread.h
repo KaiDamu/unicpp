@@ -242,6 +242,8 @@ class Thd
     }
     dfa ER Start(LPTHREAD_START_ROUTINE fn, LPVOID param)
     {
+        if constexpr (!IS_THD_SUPPORT)
+            rete(ERR_NO_SUPPORT);
         ifu (tx->IsActive())
             rete(ERR_YES_ACTIVE);
         ife (tx->Close())

@@ -108,20 +108,14 @@ using std::wstring;
 #include "clipboard.h"
 #include "vfs.h"
 #include "input.h"
-#ifdef UCPP_INCLUDE_KEYB
-    #include "keyboard.h"
-#endif
+#include "keyboard.h"
 #include "mouse.h"
 #include "joystick.h"
 #include "vuser.h"
-#ifdef UCPP_INCLUDE_GR
-    #include "graphics.h"
-#endif
+#include "graphics.h"
 #include "opengl.h"
 #include "sound.h"
 #include "log.h"
-#ifdef UCPP_INCLUDE_DUMB
-    #include "dumb.h"
-#endif
+#include "dumb.h"
 
 #include "main.h"

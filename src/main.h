@@ -8,18 +8,10 @@ dfa ER MainInit()
     TimeResSet(1, 0, NO); // hint for performance, error not handled
     ife (_TimeMainInit())
         rete(ERR_TIME);
-#ifdef UCPP_INCLUDE_KEYB
-    ife (KeybInit())
-        retep;
-#endif
     rets;
 }
 dfa ER MainFree()
 {
-#ifdef UCPP_INCLUDE_KEYB
-    ife (KeybFree())
-        retep;
-#endif
     TimeResClr(); // hint for performance, error not handled
     rets;
 }
