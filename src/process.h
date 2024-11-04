@@ -75,8 +75,12 @@ dfa ER ProcDpiAwareSet()
     {
         typedef HRESULT(WINAPI * FnSetProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
         cx FnSetProcessDpiAwareness setProcessDpiAwareness = (FnSetProcessDpiAwareness)GetProcAddress(lib, "SetProcessDpiAwareness");
-        if (setProcessDpiAwareness && (setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE) == S_OK))
-            s_isSet = YES;
+        ifl (setProcessDpiAwareness)
+        {
+            cx AU result = setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+            ifl (result == S_OK || result == E_ACCESSDENIED) // E_ACCESSDENIED means the process is already DPI aware
+                s_isSet = YES;
+        }
     }
     else if ((lib = LoadLibraryW(L"user32.dll")))
     {

@@ -5,25 +5,70 @@ class Win
   private:
     struct Cache
     {
-        HWND winHdl;
-        HDC curDC;
-        HDC memDC;
-        HBITMAP bmp;
-        GA pixels;
-        Size2<SI> size;
-        Pos2<SI> ofs;
-
-        dfa Cache() : winHdl(NUL), curDC(NUL), memDC(NUL), bmp(NUL), pixels(NUL), size(0, 0), ofs(0, 0)
+        struct Gdi
         {
+            BO isValid;
+            HWND winHdl;
+            HDC curDC;
+            HDC memDC;
+            HBITMAP bmp;
+            GA pixels;
+            Size2<SI> size;
+            Pos2<SI> ofs;
+        };
+        struct Dxgi
+        {
+            BO isValid;
+            Microsoft::WRL::ComPtr<ID3D11Device> dev;
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> devCtx;
+            Microsoft::WRL::ComPtr<IDXGIOutputDuplication> outCpy;
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
+            Size2<SI> size;
+        };
+
+        Gdi gdi;
+        Dxgi dxgi;
+
+        dfa Cache()
+        {
+            gdi.isValid = NO;
+            gdi.winHdl = NUL;
+            gdi.curDC = NUL;
+            gdi.memDC = NUL;
+            gdi.bmp = NUL;
+            gdi.pixels = NUL;
+            gdi.size = Size2<SI>(0, 0);
+            gdi.ofs = Pos2<SI>(0, 0);
+
+            dxgi.isValid = NO;
+            dxgi.dev.Reset();
+            dxgi.devCtx.Reset();
+            dxgi.outCpy.Reset();
+            dxgi.tex.Reset();
+            dxgi.size = Size2<SI>(0, 0);
         }
         dfa ~Cache()
         {
-            ifu (bmp != NUL)
-                DeleteObject(bmp);
-            ifu (memDC != NUL)
-                DeleteDC(memDC);
-            ifu (curDC != NUL)
-                ReleaseDC(winHdl, curDC);
+            ifu (gdi.isValid)
+            {
+                if (gdi.bmp != NUL)
+                    DeleteObject(gdi.bmp);
+                if (gdi.memDC != NUL)
+                    DeleteDC(gdi.memDC);
+                if (gdi.curDC != NUL)
+                    ReleaseDC(gdi.winHdl, gdi.curDC);
+            }
+            ifu (dxgi.isValid)
+            {
+                if (dxgi.tex != NUL)
+                    dxgi.tex.Reset();
+                if (dxgi.outCpy != NUL)
+                    dxgi.outCpy.Reset();
+                if (dxgi.devCtx != NUL)
+                    dxgi.devCtx.Reset();
+                if (dxgi.dev != NUL)
+                    dxgi.dev.Reset();
+            }
         }
     };
 
@@ -43,6 +88,7 @@ class Win
     {
         GDI_WIN = 0,
         GDI_SCN = 1,
+        DXGI_SCN = 2,
     };
 
   public:
@@ -206,31 +252,51 @@ class Win
 
         rets;
     }
-    tpl1 dfa ER ColGridGet(ColGrid<T1>& colGrid, CaptureMode captureMode = CaptureMode::GDI_WIN)
+    dfa BO IsValid()
     {
-        ifu (m_cache == NUL)
+        ret (m_hdl != NUL) && (IsWindow(m_hdl) != 0);
+    }
+    dfa ER Focus()
+    {
+        ifu (SetForegroundWindow(m_hdl) == 0)
+            rete(ERR_WIN);
+        rets;
+    }
+
+  private:
+    tpl1 dfa ER _ColGridGetGdi(ColGrid<T1>& colGrid, CaptureMode captureMode)
+    {
+        Cache::Gdi* cache;
+        ifu (m_cache == NUL || m_cache->gdi.isValid == NO)
         {
-            m_cache = std::make_unique<Cache>();
+            if (m_cache == NUL)
+                m_cache = std::make_unique<Cache>();
+            cache = &m_cache->gdi;
+            cache->isValid = YES;
 
             switch (captureMode)
             {
             case CaptureMode::GDI_WIN:
-                m_cache->curDC = GetWindowDC(m_hdl);
+                cache->curDC = GetWindowDC(m_hdl);
+                cache->winHdl = m_hdl;
                 break;
             case CaptureMode::GDI_SCN:
-                m_cache->curDC = GetDC(NUL);
+                cache->curDC = GetDC(NUL);
+                cache->winHdl = NUL;
                 break;
             default:
-                m_cache->curDC = NUL;
+                cache->curDC = NUL;
+                cache->winHdl = NUL;
                 break;
             }
-            ifu (m_cache->curDC == NUL)
+            ifu (cache->curDC == NUL)
                 rete(ERR_WIN);
 
-            m_cache->memDC = CreateCompatibleDC(m_cache->curDC);
-            ifu (m_cache->memDC == NUL)
+            cache->memDC = CreateCompatibleDC(cache->curDC);
+            ifu (cache->memDC == NUL)
                 rete(ERR_WIN);
         }
+        cache = &m_cache->gdi;
 
         Rect2<SI> rectInner;
         switch (captureMode)
@@ -248,9 +314,9 @@ class Win
             break;
         }
 
-        ifu (rectInner.size != m_cache->size)
+        ifu (rectInner.size != cache->size)
         {
-            m_cache->size = rectInner.size;
+            cache->size = rectInner.size;
 
             Rect2<SI> rectOuter;
             switch (captureMode)
@@ -258,18 +324,18 @@ class Win
             case CaptureMode::GDI_WIN:
                 ife (tx->RectOuterGet(rectOuter))
                     retep;
-                m_cache->ofs = rectInner.pos - rectOuter.pos;
+                cache->ofs = rectInner.pos - rectOuter.pos;
                 break;
             case CaptureMode::GDI_SCN:
-                m_cache->ofs = rectInner.pos;
+                cache->ofs = rectInner.pos;
                 break;
             default:
-                m_cache->ofs = Pos2<SI>(0, 0);
+                cache->ofs = Pos2<SI>(0, 0);
                 break;
             }
 
-            if (m_cache->bmp != NUL)
-                DeleteObject(m_cache->bmp);
+            if (cache->bmp != NUL)
+                DeleteObject(cache->bmp);
 
             BITMAPINFO bmpInfo = {};
             bmpInfo.bmiHeader.biSize = siz(BITMAPINFOHEADER);
@@ -279,16 +345,16 @@ class Win
             bmpInfo.bmiHeader.biBitCount = sizb(ColRgb);
             bmpInfo.bmiHeader.biCompression = BI_RGB;
 
-            m_cache->bmp = CreateDIBSection(m_cache->curDC, &bmpInfo, DIB_RGB_COLORS, &m_cache->pixels, NUL, 0);
-            ifu (m_cache->bmp == NUL || m_cache->pixels == NUL)
+            cache->bmp = CreateDIBSection(cache->curDC, &bmpInfo, DIB_RGB_COLORS, &cache->pixels, NUL, 0);
+            ifu (cache->bmp == NUL || cache->pixels == NUL)
                 rete(ERR_WIN);
 
-            cx AU selResult = SelectObject(m_cache->memDC, m_cache->bmp);
+            cx AU selResult = SelectObject(cache->memDC, cache->bmp);
             ifu (selResult == NUL || selResult == HGDI_ERROR)
                 rete(ERR_WIN);
         }
 
-        ifu (BitBlt(m_cache->memDC, 0, 0, rectInner.size.w, rectInner.size.h, m_cache->curDC, m_cache->ofs.x, m_cache->ofs.y, SRCCOPY) == 0)
+        ifu (BitBlt(cache->memDC, 0, 0, rectInner.size.w, rectInner.size.h, cache->curDC, cache->ofs.x, cache->ofs.y, SRCCOPY) == 0)
             rete(ERR_WIN);
 
         colGrid.size = rectInner.size;
@@ -296,7 +362,7 @@ class Win
             colGrid.pixels.resize(rectInner.size.Area());
 
         cx AU rowSize = AlignBit(rectInner.size.w * siz(ColRgb), siz(U4));
-        cx AU curInBase = (U1*)m_cache->pixels;
+        cx AU curInBase = (U1*)cache->pixels;
         AU curOut = colGrid.pixels.data();
 
         ite (i, i < rectInner.size.h)
@@ -315,15 +381,200 @@ class Win
 
         rets;
     }
-    dfa BO IsValid()
+    tpl1 dfa ER _ColGridGetDxgi(ColGrid<T1>& colGrid, CaptureMode captureMode)
     {
-        ret (m_hdl != NUL) && (IsWindow(m_hdl) != 0);
-    }
-    dfa ER Focus()
-    {
-        ifu (SetForegroundWindow(m_hdl) == 0)
-            rete(ERR_WIN);
+        Cache::Dxgi* cache;
+        ifu (m_cache == NUL || m_cache->dxgi.isValid == NO)
+        {
+            if (m_cache == NUL)
+                m_cache = std::make_unique<Cache>();
+            cache = &m_cache->dxgi;
+            cache->isValid = YES;
+
+            HRESULT result = D3D11CreateDevice(NUL, D3D_DRIVER_TYPE_HARDWARE, NUL, 0, NUL, 0, D3D11_SDK_VERSION, &cache->dev, NUL, &cache->devCtx);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+
+            Microsoft::WRL::ComPtr<IDXGIDevice> dev;
+            result = cache->dev.As(&dev);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+
+            Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+            result = dev->GetAdapter(&adapter);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+
+            Microsoft::WRL::ComPtr<IDXGIOutput> out;
+            result = adapter->EnumOutputs(0, &out);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+
+            Microsoft::WRL::ComPtr<IDXGIOutput1> out1;
+            result = out.As(&out1);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+
+            result = out1->DuplicateOutput(cache->dev.Get(), &cache->outCpy);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+
+            DXGI_OUTDUPL_DESC outCpyInfo;
+            cache->outCpy->GetDesc(&outCpyInfo);
+            cache->size.w = outCpyInfo.ModeDesc.Width;
+            cache->size.h = outCpyInfo.ModeDesc.Height;
+
+            D3D11_TEXTURE2D_DESC texInfo = {};
+            texInfo.Width = cache->size.w;
+            texInfo.Height = cache->size.h;
+            texInfo.MipLevels = 1;
+            texInfo.ArraySize = 1;
+            texInfo.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            texInfo.SampleDesc.Count = 1;
+            texInfo.Usage = D3D11_USAGE_STAGING;
+            texInfo.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+            result = cache->dev->CreateTexture2D(&texInfo, NUL, &cache->tex);
+            ifu (FAILED(result))
+                rete(ERR_WIN);
+        }
+        cache = &m_cache->dxgi;
+
+        Rect2<SI> rectInner;
+        ife (ScnRectGet(rectInner))
+            retep;
+
+        Rect2<SI> rectDst;
+        ife (tx->RectInnerGet(rectDst))
+            retep;
+
+        ifu (rectInner.size != cache->size)
+        {
+            cache->size = rectInner.size;
+
+            // TODO: implement, process screen resolution change...
+        }
+
+        Microsoft::WRL::ComPtr<IDXGIResource> desktop;
+        DXGI_OUTDUPL_FRAME_INFO frameInfo;
+        HRESULT result = cache->outCpy->AcquireNextFrame(500, &frameInfo, &desktop); // 500 ms timeout, could be configurable...
+        if (FAILED(result))
+        {
+            ifl (result == DXGI_ERROR_WAIT_TIMEOUT)
+            {
+                ScnUpdForce();
+                result = cache->outCpy->AcquireNextFrame(500, &frameInfo, &desktop); // 500 ms timeout, could be configurable...
+                ifu (FAILED(result))
+                {
+                    cache->outCpy->ReleaseFrame();
+                    rete(ERR_SCN);
+                }
+            }
+            else
+            {
+                cache->outCpy->ReleaseFrame();
+                rete(ERR_SCN);
+            }
+        }
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> desktopTex;
+        result = desktop.As(&desktopTex);
+        ifu (FAILED(result))
+        {
+            cache->outCpy->ReleaseFrame();
+            rete(ERR_SCN);
+        }
+
+        cache->devCtx->CopyResource(cache->tex.Get(), desktopTex.Get());
+        cache->devCtx->Flush();
+
+        D3D11_MAPPED_SUBRESOURCE texDat;
+        result = cache->devCtx->Map(cache->tex.Get(), 0, D3D11_MAP_READ, 0, &texDat);
+        ifu (FAILED(result))
+        {
+            cache->outCpy->ReleaseFrame();
+            rete(ERR_SCN);
+        }
+
+        colGrid.size = rectDst.size;
+        if (colGrid.pixels.size() != rectDst.size.Area())
+            colGrid.pixels.resize(rectDst.size.Area());
+
+        cx AU rowSize = texDat.RowPitch;
+        cx AU curInBase = (U1*)texDat.pData;
+        AU curOut = colGrid.pixels.data();
+
+        cx AU noneRowCntPre = Max(rectInner.pos.y - rectDst.pos.y, SI(0));
+        if (noneRowCntPre > 0)
+        {
+            cx AU noneDatCnt = noneRowCntPre * rectDst.size.w;
+            MemSet(curOut, 0, noneDatCnt * siz(T1));
+            curOut += noneDatCnt;
+        }
+
+        cx AU usedRowIFirst = Max(rectDst.pos.y, rectInner.pos.y) - rectInner.pos.y;
+        cx AU usedRowIEnd = Min(rectDst.YEnd(), rectInner.YEnd()) - rectInner.pos.y;
+        cx AU noneColumnCntPre = Max(rectInner.pos.x - rectDst.pos.x, SI(0));
+        cx AU noneColumnCntPost = Max(rectDst.XEnd() - rectInner.XEnd(), SI(0));
+        cx AU usedPixelCntPerRow = rectDst.size.w - noneColumnCntPre - noneColumnCntPost;
+
+        for (SI y = usedRowIFirst; y < usedRowIEnd; ++y)
+        {
+            if (noneColumnCntPre > 0)
+            {
+                MemSet(curOut, 0, noneColumnCntPre * siz(T1));
+                curOut += noneColumnCntPre;
+            }
+
+            AU curIn = (curInBase + y * rowSize) + (Max(rectDst.pos.x - rectInner.pos.x, SI(0)) * siz(ColRgba));
+            cx AU curInEnd = curIn + usedPixelCntPerRow * siz(ColRgba);
+
+            while (curIn != curInEnd)
+            {
+                ColRgb pixel;
+                pixel.b = *curIn++;
+                pixel.g = *curIn++;
+                pixel.r = *curIn++;
+                ++curIn; // skip alpha channel
+                ToType<T1, ColRgb>(*curOut++, pixel);
+            }
+
+            if (noneColumnCntPost > 0)
+            {
+                MemSet(curOut, 0, noneColumnCntPost * siz(T1));
+                curOut += noneColumnCntPost;
+            }
+        }
+
+        cx AU noneRowCntPost = Max(rectDst.YEnd() - rectInner.YEnd(), SI(0));
+        if (noneRowCntPost > 0)
+        {
+            cx AU noneDatCnt = noneRowCntPost * rectDst.size.w;
+            MemSet(curOut, 0, noneDatCnt * siz(T1));
+            curOut += noneDatCnt;
+        }
+
+        cache->devCtx->Unmap(cache->tex.Get(), 0);
+        cache->outCpy->ReleaseFrame();
+
         rets;
+    }
+
+  public:
+    tpl1 dfa ER ColGridGet(ColGrid<T1>& colGrid, CaptureMode captureMode = CaptureMode::GDI_WIN)
+    {
+        switch (captureMode)
+        {
+        case CaptureMode::GDI_WIN:
+            ret tx->_ColGridGetGdi(colGrid, captureMode);
+        case CaptureMode::GDI_SCN:
+            ret tx->_ColGridGetGdi(colGrid, captureMode);
+        case CaptureMode::DXGI_SCN:
+            ret tx->_ColGridGetDxgi(colGrid, captureMode);
+        default:
+            break;
+        }
+        rete(ERR_NO_SUPPORT);
     }
 
   public:
