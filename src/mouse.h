@@ -7,7 +7,7 @@ dfa ER CurPosGet(Pos2<F4>& pos)
     pos = Pos2<F4>(0, 0);
     POINT tmp = {};
     ifu (GetCursorPos(&tmp) == 0)
-        rete(ERR_CUR);
+        rete(ErrVal::CUR);
     pos = Pos2<F4>(F4(tmp.x) + g_curPosOfs.x, F4(tmp.y) + g_curPosOfs.y);
     rets;
 }
@@ -16,7 +16,7 @@ dfa ER CurPosSet(cx Pos2<F4>& pos)
     cx S4 x = RoundF4ToS4(pos.x);
     cx S4 y = RoundF4ToS4(pos.y);
     ifu (SetCursorPos(x, y) == 0)
-        rete(ERR_CUR);
+        rete(ErrVal::CUR);
     g_curPosOfs = Pos2<F4>(pos.x - F4(x), pos.y - F4(y));
     rets;
 }
@@ -48,11 +48,11 @@ dfa ER _MousKeyPress(InputKey key, BO isDown)
         ip.mi.dwFlags = isDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
         break;
     default:
-        rete(ERR_MOUS);
+        rete(ErrVal::MOUS);
     }
     ip.mi.dwExtraInfo = GetMessageExtraInfo();
     ifu (SendInput(1, &ip, siz(ip)) != 1)
-        rete(ERR_MOUS);
+        rete(ErrVal::MOUS);
     rets;
 }
 

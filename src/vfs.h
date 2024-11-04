@@ -61,35 +61,35 @@ class Vfs
     dfa ER ChkInfo(cx VfsNewInfo& info) cx
     {
         ifu (info.flags != 0)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (info.compress != VfsCompress::NONE)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (info.encrypt != VfsEncrypt::NONE && info.encrypt != VfsEncrypt::OBFUSCATE)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         rets;
     }
     dfa ER ChkHdr(cx VfsHdr& hdr) cx
     {
         ifu (MemCmp(hdr.magic, VFS_MAGIC, VFS_MAGIC_SIZE) != 0)
-            rete(ERR_NO_VALID);
+            rete(ErrVal::NO_VALID);
         ifu (hdr.format < VFS_FORMAT_MAX)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (hdr.flags != 0)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (hdr.compress != VfsCompress::NONE)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (hdr.encrypt != VfsEncrypt::NONE && hdr.encrypt != VfsEncrypt::OBFUSCATE)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         rets;
     }
     dfa ER ChkEntry(cx VfsEntry& entry) cx
     {
         ifu (entry.flags != 0)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (entry.pathLen <= 0)
-            rete(ERR_NO_VALID);
+            rete(ErrVal::NO_VALID);
         ifu (entry.path[entry.pathLen] != '\0')
-            rete(ERR_NO_VALID);
+            rete(ErrVal::NO_VALID);
         rets;
     }
     dfa SI PathOfs(cx CH* path) cx
@@ -308,7 +308,7 @@ class Vfs
         buf.New(0);
         cx VfsEntry* cx entry = m_entryList[path];
         ifu (entry == NUL)
-            rete(ERR_NO_EXIST);
+            rete(ErrVal::NO_EXIST);
         if (entry->datSize == 0)
             rets;
         ife (m_file.CurSet(entry->datOfs))

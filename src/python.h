@@ -3,7 +3,7 @@
 dfa ER PythonExePathGet(CH* path)
 {
     ifu (PathEnvRelToAbs(path, L"python.exe") == 0)
-        rete(ERR_ENV);
+        rete(ErrVal::ENV);
     rets;
 }
 dfa ER PythonStart(cx CH* file, cx CH* args, BO wait)

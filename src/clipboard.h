@@ -3,25 +3,25 @@
 dfa ER ClipbSetText(cx CH* text)
 {
     ifu (OpenClipboard(NUL) == 0)
-        rete(ERR_CLIPB);
+        rete(ErrVal::CLIPB);
     ifu (EmptyClipboard() == 0)
     {
         CloseClipboard();
-        rete(ERR_CLIPB);
+        rete(ErrVal::CLIPB);
     }
     cx SI textSize = (StrLen(text) + 1) * siz(text[0]);
     cx HGLOBAL textGlobalObj = GlobalAlloc(GMEM_MOVEABLE, textSize);
     ifu (textGlobalObj == NUL)
     {
         CloseClipboard();
-        rete(ERR_MEM_NEW);
+        rete(ErrVal::MEM_NEW);
     }
     CH* cx textGlobal = (CH*)GlobalLock(textGlobalObj);
     ifu (textGlobal == NUL)
     {
         GlobalFree(textGlobalObj);
         CloseClipboard();
-        rete(ERR_LOCK);
+        rete(ErrVal::LOCK);
     }
     MemCpy(textGlobal, text, textSize);
     GlobalUnlock(textGlobalObj);
@@ -29,7 +29,7 @@ dfa ER ClipbSetText(cx CH* text)
     {
         GlobalFree(textGlobalObj);
         CloseClipboard();
-        rete(ERR_CLIPB);
+        rete(ErrVal::CLIPB);
     }
     CloseClipboard();
     rets;

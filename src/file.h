@@ -15,7 +15,7 @@ dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
     {
         ++tryCnt;
         ifu (tryCnt == 2)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         if (GetLastError() == ERROR_PATH_NOT_FOUND && PathIsExist(src))
         {
             CH dirPath[PATH_LENX_MAX];
@@ -27,7 +27,7 @@ dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
         }
         else
         {
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         }
     }
     rets;
@@ -35,7 +35,7 @@ dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
 dfa ER FileDel(cx CH* path)
 {
     ifu (DeleteFileW(path) == 0)
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     rets;
 }
 dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES)
@@ -47,7 +47,7 @@ dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES)
     {
         ++tryCnt;
         ifu (tryCnt == 2)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         if (GetLastError() == ERROR_PATH_NOT_FOUND && PathIsExist(src))
         {
             CH dirPath[PATH_LENX_MAX];
@@ -59,7 +59,7 @@ dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES)
         }
         else
         {
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         }
     }
     rets;
@@ -70,7 +70,7 @@ dfa ER FileTimeGet(TmUnix& time, cx CH* path)
     time = 0;
     WIN32_FILE_ATTRIBUTE_DATA info = {};
     ifu (GetFileAttributesExW(path, GetFileExInfoStandard, &info) == 0)
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     time = LdapToUnix(U8(info.ftLastWriteTime.dwLowDateTime) | (U8(info.ftLastWriteTime.dwHighDateTime) << sizb(U4)));
     rets;
 }
@@ -78,18 +78,18 @@ dfa ER FileSizeSet(cx CH* path, SI size)
 {
     cx AU hdl = CreateFileW(path, GENERIC_WRITE, 0, NUL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NUL);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     LARGE_INTEGER tmp = {};
     tmp.QuadPart = size;
     ifu (SetFilePointerEx(hdl, tmp, NUL, FILE_BEGIN) == 0)
     {
         CloseHandle(hdl);
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
     ifu (SetEndOfFile(hdl) == 0)
     {
         CloseHandle(hdl);
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
     CloseHandle(hdl);
     rets;
@@ -112,41 +112,41 @@ class FileWin
     dfa ER CurMove(SI cnt)
     {
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         LARGE_INTEGER tmp = {};
         tmp.QuadPart = cnt;
         if (SetFilePointerEx(m_hdl, tmp, NUL, FILE_CURRENT) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         rets;
     }
     dfa ER CurSet(SI pos)
     {
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         LARGE_INTEGER tmp = {};
         tmp.QuadPart = pos;
         ifu (SetFilePointerEx(m_hdl, tmp, NUL, FILE_BEGIN) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         rets;
     }
     dfa ER CurGet(SI& pos)
     {
         pos = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         LARGE_INTEGER tmp = {};
         ifu (SetFilePointerEx(m_hdl, tmp, &tmp, FILE_CURRENT) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         pos = tmp.QuadPart;
         rets;
     }
     dfa ER Open(cx CH* path, DWORD access, DWORD share, DWORD openMode, DWORD attrib)
     {
         ifu (tx->IsOpen() == YES)
-            rete(ERR_YES_INIT);
+            rete(ErrVal::YES_INIT);
         m_hdl = CreateFileW(path, access, share, NUL, openMode, attrib, NUL);
         ifu (tx->IsOpen() == NO)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         rets;
     }
     dfa ER OpenRead(cx CH* path)
@@ -166,7 +166,7 @@ class FileWin
         if (tx->IsOpen() == NO)
             rets;
         ifu (CloseHandle(m_hdl) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         m_hdl = INVALID_HANDLE_VALUE;
         rets;
     }
@@ -174,10 +174,10 @@ class FileWin
     {
         result = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         DWORD tmp;
         ifu (ReadFile(m_hdl, buf, DWORD(size), &tmp, NUL) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         result = tmp;
         rets;
     }
@@ -185,10 +185,10 @@ class FileWin
     {
         result = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         DWORD tmp;
         ifu (WriteFile(m_hdl, buf, DWORD(size), &tmp, NUL) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         result = tmp;
         rets;
     }
@@ -198,7 +198,7 @@ class FileWin
         ife (tx->Read(buf, size, result))
             retep;
         ifu (size != result)
-            rete(ERR_NO_FULL);
+            rete(ErrVal::NO_FULL);
         rets;
     }
     dfa ER Write(CXGA buf, SI size)
@@ -207,17 +207,17 @@ class FileWin
         ife (tx->Write(buf, size, result))
             retep;
         ifu (size != result)
-            rete(ERR_NO_FULL);
+            rete(ErrVal::NO_FULL);
         rets;
     }
     dfa ER SizeGet(SI& size)
     {
         size = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         LARGE_INTEGER tmp;
         ifu (GetFileSizeEx(m_hdl, &tmp) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         size = tmp.QuadPart;
         rets;
     }
@@ -229,7 +229,7 @@ class FileWin
         ife (tx->CurSet(size))
             retep;
         ifu (SetEndOfFile(m_hdl) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         if (size > curPos)
             ife (tx->CurSet(curPos))
                 retep;
@@ -239,19 +239,19 @@ class FileWin
     {
         time = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         FILETIME tmp;
         ifu (GetFileTime(m_hdl, NUL, NUL, &tmp) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         time = LdapToUnix(U8(tmp.dwLowDateTime) | (U8(tmp.dwHighDateTime) << sizb(U4)));
         rets;
     }
     dfa ER Flush()
     {
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         ifu (FlushFileBuffers(m_hdl) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         rets;
     }
 
@@ -281,24 +281,24 @@ class FileNt
         ret m_hdl != INVALID_HANDLE_VALUE;
     }
     /*dfa ER CurMove(SI cnt) {
-        rete(ERR_NA);
+        rete(ErrVal::NA);
     }*/
     dfa ER CurSet(SI pos)
     {
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         IO_STATUS_BLOCK iosb;
         FILE_POSITION_INFORMATION info = {};
         info.CurrentByteOffset.QuadPart = pos;
         cx NTSTATUS status = NtSetInformationFile(m_hdl, &iosb, &info, siz(FILE_POSITION_INFORMATION), FilePositionInformation);
         ifu (status != STATUS_SUCCESS)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         rets;
     }
     dfa ER Open(cx CH* path, ACCESS_MASK access, SI allocSize, ULONG attrib, ULONG share, ULONG openMode, ULONG flags)
     {
         ifu (tx->IsOpen() == YES)
-            rete(ERR_YES_INIT);
+            rete(ErrVal::YES_INIT);
         CH path_[PATH_LEN_MAX];
         cx SI pathLen = PathToNtpath(path_, path);
         UNICODE_STRING us = {};
@@ -319,7 +319,7 @@ class FileNt
         ifu (status != STATUS_SUCCESS)
         {
             m_hdl = INVALID_HANDLE_VALUE;
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         }
         rets;
     }
@@ -340,7 +340,7 @@ class FileNt
         if (tx->IsOpen() == NO)
             rets;
         ifu (NtClose(m_hdl) != STATUS_SUCCESS)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         m_hdl = INVALID_HANDLE_VALUE;
         rets;
     }
@@ -348,24 +348,24 @@ class FileNt
     {
         result = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         ifu ((size >> sizb(ULONG)) > 0)
-            rete(ERR_HIGH_SIZE);
+            rete(ErrVal::HIGH_SIZE);
         IO_STATUS_BLOCK iosb;
         cx NTSTATUS status = NtReadFile(m_hdl, NUL, NUL, NUL, &iosb, buf, ULONG(size), NUL, NUL);
         ifu (status != STATUS_SUCCESS)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         result = iosb.Information;
         rets;
     }
     /*dfa ER Write(CXGA buf, SI size, SI& result) {
-        rete(ERR_NA);
+        rete(ErrVal::NA);
     }*/
     dfa ER SizeGet(SI& size)
     {
         size = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         IO_STATUS_BLOCK iosb;
         SI infoCnt = 3;
         jdst(again);
@@ -375,7 +375,7 @@ class FileNt
         ifu (status == STATUS_BUFFER_OVERFLOW)
             jsrc(again);
         ifu (status != STATUS_SUCCESS)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         size = info[0].StreamSize.QuadPart;
         rets;
     }
@@ -509,9 +509,9 @@ class FileMem
     dfa ER CurMove(SI cnt)
     {
         ifu (m_filePos + m_filePosOfs + cnt < 0)
-            rete(ERR_LOW_SIZE);
+            rete(ErrVal::LOW_SIZE);
         ifu (m_filePos + m_filePosOfs + cnt > m_dat.Pos())
-            rete(ERR_HIGH_SIZE);
+            rete(ErrVal::HIGH_SIZE);
         if (m_isWriteDirect)
             m_filePosOfs += cnt;
         else
@@ -521,9 +521,9 @@ class FileMem
     dfa ER CurSet(SI pos)
     {
         ifu (pos < 0)
-            rete(ERR_LOW_SIZE);
+            rete(ErrVal::LOW_SIZE);
         ifu (pos > m_dat.Pos())
-            rete(ERR_HIGH_SIZE);
+            rete(ErrVal::HIGH_SIZE);
         if (m_isWriteDirect)
             m_filePosOfs = pos - m_filePos;
         else
@@ -533,7 +533,7 @@ class FileMem
     dfa ER OpenRead(cx CH* path)
     {
         ifu (tx->IsOpen())
-            rete(ERR_YES_INIT);
+            rete(ErrVal::YES_INIT);
         ife (m_file.OpenRead(path))
             retep;
         SI size = 0;
@@ -557,7 +557,7 @@ class FileMem
     dfa ER OpenWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA)
     {
         ifu (tx->IsOpen())
-            rete(ERR_YES_INIT);
+            rete(ErrVal::YES_INIT);
         ife (m_file.OpenWrite(path))
             retep;
         SI size = 0;
@@ -579,12 +579,12 @@ class FileMem
     dfa ER OpenReadWrite(cx CH* path, BO isWriteDirect = NO, F8 resizeMul = FILE_MEM_RESIZE_MUL_DEFA, SI resizeAdd = FILE_MEM_RESIZE_ADD_DEFA)
     {
         ifu (tx->IsOpen())
-            rete(ERR_YES_INIT);
+            rete(ErrVal::YES_INIT);
         SI size = 0;
         if (path == NUL)
         {
             ifu (isWriteDirect)
-                rete(ERR_NO_VALID);
+                rete(ErrVal::NO_VALID);
             m_dat.New(SI(F8(size) * resizeMul + F8(resizeAdd)));
         }
         else
@@ -637,7 +637,7 @@ class FileMem
     {
         result = 0;
         ifu (m_filePos + m_filePosOfs + size > m_dat.Pos())
-            rete(ERR_HIGH_SIZE);
+            rete(ErrVal::HIGH_SIZE);
         MemCpy(buf, m_dat.Ptr() + m_filePos + m_filePosOfs, size);
         if (m_isWriteDirect)
             m_filePosOfs += size;
@@ -650,7 +650,7 @@ class FileMem
     {
         result = 0;
         ifu (!m_isWrite)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         if (m_isWriteDirect)
         {
             if (m_filePosOfs != 0)
@@ -681,7 +681,7 @@ class FileMem
         ife (tx->Read(buf, size, result))
             retep;
         ifu (size != result)
-            rete(ERR_NO_FULL);
+            rete(ErrVal::NO_FULL);
         rets;
     }
     dfa BO ReadLine(string& str)
@@ -716,14 +716,14 @@ class FileMem
         ife (tx->Write(buf, size, result))
             retep;
         ifu (size != result)
-            rete(ERR_NO_FULL);
+            rete(ErrVal::NO_FULL);
         rets;
     }
     dfa ER SizeGet(SI& size)
     {
         size = 0;
         ifu (tx->IsOpen() == NO)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         size = m_dat.Pos();
         rets;
     }
@@ -737,7 +737,7 @@ class FileMem
     dfa ER SizeSet(SI size)
     { // TODO: TO TEST!
         ifu (!m_isWrite)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         if (m_isWriteDirect)
         {
             if (m_filePosOfs != 0)

@@ -198,13 +198,13 @@ class Thd
     {
         out = -1;
         ifu (m_hdl == NUL)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         DWORD r;
         cx BOOL result = GetExitCodeThread(m_hdl, &r);
         ifu (result == 0)
-            rete(ERR_THD);
+            rete(ErrVal::THD);
         ifu (r == STILL_ACTIVE)
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         out = r;
         rets;
     }
@@ -225,9 +225,9 @@ class Thd
         if (m_hdl == NUL)
             rets;
         if (tx->IsActive())
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         ifu (CloseHandle(m_hdl) == 0)
-            rete(ERR_THD);
+            rete(ErrVal::THD);
         m_hdl = NUL;
         m_id = 0;
         rets;
@@ -237,21 +237,21 @@ class Thd
         if (tx->IsActive() == NO)
             rets;
         ifu (WaitForSingleObject(m_hdl, INFINITE) != WAIT_OBJECT_0)
-            rete(ERR_THD);
+            rete(ErrVal::THD);
         rets;
     }
     dfa ER Start(LPTHREAD_START_ROUTINE fn, LPVOID param)
     {
         if constexpr (!IS_THD_SUPPORT)
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         ifu (tx->IsActive())
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         ife (tx->Close())
             retep;
         m_id = 0;
         m_hdl = CreateThread(NUL, 0, fn, param, 0, (DWORD*)&m_id);
         ifu (m_hdl == NUL)
-            rete(ERR_THD);
+            rete(ErrVal::THD);
         rets;
     }
     dfa ER Stop() cx
@@ -259,7 +259,7 @@ class Thd
         if (tx->IsActive() == NO)
             rets;
         ifu (TerminateThread(m_hdl, U4(-1)) == 0)
-            rete(ERR_THD);
+            rete(ErrVal::THD);
         ife (tx->Wait())
             retep;
         rets;

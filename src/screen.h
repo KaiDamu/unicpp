@@ -12,11 +12,11 @@ dfa ER ScnRectGet(Rect2<SI>& rect)
         retep;
     cx HMONITOR scn = _ScnMainHdlGet();
     ifu (scn == NUL)
-        rete(ERR_SCN);
+        rete(ErrVal::SCN);
     MONITORINFO info = {};
     info.cbSize = siz(info);
     ifu (GetMonitorInfoW(scn, &info) == 0)
-        rete(ERR_SCN);
+        rete(ErrVal::SCN);
     rect.pos.x = SI(info.rcMonitor.left);
     rect.pos.y = SI(info.rcMonitor.top);
     rect.size.w = SI(info.rcMonitor.right) - SI(info.rcMonitor.left);
@@ -52,7 +52,7 @@ dfa ER ScnUpdForce()
 {
     cx AU win = CreateWindowExW(WS_EX_TOOLWINDOW, L"STATIC", L"", WS_POPUP, -32000, -32000, 1, 1, NUL, NUL, GetModuleHandleW(NUL), NUL);
     ifu (win == NUL)
-        rete(ERR_WIN);
+        rete(ErrVal::WIN);
     ShowWindow(win, SW_SHOWNOACTIVATE);
     UpdateWindow(win);
     ShowWindow(win, SW_HIDE);

@@ -159,7 +159,7 @@ dfa ER KeybInit()
     while (code == KEYB_HOOK_THD_CODE_WAIT)
         ;
     ifu (code == KEYB_HOOK_THD_CODE_ERR_YES)
-        rete(ERR_HOOK);
+        rete(ErrVal::HOOK);
     g_keybThdIsValid = YES;
     rets;
 }
@@ -168,7 +168,7 @@ dfa ER KeybFree()
     ifu (!g_keybThdIsValid)
         rets;
     ifu (PostThreadMessageW(g_keybThd.Id(), WM_QUIT, 0, 0) == 0)
-        rete(ERR_THD);
+        rete(ErrVal::THD);
     ife (g_keybThd.Wait())
         retep;
     ife (g_keybThd.Close())
@@ -236,7 +236,7 @@ dfa ER KeybKeyPressDown(InputKey key)
     ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
     ip.ki.dwExtraInfo = GetMessageExtraInfo();
     ifu (SendInput(1, &ip, siz(ip)) != 1)
-        rete(ERR_KEYB);
+        rete(ErrVal::KEYB);
     rets;
 }
 dfa ER KeybKeyPressUp(InputKey key)
@@ -249,7 +249,7 @@ dfa ER KeybKeyPressUp(InputKey key)
     ip.ki.dwFlags = KEYEVENTF_KEYUP;
     ip.ki.dwExtraInfo = GetMessageExtraInfo();
     ifu (SendInput(1, &ip, siz(ip)) != 1)
-        rete(ERR_KEYB);
+        rete(ErrVal::KEYB);
     rets;
 }
 dfa ER KeybKeyPress(InputKey key, TmMain hold = INPUT_KEY_HOLD_DEFA, TmMain delay = INPUT_KEY_DELAY_DEFA)

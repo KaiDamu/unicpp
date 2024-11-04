@@ -107,7 +107,7 @@ class Win
         case SelType::FOCUS: {
             m_hdl = GetForegroundWindow();
             ifu (m_hdl == NUL)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
             rets;
         }
         case SelType::TITLE_CLASS: {
@@ -115,17 +115,17 @@ class Win
             cx AU classStr = (cx CH*)param2;
             m_hdl = FindWindowW(classStr, titleStr);
             ifu (m_hdl == NUL)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
             rets;
         }
         case SelType::CON: {
             m_hdl = GetConsoleWindow();
             ifu (m_hdl == NUL)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
             rets;
         }
         default: {
-            rete(ERR_NO_SUPPORT);
+            rete(ErrVal::NO_SUPPORT);
         }
         }
     }
@@ -143,7 +143,7 @@ class Win
     dfa ER TitleStrSet(cx CH* str)
     {
         ifu (SetWindowTextW(m_hdl, str) == 0)
-            rete(ERR_WIN);
+            rete(ErrVal::WIN);
         rets;
     }
     dfa wstring ClassStrGet()
@@ -163,7 +163,7 @@ class Win
             retep;
         RECT rect_;
         ifu (GetWindowRect(m_hdl, &rect_) == 0)
-            rete(ERR_WIN);
+            rete(ErrVal::WIN);
         rect.pos.x = SI(rect_.left);
         rect.pos.y = SI(rect_.top);
         rect.size.w = SI(rect_.right) - SI(rect_.left);
@@ -181,12 +181,12 @@ class Win
             if (doSetSize)
             {
                 ifu (MoveWindow(m_hdl, rect.pos.x, rect.pos.y, rect.size.w, rect.size.h, TRUE) == 0)
-                    rete(ERR_WIN);
+                    rete(ErrVal::WIN);
             }
             else
             {
                 ifu (SetWindowPos(m_hdl, NUL, rect.pos.x, rect.pos.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER) == 0)
-                    rete(ERR_WIN);
+                    rete(ErrVal::WIN);
             }
         }
         else
@@ -194,7 +194,7 @@ class Win
             if (doSetSize)
             {
                 ifu (SetWindowPos(m_hdl, NUL, 0, 0, rect.size.w, rect.size.h, SWP_NOMOVE | SWP_NOZORDER) == 0)
-                    rete(ERR_WIN);
+                    rete(ErrVal::WIN);
             }
             else
             {
@@ -209,7 +209,7 @@ class Win
             retep;
         RECT rect_;
         ifu (GetClientRect(m_hdl, &rect_) == 0)
-            rete(ERR_WIN);
+            rete(ErrVal::WIN);
         size.w = SI(rect_.right) - SI(rect_.left);
         size.h = SI(rect_.bottom) - SI(rect_.top);
         rets;
@@ -224,7 +224,7 @@ class Win
         {
             POINT pt = {0, 0};
             ifu (ClientToScreen(m_hdl, &pt) == 0)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
             rect.pos.x = SI(pt.x);
             rect.pos.y = SI(pt.y);
         }
@@ -238,7 +238,7 @@ class Win
 
             RECT rectOfs = {0, 0, LONG(rect.size.w), LONG(rect.size.h)};
             ifu (AdjustWindowRectEx(&rectOfs, GetWindowLongW(m_hdl, GWL_STYLE), FALSE, GetWindowLongW(m_hdl, GWL_EXSTYLE)) == 0)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             Pos2<SI> posBase;
             posBase.x = rectOuter.pos.x - SI(rectOfs.left);
@@ -259,7 +259,7 @@ class Win
     dfa ER Focus()
     {
         ifu (SetForegroundWindow(m_hdl) == 0)
-            rete(ERR_WIN);
+            rete(ErrVal::WIN);
         rets;
     }
 
@@ -290,11 +290,11 @@ class Win
                 break;
             }
             ifu (cache->curDC == NUL)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             cache->memDC = CreateCompatibleDC(cache->curDC);
             ifu (cache->memDC == NUL)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
         }
         cache = &m_cache->gdi;
 
@@ -347,15 +347,15 @@ class Win
 
             cache->bmp = CreateDIBSection(cache->curDC, &bmpInfo, DIB_RGB_COLORS, &cache->pixels, NUL, 0);
             ifu (cache->bmp == NUL || cache->pixels == NUL)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             cx AU selResult = SelectObject(cache->memDC, cache->bmp);
             ifu (selResult == NUL || selResult == HGDI_ERROR)
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
         }
 
         ifu (BitBlt(cache->memDC, 0, 0, rectInner.size.w, rectInner.size.h, cache->curDC, cache->ofs.x, cache->ofs.y, SRCCOPY) == 0)
-            rete(ERR_WIN);
+            rete(ErrVal::WIN);
 
         colGrid.size = rectInner.size;
         if (colGrid.pixels.size() != rectInner.size.Area())
@@ -393,31 +393,31 @@ class Win
 
             HRESULT result = D3D11CreateDevice(NUL, D3D_DRIVER_TYPE_HARDWARE, NUL, 0, NUL, 0, D3D11_SDK_VERSION, &cache->dev, NUL, &cache->devCtx);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             Microsoft::WRL::ComPtr<IDXGIDevice> dev;
             result = cache->dev.As(&dev);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
             result = dev->GetAdapter(&adapter);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             Microsoft::WRL::ComPtr<IDXGIOutput> out;
             result = adapter->EnumOutputs(0, &out);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             Microsoft::WRL::ComPtr<IDXGIOutput1> out1;
             result = out.As(&out1);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             result = out1->DuplicateOutput(cache->dev.Get(), &cache->outCpy);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
 
             DXGI_OUTDUPL_DESC outCpyInfo;
             cache->outCpy->GetDesc(&outCpyInfo);
@@ -436,7 +436,7 @@ class Win
 
             result = cache->dev->CreateTexture2D(&texInfo, NUL, &cache->tex);
             ifu (FAILED(result))
-                rete(ERR_WIN);
+                rete(ErrVal::WIN);
         }
         cache = &m_cache->dxgi;
 
@@ -467,13 +467,13 @@ class Win
                 ifu (FAILED(result))
                 {
                     cache->outCpy->ReleaseFrame();
-                    rete(ERR_SCN);
+                    rete(ErrVal::SCN);
                 }
             }
             else
             {
                 cache->outCpy->ReleaseFrame();
-                rete(ERR_SCN);
+                rete(ErrVal::SCN);
             }
         }
 
@@ -482,7 +482,7 @@ class Win
         ifu (FAILED(result))
         {
             cache->outCpy->ReleaseFrame();
-            rete(ERR_SCN);
+            rete(ErrVal::SCN);
         }
 
         cache->devCtx->CopyResource(cache->tex.Get(), desktopTex.Get());
@@ -493,7 +493,7 @@ class Win
         ifu (FAILED(result))
         {
             cache->outCpy->ReleaseFrame();
-            rete(ERR_SCN);
+            rete(ErrVal::SCN);
         }
 
         colGrid.size = rectDst.size;
@@ -574,7 +574,7 @@ class Win
         default:
             break;
         }
-        rete(ERR_NO_SUPPORT);
+        rete(ErrVal::NO_SUPPORT);
     }
 
   public:

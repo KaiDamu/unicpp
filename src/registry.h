@@ -44,12 +44,12 @@ dfa ER RegDirCreate(cx CH* path)
     HKEY key;
     cx CH* subKey = _RegKeySplitSub(path, key);
     ifu (subKey == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     HKEY subKeyHdl = NUL;
     ifu (RegCreateKeyExW(key, subKey, 0, NUL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NUL, &subKeyHdl, NUL) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegCloseKey(subKeyHdl) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     rets;
 }
 dfa ER RegDirCpy(cx CH* dst, cx CH* src)
@@ -57,13 +57,13 @@ dfa ER RegDirCpy(cx CH* dst, cx CH* src)
     HKEY keySrc;
     cx CH* subKeySrc = _RegKeySplitSub(src, keySrc);
     ifu (subKeySrc == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     HKEY keyDst;
     cx CH* subKeyDst = _RegKeySplitSub(dst, keyDst);
     ifu (subKeyDst == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegCopyTreeW(keySrc, subKeySrc, keyDst) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     rets;
 }
 dfa ER RegDirDel(cx CH* path)
@@ -71,9 +71,9 @@ dfa ER RegDirDel(cx CH* path)
     HKEY key;
     cx CH* subKey = _RegKeySplitSub(path, key);
     ifu (subKey == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegDeleteTreeW(key, subKey) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     rets;
 }
 dfa ER RegDirMove(cx CH* dst, cx CH* src)
@@ -91,19 +91,19 @@ dfa ER RegValSetStr(cx CH* path, cx CH* val)
     StrCpy(path_, path);
     CH* name = (CH*)StrFindLast(path_, L'\\');
     ifu (name == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     *name++ = '\0';
     HKEY key;
     cx CH* subKey = _RegKeySplitSub(path_, key);
     ifu (subKey == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     HKEY subKeyHdl;
     ifu (RegOpenKeyExW(key, subKey, 0, KEY_WRITE, &subKeyHdl) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegSetValueExW(subKeyHdl, name, 0, REG_SZ, (BYTE*)val, DWORD((StrLen(val) + 1) * siz(val[0]))) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegCloseKey(subKeyHdl) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     rets;
 }
 dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax)
@@ -137,19 +137,19 @@ dfa ER RegValSetU4(cx CH* path, U4 val)
     StrCpy(path_, path);
     CH* name = (CH*)StrFindLast(path_, L'\\');
     ifu (name == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     *name++ = '\0';
     HKEY key;
     cx CH* subKey = _RegKeySplitSub(path_, key);
     ifu (subKey == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     HKEY subKeyHdl;
     ifu (RegOpenKeyExW(key, subKey, 0, KEY_WRITE, &subKeyHdl) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegSetValueExW(subKeyHdl, name, 0, REG_DWORD, (BYTE*)&val, siz(val)) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegCloseKey(subKeyHdl) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     rets;
 }
 dfa SI RegValGetU4(cx CH* path, U4& val)
@@ -182,9 +182,9 @@ dfa ER RegValDel(cx CH* path)
     HKEY key;
     cx CH* subKey = _RegKeySplitSub(path, key);
     ifu (subKey == NUL)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     ifu (RegDeleteValueW(key, subKey) != ERROR_SUCCESS)
-        rete(ERR_REG);
+        rete(ErrVal::REG);
     rets;
 }
 

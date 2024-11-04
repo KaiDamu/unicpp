@@ -52,13 +52,13 @@ dfa SI ProcEnvvarGet(CH* val, cx CH* envvar, SI valLenMax)
 dfa ER ProcEnvvarSet(cx CH* val, cx CH* envvar)
 {
     ifu (SetEnvironmentVariableW(envvar, val) == 0)
-        rete(ERR_PROC);
+        rete(ErrVal::PROC);
     rets;
 }
 dfa ER ProcEnvvarClr(cx CH* envvar)
 {
     ifu (SetEnvironmentVariableW(envvar, NUL) == 0)
-        rete(ERR_PROC);
+        rete(ErrVal::PROC);
     rets;
 }
 dfa cx CH* ProcArgFullGet()
@@ -92,7 +92,7 @@ dfa ER ProcDpiAwareSet()
     if (lib != NUL)
         FreeLibrary(lib);
     ifu (s_isSet == NO)
-        rete(ERR_PROC);
+        rete(ErrVal::PROC);
     rets;
 }
 
@@ -105,7 +105,7 @@ dfa ER ProcNewFile(cx CH* path)
     info.lpFile = path;
     info.nShow = SW_SHOW;
     ifu (ShellExecuteExW(&info) == NO || UA(info.hInstApp) <= 32 || info.hProcess == NUL)
-        rete(ERR_PROC);
+        rete(ErrVal::PROC);
     rets;
 }
 
@@ -130,13 +130,13 @@ class Proc
     {
         out = -1;
         ifu (m_info.hProcess == NUL)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         DWORD r;
         cx BOOL result = GetExitCodeProcess(m_info.hProcess, &r);
         ifu (result == 0)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         ifu (r == STILL_ACTIVE)
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         out = r;
         rets;
     }
@@ -157,11 +157,11 @@ class Proc
         if (m_info.hProcess == NUL)
             rets;
         if (tx->IsActive())
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         ifu (m_info.hThread != NUL && CloseHandle(m_info.hThread) == 0)
-            rete(ERR_THD);
+            rete(ErrVal::THD);
         ifu (m_info.hProcess != NUL && CloseHandle(m_info.hProcess) == 0)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         MemSet(&m_info, 0, siz(m_info));
         m_args = L"";
         rets;
@@ -171,13 +171,13 @@ class Proc
         if (tx->IsActive() == NO)
             rets;
         ifu (WaitForSingleObject(m_info.hProcess, INFINITE) != WAIT_OBJECT_0)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         rets;
     }
     dfa ER Start(cx CH* path, cx CH* args, cx CH* workPath)
     {
         ifu (tx->IsActive())
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         ife (tx->Close())
             retep;
         m_args = L"\"";
@@ -196,7 +196,7 @@ class Proc
         {
             MemSet(&m_info, 0, siz(m_info));
             m_args = L"";
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         }
         rets;
     }
@@ -205,7 +205,7 @@ class Proc
         if (ProcIsElevated())
             ret tx->Start(path, args, workPath);
         ifu (tx->IsActive())
-            rete(ERR_YES_ACTIVE);
+            rete(ErrVal::YES_ACTIVE);
         ife (tx->Close())
             retep;
         m_args = args;
@@ -220,7 +220,7 @@ class Proc
         ifu (ShellExecuteExW(&sei) == NO || UA(sei.hInstApp) <= 32 || sei.hProcess == NUL)
         {
             m_args = L"";
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         }
         MemSet(&m_info, 0, siz(m_info));
         m_info.hProcess = sei.hProcess;
@@ -231,7 +231,7 @@ class Proc
         if (tx->IsActive() == NO)
             rets;
         ifu (TerminateProcess(m_info.hProcess, U4(-1)) == 0)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         ife (tx->Wait())
             retep;
         rets;
@@ -306,28 +306,28 @@ class ProcGlobalStr
         if (tx->IsOpenCur() == NO)
             rets;
         ifu (CloseHandle(m_hdl) == 0)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         m_hdl = NUL;
         rets;
     }
     dfa ER Open(cx CH* str)
     {
         ifu (tx->IsOpenCur())
-            rete(ERR_YES_INIT);
+            rete(ErrVal::YES_INIT);
         cx SI strLen = StrLen(str);
         ifu (strLen == 0)
-            rete(ERR_LOW_SIZE);
+            rete(ErrVal::LOW_SIZE);
         ifu (strLen > PROC_GLOBAL_STR_LEN_MAX)
-            rete(ERR_HIGH_SIZE);
+            rete(ErrVal::HIGH_SIZE);
         SetLastError(0);
         m_hdl = CreateMutexW(NUL, YES, str);
         ifu (m_hdl == NUL)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         ifu (GetLastError() == ERROR_ALREADY_EXISTS)
         {
             CloseHandle(m_hdl);
             m_hdl = NUL;
-            rete(ERR_YES_EXIST);
+            rete(ErrVal::YES_EXIST);
         }
         MemCpy(m_str, str, (strLen + 1) * siz(str[0]));
         rets;
@@ -337,11 +337,11 @@ class ProcGlobalStr
         SetLastError(0);
         cx HANDLE hdl = CreateMutexW(NUL, NO, str);
         ifu (hdl == NUL)
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         ifu ((GetLastError() == ERROR_ALREADY_EXISTS) && (WaitForSingleObject(hdl, INFINITE) != WAIT_OBJECT_0))
         {
             CloseHandle(hdl);
-            rete(ERR_PROC);
+            rete(ErrVal::PROC);
         }
         CloseHandle(hdl);
         rets;

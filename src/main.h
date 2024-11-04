@@ -7,7 +7,7 @@ dfa ER MainInit()
 #endif
     TimeResSet(1, 0, NO); // hint for performance, error not handled
     ife (_TimeMainInit())
-        rete(ERR_TIME);
+        rete(ErrVal::TIME);
     rets;
 }
 dfa ER MainFree()
@@ -37,13 +37,13 @@ int main() // define UCPP_MAIN_NO if you're using your own main function
     {
         ConWriteInfo("Start of program");
     }
-    ErrVal errVal = ERR_NONE;
+    ErrVal errVal = ErrVal::NONE;
     ife (_Main())
         errVal = ErrLastGet();
     ifdbg (YES)
     {
         cx AU t = TimeMain();
-        ifu (errVal != ERR_NONE)
+        ifu (errVal != ErrVal::NONE)
             ConWriteErr("Main error code : %u", errVal);
         ConWriteInfo("Main execution time : %.3f ms", t);
         ConWriteInfo("End of program");

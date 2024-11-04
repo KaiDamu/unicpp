@@ -89,7 +89,7 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
     if (status == STATUS_NO_MORE_FILES)
         rets;
     if (status != STATUS_SUCCESS)
-        rete(ERR_DIR);
+        rete(ErrVal::DIR);
     buf.CurClr();
     while (YES)
     {
@@ -182,7 +182,7 @@ dfa ER DirEnum(cx CH* path, SI depth, DirEnumCallbFnType callb, U4 flags)
 dfa ER _DirDel(cx CH* path)
 {
     ifu (RemoveDirectoryW(path) == 0)
-        rete(ERR_DIR);
+        rete(ErrVal::DIR);
     rets;
 }
 
@@ -194,18 +194,18 @@ dfa ER DirNew(cx CH* path)
         {
             if (PathIsDir(path))
                 rets;
-            rete(ERR_DIR);
+            rete(ErrVal::DIR);
         }
         CH path_[PATH_LEN_MAX];
         StrCpy(path_, path);
         CH* pathSep = (CH*)StrFindLast(path_, CH_PATH_DIR);
         ifu (pathSep == NUL)
-            rete(ERR_DIR);
+            rete(ErrVal::DIR);
         *pathSep = '\0';
         ife (DirNew(path_))
             retep;
         ifu (CreateDirectoryW(path, NUL) == 0)
-            rete(ERR_DIR);
+            rete(ErrVal::DIR);
     }
     rets;
 }
@@ -221,7 +221,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
         BO isReplace;
         ErrVal err;
     };
-    Param param = {dst_, isReplace, ERR_NONE};
+    Param param = {dst_, isReplace, ErrVal::NONE};
     ife (DirEnum(
              src, -1,
              [](cx FileInfo& fileInfo, GA param1, GA param2) {
@@ -249,7 +249,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
              },
              0, (GA)&param, NUL))
         retep;
-    ifu (param.err != ERR_NONE)
+    ifu (param.err != ErrVal::NONE)
         rete(param.err);
     rets;
 }
@@ -261,7 +261,7 @@ dfa ER DirDel(cx CH* path)
     {
         ErrVal err;
     };
-    Param param = {ERR_NONE};
+    Param param = {ErrVal::NONE};
     ife (DirEnum(
              path_, -1,
              [](cx FileInfo& fileInfo, GA param1, GA param2) {
@@ -288,7 +288,7 @@ dfa ER DirDel(cx CH* path)
         retep;
     ife (_DirDel(path_))
         retep;
-    ifu (param.err != ERR_NONE)
+    ifu (param.err != ErrVal::NONE)
         rete(param.err);
     rets;
 }

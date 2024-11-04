@@ -16,7 +16,7 @@ class PipeIn
             retep;
         DWORD mode = PIPE_READMODE_MESSAGE;
         ifu (SetNamedPipeHandleState(m_hdl.Hdl(), &mode, NUL, NUL) == 0)
-            rete(ERR_PIPE);
+            rete(ErrVal::PIPE);
         rets;
     }
 
@@ -43,7 +43,7 @@ class PipeIn
                 rets;
             }
         }
-        rete(ERR_HIGH_WAIT);
+        rete(ErrVal::HIGH_WAIT);
     }
     dfa ER Close()
     {
@@ -56,7 +56,7 @@ class PipeIn
         ife (m_hdl.Read(&readSize, siz(readSize), readResult))
         {
             tx->Close();
-            rete(ERR_PIPE);
+            rete(ErrVal::PIPE);
         }
         buf.Req(readSize, readSize, 0);
         buf.CurClr();
@@ -66,7 +66,7 @@ class PipeIn
             ife (m_hdl.Read(buf.Cur(), readSizeRem, readResult))
             {
                 tx->Close();
-                rete(ERR_PIPE);
+                rete(ErrVal::PIPE);
             }
             buf.CurMove(readResult);
             readSizeRem -= readResult;
@@ -92,12 +92,12 @@ class PipeOut
         StrAdd(path, pipeName);
         m_hdl = CreateNamedPipeW(path, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, 1, PIPE_BUF_SIZE, PIPE_BUF_SIZE, 0, NUL);
         ifu (m_hdl == INVALID_HANDLE_VALUE)
-            rete(ERR_PIPE);
+            rete(ErrVal::PIPE);
         ifu (ConnectNamedPipe(m_hdl, NUL) == 0)
         {
             CloseHandle(m_hdl);
             m_hdl = INVALID_HANDLE_VALUE;
-            rete(ERR_PIPE);
+            rete(ErrVal::PIPE);
         }
         rets;
     }
@@ -106,7 +106,7 @@ class PipeOut
         if (m_hdl == INVALID_HANDLE_VALUE)
             rets;
         ifu (CloseHandle(m_hdl) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         m_hdl = INVALID_HANDLE_VALUE;
         rets;
     }
@@ -116,14 +116,14 @@ class PipeOut
         cx SI pieceCnt = size / PIPE_BUF_SIZE + (size % PIPE_BUF_SIZE != 0);
         DWORD tmp;
         ifu (WriteFile(m_hdl, &size, siz(size), &tmp, NUL) == 0)
-            rete(ERR_FILE);
+            rete(ErrVal::FILE);
         SI i = 0;
         while (i < pieceCnt)
         {
             cx U1* piece = (cx U1*)buf + (i * PIPE_BUF_SIZE);
             cx SI pieceSize = (i + 1 == pieceCnt) ? (size % PIPE_BUF_SIZE) : PIPE_BUF_SIZE;
             ifu (WriteFile(m_hdl, piece, DWORD(pieceSize), &tmp, NUL) == 0)
-                rete(ERR_FILE);
+                rete(ErrVal::FILE);
             result += tmp;
             ++i;
         }

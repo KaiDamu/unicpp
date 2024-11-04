@@ -11,7 +11,7 @@ class EvtWin
         if (m_hdl == NUL)
             rets;
         ifu (CloseHandle(m_hdl) == 0)
-            rete(ERR_EVT);
+            rete(ErrVal::EVT);
         m_hdl = NUL;
         rets;
     }
@@ -21,31 +21,31 @@ class EvtWin
             retep;
         m_hdl = CreateEventW(NUL, YES, NO, NUL);
         ifu (m_hdl == NUL)
-            rete(ERR_EVT);
+            rete(ErrVal::EVT);
         rets;
     }
     dfa ER Set(BO state)
     {
         ifu (m_hdl == NUL)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         if (state)
         {
             ifu (SetEvent(m_hdl) == 0)
-                rete(ERR_EVT);
+                rete(ErrVal::EVT);
         }
         else
         {
             ifu (ResetEvent(m_hdl) == 0)
-                rete(ERR_EVT);
+                rete(ErrVal::EVT);
         }
         rets;
     }
     dfa ER Wait(BO stateAfter)
     {
         ifu (m_hdl == NUL)
-            rete(ERR_NO_INIT);
+            rete(ErrVal::NO_INIT);
         ifu (WaitForSingleObject(m_hdl, INFINITE) != WAIT_OBJECT_0)
-            rete(ERR_EVT);
+            rete(ErrVal::EVT);
         if (stateAfter == NO)
             ife (tx->Set(stateAfter))
                 retep;

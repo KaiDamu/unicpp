@@ -801,7 +801,7 @@ dfa ER ScnDrawCtxInit(ScnDrawCtx& ctx)
 {
     RECT winRect;
     ifu (GetClientRect(g_scnDrawWinHdl, &winRect) == 0)
-        rete(ERR_WIN);
+        rete(ErrVal::WIN);
     ctx.scnGrid.size = Size2<SI>(winRect.right - winRect.left, winRect.bottom - winRect.top);
     ctx.scnGrid.pixels.resize(ctx.scnGrid.size.Area());
 
@@ -821,7 +821,7 @@ dfa ER ScnDrawCtxInit(ScnDrawCtx& ctx)
     {
         ReleaseDC(NUL, ctx.hdcScreen);
         ctx.scnGrid.pixels.resize(0);
-        rete(ERR_WIN);
+        rete(ErrVal::WIN);
     }
 
     ctx.hdcMem = CreateCompatibleDC(ctx.hdcScreen);
@@ -848,13 +848,13 @@ dfa ER ScnDrawInit()
     while (code == SCN_DRAW_THD_CODE_WAIT) // TODO: optimize
         ;
     ifu (code == SCN_DRAW_THD_CODE_ERR_YES)
-        rete(ERR_SCN);
+        rete(ErrVal::SCN);
     rets;
 }
 dfa ER ScnDrawFree()
 {
     ifu (PostThreadMessageW(g_scnDrawThd.Id(), WM_QUIT, 0, 0) == 0)
-        rete(ERR_THD);
+        rete(ErrVal::THD);
     ife (g_scnDrawThd.Wait())
         retep;
     ife (g_scnDrawThd.Close())

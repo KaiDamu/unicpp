@@ -30,9 +30,9 @@ dfa ER _ConColSet(ConCol col)
 {
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_NO_EXIST);
+        rete(ErrVal::NO_EXIST);
     ifu (SetConsoleTextAttribute(hdl, WORD(col)) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     g_conColReal = col;
     rets;
 }
@@ -40,10 +40,10 @@ dfa ER _ConColGet(ConCol& col)
 {
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_NO_EXIST);
+        rete(ErrVal::NO_EXIST);
     CONSOLE_SCREEN_BUFFER_INFO info;
     ifu (GetConsoleScreenBufferInfo(hdl, &info) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     col = ConCol(info.wAttributes & 0x0F);
     rets;
 }
@@ -60,17 +60,17 @@ dfa ER _ConBufEmpty()
 {
     cx HANDLE hdl = GetStdHandle(STD_INPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_NO_EXIST);
+        rete(ErrVal::NO_EXIST);
     INPUT_RECORD ir;
     DWORD irRead;
     while (YES)
     {
         ifu (PeekConsoleInputW(hdl, &ir, 1, &irRead) == 0)
-            rete(ERR_CON);
+            rete(ErrVal::CON);
         if (irRead == 0)
             break;
         ifu (ReadConsoleInputW(hdl, &ir, 1, &irRead) == 0)
-            rete(ERR_CON);
+            rete(ErrVal::CON);
     }
     rets;
 }
@@ -82,7 +82,7 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen)
         retep;
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_NO_EXIST);
+        rete(ErrVal::NO_EXIST);
     cx AU end = buf + bufLen;
     AU cur = buf;
     ConCol colOld;
@@ -170,7 +170,7 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen)
             {
                 ife (ConColSet(colOld))
                     retep;
-                rete(ERR_CON);
+                rete(ErrVal::CON);
             }
         }
         if (isColNew)
@@ -206,7 +206,7 @@ dfa ER _ConWriteRawAl(cx CS* format, cx AL& args)
     CS buf[CON_BUF_LEN_MAX + 1];
     cx SI bufLen = vsnprintf(buf, CON_BUF_LEN_MAX, format, args);
     ifu (bufLen < 0 || bufLen >= CON_BUF_LEN_MAX)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     ife (_ConWriteRaw(buf, bufLen))
         retep;
     rets;
@@ -221,7 +221,7 @@ dfa ER ConTitleSet(cx CH* title)
     ife (ConReq())
         retep;
     ifu (SetConsoleTitleW(title) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     rets;
 }
 dfa SI ConTitleGet(CH* title, SI titleLenMax)
@@ -232,7 +232,7 @@ dfa SI ConTitleGet(CH* title, SI titleLenMax)
 dfa ER ConCreate(cx CH* title = NUL)
 {
     ifu (AllocConsole() == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     if (title != NUL)
     {
         ife (ConTitleSet(title))
@@ -261,7 +261,7 @@ dfa ER ConDel()
     if (ConIsExist() == NO)
         rets;
     ifu (FreeConsole() == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     rets;
 }
 dfa ER ConReq()
@@ -391,7 +391,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
 {
     strLen = -1;
     ifu (strLenxMax < STR_EX_LEN)
-        rete(ERR_LOW_SIZE);
+        rete(ErrVal::LOW_SIZE);
     strLen = 0;
     str[strLen] = '\0';
     ife (ConReq())
@@ -400,7 +400,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
         retep;
     cx AU hdl = GetStdHandle(STD_INPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     SI strPos = 0;
     static vector<string>* s_history = NUL;
     if (s_history == NUL)
@@ -411,14 +411,14 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
         INPUT_RECORD ir;
         DWORD irRead;
         ifu (PeekConsoleInputW(hdl, &ir, 1, &irRead) == 0)
-            rete(ERR_CON);
+            rete(ErrVal::CON);
         if (irRead == 0)
         {
             ThdWait(1);
             continue;
         }
         ifu (ReadConsoleInputW(hdl, &ir, 1, &irRead) == 0)
-            rete(ERR_CON);
+            rete(ErrVal::CON);
         if (ir.EventType != KEY_EVENT || !ir.Event.KeyEvent.bKeyDown)
             continue; // only keep key down
         cx AU& vkCode = ir.Event.KeyEvent.wVirtualKeyCode;
@@ -603,20 +603,20 @@ dfa ER ConWait()
         retep;
     cx HANDLE hdl = GetStdHandle(STD_INPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_NO_EXIST);
+        rete(ErrVal::NO_EXIST);
     INPUT_RECORD ir;
     DWORD irRead;
     while (YES)
     {
         ifu (PeekConsoleInputW(hdl, &ir, 1, &irRead) == 0)
-            rete(ERR_CON);
+            rete(ErrVal::CON);
         if (irRead == 0)
         {
             ThdWait(1);
             continue;
         }
         ifu (ReadConsoleInputW(hdl, &ir, 1, &irRead) == 0)
-            rete(ERR_CON);
+            rete(ErrVal::CON);
         if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
         {
             if (ir.Event.KeyEvent.wVirtualKeyCode == VK_RETURN)
@@ -631,20 +631,20 @@ dfa ER ConDatEmpty()
         rets;
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
-        rete(ERR_NO_EXIST);
+        rete(ErrVal::NO_EXIST);
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     ifu (GetConsoleScreenBufferInfo(hdl, &csbi) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     cx DWORD conSize = csbi.dwSize.X * csbi.dwSize.Y;
     cx COORD coord = {0, 0};
     DWORD result = 0;
     ifu (FillConsoleOutputCharacterW(hdl, ' ', conSize, coord, &result) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     ifu (GetConsoleScreenBufferInfo(hdl, &csbi) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     ifu (FillConsoleOutputAttribute(hdl, csbi.wAttributes, conSize, coord, &result) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     ifu (SetConsoleCursorPosition(hdl, coord) == 0)
-        rete(ERR_CON);
+        rete(ErrVal::CON);
     rets;
 }

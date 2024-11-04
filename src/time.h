@@ -52,7 +52,7 @@ dfa ER TimeResClr()
     ULONG resNew;
     ifu (NtSetTimerResolution(0, FALSE, &resNew) != STATUS_SUCCESS)
     {
-        rete(ERR_TIME_RES);
+        rete(ErrVal::TIME_RES);
     }
     rets;
 }
@@ -62,12 +62,12 @@ dfa ER TimeResSet(S4 ms, S4 us, BO force)
     ULONG resNew;
     ifu (NtSetTimerResolution(resReq, TRUE, &resNew) != STATUS_SUCCESS)
     {
-        rete(ERR_TIME_RES);
+        rete(ErrVal::TIME_RES);
     }
     ifu (force && (resReq != resNew))
     {
         TimeResClr();
-        rete(ERR_TIME_RES);
+        rete(ErrVal::TIME_RES);
     }
     rets;
 }
@@ -77,12 +77,12 @@ dfa ER _TimeMainInit()
     LARGE_INTEGER val;
     ifu (QueryPerformanceFrequency(&val) == 0)
     {
-        rete(ERR_TIME);
+        rete(ErrVal::TIME);
     }
     cx F8 timeMainDivF = S8ToF8(val.QuadPart) / 1000.0;
     ifu (QueryPerformanceCounter(&val) == 0)
     {
-        rete(ERR_TIME);
+        rete(ErrVal::TIME);
     }
     cx U8 timeMainOfs = val.QuadPart;
     g_timeMainOfs = timeMainOfs;

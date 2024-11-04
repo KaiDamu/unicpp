@@ -11,7 +11,7 @@ dfa ER NetInit()
         rets;
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-        rete(ERR_NET);
+        rete(ErrVal::NET);
     isInitDone = YES;
     rets;
 }
@@ -56,7 +56,7 @@ dfa ER DomainToIp(U4& ip, cx CS* domain)
     hints.ai_socktype = SOCK_STREAM;
     ADDRINFOA* result;
     ifu (getaddrinfo(domain, NUL, &hints, &result) != 0)
-        rete(ERR_NET);
+        rete(ErrVal::NET);
     ip = ((SOCKADDR_IN*)result->ai_addr)->sin_addr.S_un.S_addr;
     freeaddrinfo(result);
     rets;

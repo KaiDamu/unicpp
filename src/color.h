@@ -707,23 +707,23 @@ dfa ER ColGridHsvNCmp(F4& resultDiff, cx ColGrid<ColHsvN>& subGrid, cx ColGrid<C
     // check pos & size
     ifu (info.subGridPos.x + subGrid.size.w > mainGrid.size.w || info.subGridPos.y + subGrid.size.h > mainGrid.size.h)
     {
-        rete(ERR_HIGH_SIZE);
+        rete(ErrVal::HIGH_SIZE);
     }
     ifu (info.subGridPos.x < 0 || info.subGridPos.y < 0)
     {
-        rete(ERR_LOW_SIZE);
+        rete(ErrVal::LOW_SIZE);
     }
     ifu ((info.subGridMask != NUL) && (info.subGridMask->size.w != subGrid.size.w || info.subGridMask->size.h != subGrid.size.h))
     {
-        rete(ERR_NO_VALID);
+        rete(ErrVal::NO_VALID);
     }
     ifu ((info.subGridEdges != NUL) && (info.subGridEdges->size.w != subGrid.size.w || info.subGridEdges->size.h != subGrid.size.h))
     {
-        rete(ERR_NO_VALID);
+        rete(ErrVal::NO_VALID);
     }
     ifu ((info.mainGridEdges != NUL) && (info.mainGridEdges->size.w != mainGrid.size.w || info.mainGridEdges->size.h != mainGrid.size.h))
     {
-        rete(ERR_NO_VALID);
+        rete(ErrVal::NO_VALID);
     }
 
     // compare
@@ -816,13 +816,13 @@ tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
     cx AU pathExt = PathExtPtr(path);
     ifu (StrCmp(pathExt, L"bmp") != 0)
     {
-        rete(ERR_NO_SUPPORT);
+        rete(ErrVal::NO_SUPPORT);
     }
 
     FileMem file;
     ife (file.OpenWrite(path))
     {
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
 
     cx AU rowSize = AlignBit(colGrid.size.w * siz(ColRgb), siz(U4));
@@ -870,7 +870,7 @@ tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
 
     ife (file.Close())
     {
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
     rets;
 }
@@ -879,13 +879,13 @@ tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
     cx AU pathExt = PathExtPtr(path);
     ifu (StrCmp(pathExt, L"bmp") != 0)
     {
-        rete(ERR_NO_SUPPORT);
+        rete(ErrVal::NO_SUPPORT);
     }
 
     FileMem file;
     ife (file.OpenRead(path))
     {
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
 
     BITMAPFILEHEADER fileHdr = {};
@@ -894,7 +894,7 @@ tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
 
     ifu (fileHdr.bfType != 0x4D42)
     {
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
 
     BITMAPINFOHEADER infoHdr = {};
@@ -903,7 +903,7 @@ tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
 
     ifu (infoHdr.biPlanes != 1 || infoHdr.biBitCount != sizb(ColRgb) || infoHdr.biCompression != BI_RGB)
     {
-        rete(ERR_NO_SUPPORT);
+        rete(ErrVal::NO_SUPPORT);
     }
     cx AU imgW = SI(infoHdr.biWidth);
     cx AU imgH = SI(Abs(infoHdr.biHeight));
@@ -935,7 +935,7 @@ tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
 
     ife (file.Close())
     {
-        rete(ERR_FILE);
+        rete(ErrVal::FILE);
     }
     rets;
 }
