@@ -48,9 +48,29 @@ using std::wstring;
     #include <shlobj.h>
     #include <winsock2.h>
     #include <ws2tcpip.h>
+
+    #ifdef PROG_COMPILER_GCC
+        #ifdef D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS
+            #undef D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS
+        #endif
+
+        #ifdef D3D10_ERROR_FILE_NOT_FOUND
+            #undef D3D10_ERROR_FILE_NOT_FOUND
+        #endif
+    #endif
+
+    #ifdef PROG_COMPILER_GCC
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wclass-conversion"
+    #endif
+
     #include <wrl/client.h>
     #include <d3d11.h>
     #include <dxgi1_2.h>
+
+    #ifdef PROG_COMPILER_GCC
+        #pragma GCC diagnostic pop
+    #endif
 
     #include "import/winapi/type.h"
     #include "import/winapi/value.h"

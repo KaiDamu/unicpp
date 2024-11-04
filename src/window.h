@@ -236,7 +236,7 @@ class Win
             ife (tx->RectOuterGet(rectOuter))
                 retep;
 
-            RECT rectOfs = {0, 0, rect.size.w, rect.size.h};
+            RECT rectOfs = {0, 0, LONG(rect.size.w), LONG(rect.size.h)};
             ifu (AdjustWindowRectEx(&rectOfs, GetWindowLongW(m_hdl, GWL_STYLE), FALSE, GetWindowLongW(m_hdl, GWL_EXSTYLE)) == 0)
                 rete(ERR_WIN);
 
