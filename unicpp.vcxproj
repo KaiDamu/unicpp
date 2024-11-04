@@ -30,6 +30,7 @@
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\console.h" />
     <ClInclude Include="src\container.h" />
+    <ClInclude Include="src\input.h" />
     <ClInclude Include="src\mouse.h" />
     <ClInclude Include="src\debug.h" />
     <ClInclude Include="src\dictionary.h" />
@@ -87,6 +88,7 @@
     <ClInclude Include="src\value.h" />
     <ClInclude Include="src\vector.h" />
     <ClInclude Include="src\vfs.h" />
+    <ClInclude Include="src\vuser.h" />
     <ClInclude Include="src\window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

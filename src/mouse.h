@@ -55,6 +55,7 @@ dfa ER _MousKeyPress(InputKey key, BO isDown)
         rete(ERR_MOUS);
     rets;
 }
+
 dfa ER MousKeyPressDown(InputKey key)
 {
     ret _MousKeyPress(key, YES);
@@ -63,7 +64,7 @@ dfa ER MousKeyPressUp(InputKey key)
 {
     ret _MousKeyPress(key, NO);
 }
-dfa ER MousKeyPress(InputKey key, TmMain hold = 50, TmMain delay = 40)
+dfa ER MousKeyPress(InputKey key, TmMain hold = INPUT_KEY_HOLD_DEFA, TmMain delay = INPUT_KEY_DELAY_DEFA)
 {
     ife (MousKeyPressDown(key))
         retep;

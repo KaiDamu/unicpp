@@ -107,11 +107,13 @@ using std::wstring;
 #include "network.h"
 #include "clipboard.h"
 #include "vfs.h"
+#include "input.h"
 #ifdef UCPP_INCLUDE_KEYB
     #include "keyboard.h"
 #endif
 #include "mouse.h"
 #include "joystick.h"
+#include "vuser.h"
 #ifdef UCPP_INCLUDE_GR
     #include "graphics.h"
 #endif
