@@ -4,6 +4,8 @@ thdlocal Pos2<F4> g_curPosOfs;
 
 dfa ER CurPosGet(Pos2<F4>& pos)
 {
+    ife (ProcDpiAwareSet())
+        retep;
     pos = Pos2<F4>(0, 0);
     POINT tmp = {};
     ifu (GetCursorPos(&tmp) == 0)
@@ -13,6 +15,8 @@ dfa ER CurPosGet(Pos2<F4>& pos)
 }
 dfa ER CurPosSet(cx Pos2<F4>& pos)
 {
+    ife (ProcDpiAwareSet())
+        retep;
     cx S4 x = RoundF4ToS4(pos.x);
     cx S4 y = RoundF4ToS4(pos.y);
     ifu (SetCursorPos(x, y) == 0)

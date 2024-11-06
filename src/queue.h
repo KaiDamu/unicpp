@@ -35,6 +35,27 @@ tpl1 class DQueue
         m_dat.pop_front();
         ret dat;
     }
+    dfa T1& GetLast(T1& dat)
+    {
+        Assert(!tx->IsEmpty());
+        dat = move(m_dat.back());
+        m_dat.pop_back();
+        ret dat;
+    }
+    dfa T1& Peek()
+    {
+        Assert(!tx->IsEmpty());
+        ret m_dat.front();
+    }
+    dfa T1& PeekLast()
+    {
+        Assert(!tx->IsEmpty());
+        ret m_dat.back();
+    }
+    dfa NT Del()
+    {
+        m_dat.pop_front();
+    }
     dfa NT DelLast()
     {
         m_dat.pop_back();

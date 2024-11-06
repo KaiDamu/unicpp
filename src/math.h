@@ -87,6 +87,38 @@ tpl0 dfa F4 Sqrt<F4>(F4 val)
     ret sqrtf(val);
 #endif
 }
+tpl1 dfa T1 Sin(T1 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret T1(__builtin_sin(val));
+#else
+    ret T1(sin(val));
+#endif
+}
+tpl0 dfa F4 Sin<F4>(F4 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_sinf(val);
+#else
+    ret sinf(val);
+#endif
+}
+tpl1 dfa T1 Cos(T1 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret T1(__builtin_cos(val));
+#else
+    ret T1(cos(val));
+#endif
+}
+tpl0 dfa F4 Cos<F4>(F4 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_cosf(val);
+#else
+    ret cosf(val);
+#endif
+}
 tpl1 dfa T1 Dist0(T1 x, T1 y)
 {
     ret Sqrt<T1>(Pow2<T1>(x) + Pow2<T1>(y));
@@ -108,9 +140,9 @@ tpl1 dfa NT Swap(T1& a, T1& b)
     a = b;
     b = tmp;
 }
-tpl2 dfa T1 Lerp(T1 a, T1 b, T2 t)
+tpl2 dfa T1 Lerp(cx T1& a, cx T1& b, T2 t)
 {
-    ret a + T1(T2(b - a) * t);
+    ret a + T1((b - a) * t);
 }
 tpl1 T1 DegToRad(T1 deg)
 {
@@ -307,4 +339,56 @@ tpl1 dfa T1 ValNext(cx T1& val)
         Assert(!"ValNext: unsupported type");
         ret val;
     }
+}
+tpl1 dfa T1 AdamEase1(T1 t, T1 curveRaw)
+{
+    ret (t * (T1(1) + curveRaw)) / (t + curveRaw);
+}
+tpl1 dfa T1 AdamEase1CurveRawGet(T1 curve)
+{
+    // TODO: find the exact formula, because the transition between the lookup values is just a rough approximation
+
+    // valid values for 'curve' are in the range of [-1.0, 1.0]
+    // examples:
+    // - curve = +0.3 for average ease-out
+    // - curve = +0.5 for sharp ease-out
+    // - curve = -0.3 for average ease-in
+    // - curve = -0.5 for sharp ease-in
+    // - curve =  0.0 for linear
+
+    // we do not know the exact formula, so we use a lookup table...
+    // from index 1 to 10 the values are 100% (rounded) accurate
+    // index 0 would be "infinity", index 11 would be "invalid"
+    constexpr T1 lookup[12] = {9.9999, 2.025, 0.8, 0.40833, 0.225, 0.125, 0.066667, 0.032143, 0.0125, 0.0027778, 0, 0};
+
+    curve *= T1(10);
+
+    cx AU isNeg = curve < T1(0);
+    if (isNeg)
+        curve = -curve;
+
+    ifu (curve > T1(10))
+        curve = T1(10);
+
+    cx AU iPrev = SI(curve);
+    cx AU iNext = iPrev + 1;
+
+    T1 curveRaw = Lerp<T1>(lookup[iPrev], lookup[iNext], curve - T1(iPrev));
+
+    if (isNeg)
+        curveRaw = -(curveRaw + T1(1));
+
+    ret curveRaw;
+}
+tpl1 dfa T1 AdamHill1(T1 t, T1 tMid, T1 fullness)
+{
+    // valid values for 't' are in the range of [0.0, 1.0]
+    // valid values for 'tMid' are in the range of [0.0, 1.0]
+    // valid values for 'fullness' are in the range of [-1.0, 1.0]
+
+    cx AU tRatio = ((t < tMid) ? (t / tMid) : ((T1(1) - t) / (T1(1) - tMid)));
+    cx AU valBase = tRatio + tRatio * (T1(1) - tRatio);
+    cx AU val = valBase * (T1(1) + (T1(1) - valBase) * fullness);
+
+    ret val;
 }
