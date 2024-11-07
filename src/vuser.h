@@ -240,7 +240,7 @@ class VuserInput
                 }
                 posDistSum += F8(sectDist);
 
-                pathSects.emplace_back(tTest, posDistSum);
+                pathSects.emplace_back(tTest, F4(posDistSum));
 
                 ifu (tTest == F4(1))
                     break;
@@ -283,13 +283,13 @@ class VuserInput
             // get t value
             cx AU tAbs = F4((timeNow - timeBegin) / timeDurationPath);
 
-            // get weighed t value - based on path
+            // get weighed t value - based on time curve
             AU tWeighed = F4(0);
-            ife (timePathFn(tWeighed, tAbs, timePathFnICur))
+            ife (timeCurveFn(tWeighed, tAbs))
                 retep;
 
-            // get weighed t value - based on time curve
-            ife (timeCurveFn(tWeighed, tWeighed))
+            // get weighed t value - based on path
+            ife (timePathFn(tWeighed, tWeighed, timePathFnICur))
                 retep;
 
             // get intermediate position
