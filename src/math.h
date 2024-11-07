@@ -346,8 +346,6 @@ tpl1 dfa T1 AdamEase1(T1 t, T1 curveRaw)
 }
 tpl1 dfa T1 AdamEase1CurveRawGet(T1 curve)
 {
-    // TODO: find the exact formula, because the transition between the lookup values is just a rough approximation
-
     // valid values for 'curve' are in the range of [-1.0, 1.0]
     // examples:
     // - curve = +0.3 for average ease-out
@@ -356,24 +354,19 @@ tpl1 dfa T1 AdamEase1CurveRawGet(T1 curve)
     // - curve = -0.5 for sharp ease-in
     // - curve =  0.0 for linear
 
-    // we do not know the exact formula, so we use a lookup table...
-    // from index 1 to 10 the values are 100% (rounded) accurate
-    // index 0 would be "infinity", index 11 would be "invalid"
-    constexpr T1 lookup[12] = {9.9999, 2.025, 0.8, 0.40833, 0.225, 0.125, 0.066667, 0.032143, 0.0125, 0.0027778, 0, 0};
-
-    curve *= T1(10);
+    ifu (IsNearZero(curve))
+        ret T1(1e9);
 
     cx AU isNeg = curve < T1(0);
     if (isNeg)
         curve = -curve;
 
-    ifu (curve > T1(10))
-        curve = T1(10);
+    ifu (curve > T1(1))
+        curve = T1(1);
 
-    cx AU iPrev = SI(curve);
-    cx AU iNext = iPrev + 1;
-
-    T1 curveRaw = Lerp<T1>(lookup[iPrev], lookup[iNext], curve - T1(iPrev));
+    cx AU x = T1(0.5) - curve / T1(2);
+    cx AU y = T1(0.5) + curve / T1(2);
+    AU curveRaw = (x * (T1(1) - y)) / (y - x);
 
     if (isNeg)
         curveRaw = -(curveRaw + T1(1));
