@@ -31,6 +31,15 @@ dfa ER ScnSizeGet(Size2<SI>& size)
     size = rect.size;
     rets;
 }
+dfa ER ScnDiagonalGet(F4& size)
+{
+    Size2<SI> scnSize;
+    ife (ScnSizeGet(scnSize))
+        retep;
+    cx Pos2<F4> scnCorner(F4(scnSize.w), F4(scnSize.h));
+    size = Dist0(scnCorner);
+    rets;
+}
 dfa F4 ScnDpiMulGet(BO doUpd = NO)
 {
     static F4 dpiMul;

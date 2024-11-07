@@ -16,6 +16,7 @@ class VuserInput
             struct AdamEase1
             {
                 F4 curve;
+                F4 curveVari;
             };
 
             union {
@@ -51,6 +52,9 @@ class VuserInput
                 F4 tMid;
                 F4 fullness;
                 F4 h;
+                F4 tMidVari;
+                F4 fullnessVari;
+                F4 hVari;
             };
 
             union {
@@ -81,18 +85,44 @@ class VuserInput
             F4 hz;
             TimeCurve timeCurve;
             PosCurve posCurve;
+            F4 speedVari;
+            F4 hzVari;
 
             dfa Cur()
             {
                 speed = 1.25f;
                 hz = 125.0f;
+                speedVari = F4(0);
+                hzVari = F4(0);
             }
         };
 
         Cur cur;
 
+        dfa NT InitAdam()
+        {
+            F4 scnDiagonal;
+            ife (ScnDiagonalGet(scnDiagonal))
+                scnDiagonal = 2202.907f;
+            cur.speed = 0.00054474f * scnDiagonal;
+            cur.speedVari = 0.00011916f * scnDiagonal;
+            cur.hz = 250.0f;
+            cur.hzVari = 0.0f;
+            cur.timeCurve.type = VuserInput::TimeCurve::Type::ADAM_EASE_1;
+            cur.timeCurve.param.adamEase1.curve = 0.12f;
+            cur.timeCurve.param.adamEase1.curveVari = 0.155f;
+            cur.posCurve.type = VuserInput::PosCurve::Type::ADAM_HILL_1;
+            cur.posCurve.param.adamHill1.tMid = 0.5f;
+            cur.posCurve.param.adamHill1.tMidVari = 0.3f;
+            cur.posCurve.param.adamHill1.fullness = 0.0f;
+            cur.posCurve.param.adamHill1.fullnessVari = 0.75f;
+            cur.posCurve.param.adamHill1.h = 0.0f;
+            cur.posCurve.param.adamHill1.hVari = 0.25f;
+        }
+
         dfa Cfg()
         {
+            tx->InitAdam();
         }
     };
     struct State
@@ -125,6 +155,28 @@ class VuserInput
     }
 
   private:
+    dfa NT _CfgCurVariApply(Cfg::Cur& dst, cx Cfg::Cur& src)
+    {
+        dst = src;
+        if (dst.speedVari != F4(0))
+            dst.speed += RandF4(-dst.speedVari, dst.speedVari);
+        if (dst.hzVari != F4(0))
+            dst.hz += RandF4(-dst.hzVari, dst.hzVari);
+        if (dst.timeCurve.type == TimeCurve::Type::ADAM_EASE_1)
+        {
+            if (dst.timeCurve.param.adamEase1.curveVari != F4(0))
+                dst.timeCurve.param.adamEase1.curve += RandF4(-dst.timeCurve.param.adamEase1.curveVari, dst.timeCurve.param.adamEase1.curveVari);
+        }
+        if (dst.posCurve.type == PosCurve::Type::ADAM_HILL_1)
+        {
+            if (dst.posCurve.param.adamHill1.tMidVari != F4(0))
+                dst.posCurve.param.adamHill1.tMid += RandF4(-dst.posCurve.param.adamHill1.tMidVari, dst.posCurve.param.adamHill1.tMidVari);
+            if (dst.posCurve.param.adamHill1.fullnessVari != F4(0))
+                dst.posCurve.param.adamHill1.fullness += RandF4(-dst.posCurve.param.adamHill1.fullnessVari, dst.posCurve.param.adamHill1.fullnessVari);
+            if (dst.posCurve.param.adamHill1.hVari != F4(0))
+                dst.posCurve.param.adamHill1.h += RandF4(-dst.posCurve.param.adamHill1.hVari, dst.posCurve.param.adamHill1.hVari);
+        }
+    }
     dfa ER _CurPosGet(Pos2<F4>& pos)
     {
         ife (::CurPosGet(pos))
@@ -135,6 +187,10 @@ class VuserInput
   public:
     dfa ER CurPosSet(cx Pos2<F4>& pos)
     {
+        // get configuration
+        Cfg::Cur cfgCur;
+        tx->_CfgCurVariApply(cfgCur, m_cfg.cur);
+
         // get source position
         Pos2<F4> srcPos;
         ife (tx->_CurPosGet(srcPos))
@@ -146,27 +202,27 @@ class VuserInput
         // calculate constant values #1
         cx AU timeBegin = TimeMain();
         cx AU posDistLinear = Dist(srcPos, dstPos);
-        cx AU timeEndLinear = timeBegin + TmMain(posDistLinear / m_cfg.cur.speed);
+        cx AU timeEndLinear = timeBegin + TmMain(posDistLinear / cfgCur.speed);
         cx AU timeDurationLinear = timeEndLinear - timeBegin;
-        cx AU timeWaitBase = TmMain(1000) / TmMain(m_cfg.cur.hz);
+        cx AU timeWaitBase = TmMain(1000) / TmMain(cfgCur.hz);
 
         // calculate constant values #2
-        cx AU& timeCurveParam = m_cfg.cur.timeCurve.param;
-        cx AU& posCurveParam = m_cfg.cur.posCurve.param;
+        cx AU& timeCurveParam = cfgCur.timeCurve.param;
+        cx AU& posCurveParam = cfgCur.posCurve.param;
         struct Cache
         {
             F4 timeCurveRaw;
             Vec2<F4> posOfsVec;
         };
         Cache cache = {};
-        if (m_cfg.cur.timeCurve.type == TimeCurve::Type::ADAM_EASE_1)
+        if (cfgCur.timeCurve.type == TimeCurve::Type::ADAM_EASE_1)
             cache.timeCurveRaw = AdamEase1CurveRawGet(timeCurveParam.adamEase1.curve);
-        if (m_cfg.cur.posCurve.type == PosCurve::Type::ADAM_HILL_1)
+        if (cfgCur.posCurve.type == PosCurve::Type::ADAM_HILL_1)
             cache.posOfsVec = Vec2Normalize(Vec2Perp(Vec2Get(srcPos, dstPos))) * (Vec2Len(Vec2Get(srcPos, dstPos)) / 2.0f) * posCurveParam.adamHill1.h;
 
         // functions
         cx AU timeCurveFn = [&](F4& tWeighed, F4 t) -> ER {
-            switch (m_cfg.cur.timeCurve.type)
+            switch (cfgCur.timeCurve.type)
             {
             case TimeCurve::Type::LINEAR:
                 tWeighed = t;
@@ -180,7 +236,7 @@ class VuserInput
             rets;
         };
         cx AU posCurveFn = [&](Pos2<F4>& nowPos, F4 t) -> ER {
-            switch (m_cfg.cur.posCurve.type)
+            switch (cfgCur.posCurve.type)
             {
             case PosCurve::Type::LINEAR:
                 nowPos = Lerp(srcPos, dstPos, t);
@@ -253,7 +309,7 @@ class VuserInput
             } while (YES);
 
             posDistPath = F4(posDistSum);
-            timeEndPath = timeBegin + TmMain(posDistPath / m_cfg.cur.speed);
+            timeEndPath = timeBegin + TmMain(posDistPath / cfgCur.speed);
             timeDurationPath = timeEndPath - timeBegin;
 
             for (AU& pathSect : pathSects)
