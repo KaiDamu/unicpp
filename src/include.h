@@ -15,6 +15,7 @@
 #include <span>
 #include <array>
 #include <memory>
+#include <limits>
 
 using std::move;
 
