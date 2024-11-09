@@ -98,17 +98,21 @@ class VuserInput
         {
             F4 speed;
             F4 hz;
+            TmMain delay;
             TimeCurve timeCurve;
             PosCurve posCurve;
             F4 speedVari;
             F4 hzVari;
+            TmMain delayVari;
 
             dfa Cur()
             {
                 speed = 1.25f;
                 hz = 125.0f;
+                delay = INPUT_KEY_DELAY_DEFA;
                 speedVari = F4(0);
                 hzVari = F4(0);
+                delayVari = TmMain(0);
             }
         };
 
@@ -121,13 +125,15 @@ class VuserInput
             ife (ScnDiagonalGet(scnDiagonal))
                 scnDiagonal = 2202.907f;
             key.downDelay = 62.7952;
-            key.upDelay = 92.8447;
             key.downDelayVari = 13.1827;
+            key.upDelay = 92.8447;
             key.upDelayVari = 21.1340;
             cur.speed = 0.00054474f * scnDiagonal;
             cur.speedVari = 0.00011916f * scnDiagonal;
             cur.hz = 250.0f;
-            cur.hzVari = 0.0f;
+            cur.hzVari = F4(0);
+            cur.delay = 40.8273;
+            cur.delayVari = 4.7361;
             cur.timeCurve.type = VuserInput::TimeCurve::Type::ADAM_EASE_1;
             cur.timeCurve.param.adamEase1.curve = 0.12f;
             cur.timeCurve.param.adamEase1.curveVari = 0.155f;
@@ -197,6 +203,8 @@ class VuserInput
             dst.speed += RandF4(-dst.speedVari, dst.speedVari);
         if (dst.hzVari != F4(0))
             dst.hz += RandF4(-dst.hzVari, dst.hzVari);
+        if (dst.delayVari != TmMain(0))
+            dst.delay += TmMain(RandF8(-dst.delayVari, dst.delayVari));
         if (dst.timeCurve.type == TimeCurve::Type::ADAM_EASE_1)
         {
             if (dst.timeCurve.param.adamEase1.curveVari != F4(0))
@@ -274,7 +282,7 @@ class VuserInput
             retep;
         rets;
     }
-    dfa ER CurPosSet(cx Pos2<F4>& pos)
+    dfa ER CurPosSet(cx Pos2<F4>& pos, cx Pos2<F4>& posVari = Pos2<F4>(0, 0))
     {
         // get configuration
         Cfg::Cur cfgCur;
@@ -286,7 +294,7 @@ class VuserInput
             retep;
 
         // get destination position
-        cx Pos2<F4> dstPos = pos;
+        cx Pos2<F4> dstPos = pos + ((posVari == Pos2<F4>(0, 0)) ? Pos2<F4>(0, 0) : Pos2<F4>(RandF4(-posVari.x, posVari.x), RandF4(-posVari.y, posVari.y)));
 
         // calculate constant values #1
         cx AU timeBegin = TimeMain();
@@ -456,10 +464,13 @@ class VuserInput
         ife (::CurPosSet(dstPos))
             retep;
 
+        // delay
+        ThdWait(cfgCur.delay);
+
         // finish
         rets;
     }
-    dfa ER CurPosMove(cx Pos2<F4>& pos)
+    dfa ER CurPosMove(cx Pos2<F4>& pos, cx Pos2<F4>& posVari = Pos2<F4>(0, 0))
     {
         // get source position
         Pos2<F4> srcPos;
@@ -470,10 +481,36 @@ class VuserInput
         cx Pos2<F4> dstPos = srcPos + pos;
 
         // set cursor to destination position
-        ife (tx->CurPosSet(dstPos))
+        ife (tx->CurPosSet(dstPos, posVari))
             retep;
 
         // finish
+        rets;
+    }
+    dfa ER KeyPressTo(InputKey key, cx Pos2<F4>& pos, cx Pos2<F4>& posVari = Pos2<F4>(0, 0))
+    {
+        ife (tx->CurPosSet(pos, posVari))
+            retep;
+        ife (tx->KeyPress(key))
+            retep;
+        rets;
+    }
+    dfa ER KeyDragTo(InputKey key, cx Pos2<F4>& pos, cx Pos2<F4>& posVari = Pos2<F4>(0, 0))
+    {
+        ife (tx->KeyPressDown(key))
+            retep;
+        ife (tx->CurPosSet(pos, posVari))
+            retep;
+        ife (tx->KeyPressUp(key))
+            retep;
+        rets;
+    }
+    dfa ER KeyDrag(InputKey key, cx Pos2<F4>& posSrc, cx Pos2<F4>& posDst, cx Pos2<F4>& posSrcVari = Pos2<F4>(0, 0), cx Pos2<F4>& posDstVari = Pos2<F4>(0, 0))
+    {
+        ife (tx->CurPosSet(posSrc, posSrcVari))
+            retep;
+        ife (tx->KeyDragTo(key, posDst, posDstVari))
+            retep;
         rets;
     }
 
