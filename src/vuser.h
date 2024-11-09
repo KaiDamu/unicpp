@@ -79,6 +79,21 @@ class VuserInput
   public:
     struct Cfg
     {
+        struct Key
+        {
+            TmMain downDelay;
+            TmMain upDelay;
+            TmMain downDelayVari;
+            TmMain upDelayVari;
+
+            dfa Key()
+            {
+                downDelay = INPUT_KEY_HOLD_DEFA;
+                upDelay = INPUT_KEY_DELAY_DEFA;
+                downDelayVari = TmMain(0);
+                upDelayVari = TmMain(0);
+            }
+        };
         struct Cur
         {
             F4 speed;
@@ -97,6 +112,7 @@ class VuserInput
             }
         };
 
+        Key key;
         Cur cur;
 
         dfa NT InitAdam()
@@ -104,6 +120,10 @@ class VuserInput
             F4 scnDiagonal;
             ife (ScnDiagonalGet(scnDiagonal))
                 scnDiagonal = 2202.907f;
+            key.downDelay = 62.7952;
+            key.upDelay = 92.8447;
+            key.downDelayVari = 13.1827;
+            key.upDelayVari = 21.1340;
             cur.speed = 0.00054474f * scnDiagonal;
             cur.speedVari = 0.00011916f * scnDiagonal;
             cur.hz = 250.0f;
@@ -127,6 +147,12 @@ class VuserInput
     };
     struct State
     {
+        struct Key
+        {
+            dfa Key()
+            {
+            }
+        };
         struct Cur
         {
             Pos2<F4> pos;
@@ -137,6 +163,7 @@ class VuserInput
             }
         };
 
+        Key key;
         Cur cur;
 
         dfa State()
@@ -155,6 +182,14 @@ class VuserInput
     }
 
   private:
+    dfa NT _CfgKeyVariApply(Cfg::Key& dst, cx Cfg::Key& src)
+    {
+        dst = src;
+        if (dst.downDelayVari != TmMain(0))
+            dst.downDelay += TmMain(RandF8(-dst.downDelayVari, dst.downDelayVari));
+        if (dst.upDelayVari != TmMain(0))
+            dst.upDelay += TmMain(RandF8(-dst.upDelayVari, dst.upDelayVari));
+    }
     dfa NT _CfgCurVariApply(Cfg::Cur& dst, cx Cfg::Cur& src)
     {
         dst = src;
@@ -185,6 +220,60 @@ class VuserInput
     }
 
   public:
+    dfa ER KeyPressDown(InputKey key)
+    {
+        Cfg::Key cfgKey;
+        tx->_CfgKeyVariApply(cfgKey, m_cfg.key);
+
+        switch (InputKeyTypeGet(key))
+        {
+        case InputKeyType::KEYB:
+            ife (KeybKeyPressDown(key))
+                retep;
+            break;
+        case InputKeyType::MOUS:
+            ife (MousKeyPressDown(key))
+                retep;
+            break;
+        default:
+            rete(ErrVal::NO_SUPPORT);
+        }
+
+        ThdWait(cfgKey.downDelay);
+
+        rets;
+    }
+    dfa ER KeyPressUp(InputKey key)
+    {
+        Cfg::Key cfgKey;
+        tx->_CfgKeyVariApply(cfgKey, m_cfg.key);
+
+        switch (InputKeyTypeGet(key))
+        {
+        case InputKeyType::KEYB:
+            ife (KeybKeyPressUp(key))
+                retep;
+            break;
+        case InputKeyType::MOUS:
+            ife (MousKeyPressUp(key))
+                retep;
+            break;
+        default:
+            rete(ErrVal::NO_SUPPORT);
+        }
+
+        ThdWait(cfgKey.upDelay);
+
+        rets;
+    }
+    dfa ER KeyPress(InputKey key)
+    {
+        ife (tx->KeyPressDown(key))
+            retep;
+        ife (tx->KeyPressUp(key))
+            retep;
+        rets;
+    }
     dfa ER CurPosSet(cx Pos2<F4>& pos)
     {
         // get configuration
@@ -365,6 +454,23 @@ class VuserInput
 
         // set cursor to destination position
         ife (::CurPosSet(dstPos))
+            retep;
+
+        // finish
+        rets;
+    }
+    dfa ER CurPosMove(cx Pos2<F4>& pos)
+    {
+        // get source position
+        Pos2<F4> srcPos;
+        ife (tx->_CurPosGet(srcPos))
+            retep;
+
+        // get destination position
+        cx Pos2<F4> dstPos = srcPos + pos;
+
+        // set cursor to destination position
+        ife (tx->CurPosSet(dstPos))
             retep;
 
         // finish

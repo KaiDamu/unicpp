@@ -165,6 +165,12 @@ enum class InputKey : U1
     PA1 = 0xFD,
     OEM_CLEAR = 0xFE,
 };
+enum class InputKeyType : U1
+{
+    NA = 0,
+    KEYB = 1,
+    MOUS = 2,
+};
 
 // operator for InputKey to int
 dfa int operator+(InputKey key)
@@ -175,6 +181,22 @@ dfa int operator+(InputKey key)
 dfa U4 InputKeyToCodeVk(InputKey key)
 {
     ret U4(key);
+}
+dfa InputKeyType InputKeyTypeGet(InputKey key)
+{
+    switch (key)
+    {
+    case InputKey::NONE:
+        ret InputKeyType::NA;
+    case InputKey::MOUS_LEFT:
+    case InputKey::MOUS_RIGHT:
+    case InputKey::MOUS_MID:
+    case InputKey::MOUS_EX1:
+    case InputKey::MOUS_EX2:
+        ret InputKeyType::MOUS;
+    default:
+        ret InputKeyType::KEYB;
+    }
 }
 
 constexpr SI INPUT_KEY_CNT = 256;
