@@ -66,17 +66,22 @@ constexpr BO IS_THD_SUPPORT = NO;
 constexpr BO IS_THD_SUPPORT = YES;
 #endif
 
-tpl1 constexpr T1 Pi()
+tpl1 constexpr dfa T1 Pi()
 {
     ret static_cast<T1>(3.14159265358979323846);
 }
-tpl0 constexpr F4 Pi<F4>()
+tpl0 constexpr dfa F4 Pi<F4>()
 {
     ret 3.14159265358979f;
 }
-tpl0 constexpr F8 Pi<F8>()
+tpl0 constexpr dfa F8 Pi<F8>()
 {
     ret 3.14159265358979323846;
+}
+
+tpl1 constexpr dfa SI VarintSizeMax()
+{
+    ret (siz(T1) * 8 + 6) / 7;
 }
 
 #define NUL 0

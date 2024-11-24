@@ -503,6 +503,13 @@ tpl1 struct ColGrid
     {
         ret pixels[pos.y * size.w + pos.x];
     }
+    dfa NT Resize(cx Size2<SI>& size)
+    {
+        tx->size = size;
+        cx AU pixelCnt = size.Area();
+        if (TO(pixelCnt)(pixels.size()) != pixelCnt)
+            pixels.resize(pixelCnt);
+    }
 
     dfa ColGrid()
     {
@@ -517,6 +524,13 @@ tpl1 struct ColGrid
 tpl0 dfa NT ToType(ColVN& dst, cx ColRgbN& src)
 {
     dst.v = src.r * 0.299f + src.g * 0.587f + src.b * 0.114f;
+}
+tpl0 dfa NT ToType(ColRgba& dst, cx ColRgbN& src)
+{
+    dst.r = U1(src.r * 255.0f);
+    dst.g = U1(src.g * 255.0f);
+    dst.b = U1(src.b * 255.0f);
+    dst.a = 255;
 }
 tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgbN& src)
 {
@@ -572,7 +586,7 @@ tpl0 dfa NT ToType(ColRgbN& dst, cx ColHsvN& src)
     {
         h = 0.0f;
     }
-    cx AU i = h;
+    cx AU i = U1(h);
     cx AU f = h - i;
     cx AU p = src.v * (1.0f - src.s);
     cx AU q = src.v * (1.0f - src.s * f);
@@ -617,6 +631,12 @@ tpl0 dfa NT ToType(ColRgbN& dst, cx ColHsvN& src)
         break;
     }
 }
+tpl0 dfa NT ToType(ColRgba& dst, cx ColHsvN& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
 tpl0 dfa NT ToType(ColRgbN& dst, cx ColVN& src)
 {
     dst.r = src.v;
@@ -624,6 +644,10 @@ tpl0 dfa NT ToType(ColRgbN& dst, cx ColVN& src)
     dst.b = src.v;
 }
 tpl0 dfa NT ToType(ColRgb& dst, cx ColRgb& src)
+{
+    dst = move(src);
+}
+tpl0 dfa NT ToType(ColVN& dst, cx ColVN& src)
 {
     dst = move(src);
 }
@@ -638,6 +662,13 @@ tpl0 dfa NT ToType(ColRgb& dst, cx ColVN& src)
     dst.r = U1(src.v * 255.0f);
     dst.g = U1(src.v * 255.0f);
     dst.b = U1(src.v * 255.0f);
+}
+tpl0 dfa NT ToType(ColRgba& dst, cx ColVN& src)
+{
+    dst.r = U1(src.v * 255.0f);
+    dst.g = U1(src.v * 255.0f);
+    dst.b = U1(src.v * 255.0f);
+    dst.a = 255;
 }
 tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgb& src)
 {

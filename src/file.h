@@ -684,6 +684,20 @@ class FileMem
             rete(ErrVal::NO_FULL);
         rets;
     }
+    tpl1 dfa ER ReadVal(T1& val)
+    {
+        ret tx->Read((GA)&val, siz(T1));
+    }
+    tpl1 dfa ER ReadVarint(T1& val)
+    {
+        cx U1* buf = m_dat.Ptr() + m_filePos + m_filePosOfs;
+        cx AU size = VarintDecode<T1>(val, buf);
+        if (m_isWriteDirect)
+            m_filePosOfs += size;
+        else
+            m_filePos += size;
+        rets;
+    }
     dfa BO ReadLine(string& str)
     {
         U1* ptrBase = m_dat.Ptr() + m_filePos;
@@ -718,6 +732,16 @@ class FileMem
         ifu (size != result)
             rete(ErrVal::NO_FULL);
         rets;
+    }
+    tpl1 dfa ER WriteVal(T1 val)
+    {
+        ret tx->Write((CXGA)&val, siz(T1));
+    }
+    tpl1 dfa ER WriteVarint(T1 val)
+    {
+        U1 buf[VarintSizeMax<T1>()];
+        cx AU size = VarintEncode<T1>(buf, val);
+        ret tx->Write(buf, size);
     }
     dfa ER SizeGet(SI& size)
     {

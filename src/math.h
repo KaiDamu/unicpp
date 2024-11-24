@@ -160,6 +160,12 @@ dfa S8 RoundF8ToS8(F8 val)
 {
     ret _mm_cvtsd_si64(_mm_set_sd(val));
 }
+dfa BO VarintIsIncomplete(cx U1* dat, SI size)
+{
+    ifu (size < 1)
+        ret YES;
+    ret (dat[size - 1] & 0x80) ? YES : NO;
+}
 tpl1 dfa SI VarintEncode(U1* out, T1 in)
 {
     cx U1* cx outBase = out;
