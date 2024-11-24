@@ -152,6 +152,10 @@ tpl1 T1 RadToDeg(T1 rad)
 {
     ret rad * (static_cast<T1>(180) / Pi<T1>());
 }
+dfa SI BitToByteSize(SI size)
+{
+    ret (size + 0b111) >> 3;
+}
 dfa S4 RoundF4ToS4(F4 val)
 {
     ret _mm_cvtss_si32(_mm_set_ss(val));

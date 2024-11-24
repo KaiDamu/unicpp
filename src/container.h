@@ -83,6 +83,141 @@ tpl1 struct Circle2
     }
 };
 
+class BitVec
+{
+  private:
+    std::vector<U1> m_dat;
+    SI m_len;  // length in bits
+    SI m_free; // free bits at the end
+
+  public:
+    dfa NT Clr()
+    {
+        MemSet(m_dat.data(), 0, m_dat.size());
+        m_len = 0;
+        m_free = m_dat.size() * BIT_IN_BYTE;
+    }
+    dfa NT Reserve(SI size, SI newSize = -1)
+    {
+        ifl (size <= m_len + m_free)
+            ret;
+        if (newSize == -1)
+            newSize = SI(size * 1.5);
+        m_dat.resize(BitToByteSize(newSize), 0);
+        m_free = newSize - m_len;
+    }
+
+  public:
+    dfa NT Set(CXGA buf, SI pos, SI size)
+    {
+        cx AU buf_ = (cx U1*)buf;
+
+        tx->Reserve(BitToByteSize(pos + size) * BIT_IN_BYTE);
+
+        if ((pos % BIT_IN_BYTE) == 0 && (size % BIT_IN_BYTE) == 0)
+        {
+            MemCpy(m_dat.data() + (pos / BIT_IN_BYTE), buf_, size / BIT_IN_BYTE);
+        }
+        else
+        {
+            AU dstBitPos = pos;
+            AU srcBitPos = SI(0);
+            AU bitsRemain = size;
+
+            while (bitsRemain > 0)
+            {
+                cx SI dstByteI = dstBitPos / BIT_IN_BYTE;
+                cx SI dstBitOfs = dstBitPos % BIT_IN_BYTE;
+                cx SI srcByteI = srcBitPos / BIT_IN_BYTE;
+                cx SI srcBitOfs = srcBitPos % BIT_IN_BYTE;
+                cx SI bitCnt = Min(bitsRemain, BIT_IN_BYTE - dstBitOfs, BIT_IN_BYTE - srcBitOfs);
+                cx U1 srcByte = buf_[srcByteI];
+                cx U1 srcBits = (srcByte >> srcBitOfs) & ((1 << bitCnt) - 1);
+
+                U1& dstByte = m_dat[dstByteI];
+                dstByte &= ~(((1 << bitCnt) - 1) << dstBitOfs);
+                dstByte |= srcBits << dstBitOfs;
+
+                dstBitPos += bitCnt;
+                srcBitPos += bitCnt;
+                bitsRemain -= bitCnt;
+            }
+        }
+
+        m_len = Max(m_len, pos + size);
+        m_free = m_dat.size() * BIT_IN_BYTE - m_len;
+    }
+    dfa NT Get(GA buf, SI pos, SI size) cx
+    {
+        AU buf_ = (U1*)buf;
+
+        if ((pos % BIT_IN_BYTE) == 0 && (size % BIT_IN_BYTE) == 0)
+        {
+            MemCpy(buf_, m_dat.data() + (pos / BIT_IN_BYTE), size / BIT_IN_BYTE);
+        }
+        else
+        {
+            MemSet(buf_, 0, BitToByteSize(size));
+
+            AU srcBitPos = pos;
+            AU dstBitPos = SI(0);
+            AU bitsRemain = size;
+
+            while (bitsRemain > 0)
+            {
+                cx SI srcByteI = srcBitPos / BIT_IN_BYTE;
+                cx SI srcBitOfs = srcBitPos % BIT_IN_BYTE;
+                cx SI dstByteI = dstBitPos / BIT_IN_BYTE;
+                cx SI dstBitOfs = dstBitPos % BIT_IN_BYTE;
+                cx SI bitCnt = Min(bitsRemain, BIT_IN_BYTE - srcBitOfs, BIT_IN_BYTE - dstBitOfs);
+                cx U1 srcByte = m_dat[srcByteI];
+                cx U1 bits = (srcByte >> srcBitOfs) & ((1 << bitCnt) - 1);
+
+                U1& dstByte = buf_[dstByteI];
+                dstByte |= bits << dstBitOfs;
+
+                srcBitPos += bitCnt;
+                dstBitPos += bitCnt;
+                bitsRemain -= bitCnt;
+            }
+        }
+    }
+    dfa NT AddLast(CXGA buf, SI size)
+    {
+        tx->Set(buf, m_len, size);
+    }
+    tpl1 dfa SI GetVarint(T1& val, SI pos) cx
+    {
+        U1 buf[VarintSizeMax<T1>()];
+        SI size = 0;
+        do
+        {
+            tx->Get(buf + size, pos + size * BIT_IN_BYTE, BIT_IN_BYTE);
+            ++size;
+        } while (VarintIsIncomplete(buf, size));
+        ret VarintDecode(val, buf);
+    }
+
+  public:
+    dfa cx U1* Dat() cx
+    {
+        ret m_dat.data();
+    }
+    dfa SI Size() cx
+    {
+        ret m_len;
+    }
+    dfa SI SizeByte() cx
+    {
+        ret BitToByteSize(m_len);
+    }
+
+  public:
+    dfa BitVec() : m_len(0), m_free(0)
+    {
+    }
+};
+
 tpl1 Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio)
 {
     if ((F4(rect.size.w) / F4(rect.size.h)) > ratio)
