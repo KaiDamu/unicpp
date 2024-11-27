@@ -218,6 +218,95 @@ class BitVec
     }
 };
 
+tpl<typename T1, SI TCap> class CircularBuf
+{
+  private:
+    std::array<T1, TCap> m_buf;
+    SI m_first;
+    SI m_end;
+    SI m_len;
+
+  private:
+    dfa SI _NextI(SI i) cx
+    {
+        ret (i + 1) % TCap;
+    }
+    dfa SI _PrevI(SI i) cx
+    {
+        ret (i + (TCap - 1)) % TCap;
+    }
+
+  public:
+    dfa SI Size() cx
+    {
+        ret m_len;
+    }
+    dfa BO IsEmpty() cx
+    {
+        ret m_len == 0;
+    }
+    dfa BO IsFull() cx
+    {
+        ret m_len == TCap;
+    }
+
+  public:
+    dfa T1& NewFirst()
+    {
+        if (tx->IsFull())
+            m_end = tx->_PrevI(m_end);
+        else
+            ++m_len;
+        m_first = tx->_PrevI(m_first);
+        T1& val = m_buf[m_first];
+        val = T1();
+        ret val;
+    }
+    dfa T1& NewLast()
+    {
+        if (tx->IsFull())
+            m_first = tx->_NextI(m_first);
+        else
+            ++m_len;
+        T1& val = m_buf[m_end];
+        m_end = tx->_NextI(m_end);
+        val = T1();
+        ret val;
+    }
+    dfa NT DelFirst()
+    {
+        Assert(!tx->IsEmpty());
+        m_first = tx->_NextI(m_first);
+        --m_len;
+    }
+    dfa NT DelLast()
+    {
+        Assert(!tx->IsEmpty());
+        m_end = tx->_PrevI(m_end);
+        --m_len;
+    }
+
+  public:
+    dfa T1& operator[](SI i)
+    {
+        Assert(i < m_len);
+        ret m_buf[(m_first + i) % TCap];
+    }
+    dfa cx T1& operator[](SI i) cx
+    {
+        Assert(i < m_len);
+        ret m_buf[(m_first + i) % TCap];
+    }
+
+  public:
+    dfa CircularBuf()
+    {
+        m_first = 0;
+        m_end = 0;
+        m_len = 0;
+    }
+};
+
 tpl1 Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio)
 {
     if ((F4(rect.size.w) / F4(rect.size.h)) > ratio)
