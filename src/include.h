@@ -86,6 +86,7 @@ using std::wstring;
 #include "pre/console.h"
 
 #include "value.h"
+#include "typeex.h"
 #include "error.h"
 #include "math.h"
 #include "vector.h"
@@ -137,6 +138,8 @@ using std::wstring;
 #include "opengl.h"
 #include "sound.h"
 #include "log.h"
+#include "pixelpath.h"
+#include "bada.h"
 #include "dumb.h"
 
 #include "main.h"
