@@ -47,13 +47,23 @@ tpl1 dfa T1 Sign(T1 val)
 {
     ret ((val < 0) ? -1 : 1);
 }
+tpl1 dfa T1 WholePart(T1 val)
+{
+    if constexpr (IsTypeF<T1>)
+        ret T1(S8(val));
+    ret val;
+}
 tpl1 dfa T1 FractionPart(T1 val)
 {
-    ret val - T1(S8(val));
+    if constexpr (IsTypeF<T1>)
+        ret val - WholePart<T1>(val);
+    ret T1(0);
 }
 tpl1 dfa BO IsNearZero(T1 val)
 {
-    ret (Abs<T1>(val) < std::numeric_limits<T1>::epsilon());
+    if constexpr (IsTypeF<T1>)
+        ret (Abs<T1>(val) < std::numeric_limits<T1>::epsilon());
+    ret (val == T1(0));
 }
 tpl1 dfa T1 Pow2(T1 val)
 {
@@ -130,6 +140,14 @@ tpl1 dfa T1 Dist0Fast(T1 x, T1 y)
     cx AU ya = Abs<T1>(y);
     ret (xa > ya) ? (T1(0.947543) * xa + T1(0.392485) * ya) : (T1(0.947543) * ya + T1(0.392485) * xa);
 }
+tpl1 dfa T1 ZigzagAround0(T1 i)
+{
+    ret (i >> 1) ^ (-(i & 1));
+}
+tpl1 dfa T1 ZigzagAround(T1 val, T1 i)
+{
+    ret val + ZigzagAround0<T1>(i);
+}
 tpl1 dfa T1 AlignBit(T1 val, T1 size)
 {
     ret (val + (size - 1)) & ~(size - 1);
@@ -152,17 +170,68 @@ tpl1 T1 RadToDeg(T1 rad)
 {
     ret rad * (static_cast<T1>(180) / Pi<T1>());
 }
+tpl1 dfa S8 FloorToInt(T1 val)
+{
+    if constexpr (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val < wholeF) ? (wholeS - S8(1)) : wholeS;
+    }
+    ret S8(val);
+}
+tpl1 dfa S8 CeilToInt(T1 val)
+{
+    if constexpr (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val > wholeF) ? (wholeS + S8(1)) : wholeS;
+    }
+    ret S8(val);
+}
+tpl1 dfa T1 Floor(T1 val)
+{
+    if constexpr (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val < wholeF) ? (wholeF - T1(1)) : wholeF;
+    }
+    ret T1(val);
+}
+tpl1 dfa T1 Ceil(T1 val)
+{
+    if constexpr (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val > wholeF) ? (wholeF + T1(1)) : wholeF;
+    }
+    ret T1(val);
+}
+tpl1 T1 DivCeil(T1 val, T1 div)
+{
+    if constexpr (IsTypeF<T1>)
+        ret Ceil(val / div);
+    ret (val + div - 1) / div;
+}
+tpl1 dfa T1 CeilStep(T1 val, T1 step)
+{
+    ret DivCeil(val, step) * step;
+}
 dfa SI BitToByteSize(SI size)
 {
-    ret (size + 0b111) >> 3;
+    ret DivCeil(size, BIT_IN_BYTE);
 }
-dfa S4 RoundF4ToS4(F4 val)
+tpl1 dfa S8 RoundToInt(T1 val) = delete;
+tpl0 dfa S8 RoundToInt<>(F4 val)
 {
-    ret _mm_cvtss_si32(_mm_set_ss(val));
+    ret S8(_mm_cvtss_si32(_mm_set_ss(val)));
 }
-dfa S8 RoundF8ToS8(F8 val)
+tpl0 dfa S8 RoundToInt<>(F8 val)
 {
-    ret _mm_cvtsd_si64(_mm_set_sd(val));
+    ret S8(_mm_cvtsd_si64(_mm_set_sd(val)));
 }
 dfa BO VarintIsIncomplete(cx U1* dat, SI size)
 {

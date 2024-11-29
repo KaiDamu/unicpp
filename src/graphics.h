@@ -632,7 +632,7 @@ tpl1 dfa NT ColGridDrawUcppLogo(ColGrid<T1>& grid, cx Rect2<SI>& rect)
     SI valsUnnorm[valCnt];
     ite (i, i < valCnt)
     {
-        valsUnnorm[i] = SI(RoundF4ToS4(vals[i] * rectSize));
+        valsUnnorm[i] = SI(RoundToInt(vals[i] * rectSize));
     }
 
     cx SI* valCur = valsUnnorm;
