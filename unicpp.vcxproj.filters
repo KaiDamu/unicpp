@@ -224,5 +224,14 @@
     <ClInclude Include="src\vuser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\bada.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pixelpath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\typeex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

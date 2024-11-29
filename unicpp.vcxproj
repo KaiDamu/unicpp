@@ -25,6 +25,7 @@
     <ClInclude Include="src\aes.h" />
     <ClInclude Include="src\arg.h" />
     <ClInclude Include="src\array.h" />
+    <ClInclude Include="src\bada.h" />
     <ClInclude Include="src\char.h" />
     <ClInclude Include="src\clipboard.h" />
     <ClInclude Include="src\color.h" />
@@ -61,6 +62,7 @@
     <ClInclude Include="src\opengl.h" />
     <ClInclude Include="src\path.h" />
     <ClInclude Include="src\pipe.h" />
+    <ClInclude Include="src\pixelpath.h" />
     <ClInclude Include="src\pointer.h" />
     <ClInclude Include="src\preprocess.h" />
     <ClInclude Include="src\pre\console.h" />
@@ -84,6 +86,7 @@
     <ClInclude Include="src\tuple.h" />
     <ClInclude Include="src\type.h" />
     <ClInclude Include="src\typeconvert.h" />
+    <ClInclude Include="src\typeex.h" />
     <ClInclude Include="src\unicpp.h" />
     <ClInclude Include="src\value.h" />
     <ClInclude Include="src\vector.h" />
