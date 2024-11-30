@@ -142,3 +142,37 @@ tpl1 dfa Vec2<T1> Vec2Perp(cx Vec2<T1>& vec)
 {
     ret Vec2<T1>(-vec.y, vec.x);
 }
+
+tpl1 dfa SI Size2ChunkI(cx Size2<T1>& units, cx Size2<SI>& chunks, T1 chunkSize, SI unitI)
+{
+    // TODO: add IsTypeF support
+    ret ((unitI % units.w) / chunkSize) + ((unitI / units.w) / chunkSize) * chunks.w;
+}
+tpl1 dfa Size2<SI> Size2ChunkCnt(cx Size2<T1>& size, T1 chunkSize)
+{
+    cx AU result = Size2<T1>(DivCeil(size.w, chunkSize), DivCeil(size.h, chunkSize));
+    if constexpr (IsTypeF<T1>)
+        ret Size2<SI>(RoundToInt(result.w), RoundToInt(result.h));
+    ret Size2<SI>(result.w, result.h);
+}
+tpl1 dfa T1 Size2ChunkSizeSuggest(cx Size2<T1>& size, SI longChunkCnt, F4 qualityMin = 0.9f, F4 qualityLoss = 0.15f)
+{
+    cx AU chunkSizeBaseF = F4(Max(size.w, size.h)) / F4(longChunkCnt);
+    cx AU chunkSizeBase = T1(RoundToInt(chunkSizeBaseF));
+    cx AU qualityLossWeighted = qualityLoss / chunkSizeBaseF;
+    T1 i = 0;
+    do
+    {
+        cx AU chunkSize = ZigzagAround(chunkSizeBase, i);
+        cx AU remX = size.w % chunkSize;
+        cx AU remY = size.h % chunkSize;
+        cx AU lastW = remX ? remX : chunkSize;
+        cx AU lastH = remY ? remY : chunkSize;
+        cx AU minSize = Min(lastW, lastH);
+        cx AU quality = F4(minSize) / F4(chunkSize);
+        if (quality >= qualityMin)
+            ret chunkSize;
+        qualityMin -= qualityLossWeighted;
+        ++i;
+    } while (YES);
+}

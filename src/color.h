@@ -706,6 +706,23 @@ dfa F4 ColHsvNCmp(cx ColHsvN& a, cx ColHsvN& b, F4 wH = COL_HSV_WEIGHT_H, F4 wS 
 }
 
 /// [compare color grid]
+struct ColGridVNCmpInfo
+{
+    enum class Mode : U1
+    {
+        LINEAR = 0,
+        CHUNK_MAX = 1,
+    };
+
+    Mode mode;
+    SI longChunkCntSuggest;
+
+    ColGridVNCmpInfo()
+    {
+        mode = Mode::LINEAR;
+        longChunkCntSuggest = 0;
+    }
+};
 struct ColGridHsvNCmpInfo
 {
     Pos2<SI> subGridPos;
@@ -731,6 +748,59 @@ struct ColGridHsvNCmpInfo
         wV = COL_HSV_WEIGHT_V;
     }
 };
+dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<ColVN>& subGrid, cx ColGrid<ColVN>& mainGrid, cx ColGridVNCmpInfo& info)
+{
+    ifu (subGrid.size != mainGrid.size)
+        rete(ErrVal::NO_VALID);
+
+    if (info.mode == ColGridVNCmpInfo::Mode::LINEAR)
+    {
+        AU diffSum = F8(0);
+        cx AU iEnd = SI(subGrid.pixels.size());
+        ite (i, i < iEnd)
+            diffSum += F8(Diff(subGrid.pixels[i].v, mainGrid.pixels[i].v));
+        resultDiff = F4(diffSum / F8(subGrid.pixels.size()));
+    }
+    else if (info.mode == ColGridVNCmpInfo::Mode::CHUNK_MAX)
+    {
+        cx AU chunkSize = Size2ChunkSizeSuggest(subGrid.size, info.longChunkCntSuggest, 0.9f, 0.15f);
+        cx AU chunkCnt = Size2ChunkCnt(subGrid.size, chunkSize);
+        struct Chunk
+        {
+            F8 diffSum;
+            SI diffCnt;
+
+            dfa Chunk() : diffSum(0), diffCnt(0)
+            {
+            }
+        };
+        std::vector<Chunk> chunks(chunkCnt.Area());
+
+        cx AU iEnd = SI(subGrid.pixels.size());
+        ite (i, i < iEnd)
+        {
+            AU& chunk = chunks[Size2ChunkI(subGrid.size, chunkCnt, chunkSize, i)];
+            chunk.diffSum += F8(Diff(subGrid.pixels[i].v, mainGrid.pixels[i].v));
+            ++chunk.diffCnt;
+        }
+
+        AU diffMax = F8(0);
+        for (cx AU& chunk : chunks)
+        {
+            cx AU diff = chunk.diffSum / F8(chunk.diffCnt);
+            if (diff > diffMax)
+                diffMax = diff;
+        }
+
+        resultDiff = F4(diffMax);
+    }
+    else
+    {
+        rete(ErrVal::NO_SUPPORT);
+    }
+
+    rets;
+}
 dfa ER ColGridHsvNCmp(F4& resultDiff, cx ColGrid<ColHsvN>& subGrid, cx ColGrid<ColHsvN>& mainGrid, cx ColGridHsvNCmpInfo& info)
 {
     resultDiff = 1.0f;
@@ -797,6 +867,18 @@ dfa ER ColGridHsvNCmp(F4& resultDiff, cx ColGrid<ColHsvN>& subGrid, cx ColGrid<C
 }
 
 /// [process color grid]
+tpl2 dfa ER ColGridLerp(ColGrid<T1>& out, cx ColGrid<T1>& a, cx ColGrid<T1>& b, T2 t)
+{
+    ifu (a.size != b.size)
+        rete(ErrVal::NO_VALID);
+
+    out.Resize(a.size);
+    cx AU iEnd = SI(a.pixels.size());
+    ite (i, i < iEnd)
+        out.pixels[i] = Lerp<T1, T2>(a.pixels[i], b.pixels[i], t);
+
+    rets;
+}
 dfa NT ColGridEdgesSobel1(ColGrid<ColVN>& out, cx ColGrid<ColVN>& in)
 {
     cx AU w = in.size.w;
@@ -839,6 +921,122 @@ dfa NT ColGridEdgesSobel1(ColGrid<ColVN>& out, cx ColGrid<ColVN>& in)
     }
 
     NormalizeMax<ColVN>(out.pixels.data(), out.pixels.size());
+}
+tpl1 dfa NT ColGridEdgeMarkAll(ColGrid<T1>& colGrid, cx T1& colObj, cx T1& colMark)
+{
+    ite (x, x < colGrid.size.w)
+    {
+        AU& pixel = colGrid.pixels[x];
+        if (pixel == colObj)
+            pixel = colMark;
+    }
+
+    for (SI y = 1; y < colGrid.size.h - 1; ++y)
+    {
+        BO isIn = NO;
+
+        for (SI x = 0; x < colGrid.size.w; ++x)
+        {
+            AU& pixel = colGrid.Pixel(Pos2<SI>(x, y));
+            if (isIn)
+            {
+                if (pixel != colObj)
+                {
+                    colGrid.Pixel(Pos2<SI>(x - 1, y)) = colMark;
+                    isIn = NO;
+                }
+                else
+                {
+                    cx AU& pixelTop = colGrid.Pixel(Pos2<SI>(x, y - 1));
+                    cx AU& pixelBottom = colGrid.Pixel(Pos2<SI>(x, y + 1));
+                    if (((pixelTop != colObj) && (pixelTop != colMark)) || ((pixelBottom != colObj) && (pixelBottom != colMark)))
+                        pixel = colMark;
+                }
+            }
+            else if (pixel == colObj)
+            {
+                pixel = colMark;
+                isIn = YES;
+            }
+        }
+
+        if (isIn == YES)
+            colGrid.Pixel(Pos2<SI>(colGrid.size.w - 1, y)) = colMark;
+    }
+
+    {
+        AU* pixels = colGrid.pixels.data() + (colGrid.size.h - 1) * colGrid.size.w;
+        ite (x, x < colGrid.size.w)
+        {
+            AU& pixel = pixels[x];
+            if (pixel == colObj)
+                pixel = colMark;
+        }
+    }
+}
+tpl1 dfa NT ColGridFloodFillAt(ColGrid<T1>& colGrid, SI& fillCnt, SI fillOrigin, cx T1& colObj, cx T1& colMark, std::vector<SI>& stack)
+{
+    fillCnt = 0;
+    stack.clear();
+    stack.emplace_back(fillOrigin);
+
+    while (!stack.empty())
+    {
+        cx AU curI = stack.back();
+        stack.pop_back();
+
+        AU& pixel = colGrid.pixels[curI];
+
+        if (pixel != colObj)
+            continue;
+
+        pixel = colMark;
+        ++fillCnt;
+
+        cx AU testPixel = [&](SI testI) -> NT {
+            if (colGrid.pixels[testI] == colObj)
+                stack.emplace_back(testI);
+        };
+
+        testPixel(curI - 1);
+        testPixel(curI + 1);
+        testPixel(curI - colGrid.size.w);
+        testPixel(curI + colGrid.size.w);
+    }
+}
+tpl1 dfa NT ColGridFloodFillAt(ColGrid<T1>& colGrid, SI fillOrigin, cx T1& colObj, cx T1& colMark)
+{
+    ifu (colGrid.pixels[fillOrigin] != colObj)
+        ret;
+
+    SI fillCnt;
+    std::vector<SI> stack;
+    stack.reserve(16);
+
+    ColGridFloodFillAt(colGrid, fillCnt, fillOrigin, colObj, colMark, stack);
+}
+tpl1 dfa NT ColGridFloodFillAll(ColGrid<T1>& colGrid, std::vector<SI>& fillOrigins, std::vector<SI>& fillCnts, cx T1& colObj, cx T1& colMark)
+{
+    fillOrigins.clear();
+    fillCnts.clear();
+
+    SI fillCnt;
+    std::vector<SI> stack;
+    stack.reserve(16);
+
+    for (SI y = 1; y < colGrid.size.h - 1; ++y)
+    {
+        for (SI x = 1; x < colGrid.size.w - 1; ++x)
+        {
+            cx AU i = x + y * colGrid.size.w;
+            ifl (colGrid.pixels[i] != colObj)
+                continue;
+
+            ColGridFloodFillAt(colGrid, fillCnt, i, colObj, colMark, stack);
+            fillOrigins.emplace_back(i);
+            fillCnts.emplace_back(fillCnt);
+        }
+    }
 }
 
 /// [save/load color grid]
