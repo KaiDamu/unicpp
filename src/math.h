@@ -49,19 +49,19 @@ tpl1 dfa T1 Sign(T1 val)
 }
 tpl1 dfa T1 WholePart(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
         ret T1(S8(val));
     ret val;
 }
 tpl1 dfa T1 FractionPart(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
         ret val - WholePart<T1>(val);
     ret T1(0);
 }
 tpl1 dfa BO IsNearZero(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
         ret (Abs<T1>(val) < std::numeric_limits<T1>::epsilon());
     ret (val == T1(0));
 }
@@ -180,7 +180,7 @@ tpl1 T1 RadToDeg(T1 rad)
 }
 tpl1 dfa S8 FloorToInt(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
     {
         cx AU wholeS = S8(val);
         cx AU wholeF = T1(wholeS);
@@ -190,7 +190,7 @@ tpl1 dfa S8 FloorToInt(T1 val)
 }
 tpl1 dfa S8 CeilToInt(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
     {
         cx AU wholeS = S8(val);
         cx AU wholeF = T1(wholeS);
@@ -200,7 +200,7 @@ tpl1 dfa S8 CeilToInt(T1 val)
 }
 tpl1 dfa T1 Floor(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
     {
         cx AU wholeS = S8(val);
         cx AU wholeF = T1(wholeS);
@@ -210,7 +210,7 @@ tpl1 dfa T1 Floor(T1 val)
 }
 tpl1 dfa T1 Ceil(T1 val)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
     {
         cx AU wholeS = S8(val);
         cx AU wholeF = T1(wholeS);
@@ -220,7 +220,7 @@ tpl1 dfa T1 Ceil(T1 val)
 }
 tpl1 T1 DivCeil(T1 val, T1 div)
 {
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
         ret Ceil(val / div);
     ret (val + div - 1) / div;
 }
@@ -493,11 +493,11 @@ tpl1 dfa T1 NormalizeMax(T1* arr, SI cnt)
 }
 tpl1 dfa T1 ValPrev(cx T1& val)
 {
-    if constexpr (std::is_integral<T1>::value)
+    ifcx (std::is_integral<T1>::value)
     {
         ret val - 1;
     }
-    else if constexpr (std::is_floating_point<T1>::value)
+    else ifcx (std::is_floating_point<T1>::value)
     {
         ret val - (std::numeric_limits<T1>::epsilon() * Abs<T1>(val)); // 'val == 0' is not handled!
     }
@@ -509,11 +509,11 @@ tpl1 dfa T1 ValPrev(cx T1& val)
 }
 tpl1 dfa T1 ValNext(cx T1& val)
 {
-    if constexpr (std::is_integral<T1>::value)
+    ifcx (std::is_integral<T1>::value)
     {
         ret val + 1;
     }
-    else if constexpr (std::is_floating_point<T1>::value)
+    else ifcx (std::is_floating_point<T1>::value)
     {
         ret val + (std::numeric_limits<T1>::epsilon() * Abs<T1>(val)); // 'val == 0' is not handled!
     }

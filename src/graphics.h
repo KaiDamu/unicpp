@@ -285,13 +285,13 @@ tpl1 dfa NT _ColGridDrawLineN(ColGrid<T1>& grid, cx Line2<SI>& line, SI thicknes
     cx F4 ofsX = (dy * (ValPrev(thickness) / 2.0f)) / len * -1;
     cx F4 ofsY = (dx * (ValPrev(thickness) / 2.0f)) / len;
 
-    constexpr SI ptCnt = 4;
+    cxex SI ptCnt = 4;
     array<Pos2<SI>, ptCnt> pt;
     pt[0] = Pos2<SI>(line.b.x - ofsX, line.b.y - ofsY);
     pt[1] = Pos2<SI>(line.a.x - ofsX, line.a.y - ofsY);
     pt[2] = Pos2<SI>(line.a.x + ofsX, line.a.y + ofsY);
     pt[3] = Pos2<SI>(line.b.x + ofsX, line.b.y + ofsY);
-    constexpr SI lineCnt = 4;
+    cxex SI lineCnt = 4;
     array<Line2<SI>, lineCnt> lines;
     lines[0] = Line2<SI>(pt[0], pt[1]);
     lines[1] = Line2<SI>(pt[1], pt[2]);
@@ -415,7 +415,7 @@ tpl1 dfa NT _ColGridDrawTriangle(ColGrid<T1>& grid, cx Triangle2<SI>& triangle, 
 {
     T1 colUse = doFill ? COL_GRID_FILLIN_WALL : col;
 
-    constexpr SI lineCnt = 3;
+    cxex SI lineCnt = 3;
     array<Line2<SI>, lineCnt> lines;
     lines[0] = Line2<SI>(triangle.a, triangle.b);
     lines[1] = Line2<SI>(triangle.b, triangle.c);
@@ -483,7 +483,7 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1&
 {
     T1 colUse = doFill ? COL_GRID_FILLIN_WALL : col;
 
-    constexpr SI pointCnt = 8;
+    cxex SI pointCnt = 8;
 
     SI x = circle.radius;
     SI y = 0;
@@ -657,9 +657,9 @@ tpl1 dfa NT ColGridDrawUcppLogo(ColGrid<T1>& grid, cx Rect2<SI>& rect)
     }
 }
 
-constexpr U1 SCN_DRAW_THD_CODE_ERR_NO = 0;
-constexpr U1 SCN_DRAW_THD_CODE_ERR_YES = 1;
-constexpr U1 SCN_DRAW_THD_CODE_WAIT = 2;
+cxex U1 SCN_DRAW_THD_CODE_ERR_NO = 0;
+cxex U1 SCN_DRAW_THD_CODE_ERR_YES = 1;
+cxex U1 SCN_DRAW_THD_CODE_WAIT = 2;
 
 Thd g_scnDrawThd;
 S4 g_scnDrawThdDelay = 0;

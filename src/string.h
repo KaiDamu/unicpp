@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr SI STR_EX_LEN = 1;
+cxex SI STR_EX_LEN = 1;
 
 #ifdef PROG_COMPILER_GCC
     #define CsstrSetForm sprintf

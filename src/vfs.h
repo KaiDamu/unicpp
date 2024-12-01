@@ -1,10 +1,10 @@
 #pragma once
 
-constexpr cx CS* VFS_MAGIC = "VFS\0";
-constexpr SI VFS_MAGIC_SIZE = 4;
+cxex cx CS* VFS_MAGIC = "VFS\0";
+cxex SI VFS_MAGIC_SIZE = 4;
 
-constexpr U1 VFS_FORMAT_NEW = 1;
-constexpr U1 VFS_FORMAT_MAX = 1;
+cxex U1 VFS_FORMAT_NEW = 1;
+cxex U1 VFS_FORMAT_MAX = 1;
 
 enum class VfsCompress : U4
 {

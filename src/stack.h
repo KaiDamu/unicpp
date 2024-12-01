@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr F8 DSTACK_ADD_ALLOC_SCALE = 1.5;
+cxex F8 DSTACK_ADD_ALLOC_SCALE = 1.5;
 
 tpl1 class DStack
 {

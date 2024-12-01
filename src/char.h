@@ -37,7 +37,7 @@ enum : CH
     CH_DEL = 127
 };
 
-constexpr CH CH_NA = '?';
+cxex CH CH_NA = '?';
 
 tpl1 dfa BO IsBetween(cx T1& c, cx T1& min, cx T1& max)
 {

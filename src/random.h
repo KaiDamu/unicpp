@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr SI RAND_CTX_VAL_CNT = 624;
+cxex SI RAND_CTX_VAL_CNT = 624;
 
 class RandCtx
 {

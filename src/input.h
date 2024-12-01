@@ -199,8 +199,8 @@ dfa InputKeyType InputKeyTypeGet(InputKey key)
     }
 }
 
-constexpr SI INPUT_KEY_CNT = 256;
+cxex SI INPUT_KEY_CNT = 256;
 
-constexpr TmMain INPUT_KEY_HOLD_DEFA = 50;
-constexpr TmMain INPUT_KEY_DELAY_DEFA = 40;
-constexpr TmMain INPUT_KEY_CHECK_RATE_DEFA = 1;
+cxex TmMain INPUT_KEY_HOLD_DEFA = 50;
+cxex TmMain INPUT_KEY_DELAY_DEFA = 40;
+cxex TmMain INPUT_KEY_CHECK_RATE_DEFA = 1;

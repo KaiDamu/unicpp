@@ -1,15 +1,15 @@
 #pragma once
 
-constexpr U1 PRB_FIELD_TYPE_VARINT = 0;
-constexpr U1 PRB_FIELD_TYPE_I64 = 1;
-constexpr U1 PRB_FIELD_TYPE_LEN = 2;
-constexpr U1 PRB_FIELD_TYPE_SGROUP = 3;
-constexpr U1 PRB_FIELD_TYPE_EGROUP = 4;
-constexpr U1 PRB_FIELD_TYPE_I32 = 5;
+cxex U1 PRB_FIELD_TYPE_VARINT = 0;
+cxex U1 PRB_FIELD_TYPE_I64 = 1;
+cxex U1 PRB_FIELD_TYPE_LEN = 2;
+cxex U1 PRB_FIELD_TYPE_SGROUP = 3;
+cxex U1 PRB_FIELD_TYPE_EGROUP = 4;
+cxex U1 PRB_FIELD_TYPE_I32 = 5;
 
-constexpr U1 PRB_FIELD_ID_NONE = 0;
+cxex U1 PRB_FIELD_ID_NONE = 0;
 
-constexpr SI PRB_CTX_STACK_LEN_MAX = 8;
+cxex SI PRB_CTX_STACK_LEN_MAX = 8;
 
 class PrbCtx
 {

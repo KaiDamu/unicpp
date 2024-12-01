@@ -1,8 +1,8 @@
 #pragma once
 
-constexpr SI FILE_READ_SIZE_LOW = BYTE_IN_KB * 4;
-constexpr SI FILE_READ_SIZE_MED = BYTE_IN_KB * 256;
-constexpr SI FILE_READ_SIZE_HIGH = BYTE_IN_KB * 16384;
+cxex SI FILE_READ_SIZE_LOW = BYTE_IN_KB * 4;
+cxex SI FILE_READ_SIZE_MED = BYTE_IN_KB * 256;
+cxex SI FILE_READ_SIZE_HIGH = BYTE_IN_KB * 16384;
 
 dfa ER DirNew(cx CH* path); // referenced here for FileMove
 
@@ -474,8 +474,8 @@ class File
     }
 };
 
-constexpr F8 FILE_MEM_RESIZE_MUL_DEFA = 1.5;
-constexpr SI FILE_MEM_RESIZE_ADD_DEFA = 1024;
+cxex F8 FILE_MEM_RESIZE_MUL_DEFA = 1.5;
+cxex SI FILE_MEM_RESIZE_ADD_DEFA = 1024;
 
 class FileMem
 {

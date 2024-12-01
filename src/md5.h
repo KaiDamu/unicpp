@@ -7,9 +7,9 @@ class Md5
     class Val
     {
       public:
-        static constexpr SI SIZE = 16;
-        static constexpr SI STR_LEN = SIZE * 2;
-        static constexpr SI STR_LENX = STR_LEN + 1;
+        static cxex SI SIZE = 16;
+        static cxex SI STR_LEN = SIZE * 2;
+        static cxex SI STR_LENX = STR_LEN + 1;
 
       public:
         union {
@@ -143,7 +143,7 @@ class Md5
     class Gen
     {
       private:
-        static constexpr SI BLOCK_SIZE = 64;
+        static cxex SI BLOCK_SIZE = 64;
 
       private:
         Val m_state;

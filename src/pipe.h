@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr SI PIPE_BUF_SIZE = 65536;
+cxex SI PIPE_BUF_SIZE = 65536;
 
 class PipeIn
 {

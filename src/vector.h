@@ -21,16 +21,16 @@ tpl1 class Vec2
         };
     };
 
-    dfa constexpr Vec2() : a(), b()
+    dfa cxex Vec2() : a(), b()
     {
     }
-    dfa constexpr Vec2(T1 a, T1 b) : a(a), b(b)
+    dfa cxex Vec2(T1 a, T1 b) : a(a), b(b)
     {
     }
-    dfa constexpr Vec2(cx Vec2& other) : a(other.a), b(other.b)
+    dfa cxex Vec2(cx Vec2& other) : a(other.a), b(other.b)
     {
     }
-    dfa constexpr Vec2(Vec2&& other) noex : a(move(other.a)), b(move(other.b))
+    dfa cxex Vec2(Vec2&& other) noex : a(move(other.a)), b(move(other.b))
     {
     }
     dfa ~Vec2() = default;
@@ -47,31 +47,31 @@ tpl1 class Vec2
         b = move(other.b);
         ret *tx;
     }
-    dfa constexpr BO operator==(cx Vec2& other) cx
+    dfa cxex BO operator==(cx Vec2& other) cx
     {
         ret a == other.a && b == other.b;
     }
-    dfa constexpr BO operator!=(cx Vec2& other) cx
+    dfa cxex BO operator!=(cx Vec2& other) cx
     {
         ret a != other.a || b != other.b;
     }
-    dfa constexpr Vec2 operator+(cx Vec2& other) cx
+    dfa cxex Vec2 operator+(cx Vec2& other) cx
     {
         ret Vec2(a + other.a, b + other.b);
     }
-    dfa constexpr Vec2 operator-(cx Vec2& other) cx
+    dfa cxex Vec2 operator-(cx Vec2& other) cx
     {
         ret Vec2(a - other.a, b - other.b);
     }
-    dfa constexpr Vec2 operator*(T1 scalar) cx
+    dfa cxex Vec2 operator*(T1 scalar) cx
     {
         ret Vec2(a * scalar, b * scalar);
     }
-    dfa constexpr Vec2 operator/(T1 scalar) cx
+    dfa cxex Vec2 operator/(T1 scalar) cx
     {
         ret Vec2(a / scalar, b / scalar);
     }
-    dfa constexpr Vec2 operator-() cx
+    dfa cxex Vec2 operator-() cx
     {
         ret Vec2(-a, -b);
     }
@@ -151,7 +151,7 @@ tpl1 dfa SI Size2ChunkI(cx Size2<T1>& units, cx Size2<SI>& chunks, T1 chunkSize,
 tpl1 dfa Size2<SI> Size2ChunkCnt(cx Size2<T1>& size, T1 chunkSize)
 {
     cx AU result = Size2<T1>(DivCeil(size.w, chunkSize), DivCeil(size.h, chunkSize));
-    if constexpr (IsTypeF<T1>)
+    ifcx (IsTypeF<T1>)
         ret Size2<SI>(RoundToInt(result.w), RoundToInt(result.h));
     ret Size2<SI>(result.w, result.h);
 }

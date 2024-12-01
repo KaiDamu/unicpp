@@ -20,8 +20,8 @@ enum class ConCol : U1
     WHITE = 15,
 };
 
-constexpr SI CON_BUF_LEN_MAX = 1024;
-constexpr SI CON_HISTORY_CNT_MAX = 32;
+cxex SI CON_BUF_LEN_MAX = 1024;
+cxex SI CON_HISTORY_CNT_MAX = 32;
 
 ConCol g_conCol = ConCol::WHITE;
 ConCol g_conColReal = g_conCol;

@@ -261,7 +261,7 @@ dfa ER ProcRestartElevated()
     rets;
 }
 
-constexpr SI PROC_GLOBAL_STR_LEN_MAX = PATH_LEN_MAX;
+cxex SI PROC_GLOBAL_STR_LEN_MAX = PATH_LEN_MAX;
 
 class ProcGlobalStr
 {

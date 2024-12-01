@@ -1,8 +1,8 @@
 #pragma once
 
-tpl1 constexpr BO IsTypeF = NO;
-tpl0 constexpr BO IsTypeF<F4> = YES;
-tpl0 constexpr BO IsTypeF<F8> = YES;
+tpl1 cxex BO IsTypeF = NO;
+tpl0 cxex BO IsTypeF<F4> = YES;
+tpl0 cxex BO IsTypeF<F8> = YES;
 
 tpl2 dfa T1& AsType(T2& src)
 {

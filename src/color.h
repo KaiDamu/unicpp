@@ -1,9 +1,9 @@
 #pragma once
 
 /// [value]
-constexpr F4 COL_HSV_WEIGHT_H = 0.5f;
-constexpr F4 COL_HSV_WEIGHT_S = 0.3f;
-constexpr F4 COL_HSV_WEIGHT_V = 0.2f;
+cxex F4 COL_HSV_WEIGHT_H = 0.5f;
+cxex F4 COL_HSV_WEIGHT_S = 0.3f;
+cxex F4 COL_HSV_WEIGHT_V = 0.2f;
 
 /// [color]
 struct ColRgb
@@ -12,16 +12,16 @@ struct ColRgb
     U1 g; // range: 0 - 255
     U1 b; // range: 0 - 255
 
-    dfa constexpr ColRgb() : r(), g(), b()
+    dfa cxex ColRgb() : r(), g(), b()
     {
     }
-    dfa constexpr ColRgb(U1 r, U1 g, U1 b) : r(r), g(g), b(b)
+    dfa cxex ColRgb(U1 r, U1 g, U1 b) : r(r), g(g), b(b)
     {
     }
-    dfa constexpr ColRgb(cx ColRgb& other) : r(other.r), g(other.g), b(other.b)
+    dfa cxex ColRgb(cx ColRgb& other) : r(other.r), g(other.g), b(other.b)
     {
     }
-    dfa constexpr ColRgb(ColRgb&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
+    dfa cxex ColRgb(ColRgb&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
     {
     }
     dfa ~ColRgb() = default;
@@ -40,31 +40,31 @@ struct ColRgb
         b = move(other.b);
         ret *tx;
     }
-    dfa constexpr BO operator==(cx ColRgb& other) cx
+    dfa cxex BO operator==(cx ColRgb& other) cx
     {
         ret r == other.r && g == other.g && b == other.b;
     }
-    dfa constexpr BO operator!=(cx ColRgb& other) cx
+    dfa cxex BO operator!=(cx ColRgb& other) cx
     {
         ret r != other.r || g != other.g || b != other.b;
     }
-    dfa constexpr ColRgb operator+(cx ColRgb& other) cx
+    dfa cxex ColRgb operator+(cx ColRgb& other) cx
     {
         ret ColRgb(r + other.r, g + other.g, b + other.b);
     }
-    dfa constexpr ColRgb operator-(cx ColRgb& other) cx
+    dfa cxex ColRgb operator-(cx ColRgb& other) cx
     {
         ret ColRgb(r - other.r, g - other.g, b - other.b);
     }
-    dfa constexpr ColRgb operator*(F4 scalar) cx
+    dfa cxex ColRgb operator*(F4 scalar) cx
     {
         ret ColRgb(r * scalar, g * scalar, b * scalar);
     }
-    dfa constexpr ColRgb operator/(F4 scalar) cx
+    dfa cxex ColRgb operator/(F4 scalar) cx
     {
         ret ColRgb(r / scalar, g / scalar, b / scalar);
     }
-    dfa constexpr ColRgb operator-() cx
+    dfa cxex ColRgb operator-() cx
     {
         ret ColRgb(-r, -g, -b);
     }
@@ -103,16 +103,16 @@ struct ColRgbN
     F4 g; // range: 0.0 - 1.0
     F4 b; // range: 0.0 - 1.0
 
-    dfa constexpr ColRgbN() : r(), g(), b()
+    dfa cxex ColRgbN() : r(), g(), b()
     {
     }
-    dfa constexpr ColRgbN(F4 r, F4 g, F4 b) : r(r), g(g), b(b)
+    dfa cxex ColRgbN(F4 r, F4 g, F4 b) : r(r), g(g), b(b)
     {
     }
-    dfa constexpr ColRgbN(cx ColRgbN& other) : r(other.r), g(other.g), b(other.b)
+    dfa cxex ColRgbN(cx ColRgbN& other) : r(other.r), g(other.g), b(other.b)
     {
     }
-    dfa constexpr ColRgbN(ColRgbN&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
+    dfa cxex ColRgbN(ColRgbN&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
     {
     }
     dfa ~ColRgbN() = default;
@@ -131,31 +131,31 @@ struct ColRgbN
         b = move(other.b);
         ret *tx;
     }
-    dfa constexpr BO operator==(cx ColRgbN& other) cx
+    dfa cxex BO operator==(cx ColRgbN& other) cx
     {
         ret r == other.r && g == other.g && b == other.b;
     }
-    dfa constexpr BO operator!=(cx ColRgbN& other) cx
+    dfa cxex BO operator!=(cx ColRgbN& other) cx
     {
         ret r != other.r || g != other.g || b != other.b;
     }
-    dfa constexpr ColRgbN operator+(cx ColRgbN& other) cx
+    dfa cxex ColRgbN operator+(cx ColRgbN& other) cx
     {
         ret ColRgbN(r + other.r, g + other.g, b + other.b);
     }
-    dfa constexpr ColRgbN operator-(cx ColRgbN& other) cx
+    dfa cxex ColRgbN operator-(cx ColRgbN& other) cx
     {
         ret ColRgbN(r - other.r, g - other.g, b - other.b);
     }
-    dfa constexpr ColRgbN operator*(F4 scalar) cx
+    dfa cxex ColRgbN operator*(F4 scalar) cx
     {
         ret ColRgbN(r * scalar, g * scalar, b * scalar);
     }
-    dfa constexpr ColRgbN operator/(F4 scalar) cx
+    dfa cxex ColRgbN operator/(F4 scalar) cx
     {
         ret ColRgbN(r / scalar, g / scalar, b / scalar);
     }
-    dfa constexpr ColRgbN operator-() cx
+    dfa cxex ColRgbN operator-() cx
     {
         ret ColRgbN(-r, -g, -b);
     }
@@ -201,19 +201,19 @@ struct ColRgba
         U4 val;
     };
 
-    dfa constexpr ColRgba() : r(), g(), b(), a()
+    dfa cxex ColRgba() : r(), g(), b(), a()
     {
     }
-    dfa constexpr ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
+    dfa cxex ColRgba(U1 r, U1 g, U1 b, U1 a) : r(r), g(g), b(b), a(a)
     {
     }
-    dfa constexpr ColRgba(U4 val) : val(val)
+    dfa cxex ColRgba(U4 val) : val(val)
     {
     }
-    dfa constexpr ColRgba(cx ColRgba& other) : val(other.val)
+    dfa cxex ColRgba(cx ColRgba& other) : val(other.val)
     {
     }
-    dfa constexpr ColRgba(ColRgba&& other) noex : val(move(other.val))
+    dfa cxex ColRgba(ColRgba&& other) noex : val(move(other.val))
     {
     }
     dfa ~ColRgba() = default;
@@ -228,31 +228,31 @@ struct ColRgba
         val = move(other.val);
         ret *tx;
     }
-    dfa constexpr BO operator==(cx ColRgba& other) cx
+    dfa cxex BO operator==(cx ColRgba& other) cx
     {
         ret val == other.val;
     }
-    dfa constexpr BO operator!=(cx ColRgba& other) cx
+    dfa cxex BO operator!=(cx ColRgba& other) cx
     {
         ret val != other.val;
     }
-    dfa constexpr ColRgba operator+(cx ColRgba& other) cx
+    dfa cxex ColRgba operator+(cx ColRgba& other) cx
     {
         ret ColRgba(r + other.r, g + other.g, b + other.b, a + other.a);
     }
-    dfa constexpr ColRgba operator-(cx ColRgba& other) cx
+    dfa cxex ColRgba operator-(cx ColRgba& other) cx
     {
         ret ColRgba(r - other.r, g - other.g, b - other.b, a - other.a);
     }
-    dfa constexpr ColRgba operator*(F4 scalar) cx
+    dfa cxex ColRgba operator*(F4 scalar) cx
     {
         ret ColRgba(r * scalar, g * scalar, b * scalar, a * scalar);
     }
-    dfa constexpr ColRgba operator/(F4 scalar) cx
+    dfa cxex ColRgba operator/(F4 scalar) cx
     {
         ret ColRgba(r / scalar, g / scalar, b / scalar, a / scalar);
     }
-    dfa constexpr ColRgba operator-() cx
+    dfa cxex ColRgba operator-() cx
     {
         ret ColRgba(-r, -g, -b, -a);
     }
@@ -293,16 +293,16 @@ struct ColVN
 {
     F4 v; // range: 0.0 - 1.0
 
-    dfa constexpr ColVN() : v()
+    dfa cxex ColVN() : v()
     {
     }
-    dfa constexpr ColVN(F4 v) : v(v)
+    dfa cxex ColVN(F4 v) : v(v)
     {
     }
-    dfa constexpr ColVN(cx ColVN& other) : v(other.v)
+    dfa cxex ColVN(cx ColVN& other) : v(other.v)
     {
     }
-    dfa constexpr ColVN(ColVN&& other) noex : v(move(other.v))
+    dfa cxex ColVN(ColVN&& other) noex : v(move(other.v))
     {
     }
     dfa ~ColVN() = default;
@@ -317,31 +317,31 @@ struct ColVN
         v = move(other.v);
         ret *tx;
     }
-    dfa constexpr BO operator==(cx ColVN& other) cx
+    dfa cxex BO operator==(cx ColVN& other) cx
     {
         ret v == other.v;
     }
-    dfa constexpr BO operator!=(cx ColVN& other) cx
+    dfa cxex BO operator!=(cx ColVN& other) cx
     {
         ret v != other.v;
     }
-    dfa constexpr ColVN operator+(cx ColVN& other) cx
+    dfa cxex ColVN operator+(cx ColVN& other) cx
     {
         ret ColVN(v + other.v);
     }
-    dfa constexpr ColVN operator-(cx ColVN& other) cx
+    dfa cxex ColVN operator-(cx ColVN& other) cx
     {
         ret ColVN(v - other.v);
     }
-    dfa constexpr ColVN operator*(F4 scalar) cx
+    dfa cxex ColVN operator*(F4 scalar) cx
     {
         ret ColVN(v * scalar);
     }
-    dfa constexpr ColVN operator/(F4 scalar) cx
+    dfa cxex ColVN operator/(F4 scalar) cx
     {
         ret ColVN(v / scalar);
     }
-    dfa constexpr ColVN operator-() cx
+    dfa cxex ColVN operator-() cx
     {
         ret ColVN(-v);
     }
@@ -366,27 +366,27 @@ struct ColVN
         ret *tx;
     }
 
-    dfa constexpr BO operator<(cx ColVN& other) cx
+    dfa cxex BO operator<(cx ColVN& other) cx
     {
         ret v < other.v;
     }
-    dfa constexpr BO operator>(cx ColVN& other) cx
+    dfa cxex BO operator>(cx ColVN& other) cx
     {
         ret v > other.v;
     }
-    dfa constexpr BO operator<=(cx ColVN& other) cx
+    dfa cxex BO operator<=(cx ColVN& other) cx
     {
         ret v <= other.v;
     }
-    dfa constexpr BO operator>=(cx ColVN& other) cx
+    dfa cxex BO operator>=(cx ColVN& other) cx
     {
         ret v >= other.v;
     }
-    dfa constexpr ColVN operator*(cx ColVN& other) cx
+    dfa cxex ColVN operator*(cx ColVN& other) cx
     {
         ret ColVN(v * other.v);
     }
-    dfa constexpr ColVN operator/(cx ColVN& other) cx
+    dfa cxex ColVN operator/(cx ColVN& other) cx
     {
         ret ColVN(v / other.v);
     }
@@ -407,16 +407,16 @@ struct ColHsvN
     F4 s; // range: 0.0 - 1.0
     F4 v; // range: 0.0 - 1.0
 
-    dfa constexpr ColHsvN() : h(), s(), v()
+    dfa cxex ColHsvN() : h(), s(), v()
     {
     }
-    dfa constexpr ColHsvN(F4 h, F4 s, F4 v) : h(h), s(s), v(v)
+    dfa cxex ColHsvN(F4 h, F4 s, F4 v) : h(h), s(s), v(v)
     {
     }
-    dfa constexpr ColHsvN(cx ColHsvN& other) : h(other.h), s(other.s), v(other.v)
+    dfa cxex ColHsvN(cx ColHsvN& other) : h(other.h), s(other.s), v(other.v)
     {
     }
-    dfa constexpr ColHsvN(ColHsvN&& other) noex : h(move(other.h)), s(move(other.s)), v(move(other.v))
+    dfa cxex ColHsvN(ColHsvN&& other) noex : h(move(other.h)), s(move(other.s)), v(move(other.v))
     {
     }
     dfa ~ColHsvN() = default;
@@ -435,31 +435,31 @@ struct ColHsvN
         v = move(other.v);
         ret *tx;
     }
-    dfa constexpr BO operator==(cx ColHsvN& other) cx
+    dfa cxex BO operator==(cx ColHsvN& other) cx
     {
         ret h == other.h && s == other.s && v == other.v;
     }
-    dfa constexpr BO operator!=(cx ColHsvN& other) cx
+    dfa cxex BO operator!=(cx ColHsvN& other) cx
     {
         ret h != other.h || s != other.s || v != other.v;
     }
-    dfa constexpr ColHsvN operator+(cx ColHsvN& other) cx
+    dfa cxex ColHsvN operator+(cx ColHsvN& other) cx
     {
         ret ColHsvN(h + other.h, s + other.s, v + other.v);
     }
-    dfa constexpr ColHsvN operator-(cx ColHsvN& other) cx
+    dfa cxex ColHsvN operator-(cx ColHsvN& other) cx
     {
         ret ColHsvN(h - other.h, s - other.s, v - other.v);
     }
-    dfa constexpr ColHsvN operator*(F4 scalar) cx
+    dfa cxex ColHsvN operator*(F4 scalar) cx
     {
         ret ColHsvN(h * scalar, s * scalar, v * scalar);
     }
-    dfa constexpr ColHsvN operator/(F4 scalar) cx
+    dfa cxex ColHsvN operator/(F4 scalar) cx
     {
         ret ColHsvN(h / scalar, s / scalar, v / scalar);
     }
-    dfa constexpr ColHsvN operator-() cx
+    dfa cxex ColHsvN operator-() cx
     {
         ret ColHsvN(-h, -s, -v);
     }

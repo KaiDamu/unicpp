@@ -2,6 +2,7 @@
 
 #define ret return
 #define cx const
+#define cxex constexpr
 #define tx this
 #define inl inline
 #define tpl template
@@ -33,6 +34,8 @@
 
 #define ifs(cond) ifl ((cond) == ERR_NO)
 #define ife(cond) ifu ((cond) == ERR_YES)
+
+#define ifcx(cond) if cxex (cond)
 
 #define jsrc(name) goto name
 #define jdst(name) \

@@ -269,7 +269,7 @@ tpl1 dfa NT ValSeqBoxEncode(BitVec& out, cx T1* vals, SI valCnt)
         {
         }
     };
-    constexpr SI ENCODING_CNT = 8;
+    cxex SI ENCODING_CNT = 8;
     Encoding encoding[ENCODING_CNT];
 
     U1 buf[64];

@@ -1,4 +1,5 @@
 #define cx const
+#define cxex constexpr
 #define noex noexcept
 #define tpl0 template<>
 #define tpl1 template<typename T1>

@@ -1,21 +1,21 @@
 #pragma once
 
-constexpr SI PATH_LEN_MAX = 260;
-constexpr SI PATH_LENX_MAX = PATH_LEN_MAX + STR_EX_LEN;
+cxex SI PATH_LEN_MAX = 260;
+cxex SI PATH_LENX_MAX = PATH_LEN_MAX + STR_EX_LEN;
 
-constexpr CH CH_PATH_DIR = '\\';
-constexpr CH CH_PATH_EXT = '.';
-constexpr CH CH_PATH_DRIVE = ':';
+cxex CH CH_PATH_DIR = '\\';
+cxex CH CH_PATH_EXT = '.';
+cxex CH CH_PATH_DRIVE = ':';
 
-constexpr cx CH* STR_PATH_DIR = L"\\";
-constexpr cx CH* STR_PATH_EXT = L".";
-constexpr cx CH* STR_PATH_DRIVE = L":";
+cxex cx CH* STR_PATH_DIR = L"\\";
+cxex cx CH* STR_PATH_EXT = L".";
+cxex cx CH* STR_PATH_DRIVE = L":";
 
-constexpr CH CH_PATH_SANITIZE = '_';
-constexpr CH CH_PATH_ENVVAR = '%';
+cxex CH CH_PATH_SANITIZE = '_';
+cxex CH CH_PATH_ENVVAR = '%';
 
-constexpr cx CH* STR_NTPATH_PRE = L"\\??\\";
-constexpr SI STR_NTPATH_PRE_LEN = 4;
+cxex cx CH* STR_NTPATH_PRE = L"\\??\\";
+cxex SI STR_NTPATH_PRE_LEN = 4;
 
 dfa cx CH* PathExtPtr(cx CH* path)
 {

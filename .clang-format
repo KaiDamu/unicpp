@@ -11,7 +11,7 @@ AlignEscapedNewlines: Left
 SortIncludes: Never
 ColumnLimit: 200
 
-IfMacros: ['ifu', 'ifl', 'ifs', 'ife', 'ifdbg', 'ifndbg']
+IfMacros: ['ifu', 'ifl', 'ifs', 'ife', 'ifcx', 'ifdbg', 'ifndbg']
 ForEachMacros: ['ite']
 
 Macros:
