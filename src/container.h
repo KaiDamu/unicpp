@@ -89,6 +89,7 @@ class BitVec
     std::vector<U1> m_dat;
     SI m_len;  // length in bits
     SI m_free; // free bits at the end
+    SI m_cur;  // cursor position in bits
 
   public:
     dfa NT Clr()
@@ -96,6 +97,7 @@ class BitVec
         MemSet(m_dat.data(), 0, m_dat.size());
         m_len = 0;
         m_free = m_dat.size() * BIT_IN_BYTE;
+        m_cur = 0;
     }
     dfa NT Reserve(SI size, SI newSize = -1)
     {
@@ -197,6 +199,33 @@ class BitVec
         } while (VarintIsIncomplete(buf, size));
         ret VarintDecode(val, buf);
     }
+    dfa NT Read(GA buf, SI size)
+    {
+        tx->Get(buf, m_cur, size);
+        m_cur += size;
+    }
+    tpl1 dfa SI ReadVarbaseint(T1& val, U1 base)
+    {
+        U1 buf[VarbaseintSizeMax<T1, 1>()];
+        SI size = 0;
+        do
+        {
+            tx->Read(buf + size, BIT_IN_BYTE);
+            ++size;
+        } while (VarbaseintIsIncomplete(buf, size, base));
+        ret VarbaseintDecode(val, buf, base);
+    }
+    tpl1 dfa SI ReadVarbasetruncint(T1& val, U1 base, SI sizebMax)
+    {
+        U1 buf[VarbaseintSizeMax<T1, 1>()];
+        SI size = 0;
+        do
+        {
+            tx->Read(buf + size, Min(BIT_IN_BYTE, sizebMax - size * BIT_IN_BYTE));
+            ++size;
+        } while (VarbaseintIsIncomplete(buf, size, base));
+        ret VarbaseintDecode(val, buf, base);
+    }
 
   public:
     dfa cx U1* Dat() cx
@@ -213,10 +242,106 @@ class BitVec
     }
 
   public:
-    dfa BitVec() : m_len(0), m_free(0)
+    dfa BitVec() : m_len(0), m_free(0), m_cur(0)
     {
     }
 };
+
+tpl1 dfa NT ValSeqBoxEncode(BitVec& out, cx T1* vals, SI valCnt)
+{
+    ifu (valCnt < 1)
+        ret;
+
+    AU valMax = vals[0];
+    for (SI i = 1; i < valCnt; ++i)
+    {
+        if (vals[i] > valMax)
+            valMax = vals[i];
+    }
+    cx AU valMaxLenb = LenBin(valMax);
+
+    struct Encoding
+    {
+        SI valMaxLenb;
+        SI sizeb;
+
+        dfa Encoding() : valMaxLenb(0), sizeb(0)
+        {
+        }
+    };
+    constexpr SI ENCODING_CNT = 8;
+    Encoding encoding[ENCODING_CNT];
+
+    U1 buf[64];
+    SI bufSize;
+
+    encoding[0].valMaxLenb = valMaxLenb;
+    encoding[0].sizeb = valMaxLenb * valCnt;
+
+    for (U1 base = 1; base < 8; ++base)
+    {
+        cx AU encodingValMaxLen = VarbaseintEncode(buf, valMax, base);
+        encoding[base].valMaxLenb = ((encodingValMaxLen - SI(1)) * BIT_IN_BYTE) + LenBin<U1>(*(buf + (encodingValMaxLen - SI(1))));
+
+        ite (i, i < valCnt)
+            encoding[base].sizeb += Min(VarbaseintEncodeSize(vals[i], base) * BIT_IN_BYTE, encoding[base].valMaxLenb);
+    }
+
+    SI encodingBestI = 0;
+    for (SI i = 1; i < ENCODING_CNT; ++i)
+    {
+        if (encoding[i].sizeb < encoding[encodingBestI].sizeb)
+            encodingBestI = i;
+    }
+    AU& encodingBest = encoding[encodingBestI];
+
+    out.Clr();
+    out.Reserve(64 + encodingBest.sizeb);
+
+    bufSize = VarbaseintEncode(buf, valCnt, 5);
+    out.AddLast(buf, bufSize * BIT_IN_BYTE);
+    out.AddLast(&encodingBest.valMaxLenb, 7);
+    out.AddLast(&encodingBestI, 3);
+
+    if (encodingBestI == 0)
+    {
+        ite (i, i < valCnt)
+            out.AddLast(&vals[i], valMaxLenb);
+    }
+    else
+    {
+        ite (i, i < valCnt)
+        {
+            bufSize = VarbaseintEncode(buf, vals[i], encodingBestI);
+            out.AddLast(buf, Min(bufSize * BIT_IN_BYTE, encodingBest.valMaxLenb));
+        }
+    }
+}
+tpl1 dfa NT ValSeqBoxDecode(std::vector<T1>& vals, BitVec& in)
+{
+    SI valCnt;
+    in.ReadVarbaseint(valCnt, 5);
+    SI valMaxLenb;
+    in.Read(&valMaxLenb, 7);
+    SI encodingBestI;
+    in.Read(&encodingBestI, 3);
+
+    vals.resize(valCnt);
+
+    if (encodingBestI == 0)
+    {
+        for (AU& val : vals)
+        {
+            val = 0;
+            in.Read(&val, valMaxLenb);
+        }
+    }
+    else
+    {
+        for (AU& val : vals)
+            in.ReadVarbasetruncint(val, encodingBestI, valMaxLenb);
+    }
+}
 
 tpl<typename T1, SI TCap> class CircularBuf
 {

@@ -81,7 +81,12 @@ tpl0 constexpr dfa F8 Pi<F8>()
 
 tpl1 constexpr dfa SI VarintSizeMax()
 {
-    ret (siz(T1) * 8 + 6) / 7;
+    ret (sizb(T1) + 6) / 7;
+}
+tpl<typename T1, U1 TBase> constexpr dfa SI VarbaseintSizeMax()
+{
+    static_assert(TBase > 0 && TBase < 8, "TBase must be in (0, 8)");
+    ret (sizb(T1) + (TBase - 1)) / TBase;
 }
 
 #define NUL 0

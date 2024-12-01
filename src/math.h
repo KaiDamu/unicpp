@@ -140,9 +140,17 @@ tpl1 dfa T1 Dist0Fast(T1 x, T1 y)
     cx AU ya = Abs<T1>(y);
     ret (xa > ya) ? (T1(0.947543) * xa + T1(0.392485) * ya) : (T1(0.947543) * ya + T1(0.392485) * xa);
 }
+tpl1 dfa T1 ZigzagEncode(T1 val)
+{
+    ret (val << 1) ^ (val >> (sizb(T1) - SI(1)));
+}
+tpl1 dfa T1 ZigzagDecode(T1 val)
+{
+    ret (val >> 1) ^ (-(val & 1));
+}
 tpl1 dfa T1 ZigzagAround0(T1 i)
 {
-    ret (i >> 1) ^ (-(i & 1));
+    ret ZigzagDecode<T1>(i);
 }
 tpl1 dfa T1 ZigzagAround(T1 val, T1 i)
 {
@@ -239,6 +247,12 @@ dfa BO VarintIsIncomplete(cx U1* dat, SI size)
         ret YES;
     ret (dat[size - 1] & 0x80) ? YES : NO;
 }
+dfa BO VarbaseintIsIncomplete(cx U1* dat, SI size, U1 base)
+{
+    ifu (size < 1)
+        ret YES;
+    ret dat[size - 1] >= U1(U1(0xFF) << base);
+}
 tpl1 dfa SI VarintEncode(U1* out, T1 in)
 {
     cx U1* cx outBase = out;
@@ -266,6 +280,44 @@ tpl1 dfa SI VarintDecode(T1& out, cx U1* in)
     } while (YES);
     ret SI(in - inBase);
 }
+tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base)
+{
+    cx U1* cx outBase = out;
+    cx AU mask = U1(U1(0xFF) << base);
+    while (in >= mask)
+    {
+        cx AU val = U1(mask | U1(in));
+        *out++ = val;
+        in -= val;
+        in >>= base;
+    }
+    *out++ = U1(in);
+    ret SI(out - outBase);
+}
+tpl1 dfa SI VarbaseintDecode(T1& out, cx U1* in, U1 base)
+{
+    out = 0;
+    cx U1* cx inBase = in;
+    cx AU mask = U1(U1(0xFF) << base);
+    do
+    {
+        out += *in << (SI(in - inBase) * base);
+        if (*in < mask)
+            ret SI(in - inBase) + SI(1);
+        ++in;
+    } while (YES);
+}
+tpl1 dfa SI VarbaseintEncodeSize(T1 in, U1 base)
+{
+    SI size = 1;
+    cx AU mask = U1(U1(0xFF) << base);
+    while (in >= mask)
+    {
+        in = (in - U1(mask | U1(in))) >> base;
+        ++size;
+    }
+    ret size;
+}
 dfa U1 ByteObfuscate(U1 val, U1 i)
 {
     ret U1((val ^ 0x55) + (i ^ 0xAA));
@@ -290,6 +342,58 @@ tpl1 dfa T1 RevByte(T1 val)
     ite (i, i < siz(T1) / 2)
         Swap<U1>(b[i], b[siz(T1) - 1 - i]);
     ret val;
+}
+tpl1 dfa SI LenBin(T1 val)
+{
+    ret LenBin<U8>(val);
+}
+tpl0 dfa SI LenBin<>(U8 val)
+{
+    ifu (val == 0)
+        ret 1;
+#if defined(PROG_COMPILER_GCC)
+    ret 64 - __builtin_clzll(val);
+#elif defined(PROG_COMPILER_MSVC)
+    unsigned long r;
+    _BitScanReverse64(&r, val);
+    ret r + 1;
+#else
+    SI len = 0;
+    while (val > 0)
+    {
+        val >>= 1;
+        ++len;
+    }
+    ret len;
+#endif
+}
+tpl0 dfa SI LenBin<>(U4 val)
+{
+    ifu (val == 0)
+        ret 1;
+#if defined(PROG_COMPILER_GCC)
+    ret 32 - __builtin_clz(val);
+#elif defined(PROG_COMPILER_MSVC)
+    unsigned long r;
+    _BitScanReverse(&r, val);
+    ret r + 1;
+#else
+    SI len = 0;
+    while (val > 0)
+    {
+        val >>= 1;
+        ++len;
+    }
+    ret len;
+#endif
+}
+tpl0 dfa SI LenBin<>(U2 val)
+{
+    ret LenBin<U4>(val);
+}
+tpl0 dfa SI LenBin<>(U1 val)
+{
+    ret LenBin<U4>(val);
 }
 tpl1 dfa SI LenInt(T1 val)
 {
