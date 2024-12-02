@@ -106,19 +106,23 @@ class BitVec
   public:
     dfa NT Clr()
     {
-        MemSet(m_dat.data(), 0, m_dat.size());
+        MemSet(m_dat.data(), 0, BitToByteSize(m_len));
         m_len = 0;
         m_free = m_dat.size() * BIT_IN_BYTE;
         m_cur = 0;
     }
-    dfa NT Reserve(SI size, SI newSize = -1)
+    dfa NT Reserve(SI size)
     {
         ifl (size <= m_len + m_free)
             ret;
-        if (newSize == -1)
-            newSize = SI(size * 1.5);
-        m_dat.resize(BitToByteSize(newSize), 0);
-        m_free = newSize - m_len;
+        m_dat.resize(BitToByteSize(size), 0);
+        m_free = size - m_len;
+    }
+    dfa NT Reserve(SI sizeMin, SI sizeNew)
+    {
+        ifl (sizeMin <= m_len + m_free)
+            ret;
+        tx->Reserve((sizeNew == -1) ? SI(sizeMin * 1.5) : sizeNew);
     }
 
   public:
@@ -126,7 +130,7 @@ class BitVec
     {
         cx AU buf_ = (cx U1*)buf;
 
-        tx->Reserve(BitToByteSize(pos + size) * BIT_IN_BYTE);
+        tx->Reserve(BitToByteSize(pos + size) * BIT_IN_BYTE, -1);
 
         if ((pos % BIT_IN_BYTE) == 0 && (size % BIT_IN_BYTE) == 0)
         {
