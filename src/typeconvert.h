@@ -57,17 +57,29 @@ dfa F4 S4ToF4(S4 val)
 
 tpl2 dfa SI StrToInt(T1& dst, cx T2* src)
 {
+    static_assert(IsTypeU<T1> || IsTypeS<T1>, "StrToInt: unsupported type");
+
     dst = 0;
-    T1 sign = 1;
-    if (*src == '-')
+    AU p = src;
+
+    ifcx (IsTypeU<T1>)
     {
-        sign = -1;
-        ++src;
+        while (IsNumBase10<T2>(*p))
+            dst = dst * T1(10) + (*p++) - '0';
     }
-    cx T2* p = src;
-    while (IsNumBase10<T2>(*p))
-        dst = dst * 10 + (*p++) - '0';
-    dst *= sign;
+    else ifcx (IsTypeS<T1>)
+    {
+        AU sign = T1(1);
+        if (*p == T2('-'))
+        {
+            ++p;
+            sign = T1(-1);
+        }
+        while (IsNumBase10<T2>(*p))
+            dst = dst * T1(10) + (*p++) - '0';
+        dst *= sign;
+    }
+
     ret SI(p - src);
 }
 tpl2 dfa SI StrToInt(T1& dst, cx T2* src, SI len)

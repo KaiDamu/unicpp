@@ -1,5 +1,17 @@
 #pragma once
 
+tpl1 cxex BO IsTypeU = NO;
+tpl0 cxex BO IsTypeU<U1> = YES;
+tpl0 cxex BO IsTypeU<U2> = YES;
+tpl0 cxex BO IsTypeU<U4> = YES;
+tpl0 cxex BO IsTypeU<U8> = YES;
+
+tpl1 cxex BO IsTypeS = NO;
+tpl0 cxex BO IsTypeS<S1> = YES;
+tpl0 cxex BO IsTypeS<S2> = YES;
+tpl0 cxex BO IsTypeS<S4> = YES;
+tpl0 cxex BO IsTypeS<S8> = YES;
+
 tpl1 cxex BO IsTypeF = NO;
 tpl0 cxex BO IsTypeF<F4> = YES;
 tpl0 cxex BO IsTypeF<F8> = YES;

@@ -446,6 +446,16 @@ tpl1 dfa SI LenInt(T1 val)
         num = 20;
     ret num + sign;
 }
+tpl1 dfa T1 AppendInt(cx T1& high, cx T1& low)
+{
+    static_assert(IsTypeU<T1>, "AppendInt: T1 must be TypeU");
+    AU high_ = high;
+    AU low_ = low;
+    do
+        high_ *= 10;
+    while (low_ /= 10);
+    ret high_ + low;
+}
 tpl1 dfa T1 NormalizeMinmax(T1* arr, SI cnt)
 {
     ifu (cnt < 1)

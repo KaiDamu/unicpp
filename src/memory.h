@@ -47,6 +47,14 @@ dfa NT MemCpy(GA dst, CXGA src, SI size)
     memcpy(dst, src, size);
 #endif
 }
+dfa NT MemMove(GA dst, CXGA src, SI size)
+{
+#ifdef PROG_COMPILER_GCC
+    __builtin_memmove(dst, src, size);
+#else
+    memmove(dst, src, size);
+#endif
+}
 dfa SA MemCmp(CXGA ptr1, CXGA ptr2, SI size)
 {
     ret SA(__builtin_memcmp(ptr1, ptr2, size));
