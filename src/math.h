@@ -1,5 +1,11 @@
 #pragma once
 
+tpl<SI TI, typename T1> dfa cxex T1 ByteIVal(cx T1& val)
+{
+    static_assert(IsTypeU<T1> || IsTypeS<T1>, "ByteIVal: T1 must be an integer type");
+    static_assert(TI >= 0 && TI < siz(T1), "ByteIVal: TI out of range");
+    ret (val >> (TI << 3)) & 0xFF;
+}
 tpl1 dfa T1 Min(T1 a, T1 b)
 {
     ret ((a < b) ? a : b);
