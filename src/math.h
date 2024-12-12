@@ -42,7 +42,10 @@ tpl0 dfa F8 Abs(F8 val)
 }
 tpl1 dfa T1 Diff(T1 a, T1 b)
 {
-    ret Abs<T1>(a - b);
+    ifcx (IsTypeU<T1>)
+        ret (a > b) ? a - b : b - a;
+    else
+        ret Abs<T1>(a - b);
 }
 tpl1 dfa T1 DiffWrap(T1 a, T1 b, T1 wrapAt)
 {

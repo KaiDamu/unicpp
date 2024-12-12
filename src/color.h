@@ -289,6 +289,118 @@ struct ColRgba
         ret *tx;
     }
 };
+struct ColV
+{
+    U1 v; // range: 0 - 255
+
+    dfa cxex ColV() : v()
+    {
+    }
+    dfa cxex ColV(U1 v) : v(v)
+    {
+    }
+    dfa cxex ColV(cx ColV& other) : v(other.v)
+    {
+    }
+    dfa cxex ColV(ColV&& other) noex : v(move(other.v))
+    {
+    }
+    dfa ~ColV() = default;
+
+    dfa ColV& operator=(cx ColV& other)
+    {
+        v = other.v;
+        ret *tx;
+    }
+    dfa ColV& operator=(ColV&& other) noex
+    {
+        v = move(other.v);
+        ret *tx;
+    }
+    dfa cxex BO operator==(cx ColV& other) cx
+    {
+        ret v == other.v;
+    }
+    dfa cxex BO operator!=(cx ColV& other) cx
+    {
+        ret v != other.v;
+    }
+    dfa cxex ColV operator+(cx ColV& other) cx
+    {
+        ret ColV(v + other.v);
+    }
+    dfa cxex ColV operator-(cx ColV& other) cx
+    {
+        ret ColV(v - other.v);
+    }
+    dfa cxex ColV operator*(F4 scalar) cx
+    {
+        ret ColV(v * scalar);
+    }
+    dfa cxex ColV operator/(F4 scalar) cx
+    {
+        ret ColV(v / scalar);
+    }
+    dfa cxex ColV operator-() cx
+    {
+        ret ColV(-v);
+    }
+    dfa ColV& operator+=(cx ColV& other)
+    {
+        v += other.v;
+        ret *tx;
+    }
+    dfa ColV& operator-=(cx ColV& other)
+    {
+        v -= other.v;
+        ret *tx;
+    }
+    dfa ColV& operator*=(F4 scalar)
+    {
+        v *= scalar;
+        ret *tx;
+    }
+    dfa ColV& operator/=(F4 scalar)
+    {
+        v /= scalar;
+        ret *tx;
+    }
+
+    dfa cxex BO operator<(cx ColV& other) cx
+    {
+        ret v < other.v;
+    }
+    dfa cxex BO operator>(cx ColV& other) cx
+    {
+        ret v > other.v;
+    }
+    dfa cxex BO operator<=(cx ColV& other) cx
+    {
+        ret v <= other.v;
+    }
+    dfa cxex BO operator>=(cx ColV& other) cx
+    {
+        ret v >= other.v;
+    }
+    dfa cxex ColV operator*(cx ColV& other) cx
+    {
+        ret ColV(v * other.v);
+    }
+    dfa cxex ColV operator/(cx ColV& other) cx
+    {
+        ret ColV(v / other.v);
+    }
+    dfa ColV& operator*=(cx ColV& other)
+    {
+        v *= other.v;
+        ret *tx;
+    }
+    dfa ColV& operator/=(cx ColV& other)
+    {
+        v /= other.v;
+        ret *tx;
+    }
+};
 struct ColVN
 {
     F4 v; // range: 0.0 - 1.0
@@ -663,6 +775,13 @@ tpl0 dfa NT ToType(ColRgb& dst, cx ColVN& src)
     dst.g = U1(src.v * 255.0f);
     dst.b = U1(src.v * 255.0f);
 }
+tpl0 dfa NT ToType(ColRgba& dst, cx ColV& src)
+{
+    dst.r = src.v;
+    dst.g = src.v;
+    dst.b = src.v;
+    dst.a = 255;
+}
 tpl0 dfa NT ToType(ColRgba& dst, cx ColVN& src)
 {
     dst.r = U1(src.v * 255.0f);
@@ -748,8 +867,10 @@ struct ColGridHsvNCmpInfo
         wV = COL_HSV_WEIGHT_V;
     }
 };
-dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<ColVN>& subGrid, cx ColGrid<ColVN>& mainGrid, cx ColGridVNCmpInfo& info)
+tpl1 dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<T1>& subGrid, cx ColGrid<T1>& mainGrid, cx ColGridVNCmpInfo& info)
 {
+    static_assert(IsTypeSame<T1, ColVN> || IsTypeSame<T1, ColV>, "T1 must be ColVN");
+
     ifu (subGrid.size != mainGrid.size)
         rete(ErrVal::NO_VALID);
 
@@ -798,6 +919,9 @@ dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<ColVN>& subGrid, cx ColGrid<ColVN
     {
         rete(ErrVal::NO_SUPPORT);
     }
+
+    ifcx (IsTypeSame<T1, ColV>)
+        resultDiff /= F4(0xFF);
 
     rets;
 }

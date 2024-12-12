@@ -16,6 +16,16 @@ tpl1 cxex BO IsTypeF = NO;
 tpl0 cxex BO IsTypeF<F4> = YES;
 tpl0 cxex BO IsTypeF<F8> = YES;
 
+tpl2 struct _IsTypeSame
+{
+    static cxex BO val = NO;
+};
+tpl1 struct _IsTypeSame<T1, T1>
+{
+    static cxex BO val = YES;
+};
+tpl2 cxex BO IsTypeSame = _IsTypeSame<T1, T2>::val;
+
 tpl2 dfa T1& AsType(T2& src)
 {
     static_assert(siz(T1) == siz(T2), "AsType: size of types must be the same");
