@@ -306,7 +306,7 @@ class Win
                 retep;
             break;
         case CaptureMode::GDI_SCN:
-            ife (tx->RectInnerGet(rectInner))
+            ife (ScnRectGet(rectInner))
                 retep;
             break;
         default:

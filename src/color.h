@@ -615,6 +615,10 @@ tpl1 struct ColGrid
     {
         ret pixels[pos.y * size.w + pos.x];
     }
+    dfa cx T1& Pixel(cx Pos2<SI>& pos) cx
+    {
+        ret pixels[pos.y * size.w + pos.x];
+    }
     dfa NT Resize(cx Size2<SI>& size)
     {
         tx->size = size;
@@ -787,6 +791,13 @@ tpl0 dfa NT ToType(ColRgba& dst, cx ColVN& src)
     dst.r = U1(src.v * 255.0f);
     dst.g = U1(src.v * 255.0f);
     dst.b = U1(src.v * 255.0f);
+    dst.a = 255;
+}
+tpl0 dfa NT ToType(ColRgba& dst, cx ColRgb& src)
+{
+    dst.r = src.r;
+    dst.g = src.g;
+    dst.b = src.b;
     dst.a = 255;
 }
 tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgb& src)
