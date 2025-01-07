@@ -698,6 +698,34 @@ class FileMem
             m_filePos += size;
         rets;
     }
+    tpl1 dfa SI ReadVarbaseint(T1& val, U1 base)
+    {
+        U1 buf[VarbaseintSizeMax<T1, 1>()];
+        SI size = 0;
+        do
+        {
+            ife (tx->Read(buf + size, 1))
+                ret 0;
+            ++size;
+        } while (VarbaseintIsIncomplete(buf, size, base));
+        ret VarbaseintDecode(val, buf, base);
+    }
+    tpl1 dfa NT ReadValSeqBox(std::vector<T1>& vals)
+    {
+        SI datSize = 0;
+        cx AU readSize = tx->ReadVarbaseint(datSize, 7);
+        cx AU fullSize = readSize + datSize;
+        tx->CurMove(-readSize);
+        BitVec box;
+        box.Reserve(fullSize * BIT_IN_BYTE);
+        box._LenSet(fullSize * BIT_IN_BYTE);
+        MemCpy(box._Dat(), tx->_Dat() + tx->CurPos(), fullSize);
+        if (m_isWriteDirect)
+            m_filePosOfs += fullSize;
+        else
+            m_filePos += fullSize;
+        ValSeqBoxDecode(vals, box);
+    }
     dfa BO ReadLine(string& str)
     {
         U1* ptrBase = m_dat.Ptr() + m_filePos;

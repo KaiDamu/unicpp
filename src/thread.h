@@ -22,41 +22,54 @@ dfa SI CpuThdCnt()
     ret s_cache;
 }
 
-using ThdTaskFnType = SA (*)(GA, GA, GA);
-
 class ThdTask
 {
   private:
-    ThdTaskFnType m_fn;
-    GA m_param1;
-    GA m_param2;
-    GA m_param3;
+    std::function<NT()> m_fn;
 
   public:
-    dfa NT Set(ThdTaskFnType fn, GA param1, GA param2, GA param3)
+    dfa ThdTask() : m_fn([]() noex {})
+    {
+    }
+    dfa ThdTask(cx std::function<NT()>& fn) : m_fn(fn)
+    {
+    }
+    dfa ThdTask(cx ThdTask& other) : m_fn(other.m_fn)
+    {
+    }
+    dfa ThdTask(ThdTask&& other) noex
+    {
+        m_fn = std::move(other.m_fn);
+        ifu (!m_fn)
+            m_fn = []() noex {};
+    }
+    dfa ~ThdTask() = default;
+
+  public:
+    dfa ThdTask& operator=(cx ThdTask& other)
+    {
+        ifl (tx != &other)
+            m_fn = other.m_fn;
+        ret *tx;
+    }
+    dfa ThdTask& operator=(ThdTask&& other) noex
+    {
+        ifl (tx != &other)
+        {
+            m_fn = std::move(other.m_fn);
+            ifu (!m_fn)
+                m_fn = []() noex {};
+        }
+        ret *tx;
+    }
+    dfa NT Set(cx std::function<NT()>& fn)
     {
         m_fn = fn;
-        m_param1 = param1;
-        m_param2 = param2;
-        m_param3 = param3;
     }
-    dfa SA Call() cx
+    dfa NT Call() cx
     {
-        ret m_fn(m_param1, m_param2, m_param3);
-    }
-
-  public:
-    dfa ThdTask()
-    {
-        tx->Set(NUL, NUL, NUL, NUL);
-    }
-    dfa ThdTask(ThdTaskFnType fn, GA param1, GA param2, GA param3)
-    {
-        tx->Set(fn, param1, param2, param3);
-    }
-    dfa ~ThdTask()
-    {
-        ;
+        ifl (m_fn)
+            m_fn();
     }
 };
 
@@ -298,7 +311,7 @@ class ThdTaskMgr
         m_lock.Unlock();
         m_lock.PassOne();
     }
-    dfa NT TaskAdd(cx span<ThdTask>& tasks)
+    dfa NT TaskAdd(cx std::span<ThdTask>& tasks)
     {
         m_lock.Lock();
         m_taskQueue.Add(tasks);
@@ -375,11 +388,9 @@ dfa DWORD WINAPI ThdTaskMgrThdFn(LPVOID pMgr)
     {
         mgr.m_lock.Lock();
         while (mgr.m_taskQueue.IsEmpty())
-        {
             mgr.m_lock.Wait();
-        }
-        ThdTask task;
-        mgr.m_taskQueue.Get(task);
+        cx AU task = mgr.m_taskQueue.Peek();
+        mgr.m_taskQueue.Del();
         mgr.m_lock.Unlock();
         task.Call();
         mgr.m_lock.Lock();

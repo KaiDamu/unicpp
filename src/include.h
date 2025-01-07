@@ -10,12 +10,14 @@
 #include <string_view>
 #include <vector>
 #include <list>
+#include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
 #include <span>
 #include <array>
 #include <memory>
 #include <limits>
+#include <functional>
 
 using std::move;
 
