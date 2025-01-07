@@ -657,6 +657,25 @@ tpl1 dfa NT ColGridDrawUcppLogo(ColGrid<T1>& grid, cx Rect2<SI>& rect)
     }
 }
 
+tpl1 dfa NT ColGridDrawColGrid(ColGrid<T1>& grid, cx ColGrid<T1>& gridSrc, cx Pos2<SI>& pos)
+{
+    cx AU gridSrcW = gridSrc.size.w;
+    cx AU gridSrcH = gridSrc.size.h;
+    cx AU gridW = grid.size.w;
+    cx AU gridH = grid.size.h;
+
+    ite (y, y < gridH)
+    {
+        ite (x, x < gridW)
+        {
+            Pos2<SI> ptSrc = Pos2<SI>(x - pos.x, y - pos.y);
+            if (ptSrc.x >= 0 && ptSrc.x < gridSrcW && ptSrc.y >= 0 && ptSrc.y < gridSrcH)
+                grid.Pixel(Pos2<SI>(x, y)) = gridSrc.Pixel(ptSrc);
+        }
+    }
+
+}
+
 cxex U1 SCN_DRAW_THD_CODE_ERR_NO = 0;
 cxex U1 SCN_DRAW_THD_CODE_ERR_YES = 1;
 cxex U1 SCN_DRAW_THD_CODE_WAIT = 2;
@@ -665,15 +684,139 @@ Thd g_scnDrawThd;
 S4 g_scnDrawThdDelay = 0;
 HWND g_scnDrawWinHdl = NUL;
 
-struct ScnDrawCtx
+class ScnDrawCtx
 {
-    ColGrid<ColRgba> scnGrid;
-    HDC hdcScreen;
-    GA pBits;
-    HBITMAP hBitmap;
-    HDC hdcMem;
-    SI fpsMax;
-    TmMain fpsTimer;
+  private:
+    ColGrid<ColRgba> m_scnGrid;
+    HDC m_hdcScreen;
+    GA m_pBits;
+    HBITMAP m_hBitmap;
+    HDC m_hdcMem;
+    SI m_fpsMax;
+    TmMain m_fpsTimer;
+
+  public:
+    dfa NT FpsMax(SI fpsMax)
+    {
+        m_fpsMax = fpsMax;
+        m_fpsTimer = TimeMain();
+    }
+
+  public:
+    dfa NT DrawPt(cx Pos2<SI>& pt, cx ColRgba& col)
+    {
+        ColGridDrawPt(m_scnGrid, pt, col);
+    }
+    dfa NT DrawLine(cx Line2<SI>& line, SI thickness, cx ColRgba& col, BO doFill)
+    {
+        ColGridDrawLine(m_scnGrid, line, thickness, col, doFill);
+    }
+    dfa NT DrawRect(cx Rect2<SI>& rect, cx ColRgba& col, BO doFill)
+    {
+        ColGridDrawRect(m_scnGrid, rect, col, doFill);
+    }
+    dfa NT DrawTriangle(cx Triangle2<SI>& triangle, cx ColRgba& col, BO doFill)
+    {
+        ColGridDrawTriangle(m_scnGrid, triangle, col, doFill);
+    }
+    dfa NT DrawCircle(cx Circle2<SI>& circle, cx ColRgba& col, BO doFill)
+    {
+        ColGridDrawCircle(m_scnGrid, circle, col, doFill);
+    }
+    dfa NT DrawUcppLogo(cx Rect2<SI>& rect)
+    {
+        ColGridDrawUcppLogo(m_scnGrid, rect);
+    }
+    dfa NT DrawColGrid(cx ColGrid<ColRgba>& gridSrc, cx Pos2<SI>& pos)
+    {
+        ColGridDrawColGrid(m_scnGrid, gridSrc, pos);
+    }
+
+  public:
+    dfa ER MainBegin()
+    {
+        MemSet(m_scnGrid.pixels.data(), 0, m_scnGrid.pixels.size() * siz(m_scnGrid.pixels[0]));
+        rets;
+    }
+    dfa ER MainEnd()
+    {
+        HGDIOBJ oldBitmap = SelectObject(m_hdcMem, m_hBitmap);
+
+        cx ColRgba* srcPixels = m_scnGrid.pixels.data();
+        RGBQUAD* dstPixels = static_cast<RGBQUAD*>(m_pBits);
+
+        cx AU pixelCnt = SI(m_scnGrid.pixels.size());
+        ite (i, i < pixelCnt)
+        {
+            dstPixels[i].rgbRed = srcPixels[i].r;
+            dstPixels[i].rgbGreen = srcPixels[i].g;
+            dstPixels[i].rgbBlue = srcPixels[i].b;
+            dstPixels[i].rgbReserved = srcPixels[i].a;
+        }
+
+        POINT ptPos = {0, 0};
+        SIZE sizeWnd = {LONG(m_scnGrid.size.w), LONG(m_scnGrid.size.h)};
+        POINT ptSrc = {0, 0};
+        BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+
+        UpdateLayeredWindow(g_scnDrawWinHdl, m_hdcScreen, &ptPos, &sizeWnd, m_hdcMem, &ptSrc, 0, &blend, ULW_ALPHA);
+
+        SelectObject(m_hdcMem, oldBitmap);
+
+        g_scnDrawThdDelay = 0;
+
+        if (m_fpsMax > 0)
+        {
+            cx AU timeElapsedMs = TimeMain() - m_fpsTimer;
+            cx AU timeSleepMs = TmMain(1000) / TmMain(m_fpsMax) - timeElapsedMs;
+            ThdWait(timeSleepMs);
+            m_fpsTimer = TimeMain();
+        }
+
+        rets;
+    }
+    dfa ER Init()
+    {
+        RECT winRect;
+        ifu (GetClientRect(g_scnDrawWinHdl, &winRect) == 0)
+            rete(ErrVal::WIN);
+        m_scnGrid.size = Size2<SI>(winRect.right - winRect.left, winRect.bottom - winRect.top);
+        m_scnGrid.pixels.resize(m_scnGrid.size.Area());
+
+        BITMAPINFO bmi = {};
+        bmi.bmiHeader.biSize = siz(BITMAPINFOHEADER);
+        bmi.bmiHeader.biWidth = m_scnGrid.size.w;
+        bmi.bmiHeader.biHeight = -m_scnGrid.size.h;
+        bmi.bmiHeader.biPlanes = 1;
+        bmi.bmiHeader.biBitCount = 32;
+        bmi.bmiHeader.biCompression = BI_RGB;
+
+        m_hdcScreen = GetDC(NUL);
+        m_pBits = NUL;
+        m_hBitmap = CreateDIBSection(m_hdcScreen, &bmi, DIB_RGB_COLORS, &m_pBits, NUL, 0);
+
+        ifu (!m_hBitmap || !m_pBits)
+        {
+            ReleaseDC(NUL, m_hdcScreen);
+            m_scnGrid.pixels.resize(0);
+            rete(ErrVal::WIN);
+        }
+
+        m_hdcMem = CreateCompatibleDC(m_hdcScreen);
+
+        m_fpsMax = 0;
+
+        rets;
+    }
+    dfa ER Free()
+    {
+        DeleteObject(m_hBitmap);
+        DeleteDC(m_hdcMem);
+        ReleaseDC(NUL, m_hdcScreen);
+        m_scnGrid.pixels.resize(0);
+
+        rets;
+    }
 };
 
 dfa LRESULT CALLBACK _ScnDrawWinProc(HWND win, UINT code, WPARAM wp, LPARAM lp)
@@ -746,98 +889,6 @@ dfa DWORD WINAPI _ScnDrawThd(LPVOID code)
     DestroyWindow(g_scnDrawWinHdl); // unchecked
     UnregisterClassW((LPCWSTR)(uintptr_t)winClassHdl, instance); // unchecked
     ret 0;
-}
-
-dfa NT ScnDrawFpsMax(ScnDrawCtx& ctx, SI fpsMax)
-{
-    ctx.fpsMax = fpsMax;
-    ctx.fpsTimer = TimeMain();
-}
-
-dfa ER ScnDrawMainBegin(ScnDrawCtx& ctx)
-{
-    MemSet(ctx.scnGrid.pixels.data(), 0, ctx.scnGrid.pixels.size() * siz(ctx.scnGrid.pixels[0]));
-    rets;
-}
-dfa ER ScnDrawMainEnd(ScnDrawCtx& ctx)
-{
-    HGDIOBJ oldBitmap = SelectObject(ctx.hdcMem, ctx.hBitmap);
-
-    cx ColRgba* srcPixels = ctx.scnGrid.pixels.data();
-    RGBQUAD* dstPixels = static_cast<RGBQUAD*>(ctx.pBits);
-
-    cx AU pixelCnt = SI(ctx.scnGrid.pixels.size());
-    ite (i, i < pixelCnt)
-    {
-        dstPixels[i].rgbRed = srcPixels[i].r;
-        dstPixels[i].rgbGreen = srcPixels[i].g;
-        dstPixels[i].rgbBlue = srcPixels[i].b;
-        dstPixels[i].rgbReserved = srcPixels[i].a;
-    }
-
-    POINT ptPos = {0, 0};
-    SIZE sizeWnd = {LONG(ctx.scnGrid.size.w), LONG(ctx.scnGrid.size.h)};
-    POINT ptSrc = {0, 0};
-    BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-
-    UpdateLayeredWindow(g_scnDrawWinHdl, ctx.hdcScreen, &ptPos, &sizeWnd, ctx.hdcMem, &ptSrc, 0, &blend, ULW_ALPHA);
-
-    SelectObject(ctx.hdcMem, oldBitmap);
-
-    g_scnDrawThdDelay = 0;
-
-    if (ctx.fpsMax > 0)
-    {
-        cx AU timeElapsedMs = TimeMain() - ctx.fpsTimer;
-        cx AU timeSleepMs = TmMain(1000) / TmMain(ctx.fpsMax) - timeElapsedMs;
-        ThdWait(timeSleepMs);
-        ctx.fpsTimer = TimeMain();
-    }
-
-    rets;
-}
-
-dfa ER ScnDrawCtxInit(ScnDrawCtx& ctx)
-{
-    RECT winRect;
-    ifu (GetClientRect(g_scnDrawWinHdl, &winRect) == 0)
-        rete(ErrVal::WIN);
-    ctx.scnGrid.size = Size2<SI>(winRect.right - winRect.left, winRect.bottom - winRect.top);
-    ctx.scnGrid.pixels.resize(ctx.scnGrid.size.Area());
-
-    BITMAPINFO bmi = {};
-    bmi.bmiHeader.biSize = siz(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = ctx.scnGrid.size.w;
-    bmi.bmiHeader.biHeight = -ctx.scnGrid.size.h;
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-
-    ctx.hdcScreen = GetDC(NUL);
-    ctx.pBits = NUL;
-    ctx.hBitmap = CreateDIBSection(ctx.hdcScreen, &bmi, DIB_RGB_COLORS, &ctx.pBits, NUL, 0);
-
-    ifu (!ctx.hBitmap || !ctx.pBits)
-    {
-        ReleaseDC(NUL, ctx.hdcScreen);
-        ctx.scnGrid.pixels.resize(0);
-        rete(ErrVal::WIN);
-    }
-
-    ctx.hdcMem = CreateCompatibleDC(ctx.hdcScreen);
-
-    ctx.fpsMax = 0;
-
-    rets;
-}
-dfa ER ScnDrawCtxFree(ScnDrawCtx& ctx)
-{
-    DeleteObject(ctx.hBitmap);
-    DeleteDC(ctx.hdcMem);
-    ReleaseDC(NUL, ctx.hdcScreen);
-    ctx.scnGrid.pixels.resize(0);
-
-    rets;
 }
 
 dfa ER ScnDrawInit()
