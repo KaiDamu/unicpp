@@ -30,7 +30,7 @@ tpl1 class Vec2
     dfa cxex Vec2(cx Vec2& other) : a(other.a), b(other.b)
     {
     }
-    dfa cxex Vec2(Vec2&& other) noex : a(move(other.a)), b(move(other.b))
+    dfa cxex Vec2(Vec2&& other) noex : a(std::move(other.a)), b(std::move(other.b))
     {
     }
     dfa ~Vec2() = default;
@@ -43,8 +43,8 @@ tpl1 class Vec2
     }
     dfa Vec2& operator=(Vec2&& other) noex
     {
-        a = move(other.a);
-        b = move(other.b);
+        a = std::move(other.a);
+        b = std::move(other.b);
         ret *tx;
     }
     dfa cxex BO operator==(cx Vec2& other) cx

@@ -402,9 +402,9 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::CON);
     SI strPos = 0;
-    static vector<string>* s_history = NUL;
+    static std::vector<std::string>* s_history = NUL;
     if (s_history == NUL)
-        s_history = new vector<string>;
+        s_history = new std::vector<std::string>;
     SI historyPos = -1;
     while (YES)
     {
@@ -445,7 +445,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
             if (isShow)
             {
                 cx AU writeLen = strLen;
-                vector<CS> buf(writeLen);
+                std::vector<CS> buf(writeLen);
                 MemSet(buf.data(), '\b', strPos * siz(CS));
                 ife (_ConWriteRaw(buf.data(), strPos))
                     retep;
@@ -475,7 +475,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
                     retep;
                 ife (_ConWriteRaw(" ", 1))
                     retep;
-                vector<CS> buf(writeLen + 1);
+                std::vector<CS> buf(writeLen + 1);
                 MemSet(buf.data(), '\b', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size()))
                     retep;
@@ -542,7 +542,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
             if (isShow)
             {
                 cx AU writeLen = strLen;
-                vector<CS> buf(writeLen);
+                std::vector<CS> buf(writeLen);
                 MemSet(buf.data(), '\b', strPos * siz(CS));
                 ife (_ConWriteRaw(buf.data(), strPos))
                     retep;
@@ -577,7 +577,7 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
                     retep;
                 if (writeLen - 1 > 0)
                 {
-                    vector<CS> buf(writeLen - 1);
+                    std::vector<CS> buf(writeLen - 1);
                     MemSet(buf.data(), '\b', buf.size() * siz(CS));
                     ife (_ConWriteRaw(buf.data(), buf.size()))
                         retep;

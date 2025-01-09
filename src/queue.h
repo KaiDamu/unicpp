@@ -20,7 +20,7 @@ tpl1 class DQueue
     {
         m_dat.emplace_back(dat);
     }
-    dfa NT Add(cx span<T1>& dat)
+    dfa NT Add(cx std::span<T1>& dat)
     {
         m_dat.insert(m_dat.end(), dat.begin(), dat.end());
     }
@@ -31,14 +31,14 @@ tpl1 class DQueue
     dfa T1& Get(T1& dat)
     {
         Assert(!tx->IsEmpty());
-        dat = move(m_dat.front());
+        dat = std::move(m_dat.front());
         m_dat.pop_front();
         ret dat;
     }
     dfa T1& GetLast(T1& dat)
     {
         Assert(!tx->IsEmpty());
-        dat = move(m_dat.back());
+        dat = std::move(m_dat.back());
         m_dat.pop_back();
         ret dat;
     }

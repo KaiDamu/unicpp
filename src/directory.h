@@ -304,13 +304,13 @@ dfa ER DirMove(cx CH* dst, cx CH* src, BO isReplace = YES)
     rets;
 }
 
-dfa ER DirList(list<FileInfo>& files, cx CH* path, SI depth = -1)
+dfa ER DirList(std::list<FileInfo>& files, cx CH* path, SI depth = -1)
 {
     files.clear();
     cx DirEnumCallbFnType callb = [](cx FileInfo& fileInfo, GA param1, GA param2) {
         unused(param2);
-        ((list<FileInfo>*)param1)->emplace_back(fileInfo);
-        ((list<FileInfo>*)param1)->back().Save();
+        ((std::list<FileInfo>*)param1)->emplace_back(fileInfo);
+        ((std::list<FileInfo>*)param1)->back().Save();
         ret YES;
     };
     ife (DirEnum(path, depth, callb, 0, &files, NUL))

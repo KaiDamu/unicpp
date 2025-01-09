@@ -397,22 +397,22 @@ tpl2 class DictAvl
 class SVarBlock
 {
   private:
-    DictAvl<string, string> m_vars;
+    DictAvl<std::string, std::string> m_vars;
 
   public:
     dfa NT Clr()
     {
         m_vars.Clr();
     }
-    dfa NT Set(cx string& var, cx string& val)
+    dfa NT Set(cx std::string& var, cx std::string& val)
     {
         m_vars.Replace(var, val);
     }
-    dfa string Get(cx string& var) cx
+    dfa std::string Get(cx std::string& var) cx
     {
-        cx string* cx val = m_vars[var];
+        cx std::string* cx val = m_vars[var];
         if (val == NUL)
-            ret string();
+            ret std::string();
         ret *val;
     }
     dfa SI LoadMemCfg(DatIte<U1> dat)

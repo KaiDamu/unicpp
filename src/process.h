@@ -113,7 +113,7 @@ class Proc
 {
   private:
     PROCESS_INFORMATION m_info;
-    wstring m_args;
+    std::wstring m_args;
 
   public:
     dfa NT __Drop()

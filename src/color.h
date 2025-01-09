@@ -21,7 +21,7 @@ struct ColRgb
     dfa cxex ColRgb(cx ColRgb& other) : r(other.r), g(other.g), b(other.b)
     {
     }
-    dfa cxex ColRgb(ColRgb&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
+    dfa cxex ColRgb(ColRgb&& other) noex : r(std::move(other.r)), g(std::move(other.g)), b(std::move(other.b))
     {
     }
     dfa ~ColRgb() = default;
@@ -35,9 +35,9 @@ struct ColRgb
     }
     dfa ColRgb& operator=(ColRgb&& other) noex
     {
-        r = move(other.r);
-        g = move(other.g);
-        b = move(other.b);
+        r = std::move(other.r);
+        g = std::move(other.g);
+        b = std::move(other.b);
         ret *tx;
     }
     dfa cxex BO operator==(cx ColRgb& other) cx
@@ -112,7 +112,7 @@ struct ColRgbN
     dfa cxex ColRgbN(cx ColRgbN& other) : r(other.r), g(other.g), b(other.b)
     {
     }
-    dfa cxex ColRgbN(ColRgbN&& other) noex : r(move(other.r)), g(move(other.g)), b(move(other.b))
+    dfa cxex ColRgbN(ColRgbN&& other) noex : r(std::move(other.r)), g(std::move(other.g)), b(std::move(other.b))
     {
     }
     dfa ~ColRgbN() = default;
@@ -126,9 +126,9 @@ struct ColRgbN
     }
     dfa ColRgbN& operator=(ColRgbN&& other) noex
     {
-        r = move(other.r);
-        g = move(other.g);
-        b = move(other.b);
+        r = std::move(other.r);
+        g = std::move(other.g);
+        b = std::move(other.b);
         ret *tx;
     }
     dfa cxex BO operator==(cx ColRgbN& other) cx
@@ -213,7 +213,7 @@ struct ColRgba
     dfa cxex ColRgba(cx ColRgba& other) : val(other.val)
     {
     }
-    dfa cxex ColRgba(ColRgba&& other) noex : val(move(other.val))
+    dfa cxex ColRgba(ColRgba&& other) noex : val(std::move(other.val))
     {
     }
     dfa ~ColRgba() = default;
@@ -225,7 +225,7 @@ struct ColRgba
     }
     dfa ColRgba& operator=(ColRgba&& other) noex
     {
-        val = move(other.val);
+        val = std::move(other.val);
         ret *tx;
     }
     dfa cxex BO operator==(cx ColRgba& other) cx
@@ -302,7 +302,7 @@ struct ColV
     dfa cxex ColV(cx ColV& other) : v(other.v)
     {
     }
-    dfa cxex ColV(ColV&& other) noex : v(move(other.v))
+    dfa cxex ColV(ColV&& other) noex : v(std::move(other.v))
     {
     }
     dfa ~ColV() = default;
@@ -314,7 +314,7 @@ struct ColV
     }
     dfa ColV& operator=(ColV&& other) noex
     {
-        v = move(other.v);
+        v = std::move(other.v);
         ret *tx;
     }
     dfa cxex BO operator==(cx ColV& other) cx
@@ -414,7 +414,7 @@ struct ColVN
     dfa cxex ColVN(cx ColVN& other) : v(other.v)
     {
     }
-    dfa cxex ColVN(ColVN&& other) noex : v(move(other.v))
+    dfa cxex ColVN(ColVN&& other) noex : v(std::move(other.v))
     {
     }
     dfa ~ColVN() = default;
@@ -426,7 +426,7 @@ struct ColVN
     }
     dfa ColVN& operator=(ColVN&& other) noex
     {
-        v = move(other.v);
+        v = std::move(other.v);
         ret *tx;
     }
     dfa cxex BO operator==(cx ColVN& other) cx
@@ -528,7 +528,7 @@ struct ColHsvN
     dfa cxex ColHsvN(cx ColHsvN& other) : h(other.h), s(other.s), v(other.v)
     {
     }
-    dfa cxex ColHsvN(ColHsvN&& other) noex : h(move(other.h)), s(move(other.s)), v(move(other.v))
+    dfa cxex ColHsvN(ColHsvN&& other) noex : h(std::move(other.h)), s(std::move(other.s)), v(std::move(other.v))
     {
     }
     dfa ~ColHsvN() = default;
@@ -542,9 +542,9 @@ struct ColHsvN
     }
     dfa ColHsvN& operator=(ColHsvN&& other) noex
     {
-        h = move(other.h);
-        s = move(other.s);
-        v = move(other.v);
+        h = std::move(other.h);
+        s = std::move(other.s);
+        v = std::move(other.v);
         ret *tx;
     }
     dfa cxex BO operator==(cx ColHsvN& other) cx
@@ -608,7 +608,7 @@ struct ColHsvN
 /// [color grid]
 tpl1 struct ColGrid
 {
-    vector<T1> pixels;
+    std::vector<T1> pixels;
     Size2<SI> size;
 
     dfa T1& Pixel(cx Pos2<SI>& pos)
@@ -761,11 +761,11 @@ tpl0 dfa NT ToType(ColRgbN& dst, cx ColVN& src)
 }
 tpl0 dfa NT ToType(ColRgb& dst, cx ColRgb& src)
 {
-    dst = move(src);
+    dst = std::move(src);
 }
 tpl0 dfa NT ToType(ColVN& dst, cx ColVN& src)
 {
-    dst = move(src);
+    dst = std::move(src);
 }
 tpl0 dfa NT ToType(ColRgb& dst, cx ColRgbN& src)
 {
@@ -1211,7 +1211,7 @@ tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
     ife (file.Write(&infoHdr, siz(infoHdr)))
         retep;
 
-    vector<U1> rowDat(rowSize);
+    std::vector<U1> rowDat(rowSize);
     for (SI y = colGrid.size.h - 1; y >= 0; --y)
     {
         AU curIn = colGrid.pixels.data() + (y * colGrid.size.w);
@@ -1281,7 +1281,7 @@ tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
     ife (file.CurSet(SI(fileHdr.bfOffBits)))
         retep;
 
-    vector<U1> rowDat(rowSize);
+    std::vector<U1> rowDat(rowSize);
     ite (i, i < imgH)
     {
         ife (file.Read(rowDat.data(), rowDat.size()))

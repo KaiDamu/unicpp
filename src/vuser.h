@@ -359,7 +359,7 @@ class VuserInput
             {
             }
         };
-        vector<PathSect> pathSects;
+        std::vector<PathSect> pathSects;
         F4 posDistPath;
         TmMain timeEndPath;
         TmMain timeDurationPath;

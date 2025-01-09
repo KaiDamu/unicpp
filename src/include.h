@@ -19,17 +19,6 @@
 #include <limits>
 #include <functional>
 
-using std::move;
-
-using std::array;
-using std::list;
-using std::span;
-using std::string;
-using std::string_view;
-using std::unordered_map;
-using std::vector;
-using std::wstring;
-
 #include "import/stdc/type.h"
 #include "import/stdc/value.h"
 #include "import/stdc/function.h"

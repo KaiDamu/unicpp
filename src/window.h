@@ -129,16 +129,16 @@ class Win
         }
         }
     }
-    dfa wstring TitleStrGet()
+    dfa std::wstring TitleStrGet()
     {
         cx AU strLen = SI(GetWindowTextLengthW(m_hdl));
         if (strLen == 0)
-            ret wstring(L"");
+            ret std::wstring(L"");
         cx AU strLenx = strLen + STR_EX_LEN;
-        vector<CH> str(strLenx);
+        std::vector<CH> str(strLenx);
         ifu (GetWindowTextW(m_hdl, str.data(), strLenx) == 0)
-            ret wstring(L"");
-        ret wstring(str.data());
+            ret std::wstring(L"");
+        ret std::wstring(str.data());
     }
     dfa ER TitleStrSet(cx CH* str)
     {
@@ -146,16 +146,16 @@ class Win
             rete(ErrVal::WIN);
         rets;
     }
-    dfa wstring ClassStrGet()
+    dfa std::wstring ClassStrGet()
     {
         cx AU strLen = SI(GetClassNameW(m_hdl, NUL, 0));
         if (strLen == 0)
-            ret wstring(L"");
+            ret std::wstring(L"");
         cx AU strLenx = strLen + STR_EX_LEN;
-        vector<CH> str(strLenx);
+        std::vector<CH> str(strLenx);
         ifu (GetClassNameW(m_hdl, str.data(), strLenx) == 0)
-            ret wstring(L"");
-        ret wstring(str.data());
+            ret std::wstring(L"");
+        ret std::wstring(str.data());
     }
     dfa ER RectOuterGet(Rect2<SI>& rect)
     {

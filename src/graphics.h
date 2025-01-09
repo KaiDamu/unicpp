@@ -286,20 +286,20 @@ tpl1 dfa NT _ColGridDrawLineN(ColGrid<T1>& grid, cx Line2<SI>& line, SI thicknes
     cx F4 ofsY = (dx * (ValPrev(thickness) / 2.0f)) / len;
 
     cxex SI ptCnt = 4;
-    array<Pos2<SI>, ptCnt> pt;
+    std::array<Pos2<SI>, ptCnt> pt;
     pt[0] = Pos2<SI>(line.b.x - ofsX, line.b.y - ofsY);
     pt[1] = Pos2<SI>(line.a.x - ofsX, line.a.y - ofsY);
     pt[2] = Pos2<SI>(line.a.x + ofsX, line.a.y + ofsY);
     pt[3] = Pos2<SI>(line.b.x + ofsX, line.b.y + ofsY);
     cxex SI lineCnt = 4;
-    array<Line2<SI>, lineCnt> lines;
+    std::array<Line2<SI>, lineCnt> lines;
     lines[0] = Line2<SI>(pt[0], pt[1]);
     lines[1] = Line2<SI>(pt[1], pt[2]);
     lines[2] = Line2<SI>(pt[2], pt[3]);
     lines[3] = Line2<SI>(pt[3], pt[0]);
 
-    array<Line2<SI>, lineCnt> linesClipped;
-    array<BO, lineCnt> isKeep;
+    std::array<Line2<SI>, lineCnt> linesClipped;
+    std::array<BO, lineCnt> isKeep;
     SI keepCnt = 0;
     ite (i, i < lineCnt)
     {
@@ -416,12 +416,12 @@ tpl1 dfa NT _ColGridDrawTriangle(ColGrid<T1>& grid, cx Triangle2<SI>& triangle, 
     T1 colUse = doFill ? COL_GRID_FILLIN_WALL : col;
 
     cxex SI lineCnt = 3;
-    array<Line2<SI>, lineCnt> lines;
+    std::array<Line2<SI>, lineCnt> lines;
     lines[0] = Line2<SI>(triangle.a, triangle.b);
     lines[1] = Line2<SI>(triangle.b, triangle.c);
     lines[2] = Line2<SI>(triangle.c, triangle.a);
-    array<Line2<SI>, lineCnt> linesClipped;
-    array<BO, lineCnt> isKeep;
+    std::array<Line2<SI>, lineCnt> linesClipped;
+    std::array<BO, lineCnt> isKeep;
     SI keepCnt = 0;
     ite (i, i < lineCnt)
     {
@@ -495,7 +495,7 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1&
 
         ite (i, i < pointCnt)
         {
-            cx Pos2<SI> p2 = move(Pos2<SI>(circle.center.x + xt[i], circle.center.y + yt[i]));
+            cx Pos2<SI> p2 = std::move(Pos2<SI>(circle.center.x + xt[i], circle.center.y + yt[i]));
             ifl (p2.x >= 0 && p2.x < grid.size.w && p2.y >= 0 && p2.y < grid.size.h)
                 grid.Pixel(p2) = colUse;
         }

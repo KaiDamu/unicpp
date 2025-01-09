@@ -49,13 +49,13 @@ class Vfs
     struct FileEntry
     {
         FileInfo info;
-        wstring path;
+        std::wstring path;
     };
 
   private:
     FileMem m_file;
     VfsHdr m_hdr;
-    DictAvl<wstring, VfsEntry> m_entryList;
+    DictAvl<std::wstring, VfsEntry> m_entryList;
 
   private:
     dfa ER ChkInfo(cx VfsNewInfo& info) cx
@@ -99,12 +99,12 @@ class Vfs
     }
 
   private:
-    dfa ER FileEntryListGet(list<FileEntry>& fileEntryList, cx CH* path) cx
+    dfa ER FileEntryListGet(std::list<FileEntry>& fileEntryList, cx CH* path) cx
     {
         ife (DirEnum(
                  path, -1,
                  [](cx FileInfo& fileInfo, GA param1, GA param2) {
-                     list<FileEntry>& fileEntryList_ = *(list<FileEntry>*)param1;
+                     std::list<FileEntry>& fileEntryList_ = *(std::list<FileEntry>*)param1;
                      FileEntry fileEntry = {};
                      fileEntry.info = fileInfo;
                      fileEntry.path = fileInfo.path;
@@ -118,7 +118,7 @@ class Vfs
             retep;
         rets;
     }
-    dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, list<FileEntry>& fileEntryList) cx
+    dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, std::list<FileEntry>& fileEntryList) cx
     {
         cx U4 compress = U4(info.compress);
         cx U4 encrypt = U4(info.encrypt);
@@ -250,7 +250,7 @@ class Vfs
     {
         ife (tx->ChkInfo(info))
             retep;
-        list<FileEntry> fileEntryList;
+        std::list<FileEntry> fileEntryList;
         ife (tx->FileEntryListGet(fileEntryList, src))
             retep;
         FileMem fileDst;

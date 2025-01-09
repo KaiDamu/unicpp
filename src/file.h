@@ -726,7 +726,7 @@ class FileMem
             m_filePos += fullSize;
         ValSeqBoxDecode(vals, box);
     }
-    dfa BO ReadLine(string& str)
+    dfa BO ReadLine(std::string& str)
     {
         U1* ptrBase = m_dat.Ptr() + m_filePos;
         U1* ptr = ptrBase;

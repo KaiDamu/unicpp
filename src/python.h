@@ -11,7 +11,7 @@ dfa ER PythonStart(cx CH* file, cx CH* args, BO wait)
     CH path[PATH_LEN_MAX];
     ife (PythonExePathGet(path))
         retep;
-    wstring _args = L"\"";
+    std::wstring _args = L"\"";
     _args += file;
     _args += L"\"";
     if (args != NUL)

@@ -62,13 +62,13 @@ dfa ER DomainToIp(U4& ip, cx CS* domain)
     rets;
 }
 
-dfa ER StrToNetAdrIp(NetAdr& netAdr, cx string_view& str)
+dfa ER StrToNetAdrIp(NetAdr& netAdr, cx std::string_view& str)
 {
     netAdr.Clr();
     cx AU divPos = str.find(':');
-    string_view strIp;
-    string_view strPort;
-    if (divPos == string::npos)
+    std::string_view strIp;
+    std::string_view strPort;
+    if (divPos == std::string::npos)
     {
         strIp = str;
         strPort = "";
@@ -80,7 +80,7 @@ dfa ER StrToNetAdrIp(NetAdr& netAdr, cx string_view& str)
     }
     if (!strIp.empty())
     {
-        netAdr.ip = StrToIp((divPos == string::npos) ? strIp.data() : string(strIp, 0, divPos).c_str());
+        netAdr.ip = StrToIp((divPos == std::string::npos) ? strIp.data() : std::string(strIp, 0, divPos).c_str());
     }
     if (!strPort.empty())
     {
@@ -88,13 +88,13 @@ dfa ER StrToNetAdrIp(NetAdr& netAdr, cx string_view& str)
     }
     rets;
 }
-dfa ER StrToNetAdrDomain(NetAdr& netAdr, cx string_view& str)
+dfa ER StrToNetAdrDomain(NetAdr& netAdr, cx std::string_view& str)
 {
     netAdr.Clr();
     cx AU divPos = str.find(':');
-    string_view strDomain;
-    string_view strPort;
-    if (divPos == string::npos)
+    std::string_view strDomain;
+    std::string_view strPort;
+    if (divPos == std::string::npos)
     {
         strDomain = str;
         strPort = "";
@@ -107,7 +107,7 @@ dfa ER StrToNetAdrDomain(NetAdr& netAdr, cx string_view& str)
     if (!strDomain.empty())
     {
         U4 ip;
-        ife (DomainToIp(ip, (divPos == string::npos) ? strDomain.data() : string(strDomain, 0, divPos).c_str()))
+        ife (DomainToIp(ip, (divPos == std::string::npos) ? strDomain.data() : std::string(strDomain, 0, divPos).c_str()))
             retep;
         netAdr.ip = ip;
     }
@@ -117,7 +117,7 @@ dfa ER StrToNetAdrDomain(NetAdr& netAdr, cx string_view& str)
     }
     rets;
 }
-dfa ER StrToNetAdr(NetAdr& netAdr, cx string_view& str)
+dfa ER StrToNetAdr(NetAdr& netAdr, cx std::string_view& str)
 {
     BO isIp = str.empty() || IsNumBase10(str[0]) || (str[0] == ':');
     if (isIp)
@@ -142,7 +142,7 @@ dfa ER StrToNetAdr(NetAdr& netAdr, cx string_view& str)
     }
 }
 
-dfa NT NetAdrToStr(string& str, cx NetAdr& netAdr)
+dfa NT NetAdrToStr(std::string& str, cx NetAdr& netAdr)
 {
     str.clear();
     CS ipStr[16];
