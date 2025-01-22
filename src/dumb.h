@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 dfa NT DumbSysBreakThdSpam()
 {
     Thd thd;
@@ -60,3 +62,5 @@ dfa NT DumbDeskBreakVoid()
 // DumbDirSpam
 // DumbWinSpam
 // DumbSysStopBlue
+
+#endif

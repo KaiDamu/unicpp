@@ -66,6 +66,8 @@ class FileInfo
 
 using DirEnumCallbFnType = BO (*)(cx FileInfo& fileInfo, GA param1, GA param2); // ret: YES to continue, NO to stop
 
+#ifdef PROG_SYS_WIN
+
 dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 flags, GA param1, GA param2, SI pathLenBase)
 {
     if (depth == 0)
@@ -317,3 +319,5 @@ dfa ER DirList(std::list<FileInfo>& files, cx CH* path, SI depth = -1)
         retep;
     rets;
 }
+
+#endif

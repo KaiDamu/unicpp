@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 dfa HMONITOR _ScnMainHdlGet()
 {
     cx HMONITOR hdl = MonitorFromWindow(NUL, MONITOR_DEFAULTTOPRIMARY);
@@ -68,3 +70,5 @@ dfa ER ScnUpdForce()
     DestroyWindow(win);
     rets;
 }
+
+#endif

@@ -1,10 +1,5 @@
 #pragma once
 
-dfa HANDLE _ProcHdlGetNt()
-{
-    ret reinterpret_cast<HANDLE>(-1);
-}
-
 dfa NT ProcCrash()
 {
     volatile U1 x = U1(clock());
@@ -13,13 +8,25 @@ dfa NT ProcCrash()
 }
 dfa NT ProcExit(U4 retVal)
 {
+#ifdef PROG_SYS_WIN
     RtlExitUserProcess(retVal);
+#else
+    exit(retVal);
+#endif
     ProcCrash();
 }
 dfa NT ProcExit()
 {
     ProcExit(U4(ErrLastGet()));
 }
+
+#ifdef PROG_SYS_WIN
+
+dfa HANDLE _ProcHdlGetNt()
+{
+    ret reinterpret_cast<HANDLE>(-1);
+}
+
 dfa BO ProcIsElevated()
 {
     SID_IDENTIFIER_AUTHORITY sia = {SECURITY_NT_AUTHORITY};
@@ -381,3 +388,5 @@ dfa BO ProcGlobalTake(cx CH* str = NUL)
     global.__Drop();
     ret YES;
 }
+
+#endif

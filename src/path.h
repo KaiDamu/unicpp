@@ -94,8 +94,15 @@ dfa BO PathIsNtpath(cx CH* path)
 
 dfa BO PathIsExist(cx CH* path)
 {
+#ifdef PROG_SYS_WIN
     ret GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES;
+#else
+    ret _waccess(path, 0) == 0; // F_OK == 0
+#endif
 }
+
+#ifdef PROG_SYS_WIN
+
 dfa BO PathIsDir(cx CH* path)
 {
     cx DWORD attrib = GetFileAttributesW(path);
@@ -160,9 +167,9 @@ dfa cx CH* ProcFilePath()
     {
         cx DWORD result = GetModuleFileNameW(NUL, s_cache, PATH_LEN_MAX);
         Assert(result > 0 && result < PATH_LEN_MAX);
-#ifdef PROG_BUILD_TYPE_RELEASE
+    #ifdef PROG_BUILD_TYPE_RELEASE
         unused(result);
-#endif
+    #endif
     }
     ret s_cache;
 }
@@ -183,9 +190,9 @@ dfa cx CH* ProcWorkPath()
     {
         cx DWORD result = GetCurrentDirectoryW(PATH_LEN_MAX, s_cache);
         Assert(result > 0 && result < PATH_LEN_MAX);
-#ifdef PROG_BUILD_TYPE_RELEASE
+    #ifdef PROG_BUILD_TYPE_RELEASE
         unused(result);
-#endif
+    #endif
     }
     ret s_cache;
 }
@@ -301,3 +308,5 @@ dfa SI PathEnvvarResolve(CH* dst, cx CH* src)
     StrCpy(dst, src);
     ret PathEnvvarResolve(dst);
 }
+
+#endif

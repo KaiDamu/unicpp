@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 dfa ER ClipbSetText(cx CH* text)
 {
     ifu (OpenClipboard(NUL) == 0)
@@ -64,3 +66,5 @@ dfa SI ClipbGetText(CH* text, SI textLenMax)
     CloseClipboard();
     ret textLen - 1;
 }
+
+#endif

@@ -1,27 +1,5 @@
 #pragma once
 
-dfa NT ThdWait(TmMain ms)
-{
-    ifu (ms <= TmMain(0))
-        ret;
-    cx AU t = S8(ms * TmMain(-10000));
-    LARGE_INTEGER tmp = {};
-    tmp.QuadPart = t;
-    NtDelayExecution(FALSE, &tmp);
-}
-
-dfa SI CpuThdCnt()
-{
-    static SI s_cache = -1;
-    ifu (s_cache == -1)
-    {
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-        s_cache = SI(info.dwNumberOfProcessors);
-    }
-    ret s_cache;
-}
-
 class ThdTask
 {
   private:
@@ -72,6 +50,30 @@ class ThdTask
             m_fn();
     }
 };
+
+#ifdef PROG_SYS_WIN
+
+dfa NT ThdWait(TmMain ms)
+{
+    ifu (ms <= TmMain(0))
+        ret;
+    cx AU t = S8(ms * TmMain(-10000));
+    LARGE_INTEGER tmp = {};
+    tmp.QuadPart = t;
+    NtDelayExecution(FALSE, &tmp);
+}
+
+dfa SI CpuThdCnt()
+{
+    static SI s_cache = -1;
+    ifu (s_cache == -1)
+    {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        s_cache = SI(info.dwNumberOfProcessors);
+    }
+    ret s_cache;
+}
 
 class ThdLock
 {
@@ -400,3 +402,5 @@ dfa DWORD WINAPI ThdTaskMgrThdFn(LPVOID pMgr)
     }
     ret 0;
 }
+
+#endif

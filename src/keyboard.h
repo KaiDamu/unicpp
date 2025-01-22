@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 cxex U1 KEYB_HOOK_THD_CODE_ERR_NO = 0;
 cxex U1 KEYB_HOOK_THD_CODE_ERR_YES = 1;
 cxex U1 KEYB_HOOK_THD_CODE_WAIT = 2;
@@ -262,3 +264,5 @@ dfa ER KeybKeyPress(InputKey key, TmMain hold = INPUT_KEY_HOLD_DEFA, TmMain dela
     ThdWait(delay);
     rets;
 }
+
+#endif

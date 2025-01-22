@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 dfa ER PythonExePathGet(CH* path)
 {
     ifu (PathEnvRelToAbs(path, L"python.exe") == 0)
@@ -33,3 +35,5 @@ dfa ER PythonStart(cx CH* file, cx CH* args, BO wait)
     }
     rets;
 }
+
+#endif

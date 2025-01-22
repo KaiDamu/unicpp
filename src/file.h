@@ -4,6 +4,196 @@ cxex SI FILE_READ_SIZE_LOW = BYTE_IN_KB * 4;
 cxex SI FILE_READ_SIZE_MED = BYTE_IN_KB * 256;
 cxex SI FILE_READ_SIZE_HIGH = BYTE_IN_KB * 16384;
 
+class FileStd
+{
+  private:
+    FILE* m_hdl;
+
+  public:
+    dfa FILE* Hdl()
+    {
+        ret m_hdl;
+    }
+    dfa BO IsOpen()
+    {
+        ret m_hdl != NUL;
+    }
+    dfa ER CurMove(SI cnt)
+    {
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        ifu (fseek(m_hdl, cnt, SEEK_CUR) != 0)
+            rete(ErrVal::FILE);
+        rets;
+    }
+    dfa ER CurSet(SI pos)
+    {
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        ifu (fseek(m_hdl, pos, SEEK_SET) != 0)
+            rete(ErrVal::FILE);
+        rets;
+    }
+    dfa ER CurGet(SI& pos)
+    {
+        pos = 0;
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        cx SI tmp = SI(ftell(m_hdl));
+        ifu (tmp < 0)
+            rete(ErrVal::FILE);
+        pos = tmp;
+        rets;
+    }
+    dfa ER OpenRead(cx CH* path)
+    {
+        ifu (tx->IsOpen() == YES)
+            rete(ErrVal::YES_INIT);
+#ifdef PROG_SYS_WIN
+        m_hdl = _wfopen(path, L"rb");
+#else
+        CS path_[PATH_LENX_MAX];
+        ChstrToCsstr(path_, path);
+        m_hdl = fopen(path_, "rb");
+#endif
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::FILE);
+        rets;
+    }
+    dfa ER OpenWrite(cx CH* path)
+    {
+        ifu (tx->IsOpen() == YES)
+            rete(ErrVal::YES_INIT);
+#ifdef PROG_SYS_WIN
+        m_hdl = _wfopen(path, L"wb");
+#else
+        CS path_[PATH_LENX_MAX];
+        ChstrToCsstr(path_, path);
+        m_hdl = fopen(path_, "wb");
+#endif
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::FILE);
+        rets;
+    }
+    dfa ER OpenReadWrite(cx CH* path)
+    {
+        ifu (tx->IsOpen() == YES)
+            rete(ErrVal::YES_INIT);
+#ifdef PROG_SYS_WIN
+        m_hdl = _wfopen(path, L"rb+");
+#else
+        CS path_[PATH_LENX_MAX];
+        ChstrToCsstr(path_, path);
+        m_hdl = fopen(path_, "rb+");
+#endif
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::FILE);
+        rets;
+    }
+    dfa ER Close()
+    {
+        if (tx->IsOpen() == NO)
+            rets;
+        ifu (fclose(m_hdl) != 0)
+            rete(ErrVal::FILE);
+        m_hdl = NUL;
+        rets;
+    }
+    dfa ER Read(GA buf, SI size, SI& result)
+    {
+        result = 0;
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        SI tmp = SI(fread(buf, 1, size, m_hdl));
+        ifu (ferror(m_hdl))
+            rete(ErrVal::FILE);
+        result = tmp;
+        rets;
+    }
+    dfa ER Write(CXGA buf, SI size, SI& result)
+    {
+        result = 0;
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        SI tmp = SI(fwrite(buf, 1, size, m_hdl));
+        ifu (ferror(m_hdl))
+            rete(ErrVal::FILE);
+        result = tmp;
+        rets;
+    }
+    dfa ER Read(GA buf, SI size)
+    {
+        SI result;
+        ife (tx->Read(buf, size, result))
+            retep;
+        ifu (size != result)
+            rete(ErrVal::NO_FULL);
+        rets;
+    }
+    dfa ER Write(CXGA buf, SI size)
+    {
+        SI result;
+        ife (tx->Write(buf, size, result))
+            retep;
+        ifu (size != result)
+            rete(ErrVal::NO_FULL);
+        rets;
+    }
+    dfa ER SizeGet(SI& size)
+    {
+        size = 0;
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        SI tmp = SI(ftell(m_hdl));
+        ifu (tmp < 0)
+            rete(ErrVal::FILE);
+        ifu (fseek(m_hdl, 0, SEEK_END) != 0)
+            rete(ErrVal::FILE);
+        size = SI(ftell(m_hdl));
+        ifu (size < 0)
+            rete(ErrVal::FILE);
+        ifu (fseek(m_hdl, tmp, SEEK_SET) != 0)
+            rete(ErrVal::FILE);
+        rets;
+    }
+    dfa ER SizeSet(SI size)
+    {
+        unimp;
+        rete(ErrVal::NO_SUPPORT);
+    }
+    dfa ER TimeGet(TmUnix& time)
+    {
+        time = 0;
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        struct stat st;
+        ifu (fstat(fileno(m_hdl), &st) != 0)
+            rete(ErrVal::FILE);
+        time = TmUnix(st.st_mtime);
+        rets;
+    }
+    dfa ER Flush()
+    {
+        ifu (tx->IsOpen() == NO)
+            rete(ErrVal::NO_INIT);
+        ifu (fflush(m_hdl) != 0)
+            rete(ErrVal::FILE);
+        rets;
+    }
+
+  public:
+    dfa FileStd()
+    {
+        m_hdl = NUL;
+    }
+    dfa ~FileStd()
+    {
+        tx->Close();
+    }
+};
+
+#ifdef PROG_SYS_WIN
+
 dfa ER DirNew(cx CH* path); // referenced here for FileMove
 
 dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
@@ -391,12 +581,17 @@ class FileNt
     }
 };
 
+#endif
+
 class File
 {
   private:
 #ifdef PROG_SYS_WIN
     FileWin m_file;
+#else
+    FileStd m_file;
 #endif
+
   public:
     dfa BO IsOpen()
     {

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 cxex cx CS* VFS_MAGIC = "VFS\0";
 cxex SI VFS_MAGIC_SIZE = 4;
 
@@ -334,3 +336,5 @@ class Vfs
         tx->Close();
     }
 };
+
+#endif

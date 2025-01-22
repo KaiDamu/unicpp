@@ -28,6 +28,7 @@ ConCol g_conColReal = g_conCol;
 
 dfa ER _ConColSet(ConCol col)
 {
+#ifdef PROG_SYS_WIN
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -35,9 +36,13 @@ dfa ER _ConColSet(ConCol col)
         rete(ErrVal::CON);
     g_conColReal = col;
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER _ConColGet(ConCol& col)
 {
+#ifdef PROG_SYS_WIN
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -46,6 +51,9 @@ dfa ER _ConColGet(ConCol& col)
         rete(ErrVal::CON);
     col = ConCol(info.wAttributes & 0x0F);
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER _ConColUpd()
 {
@@ -58,6 +66,7 @@ dfa ER _ConColUpd()
 }
 dfa ER _ConBufEmpty()
 {
+#ifdef PROG_SYS_WIN
     cx HANDLE hdl = GetStdHandle(STD_INPUT_HANDLE);
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -73,9 +82,13 @@ dfa ER _ConBufEmpty()
             rete(ErrVal::CON);
     }
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER _ConWriteRaw(cx CS* buf, SI bufLen)
 {
+#ifdef PROG_SYS_WIN
     ifu (bufLen <= 0)
         rets;
     ife (_ConColUpd())
@@ -184,6 +197,9 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen)
     ife (ConColSet(colOld))
         retep;
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER _ConWriteRawCol(ConCol col, cx CS* buf, SI bufLen)
 {
@@ -214,23 +230,38 @@ dfa ER _ConWriteRawAl(cx CS* format, cx AL& args)
 
 dfa BO ConIsExist()
 {
+#ifdef PROG_SYS_WIN
     ret (GetConsoleWindow() != NUL);
+#else
+    ret NO;
+#endif
 }
 dfa ER ConTitleSet(cx CH* title)
 {
+#ifdef PROG_SYS_WIN
     ife (ConReq())
         retep;
     ifu (SetConsoleTitleW(title) == 0)
         rete(ErrVal::CON);
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa SI ConTitleGet(CH* title, SI titleLenMax)
 {
+#ifdef PROG_SYS_WIN
     cx SI titleLen = GetConsoleTitleW(title, DWORD(titleLenMax));
     ret titleLen;
+#else
+    ifl (titleLenMax > 0)
+        title[0] = '\0';
+    ret 0;
+#endif
 }
 dfa ER ConCreate(cx CH* title = NUL)
 {
+#ifdef PROG_SYS_WIN
     ifu (AllocConsole() == 0)
         rete(ErrVal::CON);
     if (title != NUL)
@@ -255,14 +286,21 @@ dfa ER ConCreate(cx CH* title = NUL)
     ife (Win(Win::SelType::CON).Focus())
         retep;
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER ConDel()
 {
+#ifdef PROG_SYS_WIN
     if (ConIsExist() == NO)
         rets;
     ifu (FreeConsole() == 0)
         rete(ErrVal::CON);
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER ConReq()
 {
@@ -389,6 +427,7 @@ dfa ER ConWriteErr(cx CS* format, ...)
 }
 dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
 {
+#ifdef PROG_SYS_WIN
     strLen = -1;
     ifu (strLenxMax < STR_EX_LEN)
         rete(ErrVal::LOW_SIZE);
@@ -594,9 +633,13 @@ dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow = YES)
         }
         }
     }
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER ConWait()
 {
+#ifdef PROG_SYS_WIN
     ife (ConReq())
         retep;
     ife (_ConBufEmpty())
@@ -624,9 +667,13 @@ dfa ER ConWait()
         }
     }
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }
 dfa ER ConDatEmpty()
 {
+#ifdef PROG_SYS_WIN
     if (ConIsExist() == NO)
         rets;
     cx HANDLE hdl = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -647,4 +694,7 @@ dfa ER ConDatEmpty()
     ifu (SetConsoleCursorPosition(hdl, coord) == 0)
         rete(ErrVal::CON);
     rets;
+#else
+    rete(ErrVal::NO_SUPPORT);
+#endif
 }

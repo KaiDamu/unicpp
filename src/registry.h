@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 dfa cx CH* _RegKeySplitSub(cx CH* path, HKEY& key)
 {
     ifu (StrCmp(path, L"HKEY_", 5) != 0)
@@ -223,3 +225,5 @@ dfa ER RegSetExtOpenPath(cx CH* ext, cx CH* prog, cx CH* extName)
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NUL, NUL);
     rets;
 }
+
+#endif

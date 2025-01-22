@@ -1175,6 +1175,7 @@ tpl1 dfa NT ColGridFloodFillAll(ColGrid<T1>& colGrid, std::vector<SI>& fillOrigi
 }
 
 /// [save/load color grid]
+#ifdef PROG_SYS_WIN
 tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
 {
     cx AU pathExt = PathExtPtr(path);
@@ -1303,3 +1304,4 @@ tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
     }
     rets;
 }
+#endif

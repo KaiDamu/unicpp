@@ -673,8 +673,10 @@ tpl1 dfa NT ColGridDrawColGrid(ColGrid<T1>& grid, cx ColGrid<T1>& gridSrc, cx Po
                 grid.Pixel(Pos2<SI>(x, y)) = gridSrc.Pixel(ptSrc);
         }
     }
-
 }
+
+/// /// /// [ Screen Draw section ] /// /// ///
+#ifdef PROG_SYS_WIN
 
 cxex U1 SCN_DRAW_THD_CODE_ERR_NO = 0;
 cxex U1 SCN_DRAW_THD_CODE_ERR_YES = 1;
@@ -912,3 +914,5 @@ dfa ER ScnDrawFree()
         retep;
     rets;
 }
+
+#endif

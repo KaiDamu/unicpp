@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 class VuserInput
 {
   public:
@@ -522,3 +524,5 @@ class VuserInput
     {
     }
 };
+
+#endif

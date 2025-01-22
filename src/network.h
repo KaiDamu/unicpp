@@ -1,8 +1,10 @@
 #pragma once
 
-#ifdef PROG_COMPILER_MSVC
-    #pragma comment(lib, "Ws2_32.lib")
-#endif
+#ifdef PROG_SYS_WIN
+
+    #ifdef PROG_COMPILER_MSVC
+        #pragma comment(lib, "Ws2_32.lib")
+    #endif
 
 dfa ER NetInit()
 {
@@ -151,3 +153,5 @@ dfa NT NetAdrToStr(std::string& str, cx NetAdr& netAdr)
     str += ':';
     str += std::to_string(S4(netAdr.port));
 }
+
+#endif

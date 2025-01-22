@@ -33,6 +33,24 @@ dfa TmLdap UnixToLdap(TmUnix unix)
     ret unix * 10000000 + 116444736000000000;
 }
 
+dfa TmUnix TimeUnix()
+{
+    ret time(NUL);
+}
+
+dfa TmUnix TmUnixBuild(U4 year = 0, U4 month = 0, U4 day = 0, U4 hour = 0, U4 minute = 0, U4 second = 0)
+{
+    tm tm;
+    tm.tm_year = year - 1900;
+    tm.tm_mon = month - 1;
+    tm.tm_mday = day;
+    tm.tm_hour = hour;
+    tm.tm_min = minute;
+    tm.tm_sec = second;
+    tm.tm_isdst = -1;
+    ret TmUnix(mktime(&tm));
+}
+
 dfa TmCpu CpuTsc()
 {
     union {
@@ -42,10 +60,52 @@ dfa TmCpu CpuTsc()
 #ifdef PROG_COMPILER_GCC
     __asm__(".byte 0x0f, 0x31" : "=a"(part[0]), "=d"(part[1]));
 #else
+    #ifdef PROG_SYS_WIN
     val = __rdtsc();
+    #else
+    val = 0;
+    unimp;
+    #endif
 #endif
     ret val;
 }
+
+dfa ER _TimeMainInit()
+{
+#ifdef PROG_SYS_WIN
+    LARGE_INTEGER val;
+    ifu (QueryPerformanceFrequency(&val) == 0)
+    {
+        rete(ErrVal::TIME);
+    }
+    cx F8 timeMainDivF = S8ToF8(val.QuadPart) / 1000.0;
+    ifu (QueryPerformanceCounter(&val) == 0)
+    {
+        rete(ErrVal::TIME);
+    }
+    cx U8 timeMainOfs = val.QuadPart;
+    g_timeMainOfs = timeMainOfs;
+    g_timeMainDiv = timeMainDivF;
+    rets;
+#else
+    g_timeMainOfs = clock();
+    g_timeMainDiv = TmMain(CLOCKS_PER_SEC) / TmMain(1000);
+    rets;
+#endif
+}
+
+dfa TmMain TimeMain()
+{
+#ifdef PROG_SYS_WIN
+    LARGE_INTEGER val;
+    QueryPerformanceCounter(&val);
+    ret U8ToF8(val.QuadPart - g_timeMainOfs) / g_timeMainDiv;
+#else
+    ret U8ToF8(U8(clock()) - g_timeMainOfs) / g_timeMainDiv;
+#endif
+}
+
+#ifdef PROG_SYS_WIN
 
 dfa ER TimeResClr()
 {
@@ -70,49 +130,6 @@ dfa ER TimeResSet(S4 ms, S4 us, BO force)
         rete(ErrVal::TIME_RES);
     }
     rets;
-}
-
-dfa ER _TimeMainInit()
-{
-    LARGE_INTEGER val;
-    ifu (QueryPerformanceFrequency(&val) == 0)
-    {
-        rete(ErrVal::TIME);
-    }
-    cx F8 timeMainDivF = S8ToF8(val.QuadPart) / 1000.0;
-    ifu (QueryPerformanceCounter(&val) == 0)
-    {
-        rete(ErrVal::TIME);
-    }
-    cx U8 timeMainOfs = val.QuadPart;
-    g_timeMainOfs = timeMainOfs;
-    g_timeMainDiv = timeMainDivF;
-    rets;
-}
-
-dfa TmMain TimeMain()
-{
-    LARGE_INTEGER val;
-    QueryPerformanceCounter(&val);
-    ret U8ToF8(val.QuadPart - g_timeMainOfs) / g_timeMainDiv;
-}
-
-dfa TmUnix TimeUnix()
-{
-    ret time(NUL);
-}
-
-dfa TmUnix TmUnixBuild(U4 year = 0, U4 month = 0, U4 day = 0, U4 hour = 0, U4 minute = 0, U4 second = 0)
-{
-    tm tm;
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = hour;
-    tm.tm_min = minute;
-    tm.tm_sec = second;
-    tm.tm_isdst = -1;
-    ret TmUnix(mktime(&tm));
 }
 
 class Timer
@@ -173,3 +190,5 @@ class Timer
     {
     }
 };
+
+#endif

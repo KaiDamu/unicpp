@@ -2,6 +2,8 @@
 
 cxex SI PIPE_BUF_SIZE = 65536;
 
+#ifdef PROG_SYS_WIN
+
 class PipeIn
 {
   private:
@@ -141,3 +143,5 @@ class PipeOut
         m_hdl = INVALID_HANDLE_VALUE;
     }
 };
+
+#endif

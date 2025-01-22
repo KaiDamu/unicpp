@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 dfa ER MemDelSys(GA ptr)
 {
     GA ptr_ = ptr;
@@ -22,6 +24,9 @@ dfa ER MemNewSys(GA* ptr, SI size)
     *ptr = ptr_;
     rets;
 }
+
+#endif
+
 dfa NT MemDel(GA ptr)
 {
     free(ptr);
@@ -68,6 +73,8 @@ dfa GA MemResize(GA ptr, SI sizeAlloc, SI sizeCpy)
     ret r;
 }
 
+#ifdef PROG_SYS_WIN
+
 dfa SI MemPageSize()
 {
     SYSTEM_INFO info = {};
@@ -75,6 +82,8 @@ dfa SI MemPageSize()
     GetSystemInfo(&info);
     ret SI(info.dwPageSize);
 }
+
+#endif
 
 dfa NT MemObfuscate(GA dst, CXGA src, SI size)
 {

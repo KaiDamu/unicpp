@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 class Win
 {
   private:
@@ -586,3 +588,5 @@ class Win
     {
     }
 };
+
+#endif

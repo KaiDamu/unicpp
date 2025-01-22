@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 thdlocal Pos2<F4> g_curPosOfs;
 
 dfa ER CurPosGet(Pos2<F4>& pos)
@@ -78,3 +80,5 @@ dfa ER MousKeyPress(InputKey key, TmMain hold = INPUT_KEY_HOLD_DEFA, TmMain dela
     ThdWait(delay);
     rets;
 }
+
+#endif

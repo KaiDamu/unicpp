@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
+
 class EvtWin
 {
   private:
@@ -63,3 +65,5 @@ class EvtWin
         tx->Free();
     }
 };
+
+#endif
