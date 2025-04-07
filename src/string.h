@@ -324,7 +324,7 @@ tpl1 dfa BO StrIsFirst(cx T1* main, cx T1* sub)
 
 tpl1 dfa SI StrToLowcase(T1* str)
 {
-    cx CS* cx strBase = str;
+    cx T1* cx strBase = str;
     while (*str != '\0')
     {
         *str = ToLowcase<T1>(*str);
@@ -334,7 +334,7 @@ tpl1 dfa SI StrToLowcase(T1* str)
 }
 tpl1 dfa SI StrToUpcase(T1* str)
 {
-    cx CS* cx strBase = str;
+    cx T1* cx strBase = str;
     while (*str != '\0')
     {
         *str = ToUpcase<T1>(*str);

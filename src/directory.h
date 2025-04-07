@@ -12,6 +12,9 @@ cxex U4 DIR_ENUM_FLAG_POST = 0x00000001;
 
 class FileInfo
 {
+  private:
+    std::vector<CH> m_buf;
+
   public:
     U8 createDate;
     U8 accessDate;
@@ -29,19 +32,14 @@ class FileInfo
     cx CH* name;
     SI extLen;
     cx CH* ext;
-    SI bufSize;
-    CH* buf;
 
   public:
     dfa NT Save()
     {
-        if (buf != NUL)
-            delete[] buf;
-        bufSize = (pathLen + 1) * siz(CH);
-        buf = new CH[bufSize / siz(CH)];
-        cx SI bufOfs = buf - path;
-        MemCpy(buf, path, pathLen * siz(CH));
-        buf[pathLen] = '\0';
+        m_buf.resize(pathLen + STR_EX_LEN);
+        cx SI bufOfs = m_buf.data() - path;
+        MemCpy(m_buf.data(), path, pathLen * siz(CH));
+        m_buf[pathLen] = '\0';
         ifl (path != NUL)
             path += bufOfs;
         ifl (rel != NUL)
@@ -54,13 +52,9 @@ class FileInfo
 
   public:
     dfa FileInfo()
+        : createDate(0), accessDate(0), writeDate(0), changeDate(0), datSize(0), allocSize(0), index(0), attrib(0), pathLen(0), path(NUL), relLen(0), rel(NUL), nameLen(0), name(NUL), extLen(0),
+          ext(NUL)
     {
-        MemSet(tx, 0, siz(*tx));
-    }
-    dfa ~FileInfo()
-    {
-        if (buf != NUL)
-            delete[] buf;
     }
 };
 
@@ -170,8 +164,8 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
 
 dfa ER DirEnum(cx CH* path, SI depth, DirEnumCallbFnType callb, U4 flags, GA param1, GA param2)
 {
-    CH path2[PATH_LEN_MAX];
-    CH path3[PATH_LEN_MAX];
+    CH path2[PATH_LENX_MAX];
+    CH path3[PATH_LENX_MAX];
     PathToAbs(path2, path);
     cx SI pathLen = StrEnclose(path3, path2, STR_NTPATH_PRE, STR_PATH_DIR);
     ret _DirEnum(path3, pathLen, depth, callb, flags, param1, param2, pathLen - STR_NTPATH_PRE_LEN);
@@ -198,7 +192,7 @@ dfa ER DirNew(cx CH* path)
                 rets;
             rete(ErrVal::DIR);
         }
-        CH path_[PATH_LEN_MAX];
+        CH path_[PATH_LENX_MAX];
         StrCpy(path_, path);
         CH* pathSep = (CH*)StrFindLast(path_, CH_PATH_DIR);
         ifu (pathSep == NUL)
@@ -213,7 +207,7 @@ dfa ER DirNew(cx CH* path)
 }
 dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
 {
-    CH dst_[PATH_LEN_MAX];
+    CH dst_[PATH_LENX_MAX];
     PathToAbs(dst_, dst);
     ife (DirNew(dst_))
         retep;
@@ -228,7 +222,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
              src, -1,
              [](cx FileInfo& fileInfo, GA param1, GA param2) {
                  unused(param2);
-                 CH path[PATH_LEN_MAX];
+                 CH path[PATH_LENX_MAX];
                  StrCpy(path, ((Param*)param1)->dst);
                  StrAdd(path, fileInfo.rel - 1); // hack: -1 for CH_PATH_DIR
                  if (fileInfo.attrib & FILE_ATTRIB_DIR)
@@ -257,7 +251,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
 }
 dfa ER DirDel(cx CH* path)
 {
-    CH path_[PATH_LEN_MAX];
+    CH path_[PATH_LENX_MAX];
     PathToAbs(path_, path);
     struct Param
     {
@@ -313,6 +307,19 @@ dfa ER DirList(std::list<FileInfo>& files, cx CH* path, SI depth = -1)
         unused(param2);
         ((std::list<FileInfo>*)param1)->emplace_back(fileInfo);
         ((std::list<FileInfo>*)param1)->back().Save();
+        ret YES;
+    };
+    ife (DirEnum(path, depth, callb, 0, &files, NUL))
+        retep;
+    rets;
+}
+dfa ER DirList(std::vector<FileInfo>& files, cx CH* path, SI depth = -1)
+{
+    files.clear();
+    cx DirEnumCallbFnType callb = [](cx FileInfo& fileInfo, GA param1, GA param2) {
+        unused(param2);
+        ((std::vector<FileInfo>*)param1)->emplace_back(fileInfo);
+        ((std::vector<FileInfo>*)param1)->back().Save();
         ret YES;
     };
     ife (DirEnum(path, depth, callb, 0, &files, NUL))

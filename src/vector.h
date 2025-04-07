@@ -71,6 +71,14 @@ tpl1 class Vec2
     {
         ret Vec2(a / scalar, b / scalar);
     }
+    dfa cxex Vec2 operator*(cx Vec2& other) cx
+    {
+        ret Vec2(a * other.a, b * other.b);
+    }
+    dfa cxex Vec2 operator/(cx Vec2& other) cx
+    {
+        ret Vec2(a / other.a, b / other.b);
+    }
     dfa cxex Vec2 operator-() cx
     {
         ret Vec2(-a, -b);
@@ -116,6 +124,11 @@ tpl1 dfa T1 Dist0(cx Pos2<T1>& p)
 tpl1 dfa T1 Dist(cx Pos2<T1>& p1, cx Pos2<T1>& p2)
 {
     ret Dist0<T1>(p2.x - p1.x, p2.y - p1.y);
+}
+
+tpl1 dfa Vec2<S8> RoundToInt(Vec2<T1> val)
+{
+    ret Vec2<S8>(RoundToInt<T1>(val.x), RoundToInt<T1>(val.y));
 }
 
 tpl1 dfa T1 Vec2Len(cx Vec2<T1>& vec)

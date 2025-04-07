@@ -227,6 +227,14 @@ tpl1 dfa NT _ColGridFillin(ColGrid<T1>& grid, cx Pos2<SI>& pt, cx T1& col)
     ret;
 }
 
+tpl1 dfa NT ColGridDrawClr(ColGrid<T1>& grid, cx T1& col)
+{
+    T1* p = grid.pixels.data();
+    cx T1* cx pEnd = p + grid.pixels.size();
+    while (p != pEnd)
+        *p++ = col;
+}
+
 tpl1 dfa NT ColGridDrawPt(ColGrid<T1>& grid, cx Pos2<SI>& pt, cx T1& col)
 {
     ifu (pt.x < 0 || pt.x >= grid.size.w || pt.y < 0 || pt.y >= grid.size.h)
@@ -705,6 +713,10 @@ class ScnDrawCtx
     }
 
   public:
+    dfa NT DrawClr(cx ColRgba& col)
+    {
+        ColGridDrawClr(m_scnGrid, col);
+    }
     dfa NT DrawPt(cx Pos2<SI>& pt, cx ColRgba& col)
     {
         ColGridDrawPt(m_scnGrid, pt, col);

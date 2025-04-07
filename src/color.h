@@ -800,6 +800,12 @@ tpl0 dfa NT ToType(ColRgba& dst, cx ColRgb& src)
     dst.b = src.b;
     dst.a = 255;
 }
+tpl0 dfa NT ToType(ColRgb& dst, cx ColRgba& src)
+{
+    dst.r = src.r;
+    dst.g = src.g;
+    dst.b = src.b;
+}
 tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgb& src)
 {
     dst.r = F4(src.r) / 255.0f;

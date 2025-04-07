@@ -74,6 +74,28 @@ tpl1 dfa BO IsNearZero(T1 val)
         ret (Abs<T1>(val) < std::numeric_limits<T1>::epsilon());
     ret (val == T1(0));
 }
+tpl1 dfa T1 PowInt(T1 base, S2 exp)
+{
+    ifu (exp == 0)
+        ret T1(1);
+
+    cx AU isExpNeg = (exp < 0);
+    if (isExpNeg)
+        exp = -exp;
+
+    AU r = T1(1);
+    while (exp > 0)
+    {
+        if (exp & 1)
+            r *= base;
+        base *= base;
+        exp >>= 1;
+    }
+    if (isExpNeg)
+        r = T1(1) / r;
+
+    ret r;
+}
 tpl1 dfa T1 Pow2(T1 val)
 {
     ret val * val;

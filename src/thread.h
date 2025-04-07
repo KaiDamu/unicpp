@@ -46,7 +46,7 @@ class ThdTask
     }
     dfa NT Call() cx
     {
-        ifl (m_fn)
+        ifl (m_fn != 0)
             m_fn();
     }
 };
