@@ -332,6 +332,31 @@ tpl1 dfa SI StrToLowcase(T1* str)
     }
     ret SI(str - strBase);
 }
+tpl1 dfa SI StrToLowcaseHun(T1* str)
+{
+    cx T1* cx strBase = str;
+    while (*str != '\0')
+    {
+        *str = ToLowcase<T1>(*str);
+        // clang-format off
+        switch (*str)
+        {
+        case 0xC1: *str = 0xE1; break;
+        case 0xC9: *str = 0xE9; break;
+        case 0xCD: *str = 0xED; break;
+        case 0xD3: *str = 0xF3; break;
+        case 0xD6: *str = 0xF6; break;
+        case 0xDA: *str = 0xFA; break;
+        case 0xDC: *str = 0xFC; break;
+        case 0x150: ifcx (siz(T1) > 1) *str = 0x151; break;
+        case 0x170: ifcx (siz(T1) > 1) *str = 0x171; break;
+        default: break;
+        }
+        // clang-format on
+        ++str;
+    }
+    ret SI(str - strBase);
+}
 tpl1 dfa SI StrToUpcase(T1* str)
 {
     cx T1* cx strBase = str;
@@ -344,14 +369,15 @@ tpl1 dfa SI StrToUpcase(T1* str)
 }
 
 tpl1 dfa SI StrFindReplace(T1* dst, cx T1* src, cx T1* strReplace, cx T1* strFind)
-{ // replace (all) 'strFind' with 'strReplace' in 'src' and store in 'dst'
+{
+    // replace all 'strFind' with 'strReplace' in 'src' and store in 'dst'
     cx SI strFindLen = StrLen(strFind);
     cx SI strReplaceLen = StrLen(strReplace);
     cx T1* srcP = src;
     T1* dstP = dst;
     while (*srcP != '\0')
     {
-        if (StrCmp(srcP, strFind, strFindLen) == 0)
+        if ((*srcP == *strFind) && StrCmp(srcP, strFind, strFindLen) == 0)
         {
             MemCpy(dstP, strReplace, strReplaceLen * siz(T1));
             srcP += strFindLen;
@@ -367,6 +393,41 @@ tpl1 dfa SI StrFindReplace(T1* dst, cx T1* src, cx T1* strReplace, cx T1* strFin
     *dstP = '\0';
     ret dstP - dst;
 }
+tpl1 dfa SI StrFindReplaceMulti(T1* dst, cx T1* src, std::span<cx T1*> strReplaceList, std::span<cx T1*> strFindList)
+{
+    // replace all 'strFindList' elements with corresponding 'strReplaceList' in 'src' and store in 'dst'
+    // uses 1 pass in total, index 0 of list has highest priority
+    cx AU listLen = Min<SI>(strReplaceList.size(), strFindList.size());
+    std::vector<SI> strLens(listLen * 2);
+    cx AU strFindLens = strLens.data();
+    cx AU strReplaceLens = strLens.data() + listLen;
+    ite (i, i < listLen)
+    {
+        strFindLens[i] = StrLen(strFindList[i]);
+        strReplaceLens[i] = StrLen(strReplaceList[i]);
+    }
+    cx T1* srcP = src;
+    T1* dstP = dst;
+    while (*srcP != '\0')
+    {
+        ite (i, i < listLen)
+        {
+            if ((*srcP == *strFindList[i]) && StrCmp(srcP, strFindList[i], strFindLens[i]) == 0)
+            {
+                MemCpy(dstP, strReplaceList[i], strReplaceLens[i] * siz(T1));
+                srcP += strFindLens[i];
+                dstP += strReplaceLens[i];
+                jsrc(jReplaced);
+            }
+        }
+        *dstP = *srcP;
+        ++srcP;
+        ++dstP;
+        jdst(jReplaced);
+    }
+    *dstP = '\0';
+    ret dstP - dst;
+}
 
 tpl1 dfa SI StrSetLenGet(T1* dst, cx T1* src)
 {
@@ -375,4 +436,42 @@ tpl1 dfa SI StrSetLenGet(T1* dst, cx T1* src)
         *p++ = *src++;
     *p = '\0';
     ret p - dst;
+}
+
+tpl1 dfa SI StrWordWrap(std::vector<cx T1*>& lineDivs, cx T1* str, SI lineMax, T1 wrapVal = ' ')
+{
+    lineDivs.clear();
+    AU strCur = str;
+    AU prevDiv = strCur;
+    lineDivs.emplace_back(prevDiv);
+    SI longestLine = 0;
+
+    while (*strCur != '\0')
+    {
+        if (strCur - prevDiv >= lineMax)
+        {
+            AU strCurSeek = strCur;
+            do
+                --strCurSeek;
+            while (strCurSeek != prevDiv && *strCurSeek != wrapVal);
+            if (strCurSeek != prevDiv)
+            {
+                ++strCurSeek;
+                strCur = strCurSeek;
+            }
+
+            longestLine = Max(longestLine, strCur - prevDiv);
+            prevDiv = strCur;
+            lineDivs.emplace_back(prevDiv);
+        }
+        ++strCur;
+    }
+    ifl (*str != '\0')
+    {
+        longestLine = Max(longestLine, strCur - prevDiv);
+        prevDiv = strCur;
+        lineDivs.emplace_back(prevDiv);
+    }
+
+    ret longestLine;
 }

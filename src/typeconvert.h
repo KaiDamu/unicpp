@@ -57,17 +57,15 @@ dfa F4 S4ToF4(S4 val)
 
 tpl2 dfa SI StrToInt(T1& dst, cx T2* src)
 {
-    static_assert(IsTypeU<T1> || IsTypeS<T1>, "StrToInt: unsupported type");
-
     dst = 0;
     AU p = src;
 
     ifcx (IsTypeU<T1>)
     {
         while (IsNumBase10<T2>(*p))
-            dst = dst * T1(10) + (*p++) - '0';
+            dst = dst * T1(10) + T1((*p++) - '0');
     }
-    else ifcx (IsTypeS<T1>)
+    else
     {
         AU sign = T1(1);
         if (*p == T2('-'))
@@ -76,7 +74,7 @@ tpl2 dfa SI StrToInt(T1& dst, cx T2* src)
             sign = T1(-1);
         }
         while (IsNumBase10<T2>(*p))
-            dst = dst * T1(10) + (*p++) - '0';
+            dst = dst * T1(10) + T1((*p++) - '0');
         dst *= sign;
     }
 
@@ -158,6 +156,46 @@ tpl2 dfa SI StrToInt(T1& dst, cx T2* src, SI len)
     default:
         ret len;
     }
+}
+tpl2 dfa SI StrToFloat(T1& dst, cx T2* src)
+{
+    cx AU srcBase = src;
+    dst = T1(0);
+
+    AU sign = F8(1);
+    if (*src == '-')
+    {
+        ++src;
+        sign = F8(-1);
+    }
+
+    AU dstF = F8(0);
+    src += StrToInt(dstF, src);
+
+    if (*src == '.')
+    {
+        ++src;
+
+        AU div = F8(1);
+        while (IsNumBase10(*src))
+        {
+            dstF = dstF * F8(10) + F8((*src++) - '0');
+            div *= 10.0;
+        }
+        dstF /= div;
+    }
+
+    if (*src == 'e')
+    {
+        ++src;
+
+        AU exp = S4(0);
+        src += StrToInt(exp, src);
+        dstF *= PowInt(F8(10), exp);
+    }
+
+    dst = T1(dstF * sign);
+    ret SI(src - srcBase);
 }
 
 tpl2 dfa SI IntToStr(T1* dst, T2 src)
