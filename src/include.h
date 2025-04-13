@@ -132,6 +132,7 @@
 #include "log.h"
 #include "pixelpath.h"
 #include "bada.h"
+#include "hunic.h"
 #include "dumb.h"
 
 #include "main.h"
