@@ -7,8 +7,7 @@ constexpr NTSTATUS STATUS_INFO_LENGTH_MISMATCH = 0xC0000004;
 
 constexpr NTSTATUS SL_RESTART_SCAN = 0x00000001;
 
-#ifdef PROG_COMPILER_MSVC
-enum FILE_INFORMATION_CLASS
+enum class FILE_INFORMATION_CLASS_
 {
     FileDirectoryInformation = 1,
     FileFullDirectoryInformation,
@@ -88,4 +87,3 @@ enum FILE_INFORMATION_CLASS
     FileKnownFolderInformation,
     FileMaximumInformation,
 };
-#endif

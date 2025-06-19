@@ -32,6 +32,7 @@
     <ClInclude Include="src\console.h" />
     <ClInclude Include="src\container.h" />
     <ClInclude Include="src\hunic.h" />
+    <ClInclude Include="src\import\winapi\util.h" />
     <ClInclude Include="src\input.h" />
     <ClInclude Include="src\mouse.h" />
     <ClInclude Include="src\debug.h" />

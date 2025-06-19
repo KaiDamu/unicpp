@@ -68,6 +68,7 @@
     #include "import/winapi/type.h"
     #include "import/winapi/value.h"
     #include "import/winapi/function.h"
+    #include "import/winapi/util.h"
 #endif
 
 #include "keyword.h"

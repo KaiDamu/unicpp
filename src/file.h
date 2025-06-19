@@ -480,7 +480,7 @@ class FileNt
         IO_STATUS_BLOCK iosb;
         FILE_POSITION_INFORMATION info = {};
         info.CurrentByteOffset.QuadPart = pos;
-        cx NTSTATUS status = NtSetInformationFile(m_hdl, &iosb, &info, siz(FILE_POSITION_INFORMATION), FilePositionInformation);
+        cx NTSTATUS status = NtSetInformationFile(m_hdl, &iosb, &info, siz(FILE_POSITION_INFORMATION), ToNative(FILE_INFORMATION_CLASS_::FilePositionInformation));
         ifu (status != STATUS_SUCCESS)
             rete(ErrVal::FILE);
         rets;
@@ -561,7 +561,7 @@ class FileNt
         jdst(again);
         ++infoCnt;
         Arr<FILE_STREAM_INFORMATION> info(infoCnt);
-        cx NTSTATUS status = NtQueryInformationFile(m_hdl, &iosb, info.Ptr(), ULONG(infoCnt * siz(FILE_STREAM_INFORMATION)), FileStreamInformation);
+        cx NTSTATUS status = NtQueryInformationFile(m_hdl, &iosb, info.Ptr(), ULONG(infoCnt * siz(FILE_STREAM_INFORMATION)), ToNative(FILE_INFORMATION_CLASS_::FileStreamInformation));
         ifu (status == STATUS_BUFFER_OVERFLOW)
             jsrc(again);
         ifu (status != STATUS_SUCCESS)

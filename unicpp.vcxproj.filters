@@ -236,5 +236,8 @@
     <ClInclude Include="src\hunic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\import\winapi\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
