@@ -78,6 +78,10 @@ tpl0 cxex dfa F8 Pi<F8>()
 {
     ret 3.14159265358979323846;
 }
+tpl1 cxex dfa T1 Tau()
+{
+    ret Pi<T1>() + Pi<T1>();
+}
 
 tpl1 cxex dfa SI VarintSizeMax()
 {

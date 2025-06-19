@@ -641,6 +641,14 @@ tpl0 dfa NT ToType(ColVN& dst, cx ColRgbN& src)
 {
     dst.v = src.r * 0.299f + src.g * 0.587f + src.b * 0.114f;
 }
+tpl0 dfa NT ToType(ColV& dst, cx ColRgba& src)
+{
+    dst.v = (U4(src.r) * 299 + U4(src.g) * 587 + U4(src.b) * 114) / 1000;
+}
+tpl0 dfa NT ToType(ColVN& dst, cx ColRgba& src)
+{
+    dst.v = F4(U4(src.r) * 299 + U4(src.g) * 587 + U4(src.b) * 114) / 255000.0f;
+}
 tpl0 dfa NT ToType(ColRgba& dst, cx ColRgbN& src)
 {
     dst.r = U1(src.r * 255.0f);
@@ -767,6 +775,10 @@ tpl0 dfa NT ToType(ColVN& dst, cx ColVN& src)
 {
     dst = std::move(src);
 }
+tpl0 dfa NT ToType(ColVN& dst, cx ColV& src)
+{
+    dst.v = F4(src.v) / 255.0f;
+}
 tpl0 dfa NT ToType(ColRgb& dst, cx ColRgbN& src)
 {
     dst.r = U1(src.r * 255.0f);
@@ -812,11 +824,23 @@ tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgb& src)
     dst.g = F4(src.g) / 255.0f;
     dst.b = F4(src.b) / 255.0f;
 }
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgba& src)
+{
+    dst.r = F4(src.r) / 255.0f;
+    dst.g = F4(src.g) / 255.0f;
+    dst.b = F4(src.b) / 255.0f;
+}
 tpl0 dfa NT ToType(ColVN& dst, cx ColRgb& src)
 {
     dst.v = (F4(src.r) * 0.299f + F4(src.g) * 0.587f + F4(src.b) * 0.114f) / 255.0f;
 }
 tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgb& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgba& src)
 {
     ColRgbN tmp;
     ToType(tmp, src);

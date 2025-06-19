@@ -10,13 +10,13 @@ tpl1 struct Line2
         ret Dist<T1>(a, b);
     }
 
-    dfa Line2()
+    dfa Line2() noex
     {
     }
-    dfa Line2(cx Pos2<T1>& a, cx Pos2<T1>& b) : a(a), b(b)
+    dfa Line2(cx Pos2<T1>& a, cx Pos2<T1>& b) noex : a(a), b(b)
     {
     }
-    dfa Line2(T1 x1, T1 y1, T1 x2, T1 y2) : a(x1, y1), b(x2, y2)
+    dfa Line2(T1 x1, T1 y1, T1 x2, T1 y2) noex : a(x1, y1), b(x2, y2)
     {
     }
 };

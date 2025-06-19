@@ -52,6 +52,69 @@ tpl1 dfa T1 DiffWrap(T1 a, T1 b, T1 wrapAt)
     cx AU diff = Diff<T1>(a, b);
     ret Min<T1>(diff, wrapAt - diff);
 }
+tpl1 dfa S8 FloorToInt(T1 val)
+{
+    ifcx (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val < wholeF) ? (wholeS - S8(1)) : wholeS;
+    }
+    ret S8(val);
+}
+tpl1 dfa S8 CeilToInt(T1 val)
+{
+    ifcx (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val > wholeF) ? (wholeS + S8(1)) : wholeS;
+    }
+    ret S8(val);
+}
+tpl1 dfa T1 Floor(T1 val)
+{
+    ifcx (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val < wholeF) ? (wholeF - T1(1)) : wholeF;
+    }
+    ret T1(val);
+}
+tpl1 dfa T1 Ceil(T1 val)
+{
+    ifcx (IsTypeF<T1>)
+    {
+        cx AU wholeS = S8(val);
+        cx AU wholeF = T1(wholeS);
+        ret (val > wholeF) ? (wholeF + T1(1)) : wholeF;
+    }
+    ret T1(val);
+}
+tpl1 T1 DivCeil(T1 val, T1 div)
+{
+    ifcx (IsTypeF<T1>)
+        ret Ceil(val / div);
+    ret (val + div - 1) / div;
+}
+tpl1 dfa T1 CeilStep(T1 val, T1 step)
+{
+    ret DivCeil(val, step) * step;
+}
+dfa SI BitToByteSize(SI size)
+{
+    ret DivCeil(size, BIT_IN_BYTE);
+}
+tpl1 dfa S8 RoundToInt(T1 val) = delete;
+tpl0 dfa S8 RoundToInt<>(F4 val)
+{
+    ret S8(_mm_cvtss_si32(_mm_set_ss(val)));
+}
+tpl0 dfa S8 RoundToInt<>(F8 val)
+{
+    ret S8(_mm_cvtsd_si64(_mm_set_sd(val)));
+}
 tpl1 dfa T1 Sign(T1 val)
 {
     ret ((val < 0) ? -1 : 1);
@@ -128,6 +191,15 @@ tpl0 dfa F4 Sqrt<F4>(F4 val)
     ret sqrtf(val);
 #endif
 }
+tpl1 dfa T1 RadNorm1(T1 val)
+{
+    static_assert(IsTypeF<T1>, "RadNorm1: T1 must be TypeF");
+    if (val < T1(0))
+        val += Tau<T1>();
+    else if (val >= Tau<T1>())
+        val -= Tau<T1>();
+    ret val / Tau<T1>();
+}
 tpl1 dfa T1 Sin(T1 val)
 {
 #ifdef PROG_COMPILER_GCC
@@ -158,6 +230,22 @@ tpl0 dfa F4 Cos<F4>(F4 val)
     ret __builtin_cosf(val);
 #else
     ret cosf(val);
+#endif
+}
+tpl1 dfa T1 Atan(T1 x, T1 y)
+{
+#ifdef PROG_COMPILER_GCC
+    ret T1(__builtin_atan2(y, x));
+#else
+    ret T1(atan2(y, x));
+#endif
+}
+tpl0 dfa F4 Atan<F4>(F4 x, F4 y)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_atan2f(y, x);
+#else
+    ret atan2f(y, x);
 #endif
 }
 tpl1 dfa T1 Dist0(T1 x, T1 y)
@@ -208,69 +296,6 @@ tpl1 T1 DegToRad(T1 deg)
 tpl1 T1 RadToDeg(T1 rad)
 {
     ret rad * (static_cast<T1>(180) / Pi<T1>());
-}
-tpl1 dfa S8 FloorToInt(T1 val)
-{
-    ifcx (IsTypeF<T1>)
-    {
-        cx AU wholeS = S8(val);
-        cx AU wholeF = T1(wholeS);
-        ret (val < wholeF) ? (wholeS - S8(1)) : wholeS;
-    }
-    ret S8(val);
-}
-tpl1 dfa S8 CeilToInt(T1 val)
-{
-    ifcx (IsTypeF<T1>)
-    {
-        cx AU wholeS = S8(val);
-        cx AU wholeF = T1(wholeS);
-        ret (val > wholeF) ? (wholeS + S8(1)) : wholeS;
-    }
-    ret S8(val);
-}
-tpl1 dfa T1 Floor(T1 val)
-{
-    ifcx (IsTypeF<T1>)
-    {
-        cx AU wholeS = S8(val);
-        cx AU wholeF = T1(wholeS);
-        ret (val < wholeF) ? (wholeF - T1(1)) : wholeF;
-    }
-    ret T1(val);
-}
-tpl1 dfa T1 Ceil(T1 val)
-{
-    ifcx (IsTypeF<T1>)
-    {
-        cx AU wholeS = S8(val);
-        cx AU wholeF = T1(wholeS);
-        ret (val > wholeF) ? (wholeF + T1(1)) : wholeF;
-    }
-    ret T1(val);
-}
-tpl1 T1 DivCeil(T1 val, T1 div)
-{
-    ifcx (IsTypeF<T1>)
-        ret Ceil(val / div);
-    ret (val + div - 1) / div;
-}
-tpl1 dfa T1 CeilStep(T1 val, T1 step)
-{
-    ret DivCeil(val, step) * step;
-}
-dfa SI BitToByteSize(SI size)
-{
-    ret DivCeil(size, BIT_IN_BYTE);
-}
-tpl1 dfa S8 RoundToInt(T1 val) = delete;
-tpl0 dfa S8 RoundToInt<>(F4 val)
-{
-    ret S8(_mm_cvtss_si32(_mm_set_ss(val)));
-}
-tpl0 dfa S8 RoundToInt<>(F8 val)
-{
-    ret S8(_mm_cvtsd_si64(_mm_set_sd(val)));
 }
 dfa BO VarintIsIncomplete(cx U1* dat, SI size)
 {

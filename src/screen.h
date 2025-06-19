@@ -25,12 +25,55 @@ dfa ER ScnRectGet(Rect2<SI>& rect)
     rect.size.h = SI(info.rcMonitor.bottom) - SI(info.rcMonitor.top);
     rets;
 }
+dfa ER ScnSizeList(std::vector<Size2<SI>>& sizes)
+{
+    sizes.clear();
+    DEVMODEW devMode = {};
+    devMode.dmSize = siz(devMode);
+    SetLastError(0);
+    ite (i, i < 1000) // 1000 is an arbitrary limit to prevent infinite loop in rare cases
+    {
+        if (!EnumDisplaySettingsW(NUL, i, &devMode))
+        {
+            ifu (GetLastError() != 0)
+                rete(ErrVal::SCN);
+            rets;
+        }
+        cx Size2<SI> size(devMode.dmPelsWidth, devMode.dmPelsHeight);
+        BO isDupe = NO;
+        for (cx AU& existingSize : sizes)
+        {
+            if (existingSize == size)
+            {
+                isDupe = YES;
+                break;
+            }
+        }
+        if (!isDupe)
+            sizes.push_back(size);
+    }
+    rete(ErrVal::HIGH_SIZE);
+}
 dfa ER ScnSizeGet(Size2<SI>& size)
 {
     Rect2<SI> rect;
     ife (ScnRectGet(rect))
         retep;
     size = rect.size;
+    rets;
+}
+dfa ER ScnSizeSet(cx Size2<SI>& size, BO isPersistent = NO)
+{
+    DEVMODEW devMode = {};
+    devMode.dmSize = siz(devMode);
+    ifu (!EnumDisplaySettingsW(NUL, ENUM_CURRENT_SETTINGS, &devMode))
+        rete(ErrVal::SCN);
+    devMode.dmPelsWidth = DWORD(size.w);
+    devMode.dmPelsHeight = DWORD(size.h);
+    devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+    cx DWORD flags = isPersistent ? CDS_UPDATEREGISTRY : CDS_FULLSCREEN;
+    ifu (ChangeDisplaySettingsW(&devMode, flags) != DISP_CHANGE_SUCCESSFUL)
+        rete(ErrVal::SCN);
     rets;
 }
 dfa ER ScnDiagonalGet(F4& size)
