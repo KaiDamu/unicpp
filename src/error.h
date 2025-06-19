@@ -25,6 +25,7 @@ enum class ErrVal : U4
     REG,
     KEYB,
     MOUS,
+    GAMP,
     NET,
     SCN,
     //

@@ -41,6 +41,7 @@
     #include <shlobj.h>
     #include <winsock2.h>
     #include <ws2tcpip.h>
+    #include <xinput.h>
 
     #ifdef PROG_COMPILER_GCC
         #ifdef D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS
