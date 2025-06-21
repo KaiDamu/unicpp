@@ -394,6 +394,23 @@ tpl1 dfa T1 RotR(T1 val, SI cnt)
 }
 tpl1 dfa T1 RevByte(T1 val)
 {
+    ifcx (siz(T1) == 1)
+        ret val;
+#if defined(PROG_COMPILER_GCC)
+    ifcx (siz(T1) == 2)
+        ret __builtin_bswap16(val);
+    ifcx (siz(T1) == 4)
+        ret __builtin_bswap32(val);
+    ifcx (siz(T1) == 8)
+        ret __builtin_bswap64(val);
+#elif defined(PROG_COMPILER_MSVC)
+    ifcx (siz(T1) == 2)
+        ret _byteswap_ushort(val);
+    ifcx (siz(T1) == 4)
+        ret _byteswap_ulong(val);
+    ifcx (siz(T1) == 8)
+        ret _byteswap_uint64(val);
+#endif
     U1* cx b = (U1*)&val;
     ite (i, i < siz(T1) / 2)
         Swap<U1>(b[i], b[siz(T1) - 1 - i]);

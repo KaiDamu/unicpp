@@ -18,28 +18,8 @@ struct ColRgb
     dfa cxex ColRgb(U1 r, U1 g, U1 b) : r(r), g(g), b(b)
     {
     }
-    dfa cxex ColRgb(cx ColRgb& other) : r(other.r), g(other.g), b(other.b)
-    {
-    }
-    dfa cxex ColRgb(ColRgb&& other) noex : r(std::move(other.r)), g(std::move(other.g)), b(std::move(other.b))
-    {
-    }
     dfa ~ColRgb() = default;
 
-    dfa ColRgb& operator=(cx ColRgb& other)
-    {
-        r = other.r;
-        g = other.g;
-        b = other.b;
-        ret *tx;
-    }
-    dfa ColRgb& operator=(ColRgb&& other) noex
-    {
-        r = std::move(other.r);
-        g = std::move(other.g);
-        b = std::move(other.b);
-        ret *tx;
-    }
     dfa cxex BO operator==(cx ColRgb& other) cx
     {
         ret r == other.r && g == other.g && b == other.b;
@@ -109,28 +89,8 @@ struct ColRgbN
     dfa cxex ColRgbN(F4 r, F4 g, F4 b) : r(r), g(g), b(b)
     {
     }
-    dfa cxex ColRgbN(cx ColRgbN& other) : r(other.r), g(other.g), b(other.b)
-    {
-    }
-    dfa cxex ColRgbN(ColRgbN&& other) noex : r(std::move(other.r)), g(std::move(other.g)), b(std::move(other.b))
-    {
-    }
     dfa ~ColRgbN() = default;
 
-    dfa ColRgbN& operator=(cx ColRgbN& other)
-    {
-        r = other.r;
-        g = other.g;
-        b = other.b;
-        ret *tx;
-    }
-    dfa ColRgbN& operator=(ColRgbN&& other) noex
-    {
-        r = std::move(other.r);
-        g = std::move(other.g);
-        b = std::move(other.b);
-        ret *tx;
-    }
     dfa cxex BO operator==(cx ColRgbN& other) cx
     {
         ret r == other.r && g == other.g && b == other.b;
@@ -210,24 +170,8 @@ struct ColRgba
     dfa cxex ColRgba(U4 val) : val(val)
     {
     }
-    dfa cxex ColRgba(cx ColRgba& other) : val(other.val)
-    {
-    }
-    dfa cxex ColRgba(ColRgba&& other) noex : val(std::move(other.val))
-    {
-    }
     dfa ~ColRgba() = default;
 
-    dfa ColRgba& operator=(cx ColRgba& other)
-    {
-        val = other.val;
-        ret *tx;
-    }
-    dfa ColRgba& operator=(ColRgba&& other) noex
-    {
-        val = std::move(other.val);
-        ret *tx;
-    }
     dfa cxex BO operator==(cx ColRgba& other) cx
     {
         ret val == other.val;
@@ -299,24 +243,8 @@ struct ColV
     dfa cxex ColV(U1 v) : v(v)
     {
     }
-    dfa cxex ColV(cx ColV& other) : v(other.v)
-    {
-    }
-    dfa cxex ColV(ColV&& other) noex : v(std::move(other.v))
-    {
-    }
     dfa ~ColV() = default;
 
-    dfa ColV& operator=(cx ColV& other)
-    {
-        v = other.v;
-        ret *tx;
-    }
-    dfa ColV& operator=(ColV&& other) noex
-    {
-        v = std::move(other.v);
-        ret *tx;
-    }
     dfa cxex BO operator==(cx ColV& other) cx
     {
         ret v == other.v;
@@ -411,24 +339,8 @@ struct ColVN
     dfa cxex ColVN(F4 v) : v(v)
     {
     }
-    dfa cxex ColVN(cx ColVN& other) : v(other.v)
-    {
-    }
-    dfa cxex ColVN(ColVN&& other) noex : v(std::move(other.v))
-    {
-    }
     dfa ~ColVN() = default;
 
-    dfa ColVN& operator=(cx ColVN& other)
-    {
-        v = other.v;
-        ret *tx;
-    }
-    dfa ColVN& operator=(ColVN&& other) noex
-    {
-        v = std::move(other.v);
-        ret *tx;
-    }
     dfa cxex BO operator==(cx ColVN& other) cx
     {
         ret v == other.v;
@@ -525,28 +437,8 @@ struct ColHsvN
     dfa cxex ColHsvN(F4 h, F4 s, F4 v) : h(h), s(s), v(v)
     {
     }
-    dfa cxex ColHsvN(cx ColHsvN& other) : h(other.h), s(other.s), v(other.v)
-    {
-    }
-    dfa cxex ColHsvN(ColHsvN&& other) noex : h(std::move(other.h)), s(std::move(other.s)), v(std::move(other.v))
-    {
-    }
     dfa ~ColHsvN() = default;
 
-    dfa ColHsvN& operator=(cx ColHsvN& other)
-    {
-        h = other.h;
-        s = other.s;
-        v = other.v;
-        ret *tx;
-    }
-    dfa ColHsvN& operator=(ColHsvN&& other) noex
-    {
-        h = std::move(other.h);
-        s = std::move(other.s);
-        v = std::move(other.v);
-        ret *tx;
-    }
     dfa cxex BO operator==(cx ColHsvN& other) cx
     {
         ret h == other.h && s == other.s && v == other.v;
