@@ -1098,14 +1098,8 @@ tpl1 dfa NT ColGridFloodFillAll(ColGrid<T1>& colGrid, std::vector<SI>& fillOrigi
 
 /// [save/load color grid]
 #ifdef PROG_SYS_WIN
-tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
+tpl1 dfa ER ColGridToFileBmp(cx ColGrid<T1>& colGrid, cx CH* path)
 {
-    cx AU pathExt = PathExtPtr(path);
-    ifu (StrCmp(pathExt, L"bmp") != 0)
-    {
-        rete(ErrVal::NO_SUPPORT);
-    }
-
     FileMem file;
     ife (file.OpenWrite(path))
     {
@@ -1161,14 +1155,8 @@ tpl1 dfa ER ColGridSaveFile(cx ColGrid<T1>& colGrid, cx CH* path)
     }
     rets;
 }
-tpl1 dfa ER ColGridLoadFile(ColGrid<T1>& colGrid, cx CH* path)
+tpl1 dfa ER FileToColGridBmp(ColGrid<T1>& colGrid, cx CH* path)
 {
-    cx AU pathExt = PathExtPtr(path);
-    ifu (StrCmp(pathExt, L"bmp") != 0)
-    {
-        rete(ErrVal::NO_SUPPORT);
-    }
-
     FileMem file;
     ife (file.OpenRead(path))
     {
