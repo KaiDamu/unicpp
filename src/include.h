@@ -116,6 +116,7 @@
 #include "rsa.h"
 #include "sha256.h"
 #include "md5.h"
+#include "qoi.h"
 #include "registry.h"
 #include "screen.h"
 #include "window.h"

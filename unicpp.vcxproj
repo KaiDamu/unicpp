@@ -72,6 +72,7 @@
     <ClInclude Include="src\process.h" />
     <ClInclude Include="src\protobuf.h" />
     <ClInclude Include="src\python.h" />
+    <ClInclude Include="src\qoi.h" />
     <ClInclude Include="src\queue.h" />
     <ClInclude Include="src\random.h" />
     <ClInclude Include="src\registry.h" />
