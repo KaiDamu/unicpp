@@ -359,9 +359,7 @@ class Win
         ifu (BitBlt(cache->memDC, 0, 0, rectInner.size.w, rectInner.size.h, cache->curDC, cache->ofs.x, cache->ofs.y, SRCCOPY) == 0)
             rete(ErrVal::WIN);
 
-        colGrid.size = rectInner.size;
-        if (colGrid.pixels.size() != rectInner.size.Area())
-            colGrid.pixels.resize(rectInner.size.Area());
+        colGrid.Resize(rectInner.size);
 
         cx AU rowSize = AlignBit(rectInner.size.w * siz(ColRgb), siz(U4));
         cx AU curInBase = (U1*)cache->pixels;
@@ -439,23 +437,25 @@ class Win
             result = cache->dev->CreateTexture2D(&texInfo, NUL, &cache->tex);
             ifu (FAILED(result))
                 rete(ErrVal::WIN);
+
+            ScnUpdForce(); // force screen update to ensure the first frame is captured correctly
         }
         cache = &m_cache->dxgi;
 
-        Rect2<SI> rectInner;
-        ife (ScnRectGet(rectInner))
+        Rect2<SI> rectScn;
+        ife (ScnRectGet(rectScn))
             retep;
 
-        Rect2<SI> rectDst;
-        ife (tx->RectInnerGet(rectDst))
-            retep;
-
-        ifu (rectInner.size != cache->size)
+        ifu (rectScn.size != cache->size)
         {
-            cache->size = rectInner.size;
+            cache->size = rectScn.size;
 
             // TODO: implement, process screen resolution change...
         }
+
+        Rect2<SI> rectWin;
+        ife (tx->RectInnerGet(rectWin))
+            retep;
 
         Microsoft::WRL::ComPtr<IDXGIResource> desktop;
         DXGI_OUTDUPL_FRAME_INFO frameInfo;
@@ -498,27 +498,25 @@ class Win
             rete(ErrVal::SCN);
         }
 
-        colGrid.size = rectDst.size;
-        if (colGrid.pixels.size() != rectDst.size.Area())
-            colGrid.pixels.resize(rectDst.size.Area());
+        colGrid.Resize(rectWin.size);
 
         cx AU rowSize = texDat.RowPitch;
         cx AU curInBase = (U1*)texDat.pData;
         AU curOut = colGrid.pixels.data();
 
-        cx AU noneRowCntPre = Max(rectInner.pos.y - rectDst.pos.y, SI(0));
+        cx AU noneRowCntPre = Max(rectScn.pos.y - rectWin.pos.y, SI(0));
         if (noneRowCntPre > 0)
         {
-            cx AU noneDatCnt = noneRowCntPre * rectDst.size.w;
+            cx AU noneDatCnt = noneRowCntPre * rectWin.size.w;
             MemSet(curOut, 0, noneDatCnt * siz(T1));
             curOut += noneDatCnt;
         }
 
-        cx AU usedRowIFirst = Max(rectDst.pos.y, rectInner.pos.y) - rectInner.pos.y;
-        cx AU usedRowIEnd = Min(rectDst.YEnd(), rectInner.YEnd()) - rectInner.pos.y;
-        cx AU noneColumnCntPre = Max(rectInner.pos.x - rectDst.pos.x, SI(0));
-        cx AU noneColumnCntPost = Max(rectDst.XEnd() - rectInner.XEnd(), SI(0));
-        cx AU usedPixelCntPerRow = rectDst.size.w - noneColumnCntPre - noneColumnCntPost;
+        cx AU usedRowIFirst = Max(rectWin.pos.y, rectScn.pos.y) - rectScn.pos.y;
+        cx AU usedRowIEnd = Min(rectWin.YEnd(), rectScn.YEnd()) - rectScn.pos.y;
+        cx AU noneColumnCntPre = Max(rectScn.pos.x - rectWin.pos.x, SI(0));
+        cx AU noneColumnCntPost = Max(rectWin.XEnd() - rectScn.XEnd(), SI(0));
+        cx AU usedPixelCntPerRow = rectWin.size.w - noneColumnCntPre - noneColumnCntPost;
 
         for (SI y = usedRowIFirst; y < usedRowIEnd; ++y)
         {
@@ -528,7 +526,7 @@ class Win
                 curOut += noneColumnCntPre;
             }
 
-            AU curIn = (curInBase + y * rowSize) + (Max(rectDst.pos.x - rectInner.pos.x, SI(0)) * siz(ColRgba));
+            AU curIn = (curInBase + y * rowSize) + (Max(rectWin.pos.x - rectScn.pos.x, SI(0)) * siz(ColRgba));
             cx AU curInEnd = curIn + usedPixelCntPerRow * siz(ColRgba);
 
             while (curIn != curInEnd)
@@ -548,10 +546,10 @@ class Win
             }
         }
 
-        cx AU noneRowCntPost = Max(rectDst.YEnd() - rectInner.YEnd(), SI(0));
+        cx AU noneRowCntPost = Max(rectWin.YEnd() - rectScn.YEnd(), SI(0));
         if (noneRowCntPost > 0)
         {
-            cx AU noneDatCnt = noneRowCntPost * rectDst.size.w;
+            cx AU noneDatCnt = noneRowCntPost * rectWin.size.w;
             MemSet(curOut, 0, noneDatCnt * siz(T1));
             curOut += noneDatCnt;
         }
