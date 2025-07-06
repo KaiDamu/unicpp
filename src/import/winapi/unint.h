@@ -1,0 +1,1241 @@
+#pragma once
+
+cxex SI RTL_MAX_DRIVE_LETTERS = 32;
+
+enum class SYSTEM_INFORMATION_CLASS_
+{
+    SystemBasicInformation,                        // q: SYSTEM_BASIC_INFORMATION
+    SystemProcessorInformation,                    // q: SYSTEM_PROCESSOR_INFORMATION
+    SystemPerformanceInformation,                  // q: SYSTEM_PERFORMANCE_INFORMATION
+    SystemTimeOfDayInformation,                    // q: SYSTEM_TIMEOFDAY_INFORMATION
+    SystemPathInformation,                         // not implemented
+    SystemProcessInformation,                      // q: SYSTEM_PROCESS_INFORMATION
+    SystemCallCountInformation,                    // q: SYSTEM_CALL_COUNT_INFORMATION
+    SystemDeviceInformation,                       // q: SYSTEM_DEVICE_INFORMATION
+    SystemProcessorPerformanceInformation,         // q: SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION (EX in: USHORT ProcessorGroup)
+    SystemFlagsInformation,                        // q: SYSTEM_FLAGS_INFORMATION
+    SystemCallTimeInformation,                     // not implemented // SYSTEM_CALL_TIME_INFORMATION // 10
+    SystemModuleInformation,                       // q: RTL_PROCESS_MODULES
+    SystemLocksInformation,                        // q: RTL_PROCESS_LOCKS
+    SystemStackTraceInformation,                   // q: RTL_PROCESS_BACKTRACES
+    SystemPagedPoolInformation,                    // not implemented
+    SystemNonPagedPoolInformation,                 // not implemented
+    SystemHandleInformation,                       // q: SYSTEM_HANDLE_INFORMATION
+    SystemObjectInformation,                       // q: SYSTEM_OBJECTTYPE_INFORMATION mixed with SYSTEM_OBJECT_INFORMATION
+    SystemPageFileInformation,                     // q: SYSTEM_PAGEFILE_INFORMATION
+    SystemVdmInstemulInformation,                  // q: SYSTEM_VDM_INSTEMUL_INFO
+    SystemVdmBopInformation,                       // not implemented // 20
+    SystemFileCacheInformation,                    // q: SYSTEM_FILECACHE_INFORMATION; s (requires SeIncreaseQuotaPrivilege) (info for WorkingSetTypeSystemCache)
+    SystemPoolTagInformation,                      // q: SYSTEM_POOLTAG_INFORMATION
+    SystemInterruptInformation,                    // q: SYSTEM_INTERRUPT_INFORMATION (EX in: USHORT ProcessorGroup)
+    SystemDpcBehaviorInformation,                  // q: SYSTEM_DPC_BEHAVIOR_INFORMATION; s: SYSTEM_DPC_BEHAVIOR_INFORMATION (requires SeLoadDriverPrivilege)
+    SystemFullMemoryInformation,                   // not implemented // SYSTEM_MEMORY_USAGE_INFORMATION
+    SystemLoadGdiDriverInformation,                // s (kernel-mode only)
+    SystemUnloadGdiDriverInformation,              // s (kernel-mode only)
+    SystemTimeAdjustmentInformation,               // q: SYSTEM_QUERY_TIME_ADJUST_INFORMATION; s: SYSTEM_SET_TIME_ADJUST_INFORMATION (requires SeSystemtimePrivilege)
+    SystemSummaryMemoryInformation,                // not implemented // SYSTEM_MEMORY_USAGE_INFORMATION
+    SystemMirrorMemoryInformation,                 // s (requires license value "Kernel-MemoryMirroringSupported") (requires SeShutdownPrivilege) // 30
+    SystemPerformanceTraceInformation,             // q; s: (type depends on EVENT_TRACE_INFORMATION_CLASS)
+    SystemObsolete0,                               // not implemented
+    SystemExceptionInformation,                    // q: SYSTEM_EXCEPTION_INFORMATION
+    SystemCrashDumpStateInformation,               // s: SYSTEM_CRASH_DUMP_STATE_INFORMATION (requires SeDebugPrivilege)
+    SystemKernelDebuggerInformation,               // q: SYSTEM_KERNEL_DEBUGGER_INFORMATION
+    SystemContextSwitchInformation,                // q: SYSTEM_CONTEXT_SWITCH_INFORMATION
+    SystemRegistryQuotaInformation,                // q: SYSTEM_REGISTRY_QUOTA_INFORMATION; s (requires SeIncreaseQuotaPrivilege)
+    SystemExtendServiceTableInformation,           // s (requires SeLoadDriverPrivilege) // loads win32k only
+    SystemPrioritySeparation,                      // s (requires SeTcbPrivilege)
+    SystemVerifierAddDriverInformation,            // s: UNICODE_STRING (requires SeDebugPrivilege) // 40
+    SystemVerifierRemoveDriverInformation,         // s: UNICODE_STRING (requires SeDebugPrivilege)
+    SystemProcessorIdleInformation,                // q: SYSTEM_PROCESSOR_IDLE_INFORMATION (EX in: USHORT ProcessorGroup)
+    SystemLegacyDriverInformation,                 // q: SYSTEM_LEGACY_DRIVER_INFORMATION
+    SystemCurrentTimeZoneInformation,              // q; s: RTL_TIME_ZONE_INFORMATION
+    SystemLookasideInformation,                    // q: SYSTEM_LOOKASIDE_INFORMATION
+    SystemTimeSlipNotification,                    // s: HANDLE (NtCreateEvent) (requires SeSystemtimePrivilege)
+    SystemSessionCreate,                           // not implemented
+    SystemSessionDetach,                           // not implemented
+    SystemSessionInformation,                      // not implemented (SYSTEM_SESSION_INFORMATION)
+    SystemRangeStartInformation,                   // q: SYSTEM_RANGE_START_INFORMATION // 50
+    SystemVerifierInformation,                     // q: SYSTEM_VERIFIER_INFORMATION; s (requires SeDebugPrivilege)
+    SystemVerifierThunkExtend,                     // s (kernel-mode only)
+    SystemSessionProcessInformation,               // q: SYSTEM_SESSION_PROCESS_INFORMATION
+    SystemLoadGdiDriverInSystemSpace,              // s: SYSTEM_GDI_DRIVER_INFORMATION (kernel-mode only) (same as SystemLoadGdiDriverInformation)
+    SystemNumaProcessorMap,                        // q: SYSTEM_NUMA_INFORMATION
+    SystemPrefetcherInformation,                   // q; s: PREFETCHER_INFORMATION // PfSnQueryPrefetcherInformation
+    SystemExtendedProcessInformation,              // q: SYSTEM_EXTENDED_PROCESS_INFORMATION
+    SystemRecommendedSharedDataAlignment,          // q: ULONG // KeGetRecommendedSharedDataAlignment
+    SystemComPlusPackage,                          // q; s: ULONG
+    SystemNumaAvailableMemory,                     // q: SYSTEM_NUMA_INFORMATION // 60
+    SystemProcessorPowerInformation,               // q: SYSTEM_PROCESSOR_POWER_INFORMATION (EX in: USHORT ProcessorGroup)
+    SystemEmulationBasicInformation,               // q: SYSTEM_BASIC_INFORMATION
+    SystemEmulationProcessorInformation,           // q: SYSTEM_PROCESSOR_INFORMATION
+    SystemExtendedHandleInformation,               // q: SYSTEM_HANDLE_INFORMATION_EX
+    SystemLostDelayedWriteInformation,             // q: ULONG
+    SystemBigPoolInformation,                      // q: SYSTEM_BIGPOOL_INFORMATION
+    SystemSessionPoolTagInformation,               // q: SYSTEM_SESSION_POOLTAG_INFORMATION
+    SystemSessionMappedViewInformation,            // q: SYSTEM_SESSION_MAPPED_VIEW_INFORMATION
+    SystemHotpatchInformation,                     // q; s: SYSTEM_HOTPATCH_CODE_INFORMATION
+    SystemObjectSecurityMode,                      // q: ULONG // 70
+    SystemWatchdogTimerHandler,                    // s: SYSTEM_WATCHDOG_HANDLER_INFORMATION // (kernel-mode only)
+    SystemWatchdogTimerInformation,                // q: SYSTEM_WATCHDOG_TIMER_INFORMATION // NtQuerySystemInformationEx // (kernel-mode only)
+    SystemLogicalProcessorInformation,             // q: SYSTEM_LOGICAL_PROCESSOR_INFORMATION (EX in: USHORT ProcessorGroup) // NtQuerySystemInformationEx
+    SystemWow64SharedInformationObsolete,          // not implemented
+    SystemRegisterFirmwareTableInformationHandler, // s: SYSTEM_FIRMWARE_TABLE_HANDLER // (kernel-mode only)
+    SystemFirmwareTableInformation,                // SYSTEM_FIRMWARE_TABLE_INFORMATION
+    SystemModuleInformationEx,                     // q: RTL_PROCESS_MODULE_INFORMATION_EX // since VISTA
+    SystemVerifierTriageInformation,               // not implemented
+    SystemSuperfetchInformation,                   // q; s: SUPERFETCH_INFORMATION // PfQuerySuperfetchInformation
+    SystemMemoryListInformation,                   // q: SYSTEM_MEMORY_LIST_INFORMATION; s: SYSTEM_MEMORY_LIST_COMMAND (requires SeProfileSingleProcessPrivilege) // 80
+    SystemFileCacheInformationEx,                  // q: SYSTEM_FILECACHE_INFORMATION; s (requires SeIncreaseQuotaPrivilege) (same as SystemFileCacheInformation)
+    SystemThreadPriorityClientIdInformation,       // s: SYSTEM_THREAD_CID_PRIORITY_INFORMATION (requires SeIncreaseBasePriorityPrivilege) // NtQuerySystemInformationEx
+    SystemProcessorIdleCycleTimeInformation,       // q: SYSTEM_PROCESSOR_IDLE_CYCLE_TIME_INFORMATION[] (EX in: USHORT ProcessorGroup) // NtQuerySystemInformationEx
+    SystemVerifierCancellationInformation,         // SYSTEM_VERIFIER_CANCELLATION_INFORMATION // name:wow64:whNT32QuerySystemVerifierCancellationInformation
+    SystemProcessorPowerInformationEx,             // not implemented
+    SystemRefTraceInformation,                     // q; s: SYSTEM_REF_TRACE_INFORMATION // ObQueryRefTraceInformation
+    SystemSpecialPoolInformation,                  // q; s: SYSTEM_SPECIAL_POOL_INFORMATION (requires SeDebugPrivilege) // MmSpecialPoolTag, then MmSpecialPoolCatchOverruns != 0
+    SystemProcessIdInformation,                    // q: SYSTEM_PROCESS_ID_INFORMATION
+    SystemErrorPortInformation,                    // s (requires SeTcbPrivilege)
+    SystemBootEnvironmentInformation,              // q: SYSTEM_BOOT_ENVIRONMENT_INFORMATION // 90
+    SystemHypervisorInformation,                   // q: SYSTEM_HYPERVISOR_QUERY_INFORMATION
+    SystemVerifierInformationEx,                   // q; s: SYSTEM_VERIFIER_INFORMATION_EX
+    SystemTimeZoneInformation,                     // q; s: RTL_TIME_ZONE_INFORMATION (requires SeTimeZonePrivilege)
+    SystemImageFileExecutionOptionsInformation,    // s: SYSTEM_IMAGE_FILE_EXECUTION_OPTIONS_INFORMATION (requires SeTcbPrivilege)
+    SystemCoverageInformation,                     // q: COVERAGE_MODULES s: COVERAGE_MODULE_REQUEST // ExpCovQueryInformation (requires SeDebugPrivilege)
+    SystemPrefetchPatchInformation,                // SYSTEM_PREFETCH_PATCH_INFORMATION
+    SystemVerifierFaultsInformation,               // s: SYSTEM_VERIFIER_FAULTS_INFORMATION (requires SeDebugPrivilege)
+    SystemSystemPartitionInformation,              // q: SYSTEM_SYSTEM_PARTITION_INFORMATION
+    SystemSystemDiskInformation,                   // q: SYSTEM_SYSTEM_DISK_INFORMATION
+    SystemProcessorPerformanceDistribution,        // q: SYSTEM_PROCESSOR_PERFORMANCE_DISTRIBUTION (EX in: USHORT ProcessorGroup) // NtQuerySystemInformationEx // 100
+    SystemNumaProximityNodeInformation,            // q; s: SYSTEM_NUMA_PROXIMITY_MAP
+    SystemDynamicTimeZoneInformation,              // q; s: RTL_DYNAMIC_TIME_ZONE_INFORMATION (requires SeTimeZonePrivilege)
+    SystemCodeIntegrityInformation,                // q: SYSTEM_CODEINTEGRITY_INFORMATION // SeCodeIntegrityQueryInformation
+    SystemProcessorMicrocodeUpdateInformation,     // s: SYSTEM_PROCESSOR_MICROCODE_UPDATE_INFORMATION
+    SystemProcessorBrandString,                    // q: CHAR[] // HaliQuerySystemInformation -> HalpGetProcessorBrandString, info class 23
+    SystemVirtualAddressInformation,               // q: SYSTEM_VA_LIST_INFORMATION[]; s: SYSTEM_VA_LIST_INFORMATION[] (requires SeIncreaseQuotaPrivilege) // MmQuerySystemVaInformation
+    SystemLogicalProcessorAndGroupInformation,     // q: SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX (EX in: LOGICAL_PROCESSOR_RELATIONSHIP RelationshipType) // since WIN7 // NtQuerySystemInformationEx //
+                                                   // KeQueryLogicalProcessorRelationship
+    SystemProcessorCycleTimeInformation,           // q: SYSTEM_PROCESSOR_CYCLE_TIME_INFORMATION[] (EX in: USHORT ProcessorGroup) // NtQuerySystemInformationEx
+    SystemStoreInformation,                        // q; s: SYSTEM_STORE_INFORMATION (requires SeProfileSingleProcessPrivilege) // SmQueryStoreInformation
+    SystemRegistryAppendString,                    // s: SYSTEM_REGISTRY_APPEND_STRING_PARAMETERS // 110
+    SystemAitSamplingValue,                        // s: ULONG (requires SeProfileSingleProcessPrivilege)
+    SystemVhdBootInformation,                      // q: SYSTEM_VHD_BOOT_INFORMATION
+    SystemCpuQuotaInformation,                     // q; s: PS_CPU_QUOTA_QUERY_INFORMATION
+    SystemNativeBasicInformation,                  // q: SYSTEM_BASIC_INFORMATION
+    SystemErrorPortTimeouts,                       // SYSTEM_ERROR_PORT_TIMEOUTS
+    SystemLowPriorityIoInformation,                // q: SYSTEM_LOW_PRIORITY_IO_INFORMATION
+    SystemTpmBootEntropyInformation,               // q: BOOT_ENTROPY_NT_RESULT // ExQueryBootEntropyInformation
+    SystemVerifierCountersInformation,             // q: SYSTEM_VERIFIER_COUNTERS_INFORMATION
+    SystemPagedPoolInformationEx,                  // q: SYSTEM_FILECACHE_INFORMATION; s (requires SeIncreaseQuotaPrivilege) (info for WorkingSetTypePagedPool)
+    SystemSystemPtesInformationEx,                 // q: SYSTEM_FILECACHE_INFORMATION; s (requires SeIncreaseQuotaPrivilege) (info for WorkingSetTypeSystemPtes) // 120
+    SystemNodeDistanceInformation,                 // q: USHORT[4*NumaNodes] // (EX in: USHORT NodeNumber) // NtQuerySystemInformationEx
+    SystemAcpiAuditInformation,                    // q: SYSTEM_ACPI_AUDIT_INFORMATION // HaliQuerySystemInformation -> HalpAuditQueryResults, info class 26
+    SystemBasicPerformanceInformation,             // q: SYSTEM_BASIC_PERFORMANCE_INFORMATION // name:wow64:whNtQuerySystemInformation_SystemBasicPerformanceInformation
+    SystemQueryPerformanceCounterInformation,      // q: SYSTEM_QUERY_PERFORMANCE_COUNTER_INFORMATION // since WIN7 SP1
+    SystemSessionBigPoolInformation,               // q: SYSTEM_SESSION_POOLTAG_INFORMATION // since WIN8
+    SystemBootGraphicsInformation,                 // q; s: SYSTEM_BOOT_GRAPHICS_INFORMATION (kernel-mode only)
+    SystemScrubPhysicalMemoryInformation,          // q; s: MEMORY_SCRUB_INFORMATION
+    SystemBadPageInformation,                      // SYSTEM_BAD_PAGE_INFORMATION
+    SystemProcessorProfileControlArea,             // q; s: SYSTEM_PROCESSOR_PROFILE_CONTROL_AREA
+    SystemCombinePhysicalMemoryInformation,        // s: MEMORY_COMBINE_INFORMATION, MEMORY_COMBINE_INFORMATION_EX, MEMORY_COMBINE_INFORMATION_EX2 // 130
+    SystemEntropyInterruptTimingInformation,       // q; s: SYSTEM_ENTROPY_TIMING_INFORMATION
+    SystemConsoleInformation,                      // q; s: SYSTEM_CONSOLE_INFORMATION
+    SystemPlatformBinaryInformation,               // q: SYSTEM_PLATFORM_BINARY_INFORMATION (requires SeTcbPrivilege)
+    SystemPolicyInformation,                       // q: SYSTEM_POLICY_INFORMATION (Warbird/Encrypt/Decrypt/Execute)
+    SystemHypervisorProcessorCountInformation,     // q: SYSTEM_HYPERVISOR_PROCESSOR_COUNT_INFORMATION
+    SystemDeviceDataInformation,                   // q: SYSTEM_DEVICE_DATA_INFORMATION
+    SystemDeviceDataEnumerationInformation,        // q: SYSTEM_DEVICE_DATA_INFORMATION
+    SystemMemoryTopologyInformation,               // q: SYSTEM_MEMORY_TOPOLOGY_INFORMATION
+    SystemMemoryChannelInformation,                // q: SYSTEM_MEMORY_CHANNEL_INFORMATION
+    SystemBootLogoInformation,                     // q: SYSTEM_BOOT_LOGO_INFORMATION // 140
+    SystemProcessorPerformanceInformationEx,       // q: SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_EX // (EX in: USHORT ProcessorGroup) // NtQuerySystemInformationEx // since WINBLUE
+    SystemCriticalProcessErrorLogInformation,      // CRITICAL_PROCESS_EXCEPTION_DATA
+    SystemSecureBootPolicyInformation,             // q: SYSTEM_SECUREBOOT_POLICY_INFORMATION
+    SystemPageFileInformationEx,                   // q: SYSTEM_PAGEFILE_INFORMATION_EX
+    SystemSecureBootInformation,                   // q: SYSTEM_SECUREBOOT_INFORMATION
+    SystemEntropyInterruptTimingRawInformation,    // q; s: SYSTEM_ENTROPY_TIMING_INFORMATION
+    SystemPortableWorkspaceEfiLauncherInformation, // q: SYSTEM_PORTABLE_WORKSPACE_EFI_LAUNCHER_INFORMATION
+    SystemFullProcessInformation,                  // q: SYSTEM_EXTENDED_PROCESS_INFORMATION with SYSTEM_PROCESS_INFORMATION_EXTENSION (requires admin)
+    SystemKernelDebuggerInformationEx,             // q: SYSTEM_KERNEL_DEBUGGER_INFORMATION_EX
+    SystemBootMetadataInformation,                 // 150 // (requires SeTcbPrivilege)
+    SystemSoftRebootInformation,                   // q: ULONG
+    SystemElamCertificateInformation,              // s: SYSTEM_ELAM_CERTIFICATE_INFORMATION
+    SystemOfflineDumpConfigInformation,            // q: OFFLINE_CRASHDUMP_CONFIGURATION_TABLE_V2
+    SystemProcessorFeaturesInformation,            // q: SYSTEM_PROCESSOR_FEATURES_INFORMATION
+    SystemRegistryReconciliationInformation,       // s: NULL (requires admin) (flushes registry hives)
+    SystemEdidInformation,                         // q: SYSTEM_EDID_INFORMATION
+    SystemManufacturingInformation,                // q: SYSTEM_MANUFACTURING_INFORMATION // since THRESHOLD
+    SystemEnergyEstimationConfigInformation,       // q: SYSTEM_ENERGY_ESTIMATION_CONFIG_INFORMATION
+    SystemHypervisorDetailInformation,             // q: SYSTEM_HYPERVISOR_DETAIL_INFORMATION
+    SystemProcessorCycleStatsInformation,          // q: SYSTEM_PROCESSOR_CYCLE_STATS_INFORMATION (EX in: USHORT ProcessorGroup) // NtQuerySystemInformationEx // 160
+    SystemVmGenerationCountInformation,
+    SystemTrustedPlatformModuleInformation, // q: SYSTEM_TPM_INFORMATION
+    SystemKernelDebuggerFlags,              // SYSTEM_KERNEL_DEBUGGER_FLAGS
+    SystemCodeIntegrityPolicyInformation,   // q; s: SYSTEM_CODEINTEGRITYPOLICY_INFORMATION
+    SystemIsolatedUserModeInformation,      // q: SYSTEM_ISOLATED_USER_MODE_INFORMATION
+    SystemHardwareSecurityTestInterfaceResultsInformation,
+    SystemSingleModuleInformation,         // q: SYSTEM_SINGLE_MODULE_INFORMATION
+    SystemAllowedCpuSetsInformation,       // s: SYSTEM_WORKLOAD_ALLOWED_CPU_SET_INFORMATION
+    SystemVsmProtectionInformation,        // q: SYSTEM_VSM_PROTECTION_INFORMATION (previously SystemDmaProtectionInformation)
+    SystemInterruptCpuSetsInformation,     // q: SYSTEM_INTERRUPT_CPU_SET_INFORMATION // 170
+    SystemSecureBootPolicyFullInformation, // q: SYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION
+    SystemCodeIntegrityPolicyFullInformation,
+    SystemAffinitizedInterruptProcessorInformation, // q: KAFFINITY_EX // (requires SeIncreaseBasePriorityPrivilege)
+    SystemRootSiloInformation,                      // q: SYSTEM_ROOT_SILO_INFORMATION
+    SystemCpuSetInformation,                        // q: SYSTEM_CPU_SET_INFORMATION // since THRESHOLD2
+    SystemCpuSetTagInformation,                     // q: SYSTEM_CPU_SET_TAG_INFORMATION
+    SystemWin32WerStartCallout,
+    SystemSecureKernelProfileInformation,           // q: SYSTEM_SECURE_KERNEL_HYPERGUARD_PROFILE_INFORMATION
+    SystemCodeIntegrityPlatformManifestInformation, // q: SYSTEM_SECUREBOOT_PLATFORM_MANIFEST_INFORMATION // NtQuerySystemInformationEx // since REDSTONE
+    SystemInterruptSteeringInformation,             // q: in: SYSTEM_INTERRUPT_STEERING_INFORMATION_INPUT, out: SYSTEM_INTERRUPT_STEERING_INFORMATION_OUTPUT // NtQuerySystemInformationEx // 180
+    SystemSupportedProcessorArchitectures,          // p: in opt: HANDLE, out: SYSTEM_SUPPORTED_PROCESSOR_ARCHITECTURES_INFORMATION[] // NtQuerySystemInformationEx
+    SystemMemoryUsageInformation,                   // q: SYSTEM_MEMORY_USAGE_INFORMATION
+    SystemCodeIntegrityCertificateInformation,      // q: SYSTEM_CODEINTEGRITY_CERTIFICATE_INFORMATION
+    SystemPhysicalMemoryInformation,                // q: SYSTEM_PHYSICAL_MEMORY_INFORMATION // since REDSTONE2
+    SystemControlFlowTransition,                    // (Warbird/Encrypt/Decrypt/Execute)
+    SystemKernelDebuggingAllowed,                   // s: ULONG
+    SystemActivityModerationExeState,               // s: SYSTEM_ACTIVITY_MODERATION_EXE_STATE
+    SystemActivityModerationUserSettings,           // q: SYSTEM_ACTIVITY_MODERATION_USER_SETTINGS
+    SystemCodeIntegrityPoliciesFullInformation,     // NtQuerySystemInformationEx
+    SystemCodeIntegrityUnlockInformation,           // SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION // 190
+    SystemIntegrityQuotaInformation,
+    SystemFlushInformation,                // q: SYSTEM_FLUSH_INFORMATION
+    SystemProcessorIdleMaskInformation,    // q: ULONG_PTR[ActiveGroupCount] // since REDSTONE3
+    SystemSecureDumpEncryptionInformation, // NtQuerySystemInformationEx
+    SystemWriteConstraintInformation,      // SYSTEM_WRITE_CONSTRAINT_INFORMATION
+    SystemKernelVaShadowInformation,       // SYSTEM_KERNEL_VA_SHADOW_INFORMATION
+    SystemHypervisorSharedPageInformation, // SYSTEM_HYPERVISOR_SHARED_PAGE_INFORMATION // since REDSTONE4
+    SystemFirmwareBootPerformanceInformation,
+    SystemCodeIntegrityVerificationInformation,   // SYSTEM_CODEINTEGRITYVERIFICATION_INFORMATION
+    SystemFirmwarePartitionInformation,           // SYSTEM_FIRMWARE_PARTITION_INFORMATION // 200
+    SystemSpeculationControlInformation,          // SYSTEM_SPECULATION_CONTROL_INFORMATION // (CVE-2017-5715) REDSTONE3 and above.
+    SystemDmaGuardPolicyInformation,              // SYSTEM_DMA_GUARD_POLICY_INFORMATION
+    SystemEnclaveLaunchControlInformation,        // SYSTEM_ENCLAVE_LAUNCH_CONTROL_INFORMATION
+    SystemWorkloadAllowedCpuSetsInformation,      // SYSTEM_WORKLOAD_ALLOWED_CPU_SET_INFORMATION // since REDSTONE5
+    SystemCodeIntegrityUnlockModeInformation,     // SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION
+    SystemLeapSecondInformation,                  // SYSTEM_LEAP_SECOND_INFORMATION
+    SystemFlags2Information,                      // q: SYSTEM_FLAGS_INFORMATION
+    SystemSecurityModelInformation,               // SYSTEM_SECURITY_MODEL_INFORMATION // since 19H1
+    SystemCodeIntegritySyntheticCacheInformation, // NtQuerySystemInformationEx
+    SystemFeatureConfigurationInformation,        // q: in: SYSTEM_FEATURE_CONFIGURATION_QUERY, out: SYSTEM_FEATURE_CONFIGURATION_INFORMATION; s: SYSTEM_FEATURE_CONFIGURATION_UPDATE //
+                                                  // NtQuerySystemInformationEx // since 20H1 // 210
+    SystemFeatureConfigurationSectionInformation, // q: in: SYSTEM_FEATURE_CONFIGURATION_SECTIONS_REQUEST, out: SYSTEM_FEATURE_CONFIGURATION_SECTIONS_INFORMATION // NtQuerySystemInformationEx
+    SystemFeatureUsageSubscriptionInformation,    // q: SYSTEM_FEATURE_USAGE_SUBSCRIPTION_DETAILS; s: SYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE
+    SystemSecureSpeculationControlInformation,    // SECURE_SPECULATION_CONTROL_INFORMATION
+    SystemSpacesBootInformation,                  // since 20H2
+    SystemFwRamdiskInformation,                   // SYSTEM_FIRMWARE_RAMDISK_INFORMATION
+    SystemWheaIpmiHardwareInformation,
+    SystemDifSetRuleClassInformation,          // s: SYSTEM_DIF_VOLATILE_INFORMATION (requires SeDebugPrivilege)
+    SystemDifClearRuleClassInformation,        // s: NULL (requires SeDebugPrivilege)
+    SystemDifApplyPluginVerificationOnDriver,  // SYSTEM_DIF_PLUGIN_DRIVER_INFORMATION (requires SeDebugPrivilege)
+    SystemDifRemovePluginVerificationOnDriver, // SYSTEM_DIF_PLUGIN_DRIVER_INFORMATION (requires SeDebugPrivilege) // 220
+    SystemShadowStackInformation,              // SYSTEM_SHADOW_STACK_INFORMATION
+    SystemBuildVersionInformation,             // q: in: ULONG (LayerNumber), out: SYSTEM_BUILD_VERSION_INFORMATION // NtQuerySystemInformationEx // 222
+    SystemPoolLimitInformation,                // SYSTEM_POOL_LIMIT_INFORMATION (requires SeIncreaseQuotaPrivilege) // NtQuerySystemInformationEx
+    SystemCodeIntegrityAddDynamicStore,        // CodeIntegrity-AllowConfigurablePolicy-CustomKernelSigners
+    SystemCodeIntegrityClearDynamicStores,     // CodeIntegrity-AllowConfigurablePolicy-CustomKernelSigners
+    SystemDifPoolTrackingInformation,
+    SystemPoolZeroingInformation,                 // q: SYSTEM_POOL_ZEROING_INFORMATION
+    SystemDpcWatchdogInformation,                 // q; s: SYSTEM_DPC_WATCHDOG_CONFIGURATION_INFORMATION
+    SystemDpcWatchdogInformation2,                // q; s: SYSTEM_DPC_WATCHDOG_CONFIGURATION_INFORMATION_V2
+    SystemSupportedProcessorArchitectures2,       // q: in opt: HANDLE, out: SYSTEM_SUPPORTED_PROCESSOR_ARCHITECTURES_INFORMATION[] // NtQuerySystemInformationEx // 230
+    SystemSingleProcessorRelationshipInformation, // q: SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX // (EX in: PROCESSOR_NUMBER Processor) // NtQuerySystemInformationEx
+    SystemXfgCheckFailureInformation,             // q: SYSTEM_XFG_FAILURE_INFORMATION
+    SystemIommuStateInformation,                  // SYSTEM_IOMMU_STATE_INFORMATION // since 22H1
+    SystemHypervisorMinrootInformation,           // SYSTEM_HYPERVISOR_MINROOT_INFORMATION
+    SystemHypervisorBootPagesInformation,         // SYSTEM_HYPERVISOR_BOOT_PAGES_INFORMATION
+    SystemPointerAuthInformation,                 // SYSTEM_POINTER_AUTH_INFORMATION
+    SystemSecureKernelDebuggerInformation,        // NtQuerySystemInformationEx
+    SystemOriginalImageFeatureInformation,        // q: in: SYSTEM_ORIGINAL_IMAGE_FEATURE_INFORMATION_INPUT, out: SYSTEM_ORIGINAL_IMAGE_FEATURE_INFORMATION_OUTPUT // NtQuerySystemInformationEx
+    SystemMemoryNumaInformation,                  // SYSTEM_MEMORY_NUMA_INFORMATION_INPUT, SYSTEM_MEMORY_NUMA_INFORMATION_OUTPUT // NtQuerySystemInformationEx
+    SystemMemoryNumaPerformanceInformation, // SYSTEM_MEMORY_NUMA_PERFORMANCE_INFORMATION_INPUTSYSTEM_MEMORY_NUMA_PERFORMANCE_INFORMATION_INPUT, SYSTEM_MEMORY_NUMA_PERFORMANCE_INFORMATION_OUTPUT //
+                                            // since 24H2 // 240
+    SystemCodeIntegritySignedPoliciesFullInformation,
+    SystemSecureCoreInformation,                    // SystemSecureSecretsInformation
+    SystemTrustedAppsRuntimeInformation,            // SYSTEM_TRUSTEDAPPS_RUNTIME_INFORMATION
+    SystemBadPageInformationEx,                     // SYSTEM_BAD_PAGE_INFORMATION
+    SystemResourceDeadlockTimeout,                  // ULONG
+    SystemBreakOnContextUnwindFailureInformation,   // ULONG (requires SeDebugPrivilege)
+    SystemOslRamdiskInformation,                    // SYSTEM_OSL_RAMDISK_INFORMATION
+    SystemCodeIntegrityPolicyManagementInformation, // SYSTEM_CODEINTEGRITYPOLICY_MANAGEMENT // since 25H2
+    SystemMemoryNumaCacheInformation,
+    SystemProcessorFeaturesBitMapInformation, // 250
+    SystemRefTraceInformationEx,              // SYSTEM_REF_TRACE_INFORMATION_EX
+    SystemBasicProcessInformation,            // SYSTEM_BASICPROCESS_INFORMATION
+    SystemHandleCountInformation,             // SYSTEM_HANDLECOUNT_INFORMATION
+    MaxSystemInfoClass
+};
+enum class PROCESSINFOCLASS_
+{
+    ProcessBasicInformation,                     // q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
+    ProcessQuotaLimits,                          // qs: QUOTA_LIMITS, QUOTA_LIMITS_EX
+    ProcessIoCounters,                           // q: IO_COUNTERS
+    ProcessVmCounters,                           // q: VM_COUNTERS, VM_COUNTERS_EX, VM_COUNTERS_EX2
+    ProcessTimes,                                // q: KERNEL_USER_TIMES
+    ProcessBasePriority,                         // s: KPRIORITY
+    ProcessRaisePriority,                        // s: ULONG
+    ProcessDebugPort,                            // q: HANDLE
+    ProcessExceptionPort,                        // s: PROCESS_EXCEPTION_PORT (requires SeTcbPrivilege)
+    ProcessAccessToken,                          // s: PROCESS_ACCESS_TOKEN
+    ProcessLdtInformation,                       // qs: PROCESS_LDT_INFORMATION // 10
+    ProcessLdtSize,                              // s: PROCESS_LDT_SIZE
+    ProcessDefaultHardErrorMode,                 // qs: ULONG
+    ProcessIoPortHandlers,                       // s: PROCESS_IO_PORT_HANDLER_INFORMATION // (kernel-mode only)
+    ProcessPooledUsageAndLimits,                 // q: POOLED_USAGE_AND_LIMITS
+    ProcessWorkingSetWatch,                      // q: PROCESS_WS_WATCH_INFORMATION[]; s: void
+    ProcessUserModeIOPL,                         // qs: ULONG (requires SeTcbPrivilege)
+    ProcessEnableAlignmentFaultFixup,            // s: BOOLEAN
+    ProcessPriorityClass,                        // qs: PROCESS_PRIORITY_CLASS
+    ProcessWx86Information,                      // qs: ULONG (requires SeTcbPrivilege) (VdmAllowed)
+    ProcessHandleCount,                          // q: ULONG, PROCESS_HANDLE_INFORMATION // 20
+    ProcessAffinityMask,                         // (q >WIN7)s: KAFFINITY, qs: GROUP_AFFINITY
+    ProcessPriorityBoost,                        // qs: ULONG
+    ProcessDeviceMap,                            // qs: PROCESS_DEVICEMAP_INFORMATION, PROCESS_DEVICEMAP_INFORMATION_EX
+    ProcessSessionInformation,                   // q: PROCESS_SESSION_INFORMATION
+    ProcessForegroundInformation,                // s: PROCESS_FOREGROUND_BACKGROUND
+    ProcessWow64Information,                     // q: ULONG_PTR
+    ProcessImageFileName,                        // q: UNICODE_STRING
+    ProcessLUIDDeviceMapsEnabled,                // q: ULONG
+    ProcessBreakOnTermination,                   // qs: ULONG
+    ProcessDebugObjectHandle,                    // q: HANDLE // 30
+    ProcessDebugFlags,                           // qs: ULONG
+    ProcessHandleTracing,                        // q: PROCESS_HANDLE_TRACING_QUERY; s: PROCESS_HANDLE_TRACING_ENABLE[_EX] or void to disable
+    ProcessIoPriority,                           // qs: IO_PRIORITY_HINT
+    ProcessExecuteFlags,                         // qs: ULONG (MEM_EXECUTE_OPTION_*)
+    ProcessTlsInformation,                       // PROCESS_TLS_INFORMATION // ProcessResourceManagement
+    ProcessCookie,                               // q: ULONG
+    ProcessImageInformation,                     // q: SECTION_IMAGE_INFORMATION
+    ProcessCycleTime,                            // q: PROCESS_CYCLE_TIME_INFORMATION // since VISTA
+    ProcessPagePriority,                         // qs: PAGE_PRIORITY_INFORMATION
+    ProcessInstrumentationCallback,              // s: PVOID or PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION // 40
+    ProcessThreadStackAllocation,                // s: PROCESS_STACK_ALLOCATION_INFORMATION, PROCESS_STACK_ALLOCATION_INFORMATION_EX
+    ProcessWorkingSetWatchEx,                    // q: PROCESS_WS_WATCH_INFORMATION_EX[]; s: void
+    ProcessImageFileNameWin32,                   // q: UNICODE_STRING
+    ProcessImageFileMapping,                     // q: HANDLE (input)
+    ProcessAffinityUpdateMode,                   // qs: PROCESS_AFFINITY_UPDATE_MODE
+    ProcessMemoryAllocationMode,                 // qs: PROCESS_MEMORY_ALLOCATION_MODE
+    ProcessGroupInformation,                     // q: USHORT[]
+    ProcessTokenVirtualizationEnabled,           // s: ULONG
+    ProcessConsoleHostProcess,                   // qs: ULONG_PTR // ProcessOwnerInformation
+    ProcessWindowInformation,                    // q: PROCESS_WINDOW_INFORMATION // 50
+    ProcessHandleInformation,                    // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
+    ProcessMitigationPolicy,                     // s: PROCESS_MITIGATION_POLICY_INFORMATION
+    ProcessDynamicFunctionTableInformation,      // s: PROCESS_DYNAMIC_FUNCTION_TABLE_INFORMATION
+    ProcessHandleCheckingMode,                   // qs: ULONG; s: 0 disables, otherwise enables
+    ProcessKeepAliveCount,                       // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
+    ProcessRevokeFileHandles,                    // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
+    ProcessWorkingSetControl,                    // s: PROCESS_WORKING_SET_CONTROL
+    ProcessHandleTable,                          // q: ULONG[] // since WINBLUE
+    ProcessCheckStackExtentsMode,                // qs: ULONG // KPROCESS->CheckStackExtents (CFG)
+    ProcessCommandLineInformation,               // q: UNICODE_STRING // 60
+    ProcessProtectionInformation,                // q: PS_PROTECTION
+    ProcessMemoryExhaustion,                     // s: PROCESS_MEMORY_EXHAUSTION_INFO // since THRESHOLD
+    ProcessFaultInformation,                     // s: PROCESS_FAULT_INFORMATION
+    ProcessTelemetryIdInformation,               // q: PROCESS_TELEMETRY_ID_INFORMATION
+    ProcessCommitReleaseInformation,             // qs: PROCESS_COMMIT_RELEASE_INFORMATION
+    ProcessDefaultCpuSetsInformation,            // qs: SYSTEM_CPU_SET_INFORMATION[5]
+    ProcessAllowedCpuSetsInformation,            // qs: SYSTEM_CPU_SET_INFORMATION[5]
+    ProcessSubsystemProcess,                     // s: void // EPROCESS->SubsystemProcess
+    ProcessJobMemoryInformation,                 // q: PROCESS_JOB_MEMORY_INFO
+    ProcessInPrivate,                            // q: BOOLEAN; s: void // ETW // since THRESHOLD2 // 70
+    ProcessRaiseUMExceptionOnInvalidHandleClose, // qs: ULONG; s: 0 disables, otherwise enables
+    ProcessIumChallengeResponse,
+    ProcessChildProcessInformation,         // q: PROCESS_CHILD_PROCESS_INFORMATION
+    ProcessHighGraphicsPriorityInformation, // qs: BOOLEAN (requires SeTcbPrivilege)
+    ProcessSubsystemInformation,            // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
+    ProcessEnergyValues,                    // q: PROCESS_ENERGY_VALUES, PROCESS_EXTENDED_ENERGY_VALUES, PROCESS_EXTENDED_ENERGY_VALUES_V1
+    ProcessPowerThrottlingState,            // qs: POWER_THROTTLING_PROCESS_STATE
+    ProcessReserved3Information,            // ProcessActivityThrottlePolicy // PROCESS_ACTIVITY_THROTTLE_POLICY
+    ProcessWin32kSyscallFilterInformation,  // q: WIN32K_SYSCALL_FILTER
+    ProcessDisableSystemAllowedCpuSets,     // s: BOOLEAN // 80
+    ProcessWakeInformation,                 // q: PROCESS_WAKE_INFORMATION
+    ProcessEnergyTrackingState,             // qs: PROCESS_ENERGY_TRACKING_STATE
+    ProcessManageWritesToExecutableMemory,  // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
+    ProcessCaptureTrustletLiveDump,         // q: ULONG
+    ProcessTelemetryCoverage,               // q: TELEMETRY_COVERAGE_HEADER; s: TELEMETRY_COVERAGE_POINT
+    ProcessEnclaveInformation,
+    ProcessEnableReadWriteVmLogging,           // qs: PROCESS_READWRITEVM_LOGGING_INFORMATION
+    ProcessUptimeInformation,                  // q: PROCESS_UPTIME_INFORMATION
+    ProcessImageSection,                       // q: HANDLE
+    ProcessDebugAuthInformation,               // s: CiTool.exe --device-id // PplDebugAuthorization // since RS4 // 90
+    ProcessSystemResourceManagement,           // s: PROCESS_SYSTEM_RESOURCE_MANAGEMENT
+    ProcessSequenceNumber,                     // q: ULONGLONG
+    ProcessLoaderDetour,                       // since RS5
+    ProcessSecurityDomainInformation,          // q: PROCESS_SECURITY_DOMAIN_INFORMATION
+    ProcessCombineSecurityDomainsInformation,  // s: PROCESS_COMBINE_SECURITY_DOMAINS_INFORMATION
+    ProcessEnableLogging,                      // qs: PROCESS_LOGGING_INFORMATION
+    ProcessLeapSecondInformation,              // qs: PROCESS_LEAP_SECOND_INFORMATION
+    ProcessFiberShadowStackAllocation,         // s: PROCESS_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION // since 19H1
+    ProcessFreeFiberShadowStackAllocation,     // s: PROCESS_FREE_FIBER_SHADOW_STACK_ALLOCATION_INFORMATION
+    ProcessAltSystemCallInformation,           // s: PROCESS_SYSCALL_PROVIDER_INFORMATION // since 20H1 // 100
+    ProcessDynamicEHContinuationTargets,       // s: PROCESS_DYNAMIC_EH_CONTINUATION_TARGETS_INFORMATION
+    ProcessDynamicEnforcedCetCompatibleRanges, // s: PROCESS_DYNAMIC_ENFORCED_ADDRESS_RANGE_INFORMATION // since 20H2
+    ProcessCreateStateChange,                  // since WIN11
+    ProcessApplyStateChange,
+    ProcessEnableOptionalXStateFeatures, // s: ULONG64 // optional XState feature bitmask
+    ProcessAltPrefetchParam,             // qs: OVERRIDE_PREFETCH_PARAMETER // App Launch Prefetch (ALPF) // since 22H1
+    ProcessAssignCpuPartitions,          // HANDLE
+    ProcessPriorityClassEx,              // s: PROCESS_PRIORITY_CLASS_EX
+    ProcessMembershipInformation,        // q: PROCESS_MEMBERSHIP_INFORMATION
+    ProcessEffectiveIoPriority,          // q: IO_PRIORITY_HINT // 110
+    ProcessEffectivePagePriority,        // q: ULONG
+    ProcessSchedulerSharedData,          // SCHEDULER_SHARED_DATA_SLOT_INFORMATION // since 24H2
+    ProcessSlistRollbackInformation,
+    ProcessNetworkIoCounters,              // q: PROCESS_NETWORK_COUNTERS
+    ProcessFindFirstThreadByTebValue,      // PROCESS_TEB_VALUE_INFORMATION
+    ProcessEnclaveAddressSpaceRestriction, // since 25H2
+    ProcessAvailableCpus,                  // PROCESS_AVAILABLE_CPUS_INFORMATION
+    MaxProcessInfoClass
+};
+enum class SECURITY_IMPERSONATION_LEVEL_
+{
+    SecurityAnonymous,
+    SecurityIdentification,
+    SecurityImpersonation,
+    SecurityDelegation
+};
+enum class NT_PRODUCT_TYPE_
+{
+    NtProductWinNt = 1,
+    NtProductLanManNt,
+    NtProductServer
+};
+enum class LDR_DLL_LOAD_REASON_
+{
+    LoadReasonStaticDependency,
+    LoadReasonStaticForwarderDependency,
+    LoadReasonDynamicForwarderDependency,
+    LoadReasonDelayloadDependency,
+    LoadReasonDynamicLoad,
+    LoadReasonAsImageLoad,
+    LoadReasonAsDataLoad,
+    LoadReasonEnclavePrimary,
+    LoadReasonEnclaveDependency,
+    LoadReasonPatchImage,
+    LoadReasonUnknown = -1
+};
+enum class LDR_HOT_PATCH_STATE_
+{
+    LdrHotPatchBaseImage,
+    LdrHotPatchNotApplied,
+    LdrHotPatchAppliedReverse,
+    LdrHotPatchAppliedForward,
+    LdrHotPatchFailedToPatch,
+    LdrHotPatchStateMax,
+};
+enum class LDR_DDAG_STATE_
+{
+    LdrModulesMerged = -5,
+    LdrModulesInitError = -4,
+    LdrModulesSnapError = -3,
+    LdrModulesUnloaded = -2,
+    LdrModulesUnloading = -1,
+    LdrModulesPlaceHolder = 0,
+    LdrModulesMapping = 1,
+    LdrModulesMapped = 2,
+    LdrModulesWaitingForDependencies = 3,
+    LdrModulesSnapping = 4,
+    LdrModulesSnapped = 5,
+    LdrModulesCondensed = 6,
+    LdrModulesReadyToInit = 7,
+    LdrModulesInitializing = 8,
+    LdrModulesReadyToRun = 9
+};
+
+struct RTL_CRITICAL_SECTION_;
+struct ACTIVATION_CONTEXT_;
+struct ACTIVATION_CONTEXT_DATA_;
+
+using PPS_POST_PROCESS_INIT_ROUTINE_ = NT(NTAPI*)(NT);
+using PLDR_INIT_ROUTINE_ = U1(NTAPI*)(GA DllHandle, U4 Reason, GA Context);
+using PACTIVATION_CONTEXT_NOTIFY_ROUTINE_ = NT(NTAPI*)(U4 NotificationType, ACTIVATION_CONTEXT_* ActivationContext, ACTIVATION_CONTEXT_DATA_* ActivationContextData, GA NotificationContext,
+                                                       GA NotificationData, U1* DisableThisNotification);
+
+struct LARGE_INTEGER_
+{
+    union {
+        struct
+        {
+            U4 LowPart;
+            S4 HighPart;
+        };
+        S8 QuadPart;
+    };
+};
+struct ULARGE_INTEGER_
+{
+    union {
+        struct
+        {
+            U4 LowPart;
+            U4 HighPart;
+        };
+        U8 QuadPart;
+    };
+};
+struct ACL_
+{
+    U1 AclRevision;
+    U1 Sbz1;
+    U2 AclSize;
+    U2 AceCount;
+    U2 Sbz2;
+};
+struct SID_IDENTIFIER_AUTHORITY_
+{
+    U1 Value[6];
+};
+struct SID_
+{
+    U1 Revision;
+    U1 SubAuthorityCount;
+    SID_IDENTIFIER_AUTHORITY_ IdentifierAuthority;
+    U4 SubAuthority flexarr;
+};
+struct UNICODE_STRING_
+{
+    U2 Length;
+    U2 MaximumLength;
+    CH* Buffer;
+};
+struct SECURITY_DESCRIPTOR_
+{
+    U1 Revision;
+    U1 Sbz1;
+    U2 Control;
+    SID_* Owner;
+    SID_* Group;
+    ACL_* Sacl;
+    ACL_* Dacl;
+};
+struct SECURITY_QUALITY_OF_SERVICE_
+{
+    U4 Length;
+    SECURITY_IMPERSONATION_LEVEL_ ImpersonationLevel;
+    U1 ContextTrackingMode;
+    U1 EffectiveOnly;
+};
+struct OBJECT_ATTRIBUTES_
+{
+    U4 Length;
+    HD RootDirectory;
+    cx UNICODE_STRING_* ObjectName;
+    U4 Attributes;
+    SECURITY_DESCRIPTOR_* SecurityDescriptor;
+    SECURITY_QUALITY_OF_SERVICE_* SecurityQualityOfService;
+};
+struct CLIENT_ID_
+{
+    HD UniqueProcess;
+    HD UniqueThread;
+};
+struct STRING_
+{
+    U2 Length;
+    U2 MaximumLength;
+    CS* Buffer;
+};
+struct GUID_
+{
+    U4 Data1;
+    U2 Data2;
+    U2 Data3;
+    U1 Data4[8];
+};
+struct SWITCH_CONTEXT_ATTRIBUTE_
+{
+    UA ContextUpdateCounter;
+    S4 AllowContextUpdate;
+    S4 EnableTrace;
+    HD EtwHandle;
+};
+struct SWITCH_CONTEXT_DATA_
+{
+    U8 OsMaxVersionTested;
+    U4 TargetPlatform;
+    U8 ContextMinimum;
+    GUID_ Platform;
+    GUID_ MinPlatform;
+    U4 ContextSource;
+    U4 ElementCount;
+    GUID_ Elements[48];
+};
+struct WER_FILE_
+{
+    U2 Flags;
+    CH Path[MAX_PATH];
+};
+struct WER_MEMORY_
+{
+    GA Address;
+    U4 Size;
+};
+struct LIST_ENTRY_
+{
+    LIST_ENTRY_* Flink;
+    LIST_ENTRY_* Blink;
+};
+struct LDR_SERVICE_TAG_RECORD_
+{
+    LDR_SERVICE_TAG_RECORD_* Next;
+    U4 ServiceTag;
+};
+struct SINGLE_LIST_ENTRY_
+{
+    SINGLE_LIST_ENTRY_* Next;
+};
+struct LDRP_CSLIST_
+{
+    SINGLE_LIST_ENTRY_* Tail;
+};
+struct ASSEMBLY_STORAGE_MAP_ENTRY_
+{
+    U4 Flags;
+    UNICODE_STRING_ DosPath;
+    HD Handle;
+};
+struct ASSEMBLY_STORAGE_MAP_
+{
+    U4 Flags;
+    U4 AssemblyCount;
+    ASSEMBLY_STORAGE_MAP_ENTRY_** AssemblyArray;
+};
+struct ACTIVATION_CONTEXT_
+{
+    S4 RefCount;
+    U4 Flags;
+    ACTIVATION_CONTEXT_DATA_* ActivationContextData;
+    PACTIVATION_CONTEXT_NOTIFY_ROUTINE_ NotificationRoutine;
+    GA NotificationContext;
+    U4 SentNotifications[8];
+    U4 DisabledNotifications[8];
+    ASSEMBLY_STORAGE_MAP_ StorageMap;
+    ASSEMBLY_STORAGE_MAP_ENTRY_* InlineStorageMapEntries[32];
+};
+struct LDR_DDAG_NODE_
+{
+    LIST_ENTRY_ Modules;
+    LDR_SERVICE_TAG_RECORD_* ServiceTagList;
+    U4 LoadCount;
+    U4 LoadWhileUnloadingCount;
+    U4 LowestLink;
+    union {
+        LDRP_CSLIST_ Dependencies;
+        SINGLE_LIST_ENTRY_ RemovalLink;
+    };
+    LDRP_CSLIST_ IncomingDependencies;
+    LDR_DDAG_STATE_ State;
+    SINGLE_LIST_ENTRY_ CondenseLink;
+    U4 PreorderNumber;
+};
+struct RTL_BALANCED_NODE_
+{
+    union {
+        RTL_BALANCED_NODE_* Children[2];
+        struct
+        {
+            RTL_BALANCED_NODE_* Left;
+            RTL_BALANCED_NODE_* Right;
+        };
+    };
+    union {
+        U1 Red : 1;
+        U1 Balance : 2;
+        UA ParentValue;
+    };
+};
+struct LDR_DATA_TABLE_ENTRY_
+{
+    LIST_ENTRY_ InLoadOrderLinks;
+    LIST_ENTRY_ InMemoryOrderLinks;
+    LIST_ENTRY_ InInitializationOrderLinks;
+    GA DllBase;
+    PLDR_INIT_ROUTINE_ EntryPoint;
+    U4 SizeOfImage;
+    UNICODE_STRING_ FullDllName;
+    UNICODE_STRING_ BaseDllName;
+    union {
+        U1 FlagGroup[4];
+        U4 Flags;
+        struct
+        {
+            U4 PackagedBinary : 1;
+            U4 MarkedForRemoval : 1;
+            U4 ImageDll : 1;
+            U4 LoadNotificationsSent : 1;
+            U4 TelemetryEntryProcessed : 1;
+            U4 ProcessStaticImport : 1;
+            U4 InLegacyLists : 1;
+            U4 InIndexes : 1;
+            U4 ShimDll : 1;
+            U4 InExceptionTable : 1;
+            U4 ReservedFlags1 : 2;
+            U4 LoadInProgress : 1;
+            U4 LoadConfigProcessed : 1;
+            U4 EntryProcessed : 1;
+            U4 ProtectDelayLoad : 1;
+            U4 ReservedFlags3 : 2;
+            U4 DontCallForThreads : 1;
+            U4 ProcessAttachCalled : 1;
+            U4 ProcessAttachFailed : 1;
+            U4 CorDeferredValidate : 1;
+            U4 CorImage : 1;
+            U4 DontRelocate : 1;
+            U4 CorILOnly : 1;
+            U4 ChpeImage : 1;
+            U4 ChpeEmulatorImage : 1;
+            U4 ReservedFlags5 : 1;
+            U4 Redirected : 1;
+            U4 ReservedFlags6 : 2;
+            U4 CompatDatabaseProcessed : 1;
+        };
+    };
+    U2 ObsoleteLoadCount;
+    U2 TlsIndex;
+    LIST_ENTRY_ HashLinks;
+    U4 TimeDateStamp;
+    ACTIVATION_CONTEXT_* EntryPointActivationContext;
+    GA Lock;
+    LDR_DDAG_NODE_* DdagNode;
+    LIST_ENTRY_ NodeModuleLink;
+    GA LoadContext;
+    GA ParentDllBase;
+    GA SwitchBackContext;
+    RTL_BALANCED_NODE_ BaseAddressIndexNode;
+    RTL_BALANCED_NODE_ MappingInfoIndexNode;
+    GA OriginalBase;
+    LARGE_INTEGER_ LoadTime;
+    U4 BaseNameHashValue;
+    LDR_DLL_LOAD_REASON_ LoadReason;
+    U4 ImplicitPathOptions;
+    U4 ReferenceCount;
+    U4 DependentLoadFlags;
+    U1 SigningLevel;
+    U4 CheckSum;
+    GA ActivePatchImageBase;
+    LDR_HOT_PATCH_STATE_ HotPatchState;
+};
+struct CURDIR_
+{
+    UNICODE_STRING_ DosPath;
+    HD Handle;
+};
+struct RTL_DRIVE_LETTER_CURDIR_
+{
+    U2 Flags;
+    U2 Length;
+    U4 TimeStamp;
+    STRING_ DosPath;
+};
+struct RTL_CRITICAL_SECTION_DEBUG_
+{
+    U2 Type;
+    U2 CreatorBackTraceIndex;
+    RTL_CRITICAL_SECTION_* CriticalSection;
+    LIST_ENTRY_ ProcessLocksList;
+    U4 EntryCount;
+    U4 ContentionCount;
+    U4 Flags;
+    U2 CreatorBackTraceIndexHigh;
+    U2 SpareU2;
+};
+struct SLIST_ENTRY_
+{
+    SLIST_ENTRY_* Next;
+};
+struct KSYSTEM_TIME_
+{
+    U4 LowPart;
+    S4 High1Time;
+    S4 High2Time;
+};
+struct SDBQUERYRESULT_
+{
+    U4 Exes[16];
+    U4 ExeFlags[16];
+    U4 Layers[8];
+    U4 LayerFlags;
+    U4 AppHelp;
+    U4 ExeCount;
+    U4 LayerCount;
+    GUID_ ID;
+    U4 ExtraFlags;
+    U4 CustomSDBMap;
+    GUID_ DB[16];
+};
+struct SWITCH_CONTEXT_
+{
+    SWITCH_CONTEXT_ATTRIBUTE_ Attribute;
+    SWITCH_CONTEXT_DATA_ Data;
+};
+struct SDB_CSTRUCT_COBALT_PROCFLAG_
+{
+    UA AffinityMask;
+    U4 CPUIDEcxOverride;
+    U4 CPUIDEdxOverride;
+    U2 ProcessorGroup;
+    U2 FastSelfModThreshold;
+    U2 Reserved1;
+    U1 Reserved2;
+    U1 BackgroundWork : 5;
+    U1 CPUIDBrand : 4;
+    U1 Reserved3 : 4;
+    U1 RdtscScaling : 3;
+    U1 Reserved4 : 2;
+    U1 UnalignedAtomicApproach : 2;
+    U1 Win11Atomics : 2;
+    U1 RunOnSingleCore : 1;
+    U1 X64CPUID : 1;
+    U1 PatchUnaligned : 1;
+    U1 InterpreterOrJitter : 1;
+    U1 ForceSegmentHeap : 1;
+    U1 Reserved5 : 1;
+    U1 Reserved6 : 1;
+    union {
+        U8 Group1AsUINT64;
+        SDB_CSTRUCT_COBALT_PROCFLAG_* Specified;
+    };
+};
+struct WER_RECOVERY_INFO_
+{
+    U4 Length;
+    GA Callback;
+    GA Parameter;
+    HD Started;
+    HD Finished;
+    HD InProgress;
+    S4 LastError;
+    S4 Successful;
+    U4 PingInterval;
+    U4 Flags;
+};
+struct WER_GATHER_
+{
+    GA Next;
+    U2 Flags;
+    union {
+        WER_FILE_ File;
+        WER_MEMORY_ Memory;
+    } v;
+};
+struct WER_METADATA_
+{
+    GA Next;
+    CH Key[64];
+    CH Value[128];
+};
+struct WER_RUNTIME_DLL_
+{
+    GA Next;
+    U4 Length;
+    GA Context;
+    CH CallbackDllPath[MAX_PATH];
+};
+struct WER_DUMP_COLLECTION_
+{
+    GA Next;
+    U4 ProcessId;
+    U4 ThreadId;
+};
+struct WER_HEAP_MAIN_HEADER_
+{
+    CH Signature[16];
+    LIST_ENTRY_ Links;
+    HD Mutex;
+    GA FreeHeap;
+    U4 FreeCount;
+};
+struct PEB_LDR_DATA_
+{
+    U4 Length;
+    U1 Initialized;
+    HD SsHandle;
+    LIST_ENTRY_ InLoadOrderModuleList;
+    LIST_ENTRY_ InMemoryOrderModuleList;
+    LIST_ENTRY_ InInitializationOrderModuleList;
+    GA EntryInProgress;
+    U1 ShutdownInProgress;
+    HD ShutdownThreadId;
+};
+struct RTL_USER_PROCESS_PARAMETERS_
+{
+    U4 MaximumLength;
+    U4 Length;
+    U4 Flags;
+    U4 DebugFlags;
+    HD ConsoleHandle;
+    U4 ConsoleFlags;
+    HD StandardInput;
+    HD StandardOutput;
+    HD StandardError;
+    CURDIR_ CurrentDirectory;
+    UNICODE_STRING_ DllPath;
+    UNICODE_STRING_ ImagePathName;
+    UNICODE_STRING_ CommandLine;
+    GA Environment;
+    U4 StartingX;
+    U4 StartingY;
+    U4 CountX;
+    U4 CountY;
+    U4 CountCharsX;
+    U4 CountCharsY;
+    U4 FillAttribute;
+    U4 WindowFlags;
+    U4 ShowWindowFlags;
+    UNICODE_STRING_ WindowTitle;
+    UNICODE_STRING_ DesktopInfo;
+    UNICODE_STRING_ ShellInfo;
+    UNICODE_STRING_ RuntimeData;
+    RTL_DRIVE_LETTER_CURDIR_ CurrentDirectories[RTL_MAX_DRIVE_LETTERS];
+    UA EnvironmentSize;
+    UA EnvironmentVersion;
+    GA PackageDependencyData;
+    U4 ProcessGroupId;
+    U4 LoaderThreads;
+    UNICODE_STRING_ RedirectionDllName;
+    UNICODE_STRING_ HeapPartitionName;
+    U8* DefaultThreadpoolCpuSetMasks;
+    U4 DefaultThreadpoolCpuSetMaskCount;
+    U4 DefaultThreadpoolThreadMaximum;
+    U4 HeapMemoryTypeMask;
+};
+struct RTL_CRITICAL_SECTION_
+{
+    RTL_CRITICAL_SECTION_DEBUG_* DebugInfo;
+    S4 LockCount;
+    S4 RecursionCount;
+    HD OwningThread;
+    HD LockSemaphore;
+    UA SpinCount;
+};
+struct SLIST_HEADER_
+{
+    union {
+        U8 Alignment;
+        struct
+        {
+            SLIST_ENTRY_ Next;
+            U2 Depth;
+            U2 Sequence;
+        };
+    };
+};
+struct API_SET_NAMESPACE_
+{
+    U4 Version;
+    U4 Size;
+    U4 Flags;
+    U4 Count;
+    U4 EntryOffset;
+    U4 HashOffset;
+    U4 HashFactor;
+};
+struct RTL_BITMAP_
+{
+    U4 SizeOfBitMap;
+    U4* Buffer;
+};
+struct SILO_USER_SHARED_DATA_
+{
+    U4 ServiceSessionId;
+    U4 ActiveConsoleId;
+    S8 ConsoleSessionForegroundProcessId;
+    NT_PRODUCT_TYPE_ NtProductType;
+    U4 SuiteMask;
+    U4 SharedUserSessionId;
+    U1 IsMultiSessionSku;
+    U1 IsStateSeparationEnabled;
+    CH NtSystemRoot[260];
+    U2 UserModeGlobalLogger[16];
+    U4 TimeZoneId;
+    S4 TimeZoneBiasStamp;
+    KSYSTEM_TIME_ TimeZoneBias;
+    LARGE_INTEGER_ TimeZoneBiasEffectiveStart;
+    LARGE_INTEGER_ TimeZoneBiasEffectiveEnd;
+};
+struct GDI_HANDLE_BUFFER_
+{
+    UA Data1[26];
+    U4 Data2[8];
+};
+struct APPCOMPAT_EXE_DATA_
+{
+    UA Reserved[65];
+    U4 Size;
+    U4 Magic;
+    S4 LoadShimEngine;
+    U2 ExeType;
+    SDBQUERYRESULT_ SdbQueryResult;
+    UA DbgLogChannels[128];
+    SWITCH_CONTEXT_ SwitchContext;
+    U4 ParentProcessId;
+    CH ParentImageName[260];
+    CH ParentCompatLayers[256];
+    CH ActiveCompatLayers[256];
+    U4 ImageFileSize;
+    U4 ImageCheckSum;
+    S4 LatestOs;
+    S4 PackageId;
+    S4 SwitchBackManifest;
+    S4 UacManifest;
+    S4 LegacyInstaller;
+    U4 RunLevel;
+    UA WinRTFlags;
+    GA HookCOM;
+    GA ComponentOnDemandEvent;
+    GA Quirks;
+    U4 QuirksSize;
+    SDB_CSTRUCT_COBALT_PROCFLAG_ CobaltProcFlags;
+    U4 FullMatchDbSizeCb;
+    U4 FullMatchDbOffset;
+};
+struct ACTIVATION_CONTEXT_DATA_
+{
+    U4 Magic;
+    U4 HeaderSize;
+    U4 FormatVersion;
+    U4 TotalSize;
+    U4 DefaultTocOffset;
+    U4 ExtendedTocOffset;
+    U4 AssemblyRosterOffset;
+    U4 Flags;
+};
+struct WER_PEB_HEADER_BLOCK_
+{
+    S4 Length;
+    CH Signature[16];
+    CH AppDataRelativePath[64];
+    CH RestartCommandLine[RESTART_MAX_CMD_LINE];
+    WER_RECOVERY_INFO_ RecoveryInfo;
+    WER_GATHER_* Gather;
+    WER_METADATA_* MetaData;
+    WER_RUNTIME_DLL_* RuntimeDll;
+    WER_DUMP_COLLECTION_* DumpCollection;
+    S4 GatherCount;
+    S4 MetaDataCount;
+    S4 DumpCount;
+    S4 Flags;
+    WER_HEAP_MAIN_HEADER_ MainHeader;
+    GA Reserved;
+};
+struct TELEMETRY_COVERAGE_HEADER_
+{
+    U1 MajorVersion;
+    U1 MinorVersion;
+    struct
+    {
+        U2 TracingEnabled : 1;
+        U2 Reserved1 : 15;
+    };
+    U4 HashTableEntries;
+    U4 HashIndexMask;
+    U4 TableUpdateVersion;
+    U4 TableSizeInBytes;
+    U4 LastResetTick;
+    U4 ResetRound;
+    U4 Reserved2;
+    U4 RecordedCount;
+    U4 Reserved3[4];
+    U4 HashTable flexarr;
+};
+struct LEAP_SECOND_DATA_
+{
+    U1 Enabled;
+    U1 Padding[3];
+    U4 Count;
+    LARGE_INTEGER_ Data flexarr;
+};
+struct PEB_
+{
+    U1 InheritedAddressSpace;
+    U1 ReadImageFileExecOptions;
+    U1 BeingDebugged;
+    union {
+        U1 BitField;
+        struct
+        {
+            U1 ImageUsesLargePages : 1;
+            U1 IsProtectedProcess : 1;
+            U1 IsImageDynamicallyRelocated : 1;
+            U1 SkipPatchingUser32Forwarders : 1;
+            U1 IsPackagedProcess : 1;
+            U1 IsAppContainer : 1;
+            U1 IsProtectedProcessLight : 1;
+            U1 IsLongPathAwareProcess : 1;
+        };
+    };
+    HD Mutant;
+    GA ImageBaseAddress;
+    PEB_LDR_DATA_* Ldr;
+    RTL_USER_PROCESS_PARAMETERS_* ProcessParameters;
+    GA SubSystemData;
+    GA ProcessHeap;
+    RTL_CRITICAL_SECTION_* FastPebLock;
+    SLIST_HEADER_* AtlThunkSListPtr;
+    GA IFEOKey;
+    union {
+        U4 CrossProcessFlags;
+        struct
+        {
+            U4 ProcessInJob : 1;
+            U4 ProcessInitializing : 1;
+            U4 ProcessUsingVEH : 1;
+            U4 ProcessUsingVCH : 1;
+            U4 ProcessUsingFTH : 1;
+            U4 ProcessPreviouslyThrottled : 1;
+            U4 ProcessCurrentlyThrottled : 1;
+            U4 ProcessImagesHotPatched : 1;
+            U4 ReservedBits0 : 24;
+        };
+    };
+    union {
+        GA KernelCallbackTable;
+        GA UserSharedInfoPtr;
+    };
+    U4 SystemReserved;
+    U4 AtlThunkSListPtr32;
+    API_SET_NAMESPACE_* ApiSetMap;
+    U4 TlsExpansionCounter;
+    RTL_BITMAP_* TlsBitmap;
+    U4 TlsBitmapBits[2];
+    GA ReadOnlySharedMemoryBase;
+    SILO_USER_SHARED_DATA_* SharedData;
+    GA* ReadOnlyStaticServerData;
+    GA AnsiCodePageData;
+    GA OemCodePageData;
+    GA UnicodeCaseTableData;
+    U4 NumberOfProcessors;
+    union {
+        U4 NtGlobalFlag;
+        struct
+        {
+            U4 StopOnException : 1;          // FLG_STOP_ON_EXCEPTION
+            U4 ShowLoaderSnaps : 1;          // FLG_SHOW_LDR_SNAPS
+            U4 DebugInitialCommand : 1;      // FLG_DEBUG_INITIAL_COMMAND
+            U4 StopOnHungGUI : 1;            // FLG_STOP_ON_HUNG_GUI
+            U4 HeapEnableTailCheck : 1;      // FLG_HEAP_ENABLE_TAIL_CHECK
+            U4 HeapEnableFreeCheck : 1;      // FLG_HEAP_ENABLE_FREE_CHECK
+            U4 HeapValidateParameters : 1;   // FLG_HEAP_VALIDATE_PARAMETERS
+            U4 HeapValidateAll : 1;          // FLG_HEAP_VALIDATE_ALL
+            U4 ApplicationVerifier : 1;      // FLG_APPLICATION_VERIFIER
+            U4 MonitorSilentProcessExit : 1; // FLG_MONITOR_SILENT_PROCESS_EXIT
+            U4 PoolEnableTagging : 1;        // FLG_POOL_ENABLE_TAGGING
+            U4 HeapEnableTagging : 1;        // FLG_HEAP_ENABLE_TAGGING
+            U4 UserStackTraceDb : 1;         // FLG_USER_STACK_TRACE_DB
+            U4 KernelStackTraceDb : 1;       // FLG_KERNEL_STACK_TRACE_DB
+            U4 MaintainObjectTypeList : 1;   // FLG_MAINTAIN_OBJECT_TYPELIST
+            U4 HeapEnableTagByDll : 1;       // FLG_HEAP_ENABLE_TAG_BY_DLL
+            U4 DisableStackExtension : 1;    // FLG_DISABLE_STACK_EXTENSION
+            U4 EnableCsrDebug : 1;           // FLG_ENABLE_CSRDEBUG
+            U4 EnableKDebugSymbolLoad : 1;   // FLG_ENABLE_KDEBUG_SYMBOL_LOAD
+            U4 DisablePageKernelStacks : 1;  // FLG_DISABLE_PAGE_KERNEL_STACKS
+            U4 EnableSystemCritBreaks : 1;   // FLG_ENABLE_SYSTEM_CRIT_BREAKS
+            U4 HeapDisableCoalescing : 1;    // FLG_HEAP_DISABLE_COALESCING
+            U4 EnableCloseExceptions : 1;    // FLG_ENABLE_CLOSE_EXCEPTIONS
+            U4 EnableExceptionLogging : 1;   // FLG_ENABLE_EXCEPTION_LOGGING
+            U4 EnableHandleTypeTagging : 1;  // FLG_ENABLE_HANDLE_TYPE_TAGGING
+            U4 HeapPageAllocs : 1;           // FLG_HEAP_PAGE_ALLOCS
+            U4 DebugInitialCommandEx : 1;    // FLG_DEBUG_INITIAL_COMMAND_EX
+            U4 DisableDbgPrint : 1;          // FLG_DISABLE_DBGPRINT
+            U4 CritSecEventCreation : 1;     // FLG_CRITSEC_EVENT_CREATION
+            U4 LdrTopDown : 1;               // FLG_LDR_TOP_DOWN
+            U4 EnableHandleExceptions : 1;   // FLG_ENABLE_HANDLE_EXCEPTIONS
+            U4 DisableProtDlls : 1;          // FLG_DISABLE_PROTDLLS
+        } NtGlobalFlags;
+    };
+    LARGE_INTEGER_ CriticalSectionTimeout;
+    SI HeapSegmentReserve;
+    SI HeapSegmentCommit;
+    SI HeapDeCommitTotalFreeThreshold;
+    SI HeapDeCommitFreeBlockThreshold;
+    U4 NumberOfHeaps;
+    U4 MaximumNumberOfHeaps;
+    GA* ProcessHeaps;
+    GA GdiSharedHandleTable;
+    GA ProcessStarterHelper;
+    U4 GdiDCAttributeList;
+    RTL_CRITICAL_SECTION_* LoaderLock;
+    U4 OSMajorVersion;
+    U4 OSMinorVersion;
+    U2 OSBuildNumber;
+    U2 OSCSDVersion;
+    U4 OSPlatformId;
+    U4 ImageSubsystem;
+    U4 ImageSubsystemMajorVersion;
+    U4 ImageSubsystemMinorVersion;
+    UA ActiveProcessAffinityMask;
+    GDI_HANDLE_BUFFER_ GdiHandleBuffer;
+    PPS_POST_PROCESS_INIT_ROUTINE_ PostProcessInitRoutine;
+    RTL_BITMAP_* TlsExpansionBitmap;
+    U4 TlsExpansionBitmapBits[32];
+    U4 SessionId;
+    ULARGE_INTEGER_ AppCompatFlags;
+    ULARGE_INTEGER_ AppCompatFlagsUser;
+    GA pShimData;
+    APPCOMPAT_EXE_DATA_* AppCompatInfo;
+    UNICODE_STRING_ CSDVersion;
+    ACTIVATION_CONTEXT_DATA_* ActivationContextData;
+    ASSEMBLY_STORAGE_MAP_* ProcessAssemblyStorageMap;
+    ACTIVATION_CONTEXT_DATA_* SystemDefaultActivationContextData;
+    ASSEMBLY_STORAGE_MAP_* SystemAssemblyStorageMap;
+    SI MinimumStackCommit;
+    GA SparePointers[2];
+    GA PatchLoaderData;
+    GA ChpeV2ProcessInfo;
+    U4 AppModelFeatureState;
+    U4 SpareUlongs[2];
+    U2 ActiveCodePage;
+    U2 OemCodePage;
+    U2 UseCaseMapping;
+    U2 UnusedNlsField;
+    WER_PEB_HEADER_BLOCK_* WerRegistrationData;
+    GA WerShipAssertPtr;
+    union {
+        GA pContextData;
+        GA EcCodeBitMap;
+    };
+    GA pImageHeaderHash;
+    union {
+        U4 TracingFlags;
+        struct
+        {
+            U4 HeapTracingEnabled : 1;
+            U4 CritSecTracingEnabled : 1;
+            U4 LibLoaderTracingEnabled : 1;
+            U4 SpareTracingBits : 29;
+        };
+    };
+    U8 CsrServerReadOnlySharedMemoryBase;
+    RTL_CRITICAL_SECTION_* TppWorkerpListLock;
+    LIST_ENTRY_ TppWorkerpList;
+    GA WaitOnAddressHashTable[128];
+    TELEMETRY_COVERAGE_HEADER_* TelemetryCoverageHeader;
+    U4 CloudFileFlags;
+    U4 CloudFileDiagFlags;
+    S1 PlaceholderCompatibilityMode;
+    S1 PlaceholderCompatibilityModeReserved[7];
+    LEAP_SECOND_DATA_* LeapSecondData;
+    union {
+        U4 LeapSecondFlags;
+        struct
+        {
+            U4 SixtySecondEnabled : 1;
+            U4 Reserved : 31;
+        };
+    };
+    U4 NtGlobalFlag2;
+    U8 ExtendedFeatureDisableMask;
+};
+struct PROCESS_BASIC_INFORMATION_
+{
+    NTSTATUS ExitStatus;
+    PEB_* PebBaseAddress;
+    UA AffinityMask;
+    S4 BasePriority;
+    HD UniqueProcessId;
+    HD InheritedFromUniqueProcessId;
+};
+
+using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
+using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
+using NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
+using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, SI NumberOfBytesToRead, SI* NumberOfBytesRead);
+using NtClose_T = NTSTATUS(NTAPI*)(HD Handle);

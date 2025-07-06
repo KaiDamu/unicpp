@@ -76,6 +76,10 @@
 #include "debug.h"
 #include "type.h"
 
+#ifdef PROG_SYS_WIN
+    #include "import/winapi/unint.h"
+#endif
+
 #include "pre/process.h"
 #include "pre/console.h"
 
