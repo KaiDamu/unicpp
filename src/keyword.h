@@ -7,6 +7,7 @@
 #define inl inline
 #define tpl template
 #define noex noexcept
+#define flexarr []
 #define tpl0 tpl<>
 #define tpl1 tpl<typename T1>
 #define tpl2 tpl<typename T1, typename T2>

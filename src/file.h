@@ -956,6 +956,16 @@ class FileMem
             rete(ErrVal::NO_FULL);
         rets;
     }
+    dfa ER WriteCsstr(cx CS* str)
+    {
+        cx SI size = StrLen(str);
+        SI result;
+        ife (tx->Write(str, size, result))
+            retep;
+        ifu (size != result)
+            rete(ErrVal::NO_FULL);
+        rets;
+    }
     tpl1 dfa ER WriteVal(T1 val)
     {
         ret tx->Write((CXGA)&val, siz(T1));

@@ -114,8 +114,134 @@ tpl1 class Vec2
     }
 };
 
+tpl1 class Vec3
+{
+  public:
+    union {
+        struct
+        {
+            T1 a;
+            T1 b;
+            T1 c;
+        };
+        struct
+        {
+            T1 x;
+            T1 y;
+            T1 z;
+        };
+        struct
+        {
+            T1 w;
+            T1 h;
+            T1 d;
+        };
+    };
+
+    dfa cxex Vec3() noex : a(), b(), c()
+    {
+    }
+    dfa cxex Vec3(T1 a, T1 b, T1 c) noex : a(a), b(b), c(c)
+    {
+    }
+    dfa cxex Vec3(cx Vec3& other) noex : a(other.a), b(other.b), c(other.c)
+    {
+    }
+    dfa cxex Vec3(Vec3&& other) noex : a(std::move(other.a)), b(std::move(other.b)), c(std::move(other.c))
+    {
+    }
+    dfa ~Vec3() = default;
+
+    dfa Vec3& operator=(cx Vec3& other)
+    {
+        a = other.a;
+        b = other.b;
+        c = other.c;
+        ret *tx;
+    }
+    dfa Vec3& operator=(Vec3&& other) noex
+    {
+        a = std::move(other.a);
+        b = std::move(other.b);
+        c = std::move(other.c);
+        ret *tx;
+    }
+    dfa cxex BO operator==(cx Vec3& other) cx
+    {
+        ret a == other.a && b == other.b && c == other.c;
+    }
+    dfa cxex BO operator!=(cx Vec3& other) cx
+    {
+        ret a != other.a || b != other.b || c != other.c;
+    }
+    dfa cxex Vec3 operator+(cx Vec3& other) cx
+    {
+        ret Vec3(a + other.a, b + other.b, c + other.c);
+    }
+    dfa cxex Vec3 operator-(cx Vec3& other) cx
+    {
+        ret Vec3(a - other.a, b - other.b, c - other.c);
+    }
+    dfa cxex Vec3 operator*(T1 scalar) cx
+    {
+        ret Vec3(a * scalar, b * scalar, c * scalar);
+    }
+    dfa cxex Vec3 operator/(T1 scalar) cx
+    {
+        ret Vec3(a / scalar, b / scalar, c / scalar);
+    }
+    dfa cxex Vec3 operator*(cx Vec3& other) cx
+    {
+        ret Vec3(a * other.a, b * other.b, c * other.c);
+    }
+    dfa cxex Vec3 operator/(cx Vec3& other) cx
+    {
+        ret Vec3(a / other.a, b / other.b, c / other.c);
+    }
+    dfa cxex Vec3 operator-() cx
+    {
+        ret Vec3(-a, -b, -c);
+    }
+    dfa Vec3& operator+=(cx Vec3& other)
+    {
+        a += other.a;
+        b += other.b;
+        c += other.c;
+        ret *tx;
+    }
+    dfa Vec3& operator-=(cx Vec3& other)
+    {
+        a -= other.a;
+        b -= other.b;
+        c -= other.c;
+        ret *tx;
+    }
+    dfa Vec3& operator*=(T1 scalar)
+    {
+        a *= scalar;
+        b *= scalar;
+        c *= scalar;
+        ret *tx;
+    }
+    dfa Vec3& operator/=(T1 scalar)
+    {
+        a /= scalar;
+        b /= scalar;
+        c /= scalar;
+        ret *tx;
+    }
+
+    dfa T1 Vol() cx
+    {
+        ret w * h * d;
+    }
+};
+
 tpl1 using Pos2 = Vec2<T1>;
 tpl1 using Size2 = Vec2<T1>;
+
+tpl1 using Pos3 = Vec3<T1>;
+tpl1 using Size3 = Vec3<T1>;
 
 tpl1 dfa T1 Dist0(cx Pos2<T1>& p)
 {
