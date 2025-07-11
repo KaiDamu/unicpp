@@ -75,6 +75,7 @@
 #include "keyword.h"
 #include "debug.h"
 #include "type.h"
+#include "value.h"
 
 #ifdef PROG_SYS_WIN
     #include "import/winapi/unint.h"
@@ -83,7 +84,6 @@
 #include "pre/process.h"
 #include "pre/console.h"
 
-#include "value.h"
 #include "typeex.h"
 #include "error.h"
 #include "math.h"
@@ -143,3 +143,7 @@
 #include "dumb.h"
 
 #include "main.h"
+
+#ifdef PROG_SYS_WIN
+    #include "import/winapi/unintimpl.h"
+#endif

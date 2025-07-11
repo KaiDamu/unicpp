@@ -245,5 +245,8 @@
     <ClInclude Include="src\import\winapi\unint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\import\winapi\unintimpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

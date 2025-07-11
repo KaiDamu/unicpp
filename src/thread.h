@@ -53,6 +53,17 @@ class ThdTask
 
 #ifdef PROG_SYS_WIN
 
+dfa TEB_* ThdTeb()
+{
+    #ifdef PROG_ADR_SIZE_4
+    ret(TEB_*)__readfsdword(0x18);
+    #endif
+    #ifdef PROG_ADR_SIZE_8
+    ret(TEB_*)__readgsqword(0x30);
+    #endif
+    ret NUL;
+}
+
 dfa NT ThdWait(TmMain ms)
 {
     ifu (ms <= TmMain(0))

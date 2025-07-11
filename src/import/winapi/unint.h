@@ -1,6 +1,9 @@
 #pragma once
 
 cxex SI RTL_MAX_DRIVE_LETTERS = 32;
+cxex SI GDI_BATCH_BUFFER_SIZE = 310;
+cxex SI WIN32_CLIENT_INFO_LENGTH = 62;
+cxex SI STATIC_UNICODE_BUFFER_LENGTH = 261;
 
 enum class SYSTEM_INFORMATION_CLASS_
 {
@@ -439,16 +442,50 @@ enum class LDR_DDAG_STATE_
     LdrModulesInitializing = 8,
     LdrModulesReadyToRun = 9
 };
+enum class EXCEPTION_DISPOSITION_
+{
+    ExceptionContinueExecution_ = 0, // with _ postfix to avoid conflict
+    ExceptionContinueSearch_ = 1,    // with _ postfix to avoid conflict
+    ExceptionNestedException_ = 2,   // with _ postfix to avoid conflict
+    ExceptionCollidedUnwind_ = 3,    // with _ postfix to avoid conflict
+};
 
 struct RTL_CRITICAL_SECTION_;
+struct EXCEPTION_RECORD_;
 struct ACTIVATION_CONTEXT_;
 struct ACTIVATION_CONTEXT_DATA_;
 
 using PPS_POST_PROCESS_INIT_ROUTINE_ = NT(NTAPI*)(NT);
 using PLDR_INIT_ROUTINE_ = U1(NTAPI*)(GA DllHandle, U4 Reason, GA Context);
+using PEXCEPTION_ROUTINE_ = EXCEPTION_DISPOSITION_(NTAPI*)(EXCEPTION_RECORD_* ExceptionRecord, GA EstablisherFrame, GA ContextRecord, GA DispatcherContext);
 using PACTIVATION_CONTEXT_NOTIFY_ROUTINE_ = NT(NTAPI*)(U4 NotificationType, ACTIVATION_CONTEXT_* ActivationContext, ACTIVATION_CONTEXT_DATA_* ActivationContextData, GA NotificationContext,
                                                        GA NotificationData, U1* DisableThisNotification);
 
+struct EXCEPTION_RECORD_
+{
+    U4 ExceptionCode;
+    U4 ExceptionFlags;
+    EXCEPTION_RECORD_* ExceptionRecord;
+    GA ExceptionAddress;
+    U4 NumberParameters;
+    UA ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
+};
+struct EXCEPTION_REGISTRATION_RECORD_
+{
+    EXCEPTION_REGISTRATION_RECORD_* Next;
+    PEXCEPTION_ROUTINE_ Handler;
+};
+struct RTL_ACTIVATION_CONTEXT_STACK_FRAME_
+{
+    RTL_ACTIVATION_CONTEXT_STACK_FRAME_* Previous;
+    ACTIVATION_CONTEXT_* ActivationContext;
+    U4 Flags;
+};
+struct TEB_ACTIVE_FRAME_CONTEXT_
+{
+    U4 Flags;
+    cx CS* FrameName;
+};
 struct LARGE_INTEGER_
 {
     union {
@@ -495,6 +532,9 @@ struct UNICODE_STRING_
     U2 Length;
     U2 MaximumLength;
     CH* Buffer;
+
+    dfa UNICODE_STRING_();
+    dfa UNICODE_STRING_(cx CH* Buffer);
 };
 struct SECURITY_DESCRIPTOR_
 {
@@ -1043,6 +1083,69 @@ struct LEAP_SECOND_DATA_
     U4 Count;
     LARGE_INTEGER_ Data flexarr;
 };
+struct NT_TIB_
+{
+    EXCEPTION_REGISTRATION_RECORD_* ExceptionList;
+    GA StackBase;
+    GA StackLimit;
+    GA SubSystemTib;
+    union {
+        GA FiberData;
+        U4 Version;
+    };
+    GA ArbitraryUserPointer;
+    NT_TIB_* Self;
+};
+struct ACTIVATION_CONTEXT_STACK_
+{
+    RTL_ACTIVATION_CONTEXT_STACK_FRAME_* ActiveFrame;
+    LIST_ENTRY_ FrameListCache;
+    U4 Flags;
+    U4 NextCookieSequenceNumber;
+    U4 StackId;
+};
+struct GDI_TEB_BATCH_
+{
+    U4 Offset;
+    UA HDC;
+    U4 Buffer[GDI_BATCH_BUFFER_SIZE];
+};
+struct PROCESSOR_NUMBER_
+{
+    U2 Group;
+    U1 Number;
+    U1 Reserved;
+};
+struct SOleTlsData_
+{
+    GA ThreadBase;
+    GA SmAllocator;
+    U4 ApartmentID;
+    U4 Flags;
+    S4 TlsMapIndex;
+    GA* TlsSlot;
+    U4 ComInits;
+    U4 OleInits;
+    U4 Calls;
+    GA ServerCall;
+    GA CallObjectCache;
+    GA ContextStack;
+    GA ObjServer;
+    U4 TIDCaller;
+    U1 VersionDependant flexarr;
+};
+struct TEB_ACTIVE_FRAME_
+{
+    U4 Flags;
+    TEB_ACTIVE_FRAME_* Previous;
+    TEB_ACTIVE_FRAME_CONTEXT_* Context;
+};
+struct GROUP_AFFINITY_
+{
+    UA Mask;
+    U2 Group;
+    U2 Reserved[3];
+};
 struct PEB_
 {
     U1 InheritedAddressSpace;
@@ -1224,6 +1327,167 @@ struct PEB_
     U4 NtGlobalFlag2;
     U8 ExtendedFeatureDisableMask;
 };
+struct TEB_
+{
+    NT_TIB_ NtTib;
+    GA EnvironmentPointer;
+    CLIENT_ID_ ClientId;
+    GA ActiveRpcHandle;
+    GA ThreadLocalStoragePointer;
+    PEB_* ProcessEnvironmentBlock;
+    U4 LastErrorValue;
+    U4 CountOfOwnedCriticalSections;
+    GA CsrClientThread;
+    GA Win32ThreadInfo;
+    U4 User32Reserved[26];
+    U4 UserReserved[5];
+    GA WOW32Reserved;
+    U4 CurrentLocale;
+    U4 FpSoftwareStatusRegister;
+    GA ReservedForDebuggerInstrumentation[16];
+#ifdef PROG_ADR_SIZE_8
+    GA SystemReserved1[25];
+    GA HeapFlsData;
+    UA RngState[4];
+#else
+    GA SystemReserved1[26];
+#endif
+    S1 PlaceholderCompatibilityMode;
+    U1 PlaceholderHydrationAlwaysExplicit;
+    S1 PlaceholderReserved[10];
+    U4 ProxiedProcessId;
+    ACTIVATION_CONTEXT_STACK_ ActivationStack;
+    U1 WorkingOnBehalfTicket[8];
+    NTSTATUS ExceptionCode;
+    ACTIVATION_CONTEXT_STACK_* ActivationContextStackPointer;
+    UA InstrumentationCallbackSp;
+    UA InstrumentationCallbackPreviousPc;
+    UA InstrumentationCallbackPreviousSp;
+#ifdef PROG_ADR_SIZE_8
+    U4 TxFsContext;
+#endif
+    U1 InstrumentationCallbackDisabled;
+#ifdef PROG_ADR_SIZE_8
+    U1 UnalignedLoadStoreExceptions;
+#endif
+#ifdef PROG_ADR_SIZE_4
+    U1 SpareBytes[23];
+    U4 TxFsContext;
+#endif
+    GDI_TEB_BATCH_ GdiTebBatch;
+    CLIENT_ID_ RealClientId;
+    HD GdiCachedProcessHandle;
+    U4 GdiClientPID;
+    U4 GdiClientTID;
+    GA GdiThreadLocalInfo;
+    UA Win32ClientInfo[WIN32_CLIENT_INFO_LENGTH];
+    GA glDispatchTable[233];
+    UA glReserved1[29];
+    GA glReserved2;
+    GA glSectionInfo;
+    GA glSection;
+    GA glTable;
+    GA glCurrentRC;
+    GA glContext;
+    NTSTATUS LastStatusValue;
+    UNICODE_STRING_ StaticUnicodeString;
+    CH StaticUnicodeBuffer[STATIC_UNICODE_BUFFER_LENGTH];
+    GA DeallocationStack;
+    GA TlsSlots[TLS_MINIMUM_AVAILABLE];
+    LIST_ENTRY_ TlsLinks;
+    GA Vdm;
+    GA ReservedForNtRpc;
+    GA DbgSsReserved[2];
+    U4 HardErrorMode;
+#ifdef PROG_ADR_SIZE_8
+    GA Instrumentation[11];
+#else
+    GA Instrumentation[9];
+#endif
+    GUID_ ActivityId;
+    GA SubProcessTag;
+    GA PerflibData;
+    GA EtwTraceData;
+    HD WinSockData;
+    U4 GdiBatchCount;
+    union {
+        PROCESSOR_NUMBER_ CurrentIdealProcessor;
+        U4 IdealProcessorValue;
+        struct
+        {
+            U1 ReservedPad0;
+            U1 ReservedPad1;
+            U1 ReservedPad2;
+            U1 IdealProcessor;
+        };
+    };
+    U4 GuaranteedStackBytes;
+    GA ReservedForPerf;
+    SOleTlsData_* ReservedForOle;
+    U4 WaitingOnLoaderLock;
+    GA SavedPriorityState;
+    UA ReservedForCodeCoverage;
+    GA ThreadPoolData;
+    GA* TlsExpansionSlots;
+#ifdef PROG_ADR_SIZE_8
+    GA ChpeV2CpuAreaInfo;
+    GA Unused;
+#endif
+    U4 MuiGeneration;
+    U4 IsImpersonating;
+    GA NlsCache;
+    GA pShimData;
+    U4 HeapData;
+    HD CurrentTransactionHandle;
+    TEB_ACTIVE_FRAME_* ActiveFrame;
+    GA FlsData;
+    GA PreferredLanguages;
+    GA UserPrefLanguages;
+    GA MergedPrefLanguages;
+    U4 MuiImpersonation;
+    union {
+        U2 CrossTebFlags;
+        U2 SpareCrossTebBits : 16;
+    };
+    union {
+        U2 SameTebFlags;
+        struct
+        {
+            U2 SafeThunkCall : 1;
+            U2 InDebugPrint : 1;
+            U2 HasFiberData : 1;
+            U2 SkipThreadAttach : 1;
+            U2 WerInShipAssertCode : 1;
+            U2 RanProcessInit : 1;
+            U2 ClonedThread : 1;
+            U2 SuppressDebugMsg : 1;
+            U2 DisableUserStackWalk : 1;
+            U2 RtlExceptionAttached : 1;
+            U2 InitialThread : 1;
+            U2 SessionAware : 1;
+            U2 LoadOwner : 1;
+            U2 LoaderWorker : 1;
+            U2 SkipLoaderInit : 1;
+            U2 SkipFileAPIBrokering : 1;
+        };
+    };
+    GA TxnScopeEnterCallback;
+    GA TxnScopeExitCallback;
+    GA TxnScopeContext;
+    U4 LockCount;
+    S4 WowTebOffset;
+    GA ResourceRetValue;
+    GA ReservedForWdf;
+    U8 ReservedForCrt;
+    GUID_ EffectiveContainerId;
+    U8 LastSleepCounter;
+    U4 SpinCallCount;
+    U8 ExtendedFeatureDisableMask;
+    GA SchedulerSharedDataSlot;
+    GA HeapWalkContext;
+    GROUP_AFFINITY_ PrimaryGroupAffinity;
+    U4 Rcu[2];
+};
 struct PROCESS_BASIC_INFORMATION_
 {
     NTSTATUS ExitStatus;
@@ -1233,9 +1497,115 @@ struct PROCESS_BASIC_INFORMATION_
     HD UniqueProcessId;
     HD InheritedFromUniqueProcessId;
 };
+struct IMAGE_DATA_DIRECTORY_
+{
+    U4 VirtualAddress;
+    U4 Size;
+};
+struct IMAGE_DOS_HEADER_
+{
+    U2 e_magic;
+    U2 e_cblp;
+    U2 e_cp;
+    U2 e_crlc;
+    U2 e_cparhdr;
+    U2 e_minalloc;
+    U2 e_maxalloc;
+    U2 e_ss;
+    U2 e_sp;
+    U2 e_csum;
+    U2 e_ip;
+    U2 e_cs;
+    U2 e_lfarlc;
+    U2 e_ovno;
+    U2 e_res[4];
+    U2 e_oemid;
+    U2 e_oeminfo;
+    U2 e_res2[10];
+    S4 e_lfanew;
+};
+struct IMAGE_FILE_HEADER_
+{
+    U2 Machine;
+    U2 NumberOfSections;
+    U4 TimeDateStamp;
+    U4 PointerToSymbolTable;
+    U4 NumberOfSymbols;
+    U2 SizeOfOptionalHeader;
+    U2 Characteristics;
+};
+struct IMAGE_OPTIONAL_HEADER_
+{
+    U2 Magic;
+    U1 MajorLinkerVersion;
+    U1 MinorLinkerVersion;
+    U4 SizeOfCode;
+    U4 SizeOfInitializedData;
+    U4 SizeOfUninitializedData;
+    U4 AddressOfEntryPoint;
+    U4 BaseOfCode;
+#ifdef PROG_ADR_SIZE_4
+    U4 BaseOfData;
+    U4 ImageBase;
+#endif
+#ifdef PROG_ADR_SIZE_8
+    U8 ImageBase;
+#endif
+    U4 SectionAlignment;
+    U4 FileAlignment;
+    U2 MajorOperatingSystemVersion;
+    U2 MinorOperatingSystemVersion;
+    U2 MajorImageVersion;
+    U2 MinorImageVersion;
+    U2 MajorSubsystemVersion;
+    U2 MinorSubsystemVersion;
+    U4 Win32VersionValue;
+    U4 SizeOfImage;
+    U4 SizeOfHeaders;
+    U4 CheckSum;
+    U2 Subsystem;
+    U2 DllCharacteristics;
+    UA SizeOfStackReserve;
+    UA SizeOfStackCommit;
+    UA SizeOfHeapReserve;
+    UA SizeOfHeapCommit;
+    U4 LoaderFlags;
+    U4 NumberOfRvaAndSizes;
+    IMAGE_DATA_DIRECTORY_ DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+};
+struct IMAGE_NT_HEADERS_
+{
+    U4 Signature;
+    IMAGE_FILE_HEADER_ FileHeader;
+    IMAGE_OPTIONAL_HEADER_ OptionalHeader;
+};
+struct IMAGE_EXPORT_DIRECTORY_
+{
+    U4 Characteristics;
+    U4 TimeDateStamp;
+    U2 MajorVersion;
+    U2 MinorVersion;
+    U4 Name;
+    U4 Base;
+    U4 NumberOfFunctions;
+    U4 NumberOfNames;
+    U4 AddressOfFunctions;
+    U4 AddressOfNames;
+    U4 AddressOfNameOrdinals;
+};
 
+using LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);
+using LdrUnloadDll_T = NTSTATUS(NTAPI*)(GA DllHandle);
 using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
 using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
 using NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
 using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, SI NumberOfBytesToRead, SI* NumberOfBytesRead);
 using NtClose_T = NTSTATUS(NTAPI*)(HD Handle);
+
+LdrLoadDll_T LdrLoadDll_ = NUL;
+LdrUnloadDll_T LdrUnloadDll_ = NUL;
+NtQuerySystemInformation_T NtQuerySystemInformation_ = NUL;
+NtQueryInformationProcess_T NtQueryInformationProcess_ = NUL;
+NtOpenProcess_T NtOpenProcess_ = NUL;
+NtReadVirtualMemory_T NtReadVirtualMemory_ = NUL;
+NtClose_T NtClose_ = NUL;
