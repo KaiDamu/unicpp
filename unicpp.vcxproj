@@ -31,6 +31,7 @@
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\console.h" />
     <ClInclude Include="src\container.h" />
+    <ClInclude Include="src\hash.h" />
     <ClInclude Include="src\hunic.h" />
     <ClInclude Include="src\import\winapi\unint.h" />
     <ClInclude Include="src\import\winapi\unintimpl.h" />

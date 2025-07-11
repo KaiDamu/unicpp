@@ -104,6 +104,7 @@
 #include "stack.h"
 #include "list.h"
 #include "queue.h"
+#include "hash.h"
 #include "event.h"
 #include "thread.h"
 #include "file.h"
