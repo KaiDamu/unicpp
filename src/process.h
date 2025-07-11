@@ -22,6 +22,153 @@ dfa NT ProcExit()
 
 #ifdef PROG_SYS_WIN
 
+dfa LDR_DATA_TABLE_ENTRY_* _ProcDllEntryGet(cx CH* dllName)
+{
+    cx AU teb = ThdTeb();
+    ifu (teb == NUL)
+        ret NUL;
+    cx AU mdlNameSize = StrLen(dllName) * siz(dllName[0]);
+    cx AU list = &teb->ProcessEnvironmentBlock->Ldr->InLoadOrderModuleList;
+    for (AU cur = list->Flink->Flink; cur != list; cur = cur->Flink)
+    {
+        cx AU entry = (LDR_DATA_TABLE_ENTRY_*)cur;
+        cx AU name = &entry->BaseDllName;
+        if (name->Length != mdlNameSize)
+            continue;
+        cxex SI EXT_DLL_LEN = 4; // ".dll"
+        cx AU cmpCnt = name->Length / siz(name->Buffer[0]) - EXT_DLL_LEN;
+        ite (i, i < cmpCnt)
+            if (!IsSameCi(name->Buffer[i], dllName[i]))
+                jsrc(continue_2);
+        ret entry;
+        jdst(continue_2);
+    }
+    ret NUL;
+}
+dfa LDR_DATA_TABLE_ENTRY_* _ProcDllEntryGet(HD dll)
+{
+    cx AU teb = ThdTeb();
+    ifu (teb == NUL)
+        ret NUL;
+    cx AU list = &teb->ProcessEnvironmentBlock->Ldr->InLoadOrderModuleList;
+    for (AU cur = list->Flink->Flink; cur != list; cur = cur->Flink)
+    {
+        cx AU entry = (LDR_DATA_TABLE_ENTRY_*)cur;
+        if (entry->DllBase == (GA)dll)
+            ret entry;
+    }
+    ret NUL;
+}
+dfa ER _ProcDllUnload(HD dll, BO doForce)
+{
+    SI retryCnt = 0;
+    jdst(didNotUnload);
+    ifu (LdrUnloadDll_((GA)dll) != STATUS_SUCCESS)
+        rete(ErrVal::PROC);
+    if (doForce && (_ProcDllEntryGet(dll) != NUL))
+    {
+        ifu (retryCnt == 0xFFFFF)
+            rete(ErrVal::HIGH_WAIT);
+        ++retryCnt;
+        jsrc(didNotUnload);
+    }
+    rets;
+}
+
+dfa HD ProcDllLoad(cx CH* dllName)
+{
+    cx UNICODE_STRING_ str(dllName);
+    GA result;
+    ifu (LdrLoadDll_(NUL, NUL, &str, &result) != STATUS_SUCCESS)
+        ret NUL;
+    ret(HD)result;
+}
+dfa HD ProcDllAdrGet(cx CH* dllName, BO doLoad = YES)
+{
+    cx AU entry = _ProcDllEntryGet(dllName);
+    ifl (entry != NUL)
+        ret entry->DllBase;
+    if (!doLoad)
+        ret NUL;
+    ret ProcDllLoad(dllName);
+}
+dfa ER ProcDllUnload(cx CH* dllName, BO doForce = NO)
+{
+    cx AU entry = _ProcDllEntryGet(dllName);
+    if (entry == NUL)
+        rets;
+    ret _ProcDllUnload((HD)entry->DllBase, doForce);
+}
+dfa ER ProcDllUnload(HD dll, BO doForce = NO)
+{
+    ret _ProcDllUnload(dll, doForce);
+}
+dfa GAFN ProcFnAdrGet(HD mdl, cx CS* fnName)
+{
+    cx AU baseAdr = (U1*)mdl;
+    cx AU dosHdr = (IMAGE_DOS_HEADER_*)baseAdr;
+    ifu (dosHdr == NUL)
+        ret NUL;
+    cx AU ntHdr = (IMAGE_NT_HEADERS_*)(baseAdr + dosHdr->e_lfanew);
+    cx AU& exportDirInfo = ntHdr->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+    cx AU exportDir = (IMAGE_EXPORT_DIRECTORY_*)(baseAdr + exportDirInfo.VirtualAddress);
+    cx AU fnList = (U4*)(baseAdr + exportDir->AddressOfFunctions);
+    cx AU nameList = (U4*)(baseAdr + exportDir->AddressOfNames);
+    cx AU ordinalList = (U2*)(baseAdr + exportDir->AddressOfNameOrdinals);
+    ite (i, i < SI(exportDir->NumberOfNames))
+    {
+        cx AU name = (CS*)(baseAdr + nameList[i]);
+        if (StrCmp(name, fnName) == 0)
+            ret AsType<GAFN>(baseAdr + fnList[ordinalList[i]]);
+    }
+    ret NUL;
+}
+
+class MdlFnCache
+{
+  private:
+    std::unordered_map<FNV1A64, GAFN> m_fnCache;
+
+  public:
+    dfa ER CacheDll(cx CH* dllName)
+    {
+        cx AU dll = ProcDllAdrGet(dllName, YES);
+        ifu (dll == NUL)
+            rete(ErrVal::PROC);
+        CS dllNameBase[PATH_LENX_MAX];
+        ChstrToCsstr(dllNameBase, dllName);
+        cx AU dllNameBaseLen = StrToLowcase(dllNameBase) + 1;
+        dllNameBase[dllNameBaseLen - 1] = '!'; // format: "name.dll!fnName"
+        cx AU hashBase = HashFnv1a64(dllNameBase, dllNameBaseLen * siz(CS));
+        cx AU baseAdr = (U1*)dll;
+        cx AU dosHdr = (IMAGE_DOS_HEADER_*)baseAdr;
+        cx AU ntHdr = (IMAGE_NT_HEADERS_*)(baseAdr + dosHdr->e_lfanew);
+        cx AU& exportDirInfo = ntHdr->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+        cx AU exportDir = (IMAGE_EXPORT_DIRECTORY_*)(baseAdr + exportDirInfo.VirtualAddress);
+        cx AU fnList = (U4*)(baseAdr + exportDir->AddressOfFunctions);
+        cx AU nameList = (U4*)(baseAdr + exportDir->AddressOfNames);
+        cx AU ordinalList = (U2*)(baseAdr + exportDir->AddressOfNameOrdinals);
+        ite (i, i < SI(exportDir->NumberOfNames))
+        {
+            cx AU name = (CS*)(baseAdr + nameList[i]);
+            cx AU hash = HashFnv1a64Str(name, hashBase);
+            cx AU fnAdr = AsType<GAFN>(baseAdr + fnList[ordinalList[i]]);
+            m_fnCache[hash] = fnAdr;
+        }
+        rets;
+    }
+    dfa GAFN FnAdrGet(MdlFnHash hash)
+    {
+        cx AU it = m_fnCache.find(FNV1A64(hash));
+        ifu (it == m_fnCache.end())
+            ret NUL;
+        ret it->second;
+    }
+    dfa MdlFnCache()
+    {
+    }
+};
+
 dfa HANDLE _ProcHdlGetNt()
 {
     ret reinterpret_cast<HANDLE>(-1);

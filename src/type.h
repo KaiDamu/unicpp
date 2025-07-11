@@ -18,6 +18,7 @@ using ER = bool;
 
 using GA = void*;
 using CXGA = cx void*;
+using GAFN = GA (*)();
 
 using NT = void;
 
