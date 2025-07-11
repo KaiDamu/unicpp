@@ -18,8 +18,12 @@ dfa ER MainInit(MainInitCtx& ctx)
     g_argCnt = ctx.argc;
     g_argValStd = ctx.argv;
 #endif
+#ifdef PROG_SYS_WIN
+    ife (UniNtLoad())
+        retep;
+#endif
     ife (_TimeMainInit())
-        rete(ErrVal::TIME);
+        retep;
     rets;
 }
 dfa ER MainFree()

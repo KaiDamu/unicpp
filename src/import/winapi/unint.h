@@ -1609,3 +1609,5 @@ NtQueryInformationProcess_T NtQueryInformationProcess_ = NUL;
 NtOpenProcess_T NtOpenProcess_ = NUL;
 NtReadVirtualMemory_T NtReadVirtualMemory_ = NUL;
 NtClose_T NtClose_ = NUL;
+
+dfa ER UniNtLoad();
