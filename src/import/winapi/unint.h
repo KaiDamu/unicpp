@@ -449,12 +449,95 @@ enum class EXCEPTION_DISPOSITION_
     ExceptionNestedException_ = 2,   // with _ postfix to avoid conflict
     ExceptionCollidedUnwind_ = 3,    // with _ postfix to avoid conflict
 };
+enum class TOKEN_INFORMATION_CLASS_
+{
+    TokenUser = 1,                        // q: TOKEN_USER, SE_TOKEN_USER
+    TokenGroups,                          // q: TOKEN_GROUPS
+    TokenPrivileges,                      // q: TOKEN_PRIVILEGES
+    TokenOwner,                           // q; s: TOKEN_OWNER
+    TokenPrimaryGroup,                    // q; s: TOKEN_PRIMARY_GROUP
+    TokenDefaultDacl,                     // q; s: TOKEN_DEFAULT_DACL
+    TokenSource,                          // q: TOKEN_SOURCE
+    TokenType,                            // q: TOKEN_TYPE
+    TokenImpersonationLevel,              // q: SECURITY_IMPERSONATION_LEVEL
+    TokenStatistics,                      // q: TOKEN_STATISTICS // 10
+    TokenRestrictedSids,                  // q: TOKEN_GROUPS
+    TokenSessionId,                       // q; s: ULONG (requires SeTcbPrivilege)
+    TokenGroupsAndPrivileges,             // q: TOKEN_GROUPS_AND_PRIVILEGES
+    TokenSessionReference,                // s: ULONG (requires SeTcbPrivilege)
+    TokenSandBoxInert,                    // q: ULONG
+    TokenAuditPolicy,                     // q; s: TOKEN_AUDIT_POLICY (requires SeSecurityPrivilege/SeTcbPrivilege)
+    TokenOrigin,                          // q; s: TOKEN_ORIGIN (requires SeTcbPrivilege)
+    TokenElevationType,                   // q: TOKEN_ELEVATION_TYPE
+    TokenLinkedToken,                     // q; s: TOKEN_LINKED_TOKEN (requires SeCreateTokenPrivilege)
+    TokenElevation,                       // q: TOKEN_ELEVATION // 20
+    TokenHasRestrictions,                 // q: ULONG
+    TokenAccessInformation,               // q: TOKEN_ACCESS_INFORMATION
+    TokenVirtualizationAllowed,           // q; s: ULONG (requires SeCreateTokenPrivilege)
+    TokenVirtualizationEnabled,           // q; s: ULONG
+    TokenIntegrityLevel,                  // q; s: TOKEN_MANDATORY_LABEL
+    TokenUIAccess,                        // q; s: ULONG (requires SeTcbPrivilege)
+    TokenMandatoryPolicy,                 // q; s: TOKEN_MANDATORY_POLICY (requires SeTcbPrivilege)
+    TokenLogonSid,                        // q: TOKEN_GROUPS
+    TokenIsAppContainer,                  // q: ULONG // since WIN8
+    TokenCapabilities,                    // q: TOKEN_GROUPS // 30
+    TokenAppContainerSid,                 // q: TOKEN_APPCONTAINER_INFORMATION
+    TokenAppContainerNumber,              // q: ULONG
+    TokenUserClaimAttributes,             // q: CLAIM_SECURITY_ATTRIBUTES_INFORMATION
+    TokenDeviceClaimAttributes,           // q: CLAIM_SECURITY_ATTRIBUTES_INFORMATION
+    TokenRestrictedUserClaimAttributes,   // q: CLAIM_SECURITY_ATTRIBUTES_INFORMATION
+    TokenRestrictedDeviceClaimAttributes, // q: CLAIM_SECURITY_ATTRIBUTES_INFORMATION
+    TokenDeviceGroups,                    // q: TOKEN_GROUPS
+    TokenRestrictedDeviceGroups,          // q: TOKEN_GROUPS
+    TokenSecurityAttributes,              // q; s: TOKEN_SECURITY_ATTRIBUTES_[AND_OPERATION_]INFORMATION (requires SeTcbPrivilege)
+    TokenIsRestricted,                    // q: ULONG // 40
+    TokenProcessTrustLevel,               // q: TOKEN_PROCESS_TRUST_LEVEL // since WINBLUE
+    TokenPrivateNameSpace,                // q; s: ULONG (requires SeTcbPrivilege) // since THRESHOLD
+    TokenSingletonAttributes,             // q: TOKEN_SECURITY_ATTRIBUTES_INFORMATION // since REDSTONE
+    TokenBnoIsolation,                    // q: TOKEN_BNO_ISOLATION_INFORMATION // since REDSTONE2
+    TokenChildProcessFlags,               // s: ULONG  (requires SeTcbPrivilege) // since REDSTONE3
+    TokenIsLessPrivilegedAppContainer,    // q: ULONG // since REDSTONE5
+    TokenIsSandboxed,                     // q: ULONG // since 19H1
+    TokenIsAppSilo,                       // q: ULONG // since WIN11 22H2 // previously TokenOriginatingProcessTrustLevel // q: TOKEN_PROCESS_TRUST_LEVEL
+    TokenLoggingInformation,              // TOKEN_LOGGING_INFORMATION // since 24H2
+    TokenLearningMode,                    // since 25H2
+    MaxTokenInfoClass
+};
+enum class TOKEN_TYPE_
+{
+    TokenPrimary = 1,
+    TokenImpersonation
+};
+enum class OBJECT_INFORMATION_CLASS_
+{
+    ObjectBasicInformation,         // q: OBJECT_BASIC_INFORMATION
+    ObjectNameInformation,          // q: OBJECT_NAME_INFORMATION
+    ObjectTypeInformation,          // q: OBJECT_TYPE_INFORMATION
+    ObjectTypesInformation,         // q: OBJECT_TYPES_INFORMATION
+    ObjectHandleFlagInformation,    // qs: OBJECT_HANDLE_FLAG_INFORMATION
+    ObjectSessionInformation,       // s: void // change object session // (requires SeTcbPrivilege)
+    ObjectSessionObjectInformation, // s: void // change object session // (requires SeTcbPrivilege)
+    ObjectSetRefTraceInformation,   // since 25H2
+    MaxObjectInfoClass
+};
+enum class PS_CREATE_STATE_
+{
+    PsCreateInitialState,
+    PsCreateFailOnFileOpen,
+    PsCreateFailOnSectionCreate,
+    PsCreateFailExeFormat,
+    PsCreateFailMachineMismatch,
+    PsCreateFailExeName, // Debugger specified
+    PsCreateSuccess,
+    PsCreateMaximumStates
+};
 
 struct RTL_CRITICAL_SECTION_;
 struct EXCEPTION_RECORD_;
 struct ACTIVATION_CONTEXT_;
 struct ACTIVATION_CONTEXT_DATA_;
 
+using PUSER_THREAD_START_ROUTINE_ = NTSTATUS(NTAPI*)(GA ThreadParameter);
 using PPS_POST_PROCESS_INIT_ROUTINE_ = NT(NTAPI*)(NT);
 using PLDR_INIT_ROUTINE_ = U1(NTAPI*)(GA DllHandle, U4 Reason, GA Context);
 using PEXCEPTION_ROUTINE_ = EXCEPTION_DISPOSITION_(NTAPI*)(EXCEPTION_RECORD_* ExceptionRecord, GA EstablisherFrame, GA ContextRecord, GA DispatcherContext);
@@ -1593,6 +1676,98 @@ struct IMAGE_EXPORT_DIRECTORY_
     U4 AddressOfNames;
     U4 AddressOfNameOrdinals;
 };
+struct LUID_
+{
+    U4 LowPart;
+    S4 HighPart;
+};
+struct LUID_AND_ATTRIBUTES_
+{
+    LUID_ Luid;
+    U4 Attributes;
+};
+struct PS_ATTRIBUTE_
+{
+    UA Attribute;
+    UA Size;
+    union {
+        UA Value;
+        GA ValuePtr;
+    };
+    UA* ReturnLength;
+};
+struct TOKEN_PRIVILEGES_
+{
+    U4 PrivilegeCount;
+    LUID_AND_ATTRIBUTES_ Privileges flexarr;
+};
+struct PS_ATTRIBUTE_LIST_
+{
+    UA TotalLength;
+    PS_ATTRIBUTE_ Attributes flexarr;
+};
+struct PS_CREATE_INFO_
+{
+    UA Size;
+    PS_CREATE_STATE_ State;
+    union {
+        struct // PsCreateInitialState
+        {
+            union {
+                U4 InitFlags;
+                struct
+                {
+                    U1 WriteOutputOnExit : 1;
+                    U1 DetectManifest : 1;
+                    U1 IFEOSkipDebugger : 1;
+                    U1 IFEODoNotPropagateKeyState : 1;
+                    U1 SpareBits1 : 4;
+                    U1 SpareBits2 : 8;
+                    U2 ProhibitedImageCharacteristics : 16;
+                };
+            };
+            U4 AdditionalFileAccess;
+        } InitState;
+        struct // PsCreateFailOnSectionCreate
+        {
+            HD FileHandle;
+        } FailSection;
+        struct // PsCreateFailExeFormat
+        {
+            U2 DllCharacteristics;
+        } ExeFormat;
+        struct // PsCreateFailExeName
+        {
+            HD IFEOKey;
+        } ExeName;
+        struct // PsCreateSuccess
+        {
+            union {
+                U4 OutputFlags;
+                struct
+                {
+                    U1 ProtectedProcess : 1;
+                    U1 AddressSpaceOverride : 1;
+                    U1 DevOverrideEnabled : 1; // from Image File Execution Options
+                    U1 ManifestDetected : 1;
+                    U1 ProtectedProcessLight : 1;
+                    U1 SpareBits1 : 3;
+                    U1 SpareBits2 : 8;
+                    U2 SpareBits3 : 16;
+                };
+            };
+            HD FileHandle;
+            HD SectionHandle;
+            U8 UserProcessParametersNative;
+            U4 UserProcessParametersWow64;
+            U4 CurrentParameterFlags;
+            U8 PebAddressNative;
+            U4 PebAddressWow64;
+            U8 ManifestAddress;
+            U4 ManifestSize;
+        } SuccessState;
+    };
+};
 
 using LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);
 using LdrUnloadDll_T = NTSTATUS(NTAPI*)(GA DllHandle);
@@ -1600,14 +1775,53 @@ using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ Sy
 using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
 using NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
 using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, SI NumberOfBytesToRead, SI* NumberOfBytesRead);
+using RtlAdjustPrivilege_T = NTSTATUS(NTAPI*)(U4 Privilege, U1 Enable, U1 Client, U1* WasEnabled);
+using NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
+using NtAllocateVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA* RegionSize, U4 AllocationType, U4 PageProtection);
+using NtFlushInstructionCache_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, UA RegionSize);
+using NtOpenProcessTokenEx_T = NTSTATUS(NTAPI*)(HD ProcessHandle, U4 DesiredAccess, U4 HandleAttributes, HD* TokenHandle);
+using NtAdjustPrivilegesToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, U1 DisableAllPrivileges, TOKEN_PRIVILEGES_* NewState, U4 BufferLength, TOKEN_PRIVILEGES_* PreviousState, U4* ReturnLength);
+using NtCreateThreadEx_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ProcessHandle, PUSER_THREAD_START_ROUTINE_ StartRoutine, GA Argument,
+                                            U4 CreateFlags, UA ZeroBits, UA StackSize, UA MaximumStackSize, PS_ATTRIBUTE_LIST_* AttributeList);
+using NtOpenThreadTokenEx_T = NTSTATUS(NTAPI*)(HD ThreadHandle, U4 DesiredAccess, U1 OpenAsSelf, U4 HandleAttributes, HD* TokenHandle);
+using NtDuplicateToken_T = NTSTATUS(NTAPI*)(HD ExistingTokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U1 EffectiveOnly, TOKEN_TYPE_ Type, HD* NewTokenHandle);
+using NtSetInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength);
+using NtImpersonateThread_T = NTSTATUS(NTAPI*)(HD ServerThreadHandle, HD ClientThreadHandle, SECURITY_QUALITY_OF_SERVICE_* SecurityQos);
+using NtCreateProcessEx_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ParentProcess, U4 Flags, HD SectionHandle, HD DebugPort, HD TokenHandle,
+                                             U4 Reserved);
+using NtCreateUserProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, HD* ThreadHandle, U4 ProcessDesiredAccess, U4 ThreadDesiredAccess, cx OBJECT_ATTRIBUTES_* ProcessObjectAttributes,
+                                               cx OBJECT_ATTRIBUTES_* ThreadObjectAttributes, U4 ProcessFlags, U4 ThreadFlags, RTL_USER_PROCESS_PARAMETERS_* ProcessParameters,
+                                               PS_CREATE_INFO_* CreateInfo, PS_ATTRIBUTE_LIST_* AttributeList);
+using NtQueryObject_T = NTSTATUS(NTAPI*)(HD Handle, OBJECT_INFORMATION_CLASS_ ObjectInformationClass, GA ObjectInformation, U4 ObjectInformationLength, U4* ReturnLength);
+using NtDuplicateObject_T = NTSTATUS(NTAPI*)(HD SourceProcessHandle, HD SourceHandle, HD TargetProcessHandle, HD* TargetHandle, U4 DesiredAccess, U4 HandleAttributes, U4 Options);
+using NtQueryInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength, U4* ReturnLength);
 using NtClose_T = NTSTATUS(NTAPI*)(HD Handle);
 
-LdrLoadDll_T LdrLoadDll_ = NUL;
-LdrUnloadDll_T LdrUnloadDll_ = NUL;
-NtQuerySystemInformation_T NtQuerySystemInformation_ = NUL;
-NtQueryInformationProcess_T NtQueryInformationProcess_ = NUL;
-NtOpenProcess_T NtOpenProcess_ = NUL;
-NtReadVirtualMemory_T NtReadVirtualMemory_ = NUL;
-NtClose_T NtClose_ = NUL;
+// Note: this creates global variables & initializes them
+#define _UNI_NT_INIT_FN(fnName) fnName##_T fnName##_ = NUL
+
+_UNI_NT_INIT_FN(LdrLoadDll);
+_UNI_NT_INIT_FN(LdrUnloadDll);
+_UNI_NT_INIT_FN(NtQuerySystemInformation);
+_UNI_NT_INIT_FN(NtQueryInformationProcess);
+_UNI_NT_INIT_FN(NtOpenProcess);
+_UNI_NT_INIT_FN(NtReadVirtualMemory);
+_UNI_NT_INIT_FN(RtlAdjustPrivilege);
+_UNI_NT_INIT_FN(NtWriteVirtualMemory);
+_UNI_NT_INIT_FN(NtAllocateVirtualMemory);
+_UNI_NT_INIT_FN(NtFlushInstructionCache);
+_UNI_NT_INIT_FN(NtOpenProcessTokenEx);
+_UNI_NT_INIT_FN(NtAdjustPrivilegesToken);
+_UNI_NT_INIT_FN(NtCreateThreadEx);
+_UNI_NT_INIT_FN(NtOpenThreadTokenEx);
+_UNI_NT_INIT_FN(NtDuplicateToken);
+_UNI_NT_INIT_FN(NtSetInformationToken);
+_UNI_NT_INIT_FN(NtImpersonateThread);
+_UNI_NT_INIT_FN(NtCreateProcessEx);
+_UNI_NT_INIT_FN(NtCreateUserProcess);
+_UNI_NT_INIT_FN(NtQueryObject);
+_UNI_NT_INIT_FN(NtDuplicateObject);
+_UNI_NT_INIT_FN(NtQueryInformationToken);
+_UNI_NT_INIT_FN(NtClose);
 
 dfa ER UniNtLoad();

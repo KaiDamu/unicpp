@@ -25,6 +25,22 @@ dfa ER UniNtLoad()
     _UNI_NT_LOAD_FN(NtQueryInformationProcess);
     _UNI_NT_LOAD_FN(NtOpenProcess);
     _UNI_NT_LOAD_FN(NtReadVirtualMemory);
+    _UNI_NT_LOAD_FN(RtlAdjustPrivilege);
+    _UNI_NT_LOAD_FN(NtWriteVirtualMemory);
+    _UNI_NT_LOAD_FN(NtAllocateVirtualMemory);
+    _UNI_NT_LOAD_FN(NtFlushInstructionCache);
+    _UNI_NT_LOAD_FN(NtOpenProcessTokenEx);
+    _UNI_NT_LOAD_FN(NtAdjustPrivilegesToken);
+    _UNI_NT_LOAD_FN(NtCreateThreadEx);
+    _UNI_NT_LOAD_FN(NtOpenThreadTokenEx);
+    _UNI_NT_LOAD_FN(NtDuplicateToken);
+    _UNI_NT_LOAD_FN(NtSetInformationToken);
+    _UNI_NT_LOAD_FN(NtImpersonateThread);
+    _UNI_NT_LOAD_FN(NtCreateProcessEx);
+    _UNI_NT_LOAD_FN(NtCreateUserProcess);
+    _UNI_NT_LOAD_FN(NtQueryObject);
+    _UNI_NT_LOAD_FN(NtDuplicateObject);
+    _UNI_NT_LOAD_FN(NtQueryInformationToken);
     _UNI_NT_LOAD_FN(NtClose);
 
     rets;
