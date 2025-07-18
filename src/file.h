@@ -163,6 +163,9 @@ class FileStd
     }
     dfa ER TimeGet(TmUnix& time)
     {
+        unimp;
+        rete(ErrVal::NO_SUPPORT);
+        /*
         time = 0;
         ifu (tx->IsOpen() == NO)
             rete(ErrVal::NO_INIT);
@@ -171,6 +174,7 @@ class FileStd
             rete(ErrVal::FILE);
         time = TmUnix(st.st_mtime);
         rets;
+        */
     }
     dfa ER Flush()
     {

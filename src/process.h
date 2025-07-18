@@ -169,9 +169,9 @@ class MdlFnCache
     }
 };
 
-dfa HANDLE _ProcHdlGetNt()
+dfa HD ProcCurHdl()
 {
-    ret reinterpret_cast<HANDLE>(-1);
+    ret HD(-1);
 }
 
 dfa BO ProcIsElevated()

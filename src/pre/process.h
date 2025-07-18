@@ -2,6 +2,6 @@
 
 #ifdef PROG_SYS_WIN
 
-dfa HANDLE _ProcHdlGetNt();
+dfa HD ProcCurHdl();
 
 #endif

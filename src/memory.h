@@ -6,7 +6,7 @@ dfa ER MemDelSys(GA ptr)
 {
     GA ptr_ = ptr;
     SIZE_T size_ = 0;
-    ifu (NtFreeVirtualMemory(_ProcHdlGetNt(), &ptr_, &size_, MEM_RELEASE) != STATUS_SUCCESS)
+    ifu (NtFreeVirtualMemory(ProcCurHdl(), &ptr_, &size_, MEM_RELEASE) != STATUS_SUCCESS)
     {
         rete(ErrVal::MEM);
     }
@@ -16,7 +16,7 @@ dfa ER MemNewSys(GA* ptr, SI size)
 {
     GA ptr_ = NUL;
     SIZE_T size_ = size;
-    ifu (NtAllocateVirtualMemory(_ProcHdlGetNt(), &ptr_, 0, &size_, MEM_COMMIT, PAGE_READWRITE) != STATUS_SUCCESS)
+    ifu (NtAllocateVirtualMemory(ProcCurHdl(), &ptr_, 0, &size_, MEM_COMMIT, PAGE_READWRITE) != STATUS_SUCCESS)
     {
         *ptr = NUL;
         rete(ErrVal::MEM_NEW);
