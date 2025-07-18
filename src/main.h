@@ -34,7 +34,7 @@ dfa ER MainFree()
     rets;
 }
 
-#ifndef UCPP_MAIN_NO
+#ifndef UCPP_MAIN_TYPE_NONE
 
 dfa ER Main();
 
@@ -49,10 +49,16 @@ dfa ER _Main(MainInitCtx& ctx)
     rets;
 }
 
-    #ifdef PROG_SYS_WIN
-int main() // define UCPP_MAIN_NO if you're using your own main function
+    #ifdef UCPP_MAIN_TYPE_BASE
+extern "C" void _start()
+    #elif defined(UCPP_MAIN_TYPE_STD)
+        #ifdef PROG_SYS_WIN
+int main() // define UCPP_MAIN_TYPE_NONE if you're using your own main function
+        #else
+int main(int argc, char** argv) // define UCPP_MAIN_TYPE_NONE if you're using your own main function
+        #endif
     #else
-int main(int argc, char** argv) // define UCPP_MAIN_NO if you're using your own main function
+inline int _main_unused()
     #endif
 {
     ifdbg (YES)
@@ -77,7 +83,13 @@ int main(int argc, char** argv) // define UCPP_MAIN_NO if you're using your own 
         ConWait();
     }
     ProcExit(U4(errVal));
+    #ifndef UCPP_MAIN_TYPE_BASE
     ret int(errVal);
+    #endif
 }
 
+#endif
+
+#ifdef UCPP_MAIN_TYPE_DLL
+    #error "UCPP_MAIN_TYPE_DLL is not yet supported!"
 #endif

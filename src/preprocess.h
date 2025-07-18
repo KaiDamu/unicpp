@@ -57,6 +57,15 @@
     #endif
 #endif
 
+#if !defined(UCPP_MAIN_TYPE_NONE) && !defined(UCPP_MAIN_TYPE_BASE) && !defined(UCPP_MAIN_TYPE_STD) && !defined(UCPP_MAIN_TYPE_DLL)
+    // default to standard main type
+    #define UCPP_MAIN_TYPE_STD
+
+    #if !defined(UCPP_MAIN_TYPE_NONE) && !defined(UCPP_MAIN_TYPE_BASE) && !defined(UCPP_MAIN_TYPE_STD) && !defined(UCPP_MAIN_TYPE_DLL)
+        #error "UCPP_MAIN_TYPE is not defined! Define either UCPP_MAIN_TYPE_NONE, UCPP_MAIN_TYPE_BASE, UCPP_MAIN_TYPE_STD, or UCPP_MAIN_TYPE_DLL."
+    #endif
+#endif
+
 #ifdef PROG_COMPILER_MSVC
     #pragma warning(disable : 4996) // _CRT_SECURE_NO_WARNINGS
 #endif
