@@ -594,14 +594,107 @@ enum class KWAIT_REASON_
     WrRcu,             // Waiting for read-copy-update (RCU) synchronization.
     MaximumWaitReason
 };
+enum class KEY_VALUE_INFORMATION_CLASS_
+{
+    KeyValueBasicInformation,          // KEY_VALUE_BASIC_INFORMATION
+    KeyValueFullInformation,           // KEY_VALUE_FULL_INFORMATION
+    KeyValuePartialInformation,        // KEY_VALUE_PARTIAL_INFORMATION
+    KeyValueFullInformationAlign64,    // KEY_VALUE_FULL_INFORMATION_ALIGN64
+    KeyValuePartialInformationAlign64, // KEY_VALUE_PARTIAL_INFORMATION_ALIGN64
+    KeyValueLayerInformation,          // KEY_VALUE_LAYER_INFORMATION
+    MaxKeyValueInfoClass
+};
+enum class THREADINFOCLASS_
+{
+    ThreadBasicInformation,               // q: THREAD_BASIC_INFORMATION
+    ThreadTimes,                          // q: KERNEL_USER_TIMES
+    ThreadPriority,                       // s: KPRIORITY (requires SeIncreaseBasePriorityPrivilege)
+    ThreadBasePriority,                   // s: KPRIORITY
+    ThreadAffinityMask,                   // s: KAFFINITY
+    ThreadImpersonationToken,             // s: HANDLE
+    ThreadDescriptorTableEntry,           // q: DESCRIPTOR_TABLE_ENTRY (or WOW64_DESCRIPTOR_TABLE_ENTRY)
+    ThreadEnableAlignmentFaultFixup,      // s: BOOLEAN
+    ThreadEventPair,                      // Obsolete
+    ThreadQuerySetWin32StartAddress,      // qs: PVOID (requires THREAD_Set_LIMITED_INFORMATION)
+    ThreadZeroTlsCell,                    // s: ULONG // TlsIndex // 10
+    ThreadPerformanceCount,               // q: LARGE_INTEGER
+    ThreadAmILastThread,                  // q: ULONG
+    ThreadIdealProcessor,                 // s: ULONG
+    ThreadPriorityBoost,                  // qs: ULONG
+    ThreadSetTlsArrayAddress,             // s: ULONG_PTR
+    ThreadIsIoPending,                    // q: ULONG
+    ThreadHideFromDebugger,               // q: BOOLEAN; s: void
+    ThreadBreakOnTermination,             // qs: ULONG
+    ThreadSwitchLegacyState,              // s: void // NtCurrentThread // NPX/FPU
+    ThreadIsTerminated,                   // q: ULONG // 20
+    ThreadLastSystemCall,                 // q: THREAD_LAST_SYSCALL_INFORMATION
+    ThreadIoPriority,                     // qs: IO_PRIORITY_HINT (requires SeIncreaseBasePriorityPrivilege)
+    ThreadCycleTime,                      // q: THREAD_CYCLE_TIME_INFORMATION (requires THREAD_QUERY_LIMITED_INFORMATION)
+    ThreadPagePriority,                   // qs: PAGE_PRIORITY_INFORMATION
+    ThreadActualBasePriority,             // s: LONG (requires SeIncreaseBasePriorityPrivilege)
+    ThreadTebInformation,                 // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_SET_CONTEXT)
+    ThreadCSwitchMon,                     // Obsolete
+    ThreadCSwitchPmu,                     // Obsolete
+    ThreadWow64Context,                   // qs: WOW64_CONTEXT, ARM_NT_CONTEXT since 20H1
+    ThreadGroupInformation,               // qs: GROUP_AFFINITY // 30
+    ThreadUmsInformation,                 // q: THREAD_UMS_INFORMATION // Obsolete
+    ThreadCounterProfiling,               // q: BOOLEAN; s: THREAD_PROFILING_INFORMATION?
+    ThreadIdealProcessorEx,               // qs: PROCESSOR_NUMBER; s: previous PROCESSOR_NUMBER on return
+    ThreadCpuAccountingInformation,       // q: BOOLEAN; s: HANDLE (NtOpenSession) // NtCurrentThread // since WIN8
+    ThreadSuspendCount,                   // q: ULONG // since WINBLUE
+    ThreadHeterogeneousCpuPolicy,         // q: KHETERO_CPU_POLICY // since THRESHOLD
+    ThreadContainerId,                    // q: GUID
+    ThreadNameInformation,                // qs: THREAD_NAME_INFORMATION (requires THREAD_SET_LIMITED_INFORMATION)
+    ThreadSelectedCpuSets,                // q: ULONG[]
+    ThreadSystemThreadInformation,        // q: SYSTEM_THREAD_INFORMATION // 40
+    ThreadActualGroupAffinity,            // q: GROUP_AFFINITY // since THRESHOLD2
+    ThreadDynamicCodePolicyInfo,          // q: ULONG; s: ULONG (NtCurrentThread)
+    ThreadExplicitCaseSensitivity,        // qs: ULONG; s: 0 disables, otherwise enables // (requires SeDebugPrivilege and PsProtectedSignerAntimalware)
+    ThreadWorkOnBehalfTicket,             // ALPC_WORK_ON_BEHALF_TICKET // RTL_WORK_ON_BEHALF_TICKET_EX // NtCurrentThread
+    ThreadSubsystemInformation,           // q: SUBSYSTEM_INFORMATION_TYPE // since REDSTONE2
+    ThreadDbgkWerReportActive,            // s: ULONG; s: 0 disables, otherwise enables
+    ThreadAttachContainer,                // s: HANDLE (job object) // NtCurrentThread
+    ThreadManageWritesToExecutableMemory, // MANAGE_WRITES_TO_EXECUTABLE_MEMORY // since REDSTONE3
+    ThreadPowerThrottlingState,           // qs: POWER_THROTTLING_THREAD_STATE // since REDSTONE3 (set), WIN11 22H2 (query)
+    ThreadWorkloadClass,                  // THREAD_WORKLOAD_CLASS // since REDSTONE5 // 50
+    ThreadCreateStateChange,              // since WIN11
+    ThreadApplyStateChange,               // -
+    ThreadStrongerBadHandleChecks,        // s: ULONG // NtCurrentThread // since 22H1
+    ThreadEffectiveIoPriority,            // q: IO_PRIORITY_HINT
+    ThreadEffectivePagePriority,          // q: ULONG
+    ThreadUpdateLockOwnership,            // THREAD_LOCK_OWNERSHIP // since 24H2
+    ThreadSchedulerSharedDataSlot,        // SCHEDULER_SHARED_DATA_SLOT_INFORMATION
+    ThreadTebInformationAtomic,           // q: THREAD_TEB_INFORMATION (requires THREAD_GET_CONTEXT + THREAD_QUERY_INFORMATION)
+    ThreadIndexInformation,               // THREAD_INDEX_INFORMATION
+    MaxThreadInfoClass
+};
+enum class SECTION_INHERIT_
+{
+    ViewShare = 1,
+    ViewUnmap = 2
+};
+enum class SHUTDOWN_ACTION_
+{
+    ShutdownNoReboot,
+    ShutdownReboot,
+    ShutdownPowerOff,
+    ShutdownRebootForRecovery // since WIN11
+};
+enum class EVENT_TYPE_
+{
+    NotificationEvent,
+    SynchronizationEvent
+};
 
+struct IO_STATUS_BLOCK_;
 struct RTL_CRITICAL_SECTION_;
 struct EXCEPTION_RECORD_;
 struct ACTIVATION_CONTEXT_;
 struct ACTIVATION_CONTEXT_DATA_;
 
-using PUSER_THREAD_START_ROUTINE_ = NTSTATUS(NTAPI*)(GA ThreadParameter);
 using PPS_POST_PROCESS_INIT_ROUTINE_ = NT(NTAPI*)(NT);
+using PIO_APC_ROUTINE_ = NT(NTAPI*)(GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, U4 Reserved);
+using PUSER_THREAD_START_ROUTINE_ = NTSTATUS(NTAPI*)(GA ThreadParameter);
 using PLDR_INIT_ROUTINE_ = U1(NTAPI*)(GA DllHandle, U4 Reason, GA Context);
 using PEXCEPTION_ROUTINE_ = EXCEPTION_DISPOSITION_(NTAPI*)(EXCEPTION_RECORD_* ExceptionRecord, GA EstablisherFrame, GA ContextRecord, GA DispatcherContext);
 using PACTIVATION_CONTEXT_NOTIFY_ROUTINE_ = NT(NTAPI*)(U4 NotificationType, ACTIVATION_CONTEXT_* ActivationContext, ACTIVATION_CONTEXT_DATA_* ActivationContextData, GA NotificationContext,
@@ -1894,60 +1987,158 @@ struct SYSTEM_PROCESS_INFORMATION_
     LARGE_INTEGER_ OtherTransferCount;  // The total number of bytes transferred during operations other than read and write operations.
     SYSTEM_THREAD_INFORMATION_ Threads flexarr; // This type is not defined in the structure but was added for convenience.
 };
+struct TOKEN_GROUPS_
+{
+    U4 GroupCount;
+    SID_AND_ATTRIBUTES_ Groups flexarr;
+};
+struct TOKEN_OWNER_
+{
+    SID_* Owner;
+};
+struct TOKEN_PRIMARY_GROUP_
+{
+    SID_* PrimaryGroup;
+};
+struct TOKEN_DEFAULT_DACL_
+{
+    ACL_* DefaultDacl;
+};
+struct TOKEN_SOURCE_
+{
+    CS SourceName[TOKEN_SOURCE_LENGTH];
+    LUID_ SourceIdentifier;
+};
+struct IO_STATUS_BLOCK_
+{
+    union {
+        NTSTATUS Status;
+        GA Pointer;
+    };
+    UA Information;
+};
 
+// clang-format off
 using LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);
 using LdrUnloadDll_T = NTSTATUS(NTAPI*)(GA DllHandle);
-using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
-using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
-using NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
-using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, SI NumberOfBytesToRead, SI* NumberOfBytesRead);
-using RtlAdjustPrivilege_T = NTSTATUS(NTAPI*)(U4 Privilege, U1 Enable, U1 Client, U1* WasEnabled);
-using NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
-using NtAllocateVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA* RegionSize, U4 AllocationType, U4 PageProtection);
-using NtFlushInstructionCache_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, UA RegionSize);
-using NtOpenProcessTokenEx_T = NTSTATUS(NTAPI*)(HD ProcessHandle, U4 DesiredAccess, U4 HandleAttributes, HD* TokenHandle);
 using NtAdjustPrivilegesToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, U1 DisableAllPrivileges, TOKEN_PRIVILEGES_* NewState, U4 BufferLength, TOKEN_PRIVILEGES_* PreviousState, U4* ReturnLength);
-using NtCreateThreadEx_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ProcessHandle, PUSER_THREAD_START_ROUTINE_ StartRoutine, GA Argument,
-                                            U4 CreateFlags, UA ZeroBits, UA StackSize, UA MaximumStackSize, PS_ATTRIBUTE_LIST_* AttributeList);
-using NtOpenThreadTokenEx_T = NTSTATUS(NTAPI*)(HD ThreadHandle, U4 DesiredAccess, U1 OpenAsSelf, U4 HandleAttributes, HD* TokenHandle);
-using NtDuplicateToken_T = NTSTATUS(NTAPI*)(HD ExistingTokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U1 EffectiveOnly, TOKEN_TYPE_ Type, HD* NewTokenHandle);
-using NtSetInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength);
-using NtImpersonateThread_T = NTSTATUS(NTAPI*)(HD ServerThreadHandle, HD ClientThreadHandle, SECURITY_QUALITY_OF_SERVICE_* SecurityQos);
-using NtCreateProcessEx_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ParentProcess, U4 Flags, HD SectionHandle, HD DebugPort, HD TokenHandle,
-                                             U4 Reserved);
-using NtCreateUserProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, HD* ThreadHandle, U4 ProcessDesiredAccess, U4 ThreadDesiredAccess, cx OBJECT_ATTRIBUTES_* ProcessObjectAttributes,
-                                               cx OBJECT_ATTRIBUTES_* ThreadObjectAttributes, U4 ProcessFlags, U4 ThreadFlags, RTL_USER_PROCESS_PARAMETERS_* ProcessParameters,
-                                               PS_CREATE_INFO_* CreateInfo, PS_ATTRIBUTE_LIST_* AttributeList);
-using NtQueryObject_T = NTSTATUS(NTAPI*)(HD Handle, OBJECT_INFORMATION_CLASS_ ObjectInformationClass, GA ObjectInformation, U4 ObjectInformationLength, U4* ReturnLength);
-using NtDuplicateObject_T = NTSTATUS(NTAPI*)(HD SourceProcessHandle, HD SourceHandle, HD TargetProcessHandle, HD* TargetHandle, U4 DesiredAccess, U4 HandleAttributes, U4 Options);
-using NtQueryInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength, U4* ReturnLength);
+using NtAllocateVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA* RegionSize, U4 AllocationType, U4 PageProtection);
 using NtClose_T = NTSTATUS(NTAPI*)(HD Handle);
+using NtCreateEvent_T = NTSTATUS(NTAPI*)(HD* EventHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, EVENT_TYPE_ EventType, U1 InitialState);
+using NtCreateFile_T = NTSTATUS(NTAPI*)(HD* FileHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, IO_STATUS_BLOCK_* IoStatusBlock, LARGE_INTEGER_* AllocationSize, U4 FileAttributes, U4 ShareAccess, U4 CreateDisposition, U4 CreateOptions, GA EaBuffer, U4 EaLength);
+using NtCreateKeyedEvent_T = NTSTATUS(NTAPI*)(HD* KeyedEventHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, U4 Flags);
+using NtCreateProcessEx_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ParentProcess, U4 Flags, HD SectionHandle, HD DebugPort, HD TokenHandle, U4 Reserved);
+using NtCreateSection_T = NTSTATUS(NTAPI*)(HD* SectionHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, LARGE_INTEGER_* MaximumSize, U4 SectionPageProtection, U4 AllocationAttributes, HD FileHandle);
+using NtCreateThreadEx_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ProcessHandle, PUSER_THREAD_START_ROUTINE_ StartRoutine, GA Argument, U4 CreateFlags, UA ZeroBits, UA StackSize, UA MaximumStackSize, PS_ATTRIBUTE_LIST_* AttributeList);
+using NtCreateToken_T = NTSTATUS(NTAPI*)(HD* TokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, TOKEN_TYPE_ Type, LUID_* AuthenticationId, LARGE_INTEGER_* ExpirationTime, TOKEN_USER_* User, TOKEN_GROUPS_* Groups, TOKEN_PRIVILEGES_* Privileges, TOKEN_OWNER_* Owner, TOKEN_PRIMARY_GROUP_* PrimaryGroup, TOKEN_DEFAULT_DACL_* DefaultDacl, TOKEN_SOURCE_* Source);
+using NtCreateUserProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, HD* ThreadHandle, U4 ProcessDesiredAccess, U4 ThreadDesiredAccess, cx OBJECT_ATTRIBUTES_* ProcessObjectAttributes, cx OBJECT_ATTRIBUTES_* ThreadObjectAttributes, U4 ProcessFlags, U4 ThreadFlags, RTL_USER_PROCESS_PARAMETERS_* ProcessParameters, PS_CREATE_INFO_* CreateInfo, PS_ATTRIBUTE_LIST_* AttributeList);
+using NtDelayExecution_T = NTSTATUS(NTAPI*)(U1 Alertable, LARGE_INTEGER_* DelayInterval);
+using NtDuplicateObject_T = NTSTATUS(NTAPI*)(HD SourceProcessHandle, HD SourceHandle, HD TargetProcessHandle, HD* TargetHandle, U4 DesiredAccess, U4 HandleAttributes, U4 Options);
+using NtDuplicateToken_T = NTSTATUS(NTAPI*)(HD ExistingTokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U1 EffectiveOnly, TOKEN_TYPE_ Type, HD* NewTokenHandle);
+using NtFlushInstructionCache_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, UA RegionSize);
+using NtFreeVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA* RegionSize, U4 FreeType);
+using NtImpersonateThread_T = NTSTATUS(NTAPI*)(HD ServerThreadHandle, HD ClientThreadHandle, SECURITY_QUALITY_OF_SERVICE_* SecurityQos);
+using NtLoadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
+using NtMapViewOfSection_T = NTSTATUS(NTAPI*)(HD SectionHandle, HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA CommitSize, LARGE_INTEGER_* SectionOffset, UA* ViewSize, SECTION_INHERIT_ InheritDisposition, U4 AllocationType, U4 PageProtection);
+using NtOpenKeyEx_T = NTSTATUS(NTAPI*)(HD* KeyHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U4 OpenOptions);
+using NtOpenKeyedEvent_T = NTSTATUS(NTAPI*)(HD* KeyedEventHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes);
+using NtOpenProcessTokenEx_T = NTSTATUS(NTAPI*)(HD ProcessHandle, U4 DesiredAccess, U4 HandleAttributes, HD* TokenHandle);
+using NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
+using NtOpenThreadTokenEx_T = NTSTATUS(NTAPI*)(HD ThreadHandle, U4 DesiredAccess, U1 OpenAsSelf, U4 HandleAttributes, HD* TokenHandle);
+using NtOpenThread_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
+using NtQueryDirectoryFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass, U1 ReturnSingleEntry, cx UNICODE_STRING_* FileName, U1 RestartScan);
+using NtQueryInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
+using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
+using NtQueryInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength, U4* ReturnLength);
+using NtQueryObject_T = NTSTATUS(NTAPI*)(HD Handle, OBJECT_INFORMATION_CLASS_ ObjectInformationClass, GA ObjectInformation, U4 ObjectInformationLength, U4* ReturnLength);
+using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
+using NtQueryTimerResolution_T = NTSTATUS(NTAPI*)(U4* MaximumTime, U4* MinimumTime, U4* CurrentTime);
+using NtQueryValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, KEY_VALUE_INFORMATION_CLASS_ KeyValueInformationClass, GA KeyValueInformation, U4 Length, U4* ResultLength);
+using NtRaiseHardError_T = NTSTATUS(NTAPI*)(NTSTATUS ErrorStatus, U4 NumberOfParameters, U4 UnicodeStringParameterMask, UA* Parameters, U4 ValidResponseOptions, U4* Response);
+using NtReadFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
+using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, SI NumberOfBytesToRead, SI* NumberOfBytesRead);
+using NtReleaseKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
+using NtResetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
+using NtSetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
+using NtSetInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
+using NtSetInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength);
+using NtSetInformationThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, THREADINFOCLASS_ ThreadInformationClass, GA ThreadInformation, U4 ThreadInformationLength);
+using NtSetInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength);
+using NtSetTimerResolution_T = NTSTATUS(NTAPI*)(U4 DesiredTime, U1 SetResolution, U4* ActualTime);
+using NtSetValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, U4 TitleIndex, U4 Type, GA Data, U4 DataSize);
+using NtShutdownSystem_T = NTSTATUS(NTAPI*)(SHUTDOWN_ACTION_ Action);
+using NtUnloadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
+using NtWaitForKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
+using NtWaitForSingleObject_T = NTSTATUS(NTAPI*)(HD Handle, U1 Alertable, LARGE_INTEGER_* Timeout);
+using NtWriteFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
+using NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
+using NtYieldExecution_T = NTSTATUS(NTAPI*)();
+using RtlAcquirePebLock_T = NTSTATUS(NTAPI*)();
+using RtlAdjustPrivilege_T = NTSTATUS(NTAPI*)(U4 Privilege, U1 Enable, U1 Client, U1* WasEnabled);
+using RtlExitUserProcess_T = NT(NTAPI*)(NTSTATUS ExitStatus);
+using RtlReleasePebLock_T = NTSTATUS(NTAPI*)();
+// clang-format on
 
 // Note: this creates global variables & initializes them
 #define _UNI_NT_INIT_FN(fnName) fnName##_T fnName##_ = NUL
 
 _UNI_NT_INIT_FN(LdrLoadDll);
 _UNI_NT_INIT_FN(LdrUnloadDll);
-_UNI_NT_INIT_FN(NtQuerySystemInformation);
-_UNI_NT_INIT_FN(NtQueryInformationProcess);
-_UNI_NT_INIT_FN(NtOpenProcess);
-_UNI_NT_INIT_FN(NtReadVirtualMemory);
-_UNI_NT_INIT_FN(RtlAdjustPrivilege);
-_UNI_NT_INIT_FN(NtWriteVirtualMemory);
-_UNI_NT_INIT_FN(NtAllocateVirtualMemory);
-_UNI_NT_INIT_FN(NtFlushInstructionCache);
-_UNI_NT_INIT_FN(NtOpenProcessTokenEx);
 _UNI_NT_INIT_FN(NtAdjustPrivilegesToken);
-_UNI_NT_INIT_FN(NtCreateThreadEx);
-_UNI_NT_INIT_FN(NtOpenThreadTokenEx);
-_UNI_NT_INIT_FN(NtDuplicateToken);
-_UNI_NT_INIT_FN(NtSetInformationToken);
-_UNI_NT_INIT_FN(NtImpersonateThread);
-_UNI_NT_INIT_FN(NtCreateProcessEx);
-_UNI_NT_INIT_FN(NtCreateUserProcess);
-_UNI_NT_INIT_FN(NtQueryObject);
-_UNI_NT_INIT_FN(NtDuplicateObject);
-_UNI_NT_INIT_FN(NtQueryInformationToken);
+_UNI_NT_INIT_FN(NtAllocateVirtualMemory);
 _UNI_NT_INIT_FN(NtClose);
+_UNI_NT_INIT_FN(NtCreateEvent);
+_UNI_NT_INIT_FN(NtCreateFile);
+_UNI_NT_INIT_FN(NtCreateKeyedEvent);
+_UNI_NT_INIT_FN(NtCreateProcessEx);
+_UNI_NT_INIT_FN(NtCreateSection);
+_UNI_NT_INIT_FN(NtCreateThreadEx);
+_UNI_NT_INIT_FN(NtCreateToken);
+_UNI_NT_INIT_FN(NtCreateUserProcess);
+_UNI_NT_INIT_FN(NtDelayExecution);
+_UNI_NT_INIT_FN(NtDuplicateObject);
+_UNI_NT_INIT_FN(NtDuplicateToken);
+_UNI_NT_INIT_FN(NtFlushInstructionCache);
+_UNI_NT_INIT_FN(NtFreeVirtualMemory);
+_UNI_NT_INIT_FN(NtImpersonateThread);
+_UNI_NT_INIT_FN(NtLoadDriver);
+_UNI_NT_INIT_FN(NtMapViewOfSection);
+_UNI_NT_INIT_FN(NtOpenKeyEx);
+_UNI_NT_INIT_FN(NtOpenKeyedEvent);
+_UNI_NT_INIT_FN(NtOpenProcess);
+_UNI_NT_INIT_FN(NtOpenProcessTokenEx);
+_UNI_NT_INIT_FN(NtOpenThread);
+_UNI_NT_INIT_FN(NtOpenThreadTokenEx);
+_UNI_NT_INIT_FN(NtQueryDirectoryFile);
+_UNI_NT_INIT_FN(NtQueryInformationFile);
+_UNI_NT_INIT_FN(NtQueryInformationProcess);
+_UNI_NT_INIT_FN(NtQueryInformationToken);
+_UNI_NT_INIT_FN(NtQueryObject);
+_UNI_NT_INIT_FN(NtQuerySystemInformation);
+_UNI_NT_INIT_FN(NtQueryTimerResolution);
+_UNI_NT_INIT_FN(NtQueryValueKey);
+_UNI_NT_INIT_FN(NtRaiseHardError);
+_UNI_NT_INIT_FN(NtReadFile);
+_UNI_NT_INIT_FN(NtReadVirtualMemory);
+_UNI_NT_INIT_FN(NtReleaseKeyedEvent);
+_UNI_NT_INIT_FN(NtResetEvent);
+_UNI_NT_INIT_FN(NtSetEvent);
+_UNI_NT_INIT_FN(NtSetInformationFile);
+_UNI_NT_INIT_FN(NtSetInformationProcess);
+_UNI_NT_INIT_FN(NtSetInformationThread);
+_UNI_NT_INIT_FN(NtSetInformationToken);
+_UNI_NT_INIT_FN(NtSetTimerResolution);
+_UNI_NT_INIT_FN(NtSetValueKey);
+_UNI_NT_INIT_FN(NtShutdownSystem);
+_UNI_NT_INIT_FN(NtUnloadDriver);
+_UNI_NT_INIT_FN(NtWaitForKeyedEvent);
+_UNI_NT_INIT_FN(NtWaitForSingleObject);
+_UNI_NT_INIT_FN(NtWriteFile);
+_UNI_NT_INIT_FN(NtWriteVirtualMemory);
+_UNI_NT_INIT_FN(NtYieldExecution);
+_UNI_NT_INIT_FN(RtlAcquirePebLock);
+_UNI_NT_INIT_FN(RtlAdjustPrivilege);
+_UNI_NT_INIT_FN(RtlExitUserProcess);
+_UNI_NT_INIT_FN(RtlReleasePebLock);
 
 dfa ER UniNtLoad();
