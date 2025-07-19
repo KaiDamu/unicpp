@@ -135,11 +135,6 @@ tpl1 class DatIte
     {
         tx->Init();
     }
-    dfa DatIte(SI cnt)
-    {
-        tx->Init();
-        tx->New(cnt);
-    }
 };
 
 tpl1 class Arr

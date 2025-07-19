@@ -309,7 +309,7 @@ dfa DWORD WINAPI ThdTaskMgrThdFn(LPVOID);
 class ThdTaskMgr
 {
   private:
-    Arr<Thd> m_thdList;
+    std::vector<Thd> m_thdList;
     DQueue<ThdTask> m_taskQueue;
     ThdLockMulti m_lock;
     EvtWin m_evtWait;
@@ -347,19 +347,19 @@ class ThdTaskMgr
     {
         ife (tx->WaitAll())
             retep;
-        ite (i, i < m_thdList.Cap())
+        ite (i, i < SI(m_thdList.size()))
         {
             ife (m_thdList[i].Stop())
                 retep;
             ife (m_thdList[i].Close())
                 retep;
         }
-        m_thdList.Del();
+        m_thdList.clear();
         rets;
     }
     dfa ER Init(SI cnt)
     {
-        m_thdList.New(cnt);
+        m_thdList.resize(cnt);
         ite (i, i < cnt)
         {
             ife (m_thdList[i].Start(ThdTaskMgrThdFn, tx))

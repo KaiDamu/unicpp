@@ -564,8 +564,8 @@ class FileNt
         SI infoCnt = 3;
         jdst(again);
         ++infoCnt;
-        Arr<FILE_STREAM_INFORMATION> info(infoCnt);
-        cx NTSTATUS status = NtQueryInformationFile(m_hdl, &iosb, info.Ptr(), ULONG(infoCnt * siz(FILE_STREAM_INFORMATION)), ToNative(FILE_INFORMATION_CLASS_::FileStreamInformation));
+        std::vector<FILE_STREAM_INFORMATION> info(infoCnt);
+        cx NTSTATUS status = NtQueryInformationFile(m_hdl, &iosb, info.data(), ULONG(infoCnt * siz(FILE_STREAM_INFORMATION)), ToNative(FILE_INFORMATION_CLASS_::FileStreamInformation));
         ifu (status == STATUS_BUFFER_OVERFLOW)
             jsrc(again);
         ifu (status != STATUS_SUCCESS)
