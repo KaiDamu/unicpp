@@ -89,6 +89,7 @@
     <ClInclude Include="src\test.h" />
     <ClInclude Include="src\thread.h" />
     <ClInclude Include="src\time.h" />
+    <ClInclude Include="src\token.h" />
     <ClInclude Include="src\tuple.h" />
     <ClInclude Include="src\type.h" />
     <ClInclude Include="src\typeconvert.h" />

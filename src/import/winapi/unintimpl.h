@@ -9,6 +9,15 @@ dfa UNICODE_STRING_::UNICODE_STRING_(cx CH* Buffer)
     tx->MaximumLength = tx->Length + siz(Buffer[0]);
     tx->Buffer = TO(tx->Buffer)(Buffer);
 }
+dfa OBJECT_ATTRIBUTES_::OBJECT_ATTRIBUTES_()
+{
+    tx->Length = siz(OBJECT_ATTRIBUTES_);
+    tx->RootDirectory = NUL;
+    tx->ObjectName = NUL;
+    tx->Attributes = 0;
+    tx->SecurityDescriptor = NUL;
+    tx->SecurityQualityOfService = NUL;
+}
 
 #define _UNI_NT_LOAD_FN(fnName)                                                       \
     ifu ((fnName##_ = (fnName##_T)uniNtLoadCache.FnAdrGet(MdlFnHash::fnName)) == NUL) \

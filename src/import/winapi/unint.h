@@ -5,6 +5,8 @@ cxex SI GDI_BATCH_BUFFER_SIZE = 310;
 cxex SI WIN32_CLIENT_INFO_LENGTH = 62;
 cxex SI STATIC_UNICODE_BUFFER_LENGTH = 261;
 
+cxex SI TOKEN_USER_MAX_SIZE_ = 76;
+
 enum class SYSTEM_INFORMATION_CLASS_
 {
     SystemBasicInformation,                        // q: SYSTEM_BASIC_INFORMATION
@@ -531,6 +533,67 @@ enum class PS_CREATE_STATE_
     PsCreateSuccess,
     PsCreateMaximumStates
 };
+enum class KTHREAD_STATE_
+{
+    Initialized,
+    Ready,
+    Running,
+    Standby,
+    Terminated,
+    Waiting,
+    Transition,
+    DeferredReady,
+    GateWaitObsolete,
+    WaitingForProcessInSwap,
+    MaximumThreadState
+};
+enum class KWAIT_REASON_
+{
+    Executive,         // Waiting for an executive event.
+    FreePage,          // Waiting for a free page.
+    PageIn,            // Waiting for a page to be read in.
+    PoolAllocation,    // Waiting for a pool allocation.
+    DelayExecution,    // Waiting due to a delay execution.           // NtDelayExecution
+    Suspended,         // Waiting because the thread is suspended.    // NtSuspendThread
+    UserRequest,       // Waiting due to a user request.              // NtWaitForSingleObject
+    WrExecutive,       // Waiting for an executive event.
+    WrFreePage,        // Waiting for a free page.
+    WrPageIn,          // Waiting for a page to be read in.
+    WrPoolAllocation,  // Waiting for a pool allocation.              // 10
+    WrDelayExecution,  // Waiting due to a delay execution.
+    WrSuspended,       // Waiting because the thread is suspended.
+    WrUserRequest,     // Waiting due to a user request.
+    WrEventPair,       // Waiting for an event pair.                  // NtCreateEventPair
+    WrQueue,           // Waiting for a queue.                        // NtRemoveIoCompletion
+    WrLpcReceive,      // Waiting for an LPC receive.                 // NtReplyWaitReceivePort
+    WrLpcReply,        // Waiting for an LPC reply.                   // NtRequestWaitReplyPort
+    WrVirtualMemory,   // Waiting for virtual memory.
+    WrPageOut,         // Waiting for a page to be written out.       // NtFlushVirtualMemory
+    WrRendezvous,      // Waiting for a rendezvous.                   // 20
+    WrKeyedEvent,      // Waiting for a keyed event.                  // NtCreateKeyedEvent
+    WrTerminated,      // Waiting for thread termination.
+    WrProcessInSwap,   // Waiting for a process to be swapped in.
+    WrCpuRateControl,  // Waiting for CPU rate control.
+    WrCalloutStack,    // Waiting for a callout stack.
+    WrKernel,          // Waiting for a kernel event.
+    WrResource,        // Waiting for a resource.
+    WrPushLock,        // Waiting for a push lock.
+    WrMutex,           // Waiting for a mutex.
+    WrQuantumEnd,      // Waiting for the end of a quantum.           // 30
+    WrDispatchInt,     // Waiting for a dispatch interrupt.
+    WrPreempted,       // Waiting because the thread was preempted.
+    WrYieldExecution,  // Waiting to yield execution.
+    WrFastMutex,       // Waiting for a fast mutex.
+    WrGuardedMutex,    // Waiting for a guarded mutex.
+    WrRundown,         // Waiting for a rundown.
+    WrAlertByThreadId, // Waiting for an alert by thread ID.
+    WrDeferredPreempt, // Waiting for a deferred preemption.
+    WrPhysicalFault,   // Waiting for a physical fault.
+    WrIoRing,          // Waiting for an I/O ring.                    // 40
+    WrMdlCache,        // Waiting for an MDL cache.
+    WrRcu,             // Waiting for read-copy-update (RCU) synchronization.
+    MaximumWaitReason
+};
 
 struct RTL_CRITICAL_SECTION_;
 struct EXCEPTION_RECORD_;
@@ -644,6 +707,8 @@ struct OBJECT_ATTRIBUTES_
     U4 Attributes;
     SECURITY_DESCRIPTOR_* SecurityDescriptor;
     SECURITY_QUALITY_OF_SERVICE_* SecurityQualityOfService;
+
+    dfa OBJECT_ATTRIBUTES_();
 };
 struct CLIENT_ID_
 {
@@ -1701,6 +1766,15 @@ struct TOKEN_PRIVILEGES_
     U4 PrivilegeCount;
     LUID_AND_ATTRIBUTES_ Privileges flexarr;
 };
+struct SID_AND_ATTRIBUTES_
+{
+    SID_* Sid;
+    U4 Attributes;
+};
+struct TOKEN_USER_
+{
+    SID_AND_ATTRIBUTES_ User;
+};
 struct PS_ATTRIBUTE_LIST_
 {
     UA TotalLength;
@@ -1767,6 +1841,58 @@ struct PS_CREATE_INFO_
             U4 ManifestSize;
         } SuccessState;
     };
+};
+struct SYSTEM_THREAD_INFORMATION_
+{
+    LARGE_INTEGER_ KernelTime;  // Number of 100-nanosecond intervals spent executing kernel code.
+    LARGE_INTEGER_ UserTime;    // Number of 100-nanosecond intervals spent executing user code.
+    LARGE_INTEGER_ CreateTime;  // The date and time when the thread was created.
+    U4 WaitTime;                // The current time spent in ready queue or waiting (depending on the thread state).
+    GA StartAddress;            // The initial start address of the thread.
+    CLIENT_ID_ ClientId;        // The identifier of the thread and the process owning the thread.
+    S4 Priority;                // The dynamic priority of the thread.
+    S4 BasePriority;            // The starting priority of the thread.
+    U4 ContextSwitches;         // The total number of context switches performed.
+    KTHREAD_STATE_ ThreadState; // The current state of the thread.
+    KWAIT_REASON_ WaitReason;   // The current reason the thread is waiting.
+};
+struct SYSTEM_PROCESS_INFORMATION_
+{
+    U4 NextEntryOffset;                 // The address of the previous item plus the value in the NextEntryOffset member. For the last item in the array, NextEntryOffset is 0.
+    U4 NumberOfThreads;                 // The NumberOfThreads member contains the number of threads in the process.
+    U8 WorkingSetPrivateSize;           // The total private memory that a process currently has allocated and is physically resident in memory. // since VISTA
+    U4 HardFaultCount;                  // The total number of hard faults for data from disk rather than from in-memory pages. // since WIN7
+    U4 NumberOfThreadsHighWatermark;    // The peak number of threads that were running at any given point in time, indicative of potential performance bottlenecks related to thread management.
+    U8 CycleTime;                       // The sum of the cycle time of all threads in the process.
+    LARGE_INTEGER_ CreateTime;          // Number of 100-nanosecond intervals since the creation time of the process. Not updated during system timezone changes.
+    LARGE_INTEGER_ UserTime;            // Number of 100-nanosecond intervals the process has executed in user mode.
+    LARGE_INTEGER_ KernelTime;          // Number of 100-nanosecond intervals the process has executed in kernel mode.
+    UNICODE_STRING_ ImageName;          // The file name of the executable image.
+    S4 BasePriority;                    // The starting priority of the process.
+    HD UniqueProcessId;                 // The identifier of the process.
+    HD InheritedFromUniqueProcessId;    // The identifier of the process that created this process. Not updated and incorrectly refers to processes with recycled identifiers.
+    U4 HandleCount;                     // The current number of open handles used by the process.
+    U4 SessionId;                       // The identifier of the Remote Desktop Services session under which the specified process is running.
+    UA UniqueProcessKey;                // since VISTA (requires SystemExtendedProcessInformation)
+    UA PeakVirtualSize;                 // The peak size, in bytes, of the virtual memory used by the process.
+    UA VirtualSize;                     // The current size, in bytes, of virtual memory used by the process.
+    U4 PageFaultCount;                  // The total number of page faults for data that is not currently in memory. The value wraps around to zero on average 24 hours.
+    UA PeakWorkingSetSize;              // The peak size, in kilobytes, of the working set of the process.
+    UA WorkingSetSize;                  // The number of pages visible to the process in physical memory. These pages are resident and available for use without triggering a page fault.
+    UA QuotaPeakPagedPoolUsage;         // The peak quota charged to the process for pool usage, in bytes.
+    UA QuotaPagedPoolUsage;             // The quota charged to the process for paged pool usage, in bytes.
+    UA QuotaPeakNonPagedPoolUsage;      // The peak quota charged to the process for nonpaged pool usage, in bytes.
+    UA QuotaNonPagedPoolUsage;          // The current quota charged to the process for nonpaged pool usage.
+    UA PagefileUsage;                   // The total number of bytes of page file storage in use by the process.
+    UA PeakPagefileUsage;               // The maximum number of bytes of page-file storage used by the process.
+    UA PrivatePageCount;                // The number of memory pages allocated for the use by the process.
+    LARGE_INTEGER_ ReadOperationCount;  // The total number of read operations performed.
+    LARGE_INTEGER_ WriteOperationCount; // The total number of write operations performed.
+    LARGE_INTEGER_ OtherOperationCount; // The total number of I/O operations performed other than read and write operations.
+    LARGE_INTEGER_ ReadTransferCount;   // The total number of bytes read during a read operation.
+    LARGE_INTEGER_ WriteTransferCount;  // The total number of bytes written during a write operation.
+    LARGE_INTEGER_ OtherTransferCount;  // The total number of bytes transferred during operations other than read and write operations.
+    SYSTEM_THREAD_INFORMATION_ Threads flexarr; // This type is not defined in the structure but was added for convenience.
 };
 
 using LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);
