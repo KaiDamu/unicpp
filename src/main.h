@@ -10,10 +10,6 @@ struct MainInitCtx
 
 dfa ER MainInit(MainInitCtx& ctx)
 {
-#ifdef PROG_SYS_WIN
-    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS); // hint for performance, error not handled
-    TimeResSet(1, 0, NO);                                       // hint for performance, error not handled
-#endif
 #ifndef PROG_SYS_WIN
     g_argCnt = ctx.argc;
     g_argValStd = ctx.argv;
@@ -21,6 +17,10 @@ dfa ER MainInit(MainInitCtx& ctx)
 #ifdef PROG_SYS_WIN
     ife (UniNtLoad())
         retep;
+#endif
+#ifdef PROG_SYS_WIN
+    ProcPrioSet(PROCESS_PRIORITY_CLASS_HIGH, YES); // hint for performance, error not handled
+    TimeResSet(0.1, NO);                           // hint for performance, error not handled
 #endif
     ife (_TimeMainInit())
         retep;

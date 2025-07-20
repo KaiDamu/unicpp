@@ -159,7 +159,7 @@ dfa ER KeybInit()
     ife (g_keybThd.Start(_KeybHookThd, const_cast<U1*>(&code)))
         retep;
     while (code == KEYB_HOOK_THD_CODE_WAIT)
-        ;
+        NtYieldExecution_();
     ifu (code == KEYB_HOOK_THD_CODE_ERR_YES)
         rete(ErrVal::HOOK);
     g_keybThdIsValid = YES;

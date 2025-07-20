@@ -910,8 +910,8 @@ dfa ER ScnDrawInit()
     volatile AU code = SCN_DRAW_THD_CODE_WAIT;
     ife (g_scnDrawThd.Start(_ScnDrawThd, const_cast<U1*>(&code)))
         retep;
-    while (code == SCN_DRAW_THD_CODE_WAIT) // TODO: optimize
-        ;
+    while (code == SCN_DRAW_THD_CODE_WAIT)
+        NtYieldExecution_();
     ifu (code == SCN_DRAW_THD_CODE_ERR_YES)
         rete(ErrVal::SCN);
     rets;

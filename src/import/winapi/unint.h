@@ -1,5 +1,7 @@
 #pragma once
 
+cxex U1 PROCESS_PRIORITY_CLASS_HIGH = 3;
+
 cxex SI RTL_MAX_DRIVE_LETTERS = 32;
 cxex SI GDI_BATCH_BUFFER_SIZE = 310;
 cxex SI WIN32_CLIENT_INFO_LENGTH = 62;
@@ -2016,6 +2018,11 @@ struct IO_STATUS_BLOCK_
         GA Pointer;
     };
     UA Information;
+};
+struct PROCESS_PRIORITY_CLASS
+{
+    U1 Foreground;
+    U1 PriorityClass;
 };
 
 // clang-format off

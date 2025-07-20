@@ -109,22 +109,18 @@ dfa TmMain TimeMain()
 
 dfa ER TimeResClr()
 {
-    ULONG resNew;
-    ifu (NtSetTimerResolution(0, FALSE, &resNew) != STATUS_SUCCESS)
-    {
+    U4 resNew;
+    ifu (NtSetTimerResolution_(0, NO, &resNew) != STATUS_SUCCESS)
         rete(ErrVal::TIME_RES);
-    }
     rets;
 }
-dfa ER TimeResSet(S4 ms, S4 us, BO force)
+dfa ER TimeResSet(TmMain ms, BO doForce)
 {
-    cx ULONG resReq = ULONG((ms * 1000 + us) * 10);
-    ULONG resNew;
-    ifu (NtSetTimerResolution(resReq, TRUE, &resNew) != STATUS_SUCCESS)
-    {
+    cx AU resReq = U4(RoundToInt(ms * TmMain(10000)));
+    U4 resNew;
+    ifu (NtSetTimerResolution_(resReq, YES, &resNew) != STATUS_SUCCESS)
         rete(ErrVal::TIME_RES);
-    }
-    ifu (force && (resReq != resNew))
+    ifu (doForce && (resReq != resNew))
     {
         TimeResClr();
         rete(ErrVal::TIME_RES);

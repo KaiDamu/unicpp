@@ -249,6 +249,16 @@ dfa ER ProcDpiAwareSet()
         rete(ErrVal::PROC);
     rets;
 }
+dfa ER ProcPrioSet(U1 prio, BO isFocus = NO)
+{
+    PROCESS_PRIORITY_CLASS info = {};
+    info.Foreground = isFocus;
+    info.PriorityClass = prio;
+    cx AU status = NtSetInformationProcess_(ProcCurHdl(), PROCESSINFOCLASS_::ProcessPriorityClass, &info, siz(info));
+    ifu (status != STATUS_SUCCESS)
+        rete(ErrVal::PROC);
+    rets;
+}
 
 dfa ER ProcNewFile(cx CH* path)
 {
