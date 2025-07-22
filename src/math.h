@@ -6,6 +6,11 @@ tpl<SI TI, typename T1> dfa cxex T1 ByteIVal(cx T1& val)
     static_assert(TI >= 0 && TI < siz(T1), "ByteIVal: TI out of range");
     ret (val >> (TI << 3)) & 0xFF;
 }
+tpl1 dfa T1 ByteIVal(cx T1& val, SI i)
+{
+    static_assert(IsTypeU<T1> || IsTypeS<T1>, "ByteIVal: T1 must be an integer type");
+    ret (val >> (i << 3)) & 0xFF;
+}
 tpl1 dfa T1 Min(T1 a, T1 b)
 {
     ret ((a < b) ? a : b);
@@ -275,6 +280,10 @@ tpl1 dfa T1 ZigzagAround(T1 val, T1 i)
 {
     ret val + ZigzagAround0<T1>(i);
 }
+tpl<typename T1, T1 TSize> dfa T1 AlignBit(T1 val)
+{
+    ret (val + (TSize - 1)) & ~(TSize - 1);
+}
 tpl1 dfa T1 AlignBit(T1 val, T1 size)
 {
     ret (val + (size - 1)) & ~(size - 1);
@@ -471,11 +480,12 @@ tpl0 dfa SI LenBin<>(U1 val)
 tpl1 dfa SI LenInt(T1 val)
 {
     SI sign = 0;
-    if (val < 0)
-    {
-        val = -val;
-        sign = 1;
-    }
+    ifcx (!IsTypeU<T1>)
+        if (val < 0)
+        {
+            val = -val;
+            sign = 1;
+        }
     SI num = 0;
     if (val < 10)
         num = 1;

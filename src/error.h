@@ -4,6 +4,7 @@ enum class ErrVal : U4
 {
     NONE = 0,
     //
+    SYS,
     MEM,
     TIME,
     PROC,

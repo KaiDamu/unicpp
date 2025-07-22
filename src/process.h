@@ -173,6 +173,10 @@ dfa HD ProcCurHdl()
 {
     ret HD(-1);
 }
+dfa HD ProcCurId()
+{
+    ret ThdTeb()->ClientId.UniqueProcess;
+}
 
 dfa BO ProcIsElevated()
 {

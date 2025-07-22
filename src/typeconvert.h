@@ -202,11 +202,12 @@ tpl2 dfa SI IntToStr(T1* dst, T2 src)
 {
     cx AU len = LenInt<T2>(src);
     dst[len] = '\0';
-    if (src < 0)
-    {
-        src = -src;
-        dst[0] = '-';
-    }
+    ifcx (!IsTypeU<T2>)
+        if (src < 0)
+        {
+            src = -src;
+            dst[0] = '-';
+        }
     dst += len;
     switch (len)
     {
