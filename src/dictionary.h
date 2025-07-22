@@ -469,10 +469,12 @@ class SVarBlock
     }
     dfa ER LoadFileCfg(cx CH* path)
     {
-        Arr<U1> fileDat;
-        ife (FileToArr(fileDat, path))
+        std::vector<U1> fileDat;
+        ife (FileToBuf(fileDat, path))
             retep;
-        cx SI len = tx->LoadMemCfg(fileDat.ToDatIte());
+        DatIte<U1> datIte;
+        datIte.Src(fileDat.data(), fileDat.size());
+        cx SI len = tx->LoadMemCfg(datIte);
         unused(len);
         rets;
     }

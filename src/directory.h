@@ -67,8 +67,8 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
     if (depth == 0)
         rets;
     --depth;
-    FileNt dir;
-    ife (dir.Open(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, 0, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, FILE_OPEN, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT))
+    File dir;
+    ife (dir._OpenNt(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, 0, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, FILE_OPEN, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT))
         retep;
     Arr<U1> buf(BYTE_IN_KB * 4); // maybe this should be configurable
     IO_STATUS_BLOCK isb;

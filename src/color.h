@@ -1100,11 +1100,9 @@ tpl1 dfa NT ColGridFloodFillAll(ColGrid<T1>& colGrid, std::vector<SI>& fillOrigi
 #ifdef PROG_SYS_WIN
 tpl1 dfa ER ColGridToFileBmp(cx ColGrid<T1>& colGrid, cx CH* path)
 {
-    FileMem file;
-    ife (file.OpenWrite(path))
-    {
-        rete(ErrVal::FILE);
-    }
+    MemFile file;
+    ife (file.Open(path, NO))
+        retep;
 
     cx AU rowSize = AlignBit(colGrid.size.w * siz(ColRgb), siz(U4));
     cx AU imgSize = rowSize * colGrid.size.h;
@@ -1123,10 +1121,8 @@ tpl1 dfa ER ColGridToFileBmp(cx ColGrid<T1>& colGrid, cx CH* path)
     fileHdr.bfOffBits = U4(siz(fileHdr) + siz(infoHdr));
     fileHdr.bfSize = fileHdr.bfOffBits + U4(imgSize);
 
-    ife (file.Write(&fileHdr, siz(fileHdr)))
-        retep;
-    ife (file.Write(&infoHdr, siz(infoHdr)))
-        retep;
+    file.Write(&fileHdr, siz(fileHdr));
+    file.Write(&infoHdr, siz(infoHdr));
 
     std::vector<U1> rowDat(rowSize);
     for (SI y = colGrid.size.h - 1; y >= 0; --y)
@@ -1145,36 +1141,29 @@ tpl1 dfa ER ColGridToFileBmp(cx ColGrid<T1>& colGrid, cx CH* path)
         cx AU padSize = rowSize - colGrid.size.w * siz(ColRgb);
         MemSet(curOut, 0, padSize);
 
-        ife (file.Write(rowDat.data(), rowDat.size()))
-            retep;
+        file.Write(rowDat.data(), rowDat.size());
     }
 
-    ife (file.Close())
-    {
-        rete(ErrVal::FILE);
-    }
+    ife (file.Close(YES))
+        retep;
     rets;
 }
 tpl1 dfa ER FileToColGridBmp(ColGrid<T1>& colGrid, cx CH* path)
 {
-    FileMem file;
-    ife (file.OpenRead(path))
-    {
-        rete(ErrVal::FILE);
-    }
+    MemFile file;
+    ife (file.Open(path, YES))
+        retep;
 
     BITMAPFILEHEADER fileHdr = {};
-    ife (file.Read(&fileHdr, siz(fileHdr)))
-        retep;
+    ifu (file.Read(&fileHdr, siz(fileHdr)) != siz(fileHdr))
+        rete(ErrVal::FILE);
 
     ifu (fileHdr.bfType != 0x4D42)
-    {
         rete(ErrVal::FILE);
-    }
 
     BITMAPINFOHEADER infoHdr = {};
-    ife (file.Read(&infoHdr, siz(infoHdr)))
-        retep;
+    ifu (file.Read(&infoHdr, siz(infoHdr)) != siz(infoHdr))
+        rete(ErrVal::FILE);
 
     ifu (infoHdr.biPlanes != 1 || infoHdr.biBitCount != sizb(ColRgb) || infoHdr.biCompression != BI_RGB)
     {
@@ -1189,14 +1178,13 @@ tpl1 dfa ER FileToColGridBmp(ColGrid<T1>& colGrid, cx CH* path)
     colGrid.size.h = imgH;
     colGrid.pixels.resize(imgW * imgH);
 
-    ife (file.CurSet(SI(fileHdr.bfOffBits)))
-        retep;
+    file.CurSet(SI(fileHdr.bfOffBits));
 
     std::vector<U1> rowDat(rowSize);
     ite (i, i < imgH)
     {
-        ife (file.Read(rowDat.data(), rowDat.size()))
-            retep;
+        ifu (file.Read(rowDat.data(), rowDat.size()) != rowDat.size())
+            rete(ErrVal::FILE);
 
         AU curIn = rowDat.data();
         AU curOut = colGrid.pixels.data() + ((isTopDown ? i : (imgH - 1 - i)) * imgW);

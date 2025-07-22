@@ -7,14 +7,14 @@ cxex SI PIPE_BUF_SIZE = 65536;
 class PipeIn
 {
   private:
-    FileWin m_hdl;
+    File m_hdl;
 
   private:
     dfa ER _Connect(cx CH* pipeName)
     {
         CH path[PATH_LEN_MAX] = L"\\\\.\\pipe\\";
         StrAdd(path, pipeName);
-        ife (m_hdl.Open(path, GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING, 0))
+        ife (m_hdl._OpenWin(path, GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING, 0))
             retep;
         DWORD mode = PIPE_READMODE_MESSAGE;
         ifu (SetNamedPipeHandleState(m_hdl.Hdl(), &mode, NUL, NUL) == 0)

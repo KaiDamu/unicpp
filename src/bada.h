@@ -92,7 +92,7 @@ class BadaCodec
 
   private:
     // ...
-    FileMem m_file;
+    MemFile m_file;
     Size2<SI> m_frameSize;
     SI m_frameCnt;
     std::vector<Frame> m_frames;
@@ -259,20 +259,14 @@ class BadaCodec
         m_colDatType = params.colDatType;
         m_colDatFeatures = params.colDatFeatures;
         m_fps = params.fps;
-        ife (m_file.OpenWrite(path))
+        ife (m_file.Open(path, NO))
             retep;
-        ife (m_file.WriteVal(BADA_MAGIC))
-            retep;
-        ife (m_file.WriteVal(BadaDatBlockType::FPS))
-            retep;
-        ife (m_file.WriteVarint(U4(m_fps)))
-            retep;
-        ife (m_file.WriteVal(BadaDatBlockType::COL_DAT_TYPE))
-            retep;
-        ife (m_file.WriteVal(m_colDatType))
-            retep;
-        ife (m_file.WriteVarint(U4(m_colDatFeatures)))
-            retep;
+        m_file.WriteVal(BADA_MAGIC);
+        m_file.WriteVal(BadaDatBlockType::FPS);
+        m_file.WriteVarint(U4(m_fps));
+        m_file.WriteVal(BadaDatBlockType::COL_DAT_TYPE);
+        m_file.WriteVal(m_colDatType);
+        m_file.WriteVarint(U4(m_colDatFeatures));
         m_frameSize = Size2<SI>(0, 0);
         m_frameCnt = 0;
         m_frames.clear();
@@ -282,7 +276,7 @@ class BadaCodec
     }
     dfa ER BeginDecode(cx CH* path)
     {
-        ife (m_file.OpenRead(path))
+        ife (m_file.Open(path, YES))
             retep;
         m_frameSize = Size2<SI>(0, 0);
         m_frameCnt = 0;
@@ -291,8 +285,8 @@ class BadaCodec
         m_colDatFeatures = BadaColDatFeatures(0);
         m_fps = 30;
 
-        ife (m_file.ReadVal(m_varU4))
-            retep;
+        ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
+            rete(ErrVal::FILE);
         ifu (m_varU4 != BADA_MAGIC)
             rete(ErrVal::NO_VALID);
 
@@ -300,8 +294,8 @@ class BadaCodec
             BadaDatBlockType datBlockType = BadaDatBlockType::NONE;
             while (datBlockType != BadaDatBlockType::END)
             {
-                ife (m_file.ReadVal(datBlockType))
-                    retep;
+                ifu (m_file.ReadVal(datBlockType) != siz(datBlockType))
+                    rete(ErrVal::FILE);
 
                 switch (datBlockType)
                 {
@@ -309,39 +303,38 @@ class BadaCodec
                     break;
                 }
                 case BadaDatBlockType::GRID_SIZE: {
-                    ife (m_file.ReadVarint(m_varU4))
-                        retep;
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
                     m_frameSize.w = m_varU4;
-                    ife (m_file.ReadVarint(m_varU4))
-                        retep;
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
                     m_frameSize.h = m_varU4;
-                    ife (m_file.ReadVal(m_varU4))
-                        retep;
+                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
+                        rete(ErrVal::FILE);
                     m_frameCnt = m_varU4;
                     break;
                 }
                 case BadaDatBlockType::FPS: {
-                    ife (m_file.ReadVarint(m_varU4))
-                        retep;
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
                     m_fps = m_varU4;
                     break;
                 }
                 case BadaDatBlockType::COL_DAT_TYPE: {
-                    ife (m_file.ReadVal(m_colDatType))
-                        retep;
-                    ife (m_file.ReadVarint(AsType<U4>(m_colDatFeatures)))
-                        retep;
+                    ifu (m_file.ReadVal(m_colDatType) != siz(m_colDatType))
+                        rete(ErrVal::FILE);
+                    ifu (m_file.ReadVarint(AsType<U4>(m_colDatFeatures)) == 0)
+                        rete(ErrVal::FILE);
                     ifu (U4(m_colDatFeatures) != 0)
                         rete(ErrVal::NO_SUPPORT);
                     break;
                 }
                 case BadaDatBlockType::COL_DAT: {
-                    ife (m_file.ReadVal(m_varU4))
-                        retep;
+                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
+                        rete(ErrVal::FILE);
                     m_colDatSize = m_varU4;
-                    m_colDatPos = m_file.CurPos();
-                    ife (m_file.CurMove(m_colDatSize))
-                        retep;
+                    m_colDatPos = m_file.CurGet();
+                    m_file.CurMove(m_colDatSize);
                     break;
                 }
                 case BadaDatBlockType::END: {
@@ -357,8 +350,7 @@ class BadaCodec
         m_frameCur = 0;
         m_cntCur = 0;
         m_colCur = 1;
-        ife (m_file.CurSet(m_colDatPos))
-            retep;
+        m_file.CurSet(m_colDatPos);
 
         if (m_colDatType == BadaColDatType::EDGE_FILL)
         {
@@ -431,12 +423,12 @@ class BadaCodec
                 AU& frame = *(framesNolazyMap[i]);
 
                 // path
-                ife (m_file.ReadVal<U4>(m_varU4))
-                    retep;
+                ifu (m_file.ReadVal<U4>(m_varU4) != siz(m_varU4))
+                    rete(ErrVal::FILE);
                 cx AU pixelPathDatSize = SI(m_varU4);
                 std::vector<U1> pixelPathDat(pixelPathDatSize);
-                ife (m_file.Read(pixelPathDat.data(), pixelPathDat.size()))
-                    retep;
+                ifu (m_file.Read(pixelPathDat.data(), pixelPathDat.size()) != SI(pixelPathDat.size()))
+                    rete(ErrVal::FILE);
                 frame.pixelPath.AddLast(&pixelPathDatSize, sizb(U4));
                 frame.pixelPath.AddLast(pixelPathDat.data(), pixelPathDat.size() * BIT_IN_BYTE);
             }
@@ -451,11 +443,9 @@ class BadaCodec
         ifu (m_frameCnt == 0)
         {
             m_frameSize = colGrid.size;
-            ife (m_file.WriteVal(BadaDatBlockType::COL_DAT))
-                retep;
-            m_colDatSizePos = m_file.CurPos();
-            ife (m_file.WriteVal(U4(0))) // size, will be filled in later
-                retep;
+            m_file.WriteVal(BadaDatBlockType::COL_DAT);
+            m_colDatSizePos = m_file.CurGet();
+            m_file.WriteVal(U4(0)); // size, will be filled in later
         }
 
         ifu (colGrid.size != m_frameSize)
@@ -470,8 +460,7 @@ class BadaCodec
                 cx AU isWhite = pixel->v >= TO(ColV::v)(0x80);
                 ifu (isWhite ^ m_colCur)
                 {
-                    ife (m_file.WriteVarint(U4(m_cntCur)))
-                        retep;
+                    m_file.WriteVarint(U4(m_cntCur));
                     m_colCur = isWhite;
                     m_cntCur = 1;
                 }
@@ -548,10 +537,10 @@ class BadaCodec
             {
                 if (m_cntCur == 0)
                 {
-                    ifu (m_file.CurPos() >= m_colDatPos + m_colDatSize)
+                    ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
                         rete(ErrVal::NO_EXIST);
-                    ife (m_file.ReadVarint(m_varU4))
-                        retep;
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
                     m_cntCur = m_varU4;
                     m_colCur = m_colCur ? 0 : 1;
                 }
@@ -615,10 +604,7 @@ class BadaCodec
         if (m_colDatType == BadaColDatType::BI_SWITCH_LTR)
         {
             if (m_cntCur > 0)
-            {
-                ife (m_file.WriteVarint(U4(m_cntCur)))
-                    retep;
-            }
+                m_file.WriteVarint(U4(m_cntCur));
         }
         else if (m_colDatType == BadaColDatType::EDGE_FILL)
         {
@@ -705,50 +691,37 @@ class BadaCodec
             }
 
             // lazy
-            ife (m_file.Write(lazyBox.Dat(), lazyBox.SizeByte()))
-                retep;
+            m_file.Write(lazyBox.Dat(), lazyBox.SizeByte());
 
             // base
-            ife (m_file.Write(baseColBox.Dat(), baseColBox.SizeByte()))
-                retep;
+            m_file.Write(baseColBox.Dat(), baseColBox.SizeByte());
 
             // fill
-            ife (m_file.Write(fillCntBox.Dat(), fillCntBox.SizeByte()))
-                retep;
-            ife (m_file.Write(fillOriginBox.Dat(), fillOriginBox.SizeByte()))
-                retep;
+            m_file.Write(fillCntBox.Dat(), fillCntBox.SizeByte());
+            m_file.Write(fillOriginBox.Dat(), fillOriginBox.SizeByte());
 
             for (cx AU& frame : framesNolazy)
             {
                 // path
-                ife (m_file.Write(frame.pixelPath.Dat(), frame.pixelPath.SizeByte()))
-                    retep;
+                m_file.Write(frame.pixelPath.Dat(), frame.pixelPath.SizeByte());
             }
         }
 
         {
-            cx AU curPos = m_file.CurPos();
+            cx AU curPos = m_file.CurGet();
             cx AU colDatSize = curPos - m_colDatSizePos - siz(U4);
-            ife (m_file.CurSet(m_colDatSizePos))
-                retep;
-            ife (m_file.WriteVal(U4(colDatSize)))
-                retep;
-            ife (m_file.CurSet(curPos))
-                retep;
+            m_file.CurSet(m_colDatSizePos);
+            m_file.WriteVal(U4(colDatSize));
+            m_file.CurSet(curPos);
         }
 
-        ife (m_file.WriteVal(BadaDatBlockType::GRID_SIZE))
-            retep;
-        ife (m_file.WriteVarint(U4(m_frameSize.w)))
-            retep;
-        ife (m_file.WriteVarint(U4(m_frameSize.h)))
-            retep;
-        ife (m_file.WriteVal(U4(m_frameCnt)))
-            retep;
-        ife (m_file.WriteVal(BadaDatBlockType::END))
-            retep;
+        m_file.WriteVal(BadaDatBlockType::GRID_SIZE);
+        m_file.WriteVarint(U4(m_frameSize.w));
+        m_file.WriteVarint(U4(m_frameSize.h));
+        m_file.WriteVal(U4(m_frameCnt));
+        m_file.WriteVal(BadaDatBlockType::END);
 
-        ife (m_file.Close())
+        ife (m_file.Close(YES))
             retep;
 
         ife (m_thdTaskMgr.Free())

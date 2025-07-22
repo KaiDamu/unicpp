@@ -55,7 +55,7 @@ class Vfs
     };
 
   private:
-    FileMem m_file;
+    MemFile m_file;
     VfsHdr m_hdr;
     DictAvl<std::wstring, VfsEntry> m_entryList;
 
@@ -120,7 +120,7 @@ class Vfs
             retep;
         rets;
     }
-    dfa ER WriteHdr(FileMem& fileDst, cx VfsNewInfo& info, std::list<FileEntry>& fileEntryList) cx
+    dfa ER WriteHdr(MemFile& fileDst, cx VfsNewInfo& info, std::list<FileEntry>& fileEntryList) cx
     {
         cx U4 compress = U4(info.compress);
         cx U4 encrypt = U4(info.encrypt);
@@ -129,110 +129,93 @@ class Vfs
         // ited (fileEntry, fileEntryList) datSize += fileEntry->info.datSize;
         for (cx AU& fileEntry : fileEntryList)
             datSize += fileEntry.info.datSize;
-        ife (fileDst.Write(VFS_MAGIC, VFS_MAGIC_SIZE))
-            retep;
-        ife (fileDst.Write(&VFS_FORMAT_NEW, siz(U1)))
-            retep;
-        ife (fileDst.Write(&info.flags, siz(U4)))
-            retep;
-        ife (fileDst.Write(&compress, siz(U4)))
-            retep;
-        ife (fileDst.Write(&encrypt, siz(U4)))
-            retep;
-        ife (fileDst.Write(&entryCnt, siz(U8)))
-            retep;
-        ife (fileDst.Write(&datSize, siz(U8)))
-            retep;
+        fileDst.Write(VFS_MAGIC, VFS_MAGIC_SIZE);
+        fileDst.Write(&VFS_FORMAT_NEW, siz(U1));
+        fileDst.Write(&info.flags, siz(U4));
+        fileDst.Write(&compress, siz(U4));
+        fileDst.Write(&encrypt, siz(U4));
+        fileDst.Write(&entryCnt, siz(U8));
+        fileDst.Write(&datSize, siz(U8));
         rets;
     }
-    dfa ER WriteEntry(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, SI pathOfs) cx
+    dfa ER WriteEntry(MemFile& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, SI pathOfs) cx
     {
         cx U8 datSize = U8(fileEntry.info.datSize);
         cx U8 pathLen = U8(fileEntry.path.size() - pathOfs);
         CH path[PATH_LENX_MAX];
         MemObfuscate(path, fileEntry.path.c_str() + pathOfs, pathLen * siz(CH));
-        ife (fileDst.Write("\x00\x00\x00\x00", siz(U4)))
-            retep;
-        ife (fileDst.Write(&fileEntry.info.attrib, siz(U4)))
-            retep;
-        datOfsList.Write(fileDst.CurPos());
-        ife (fileDst.Write("\x00\x00\x00\x00\x00\x00\x00\x00", siz(U8)))
-            retep;
-        ife (fileDst.Write(&datSize, siz(U8)))
-            retep;
-        ife (fileDst.Write(&pathLen, siz(U8)))
-            retep;
-        ife (fileDst.Write(path, pathLen * siz(CH)))
-            retep;
+        fileDst.Write("\x00\x00\x00\x00", siz(U4));
+        fileDst.Write(&fileEntry.info.attrib, siz(U4));
+        datOfsList.Write(fileDst.CurGet());
+        fileDst.Write("\x00\x00\x00\x00\x00\x00\x00\x00", siz(U8));
+        fileDst.Write(&datSize, siz(U8));
+        fileDst.Write(&pathLen, siz(U8));
+        fileDst.Write(path, pathLen * siz(CH));
         rets;
     }
-    dfa ER WriteEntryDat(FileMem& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, cx VfsNewInfo& info) cx
+    dfa ER WriteEntryDat(MemFile& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, cx VfsNewInfo& info) cx
     {
         cx SI datOfsHdr = datOfsList.Read();
         if (fileEntry.info.datSize == 0)
             rets;
-        cx SI datOfsNow = fileDst.CurPos();
+        cx SI datOfsNow = fileDst.CurGet();
         cx U8 datOfsNow_ = U8(datOfsNow);
-        ife (fileDst.CurSet(datOfsHdr))
-            retep;
-        ife (fileDst.Write(&datOfsNow_, siz(U8)))
-            retep;
-        ife (fileDst.CurSet(datOfsNow))
-            retep;
-        FileMem fileSrc;
-        ife (fileSrc.OpenRead(fileEntry.path.c_str()))
+        fileDst.CurSet(datOfsHdr);
+        fileDst.Write(&datOfsNow_, siz(U8));
+        fileDst.CurSet(datOfsNow);
+        MemFile fileSrc;
+        ife (fileSrc.Open(fileEntry.path.c_str(), YES))
             retep;
         if (info.encrypt == VfsEncrypt::OBFUSCATE)
-            MemObfuscate(fileSrc._Dat(), fileEntry.info.datSize);
-        ife (fileDst.Write(fileSrc._Dat(), fileEntry.info.datSize))
-            retep;
+            MemObfuscate(fileSrc.Dat(), fileEntry.info.datSize);
+        fileDst.Write(fileSrc.Dat(), fileEntry.info.datSize);
         ife (fileSrc.Close())
             retep;
         rets;
     }
-    dfa ER ReadHdr(FileMem& fileSrc, VfsHdr& hdr)
+    dfa ER ReadHdr(MemFile& fileSrc, VfsHdr& hdr)
     {
         U4 compress = 0;
         U4 encrypt = 0;
         U8 entryCnt = 0;
         U8 datSize = 0;
-        ife (fileSrc.Read(hdr.magic, VFS_MAGIC_SIZE))
-            retep;
-        ife (fileSrc.Read(&hdr.format, siz(U1)))
-            retep;
-        ife (fileSrc.Read(&hdr.flags, siz(U4)))
-            retep;
-        ife (fileSrc.Read(&compress, siz(U4)))
-            retep;
-        ife (fileSrc.Read(&encrypt, siz(U4)))
-            retep;
-        ife (fileSrc.Read(&entryCnt, siz(U8)))
-            retep;
-        ife (fileSrc.Read(&datSize, siz(U8)))
-            retep;
+        ifu (fileSrc.Read(hdr.magic, VFS_MAGIC_SIZE) != VFS_MAGIC_SIZE)
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&hdr.format, siz(U1)) != siz(U1))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&hdr.flags, siz(U4)) != siz(U4))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&compress, siz(U4)) != siz(U4))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&encrypt, siz(U4)) != siz(U4))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&entryCnt, siz(U8)) != siz(U8))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&datSize, siz(U8)) != siz(U8))
+            rete(ErrVal::FILE);
         hdr.compress = VfsCompress(compress);
         hdr.encrypt = VfsEncrypt(encrypt);
         hdr.entryCnt = SI(entryCnt);
         hdr.datSize = SI(datSize);
         rets;
     }
-    dfa ER ReadEntry(FileMem& fileSrc, VfsEntry& entry)
+    dfa ER ReadEntry(MemFile& fileSrc, VfsEntry& entry)
     {
         U8 datOfs = 0;
         U8 datSize = 0;
         U8 pathLen = 0;
-        ife (fileSrc.Read(&entry.flags, siz(U4)))
-            retep;
-        ife (fileSrc.Read(&entry.attrib, siz(U4)))
-            retep;
-        ife (fileSrc.Read(&datOfs, siz(U8)))
-            retep;
-        ife (fileSrc.Read(&datSize, siz(U8)))
-            retep;
-        ife (fileSrc.Read(&pathLen, siz(U8)))
-            retep;
-        ife (fileSrc.Read(entry.path, SI(pathLen) * siz(CH)))
-            retep;
+        ifu (fileSrc.Read(&entry.flags, siz(U4)) != siz(U4))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&entry.attrib, siz(U4)) != siz(U4))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&datOfs, siz(U8)) != siz(U8))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&datSize, siz(U8)) != siz(U8))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(&pathLen, siz(U8)) != siz(U8))
+            rete(ErrVal::FILE);
+        ifu (fileSrc.Read(entry.path, SI(pathLen) * siz(CH)) != (SI(pathLen) * siz(CH)))
+            rete(ErrVal::FILE);
         MemUnobfuscate(entry.path, SI(pathLen) * siz(CH));
         entry.path[SI(pathLen)] = '\0';
         entry.datOfs = SI(datOfs);
@@ -255,8 +238,8 @@ class Vfs
         std::list<FileEntry> fileEntryList;
         ife (tx->FileEntryListGet(fileEntryList, src))
             retep;
-        FileMem fileDst;
-        ife (fileDst.OpenWrite(dst))
+        MemFile fileDst;
+        ife (fileDst.Open(dst, NO))
             retep;
         ife (tx->WriteHdr(fileDst, info, fileEntryList))
             retep;
@@ -272,7 +255,7 @@ class Vfs
             ife (tx->WriteEntryDat(fileDst, datOfsList, fileEntry, info))
                 retep;
         }
-        ife (fileDst.Close())
+        ife (fileDst.Close(YES))
             retep;
         rets;
     }
@@ -288,7 +271,7 @@ class Vfs
     {
         ife (tx->Close())
             retep;
-        ife (m_file.OpenRead(path))
+        ife (m_file.Open(path))
             retep;
         ife (tx->ReadHdr(m_file, m_hdr))
             retep;
@@ -313,13 +296,12 @@ class Vfs
             rete(ErrVal::NO_EXIST);
         if (entry->datSize == 0)
             rets;
-        ife (m_file.CurSet(entry->datOfs))
-            retep;
+        m_file.CurSet(entry->datOfs);
         buf.New(entry->datSize);
-        ife (m_file.Read(buf.Ptr(), entry->datSize))
+        ifu (m_file.Read(buf.Ptr(), entry->datSize) != entry->datSize)
         {
             buf.New(0);
-            retep;
+            rete(ErrVal::FILE);
         }
         if (m_hdr.encrypt == VfsEncrypt::OBFUSCATE)
             MemUnobfuscate(buf.Ptr(), entry->datSize);
