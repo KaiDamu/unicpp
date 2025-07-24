@@ -58,6 +58,7 @@ dfa ER UniNtLoad()
     _UNI_NT_LOAD_FN(NtQueryDirectoryFile);
     _UNI_NT_LOAD_FN(NtQueryInformationFile);
     _UNI_NT_LOAD_FN(NtQueryInformationProcess);
+    _UNI_NT_LOAD_FN(NtQueryInformationThread);
     _UNI_NT_LOAD_FN(NtQueryInformationToken);
     _UNI_NT_LOAD_FN(NtQueryObject);
     _UNI_NT_LOAD_FN(NtQuerySystemInformation);
@@ -76,6 +77,8 @@ dfa ER UniNtLoad()
     _UNI_NT_LOAD_FN(NtSetTimerResolution);
     _UNI_NT_LOAD_FN(NtSetValueKey);
     _UNI_NT_LOAD_FN(NtShutdownSystem);
+    _UNI_NT_LOAD_FN(NtTerminateProcess);
+    _UNI_NT_LOAD_FN(NtTerminateThread);
     _UNI_NT_LOAD_FN(NtUnloadDriver);
     _UNI_NT_LOAD_FN(NtWaitForKeyedEvent);
     _UNI_NT_LOAD_FN(NtWaitForSingleObject);

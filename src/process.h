@@ -81,7 +81,7 @@ dfa HD ProcDllLoad(cx CH* dllName)
     GA result;
     ifu (LdrLoadDll_(NUL, NUL, &str, &result) != STATUS_SUCCESS)
         ret NUL;
-    ret(HD)result;
+    ret (HD)result;
 }
 dfa HD ProcDllAdrGet(cx CH* dllName, BO doLoad = YES)
 {
@@ -255,7 +255,7 @@ dfa ER ProcDpiAwareSet()
 }
 dfa ER ProcPrioSet(U1 prio, BO isFocus = NO)
 {
-    PROCESS_PRIORITY_CLASS info = {};
+    PROCESS_PRIORITY_CLASS_ info = {};
     info.Foreground = isFocus;
     info.PriorityClass = prio;
     cx AU status = NtSetInformationProcess_(ProcCurHdl(), PROCESSINFOCLASS_::ProcessPriorityClass, &info, siz(info));
@@ -264,7 +264,7 @@ dfa ER ProcPrioSet(U1 prio, BO isFocus = NO)
     rets;
 }
 
-dfa ER ProcNewFile(cx CH* path)
+dfa ER ProcNewByPath(cx CH* path)
 {
     SHELLEXECUTEINFOW info = {};
     info.cbSize = siz(info);
@@ -275,6 +275,104 @@ dfa ER ProcNewFile(cx CH* path)
     ifu (ShellExecuteExW(&info) == NO || UA(info.hInstApp) <= 32 || info.hProcess == NUL)
         rete(ErrVal::PROC);
     rets;
+}
+
+class _Proc
+{
+  private:
+    HD m_hdl;
+
+  public:
+    dfa HD Hdl() cx
+    {
+        ret m_hdl;
+    }
+    dfa ER Open(HD pid, U4 access)
+    {
+        ifu (m_hdl != NUL)
+            rete(ErrVal::YES_INIT);
+        OBJECT_ATTRIBUTES_ oa;
+        CLIENT_ID_ ci = {};
+        ci.UniqueProcess = pid;
+        cx AU status = NtOpenProcess_(&m_hdl, access, &oa, &ci);
+        ifu (status != STATUS_SUCCESS)
+        {
+            m_hdl = NUL;
+            rete(ErrVal::PROC);
+        }
+        rets;
+    }
+    dfa ER Close()
+    {
+        if (m_hdl == NUL)
+            rets;
+        cx AU status = NtClose_(m_hdl);
+        ifu (status != STATUS_SUCCESS)
+            rete(ErrVal::PROC);
+        m_hdl = NUL;
+        rets;
+    }
+    dfa _Proc() : m_hdl(NUL)
+    {
+    }
+    dfa ~_Proc()
+    {
+        tx->Close();
+    }
+};
+
+dfa ER _ProcListGet(std::vector<SYSTEM_PROCESS_INFORMATION_>& out)
+{
+    // WARNING: the 'Threads' field is not included in the output structure
+    out.clear();
+    std::vector<U1> buf;
+    U4 bufSize = 0;
+    while (YES)
+    {
+        cx AU status = NtQuerySystemInformation_(SYSTEM_INFORMATION_CLASS_::SystemProcessInformation, buf.data(), bufSize, &bufSize);
+        if (status == STATUS_SUCCESS)
+            break;
+        if (status != STATUS_INFO_LENGTH_MISMATCH)
+            rete(ErrVal::PROC);
+        bufSize += BYTE_IN_KB;
+        buf.resize(bufSize);
+    }
+    AU procInfoBase = (SYSTEM_PROCESS_INFORMATION_*)buf.data();
+    AU procInfoCur = procInfoBase;
+    SI procCnt = 0;
+    while (procInfoCur->NextEntryOffset != 0)
+    {
+        procInfoCur = (SYSTEM_PROCESS_INFORMATION_*)((U1*)procInfoCur + procInfoCur->NextEntryOffset);
+        ++procCnt;
+    }
+    out.reserve(procCnt);
+    procInfoCur = procInfoBase;
+    ite (i, i < procCnt)
+    {
+        out.push_back(*procInfoCur);
+        procInfoCur = (SYSTEM_PROCESS_INFORMATION_*)((U1*)procInfoCur + procInfoCur->NextEntryOffset);
+    }
+    rets;
+}
+dfa ER _ProcIsUserLocalSystemByHdl(BO& isTrue, HD hdl)
+{
+    isTrue = NO;
+    Token token;
+    ife (token.OpenByProc(hdl, TOKEN_QUERY, 0))
+        retep;
+    cx AU sidUser = token.SidUser();
+    ifu (sidUser == NUL)
+        rete(ErrVal::TOKEN);
+    isTrue = SidIsSame(*sidUser, *SidLocalSystem());
+    rets;
+}
+dfa ER _ProcIsUserLocalSystemByPid(BO& isTrue, HD pid)
+{
+    isTrue = NO;
+    _Proc proc;
+    ife (proc.Open(pid, PROCESS_QUERY_LIMITED_INFORMATION))
+        retep;
+    ret _ProcIsUserLocalSystemByHdl(isTrue, proc.Hdl());
 }
 
 class Proc
@@ -428,6 +526,81 @@ dfa ER ProcRestartElevated()
     ProcExit(0);
     rets;
 }
+
+dfa TmCpu ProcTimeCpu(HD proc)
+{
+    PROCESS_CYCLE_TIME_INFORMATION_ info;
+    ifu (NtQueryInformationProcess_(ProcCurHdl(), PROCESSINFOCLASS_::ProcessCycleTime, &info, siz(info), NUL) != STATUS_SUCCESS)
+        ret TmCpu(0);
+    ret TmCpu(info.AccumulatedCycles);
+}
+
+class TimerCpu
+{
+  private:
+    TmCpu m_time;
+    TmCpu m_timeStart;
+    BO m_isRunning;
+
+  private:
+    dfa TmCpu TimeGet()
+    {
+        ret ProcTimeCpu(ProcCurHdl());
+    }
+
+  public:
+    dfa TmCpu Read()
+    {
+        if (m_isRunning)
+        {
+            cx AU timeNow = tx->TimeGet();
+            m_time += timeNow - m_timeStart;
+            m_timeStart = timeNow;
+        }
+        ret m_time;
+    }
+    dfa TmCpu ReadK()
+    {
+        ret tx->Read() / TmCpu(1000);
+    }
+    dfa TmCpu ReadM()
+    {
+        ret tx->Read() / TmCpu(1000000);
+    }
+    dfa NT Start()
+    {
+        ifu (m_isRunning)
+            ret;
+        m_isRunning = YES;
+        m_timeStart = tx->TimeGet();
+    }
+    dfa TmCpu Pause()
+    {
+        ifu (!m_isRunning)
+            ret m_time;
+        m_isRunning = NO;
+        m_time += tx->TimeGet() - m_timeStart;
+        ret m_time;
+    }
+    dfa TmCpu Restart()
+    {
+        cx AU timeNow = tx->TimeGet();
+        cx AU timeRet = m_isRunning ? (m_time + timeNow - m_timeStart) : m_time;
+        m_isRunning = YES;
+        m_time = 0.0;
+        m_timeStart = timeNow;
+        ret timeRet;
+    }
+
+  public:
+    dfa TimerCpu() : m_time(), m_timeStart(), m_isRunning()
+    {
+        tx->Restart();
+    }
+    dfa ~TimerCpu()
+    {
+    }
+};
 
 cxex SI PROC_GLOBAL_STR_LEN_MAX = PATH_LEN_MAX;
 

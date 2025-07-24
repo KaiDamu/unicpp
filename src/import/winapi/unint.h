@@ -2019,10 +2019,29 @@ struct IO_STATUS_BLOCK_
     };
     UA Information;
 };
-struct PROCESS_PRIORITY_CLASS
+struct PROCESS_PRIORITY_CLASS_
 {
     U1 Foreground;
     U1 PriorityClass;
+};
+struct SYSTEM_BASIC_INFORMATION_
+{
+    U4 Reserved;
+    U4 TimerResolution;
+    U4 PageSize;
+    U4 NumberOfPhysicalPages;
+    U4 LowestPhysicalPageNumber;
+    U4 HighestPhysicalPageNumber;
+    U4 AllocationGranularity;
+    UA MinimumUserModeAddress;
+    UA MaximumUserModeAddress;
+    UA ActiveProcessorsAffinityMask;
+    U1 NumberOfProcessors;
+};
+struct PROCESS_CYCLE_TIME_INFORMATION_
+{
+    U8 AccumulatedCycles;
+    U8 CurrentCycleCount;
 };
 
 // clang-format off
@@ -2056,6 +2075,7 @@ using NtOpenThread_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx O
 using NtQueryDirectoryFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass, U1 ReturnSingleEntry, cx UNICODE_STRING_* FileName, U1 RestartScan);
 using NtQueryInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
 using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
+using NtQueryInformationThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, THREADINFOCLASS_ ThreadInformationClass, GA ThreadInformation, U4 ThreadInformationLength, U4* ReturnLength);
 using NtQueryInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength, U4* ReturnLength);
 using NtQueryObject_T = NTSTATUS(NTAPI*)(HD Handle, OBJECT_INFORMATION_CLASS_ ObjectInformationClass, GA ObjectInformation, U4 ObjectInformationLength, U4* ReturnLength);
 using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
@@ -2063,7 +2083,7 @@ using NtQueryTimerResolution_T = NTSTATUS(NTAPI*)(U4* MaximumTime, U4* MinimumTi
 using NtQueryValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, KEY_VALUE_INFORMATION_CLASS_ KeyValueInformationClass, GA KeyValueInformation, U4 Length, U4* ResultLength);
 using NtRaiseHardError_T = NTSTATUS(NTAPI*)(NTSTATUS ErrorStatus, U4 NumberOfParameters, U4 UnicodeStringParameterMask, UA* Parameters, U4 ValidResponseOptions, U4* Response);
 using NtReadFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
-using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, SI NumberOfBytesToRead, SI* NumberOfBytesRead);
+using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, CXGA BaseAddress, GA Buffer, UA NumberOfBytesToRead, UA* NumberOfBytesRead);
 using NtReleaseKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
 using NtResetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
 using NtSetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
@@ -2074,11 +2094,13 @@ using NtSetInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATI
 using NtSetTimerResolution_T = NTSTATUS(NTAPI*)(U4 DesiredTime, U1 SetResolution, U4* ActualTime);
 using NtSetValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, U4 TitleIndex, U4 Type, GA Data, U4 DataSize);
 using NtShutdownSystem_T = NTSTATUS(NTAPI*)(SHUTDOWN_ACTION_ Action);
+using NtTerminateProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, NTSTATUS ExitStatus);
+using NtTerminateThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, NTSTATUS ExitStatus);
 using NtUnloadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
 using NtWaitForKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
 using NtWaitForSingleObject_T = NTSTATUS(NTAPI*)(HD Handle, U1 Alertable, LARGE_INTEGER_* Timeout);
 using NtWriteFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
-using NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, GA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
+using NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, CXGA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
 using NtYieldExecution_T = NTSTATUS(NTAPI*)();
 using RtlAcquirePebLock_T = NTSTATUS(NTAPI*)();
 using RtlAdjustPrivilege_T = NTSTATUS(NTAPI*)(U4 Privilege, U1 Enable, U1 Client, U1* WasEnabled);
@@ -2119,6 +2141,7 @@ _UNI_NT_INIT_FN(NtOpenThreadTokenEx);
 _UNI_NT_INIT_FN(NtQueryDirectoryFile);
 _UNI_NT_INIT_FN(NtQueryInformationFile);
 _UNI_NT_INIT_FN(NtQueryInformationProcess);
+_UNI_NT_INIT_FN(NtQueryInformationThread);
 _UNI_NT_INIT_FN(NtQueryInformationToken);
 _UNI_NT_INIT_FN(NtQueryObject);
 _UNI_NT_INIT_FN(NtQuerySystemInformation);
@@ -2137,6 +2160,8 @@ _UNI_NT_INIT_FN(NtSetInformationToken);
 _UNI_NT_INIT_FN(NtSetTimerResolution);
 _UNI_NT_INIT_FN(NtSetValueKey);
 _UNI_NT_INIT_FN(NtShutdownSystem);
+_UNI_NT_INIT_FN(NtTerminateProcess);
+_UNI_NT_INIT_FN(NtTerminateThread);
 _UNI_NT_INIT_FN(NtUnloadDriver);
 _UNI_NT_INIT_FN(NtWaitForKeyedEvent);
 _UNI_NT_INIT_FN(NtWaitForSingleObject);
