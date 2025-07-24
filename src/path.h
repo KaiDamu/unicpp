@@ -103,12 +103,19 @@ dfa BO PathIsExist(cx CH* path)
 
 #ifdef PROG_SYS_WIN
 
+dfa BO PathIsFile(cx CH* path)
+{
+    cx DWORD attrib = GetFileAttributesW(path);
+    if (attrib == INVALID_FILE_ATTRIBUTES)
+        ret NO;
+    ret ((attrib & FILE_ATTRIBUTE_DIRECTORY) == 0) && ((attrib & FILE_ATTRIBUTE_REPARSE_POINT) == 0);
+}
 dfa BO PathIsDir(cx CH* path)
 {
     cx DWORD attrib = GetFileAttributesW(path);
     if (attrib == INVALID_FILE_ATTRIBUTES)
         ret NO;
-    ret (attrib & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    ret ((attrib & FILE_ATTRIBUTE_DIRECTORY) != 0) && ((attrib & FILE_ATTRIBUTE_REPARSE_POINT) == 0);
 }
 
 dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)

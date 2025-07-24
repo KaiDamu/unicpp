@@ -157,6 +157,12 @@ tpl2 dfa SI StrToInt(T1& dst, cx T2* src, SI len)
         ret len;
     }
 }
+tpl2 dfa T1 StrToInt(cx T2* src)
+{
+    T1 dst;
+    StrToInt<T1, T2>(dst, src);
+    ret dst;
+}
 tpl2 dfa SI StrToFloat(T1& dst, cx T2* src)
 {
     cx AU srcBase = src;

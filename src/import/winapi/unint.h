@@ -2043,6 +2043,15 @@ struct PROCESS_CYCLE_TIME_INFORMATION_
     U8 AccumulatedCycles;
     U8 CurrentCycleCount;
 };
+struct THREAD_BASIC_INFORMATION_
+{
+    NTSTATUS ExitStatus;
+    TEB_* TebBaseAddress;
+    CLIENT_ID_ ClientId;
+    UA AffinityMask;
+    S4 Priority;
+    S4 BasePriority;
+};
 
 // clang-format off
 using LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);

@@ -486,44 +486,45 @@ tpl1 dfa SI LenInt(T1 val)
             val = -val;
             sign = 1;
         }
+    cx U8 val_ = val;
     SI num = 0;
-    if (val < 10)
+    if (val_ < 10ULL)
         num = 1;
-    else if (val < 100)
+    else if (val_ < 100ULL)
         num = 2;
-    else if (val < 1000)
+    else if (val_ < 1000ULL)
         num = 3;
-    else if (val < 10000)
+    else if (val_ < 10000ULL)
         num = 4;
-    else if (val < 100000)
+    else if (val_ < 100000ULL)
         num = 5;
-    else if (val < 1000000)
+    else if (val_ < 1000000ULL)
         num = 6;
-    else if (val < 10000000)
+    else if (val_ < 10000000ULL)
         num = 7;
-    else if (val < 100000000)
+    else if (val_ < 100000000ULL)
         num = 8;
-    else if (val < 1000000000)
+    else if (val_ < 1000000000ULL)
         num = 9;
-    else if (val < 10000000000ULL)
+    else if (val_ < 10000000000ULL)
         num = 10;
-    else if (val < 100000000000ULL)
+    else if (val_ < 100000000000ULL)
         num = 11;
-    else if (val < 1000000000000ULL)
+    else if (val_ < 1000000000000ULL)
         num = 12;
-    else if (val < 10000000000000ULL)
+    else if (val_ < 10000000000000ULL)
         num = 13;
-    else if (val < 100000000000000ULL)
+    else if (val_ < 100000000000000ULL)
         num = 14;
-    else if (val < 1000000000000000ULL)
+    else if (val_ < 1000000000000000ULL)
         num = 15;
-    else if (val < 10000000000000000ULL)
+    else if (val_ < 10000000000000000ULL)
         num = 16;
-    else if (val < 100000000000000000ULL)
+    else if (val_ < 100000000000000000ULL)
         num = 17;
-    else if (val < 1000000000000000000ULL)
+    else if (val_ < 1000000000000000000ULL)
         num = 18;
-    else if (val < 10000000000000000000ULL)
+    else if (val_ < 10000000000000000000ULL)
         num = 19;
     else
         num = 20;

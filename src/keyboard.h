@@ -23,7 +23,7 @@ Thd g_keybThd;
 volatile U1 g_keybKeyState[INPUT_KEY_CNT];
 volatile BO g_keybKeyStateTake[INPUT_KEY_CNT];
 DQueue<KeybKeyEvt> g_keybKeyEvtQueue;
-ThdLock g_keybKeyEvtQueueLock;
+ThdLockFast g_keybKeyEvtQueueLock;
 S4 g_keybHookThdDelay;
 
 dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp)

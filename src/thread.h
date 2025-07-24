@@ -63,15 +63,32 @@ dfa TEB_* ThdTeb()
     #endif
     ret NUL;
 }
+dfa HD ThdCurHdl()
+{
+    ret HD(-2);
+}
+dfa HD ThdCurId()
+{
+    ret ThdTeb()->ClientId.UniqueThread;
+}
+dfa HD ThdIdByHdl(HD hdl)
+{
+    ifu (hdl == ThdCurHdl())
+        ret ThdCurId();
+    THREAD_BASIC_INFORMATION_ info;
+    ifu (NtQueryInformationThread_(hdl, THREADINFOCLASS_::ThreadBasicInformation, &info, siz(info), NUL) != STATUS_SUCCESS)
+        ret HD(0);
+    ret info.ClientId.UniqueThread;
+}
 
 dfa NT ThdWait(TmMain ms)
 {
     ifu (ms <= TmMain(0))
         ret;
     cx AU t = S8(ms * TmMain(-10000));
-    LARGE_INTEGER tmp = {};
+    LARGE_INTEGER_ tmp = {};
     tmp.QuadPart = t;
-    NtDelayExecution(FALSE, &tmp);
+    NtDelayExecution_(NO, &tmp);
 }
 
 dfa SI CpuThdCnt()
@@ -79,9 +96,10 @@ dfa SI CpuThdCnt()
     static SI s_cache = -1;
     ifu (s_cache == -1)
     {
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-        s_cache = SI(info.dwNumberOfProcessors);
+        SYSTEM_BASIC_INFORMATION_ info;
+        ifu (NtQuerySystemInformation_(SYSTEM_INFORMATION_CLASS_::SystemBasicInformation, &info, siz(info), NUL) != STATUS_SUCCESS)
+            ret 0;
+        s_cache = SI(info.NumberOfProcessors);
     }
     ret s_cache;
 }
@@ -113,6 +131,28 @@ class ThdLock
     dfa ~ThdLock()
     {
         DeleteCriticalSection(&m_hdl);
+    }
+};
+
+class ThdLockFast
+{
+  private:
+    volatile S4 isLocked;
+
+  public:
+    dfa NT Lock()
+    {
+        while (_InterlockedCompareExchange(&isLocked, YES, NO) != NO)
+            NtYieldExecution_();
+    }
+    dfa NT Unlock()
+    {
+        isLocked = NO;
+    }
+
+  public:
+    dfa ThdLockFast() : isLocked(NO)
+    {
     }
 };
 
