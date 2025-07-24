@@ -11,22 +11,24 @@ dfa ER NetInit()
     thdlocal BO isInitDone = NO;
     if (isInitDone)
         rets;
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    WSADATA tmp;
+    ifu (WSAStartup(0x0202, &tmp) != 0)
         rete(ErrVal::NET);
     isInitDone = YES;
     rets;
 }
-dfa NT NetFree()
+dfa ER NetFree()
 {
-    WSACleanup(); // error ignored
+    ifu ((WSACleanup() != 0) && (WSAGetLastError() != WSANOTINITIALISED))
+        rete(ErrVal::NET);
+    rets;
 }
 
-class NetAdr
+class NetAdrV4
 {
   public:
-    U4 ip;
-    U2 port;
+    U4 ip;   // in network byte order
+    U2 port; // in network byte order
 
   public:
     dfa NT Clr()
@@ -34,124 +36,204 @@ class NetAdr
         ip = 0;
         port = 0;
     }
+    dfa NT ToStr(CS* out) cx
+    {
+        AU cur = out;
+        ite (i, i < 4)
+        {
+            cur += IntToStr(cur, ByteIVal(ip, i));
+            *cur++ = '.';
+        }
+        *(cur - 1) = ':';
+        cur += IntToStr(cur, RevByte(port));
+        *cur = '\0';
+    }
 
   public:
-    dfa NetAdr(U4 ip = 0, U2 port = 0) : ip(ip), port(port)
+    dfa NetAdrV4(U4 ip = 0, U2 port = 0) : ip(ip), port(port)
     {
     }
 };
 
-dfa U4 StrToIp(cx CS* str)
+class SockTcp
 {
-    ret (U4)inet_addr(str);
-}
-dfa U2 StrToPort(cx CS* str)
-{
-    ret (U2)atoi(str);
-}
+  private:
+    SOCKET m_hdl;
 
-dfa ER DomainToIp(U4& ip, cx CS* domain)
-{
-    ADDRINFOA hints;
-    ZeroMemory(&hints, siz(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    ADDRINFOA* result;
-    ifu (getaddrinfo(domain, NUL, &hints, &result) != 0)
-        rete(ErrVal::NET);
-    ip = ((SOCKADDR_IN*)result->ai_addr)->sin_addr.S_un.S_addr;
-    freeaddrinfo(result);
-    rets;
-}
-
-dfa ER StrToNetAdrIp(NetAdr& netAdr, cx std::string_view& str)
-{
-    netAdr.Clr();
-    cx AU divPos = str.find(':');
-    std::string_view strIp;
-    std::string_view strPort;
-    if (divPos == std::string::npos)
+  public:
+    dfa BO IsValid() cx
     {
-        strIp = str;
-        strPort = "";
+        ret m_hdl != INVALID_SOCKET;
     }
-    else
+    dfa HD Hdl() cx
     {
-        strIp = str.substr(0, divPos);
-        strPort = str.substr(divPos + 1);
+        ret HD(m_hdl);
     }
-    if (!strIp.empty())
+    dfa ER New()
     {
-        netAdr.ip = StrToIp((divPos == std::string::npos) ? strIp.data() : std::string(strIp, 0, divPos).c_str());
+        ifu (m_hdl != INVALID_SOCKET)
+            rete(ErrVal::YES_INIT);
+        m_hdl = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NET);
+        rets;
     }
-    if (!strPort.empty())
+    dfa ER Del()
     {
-        netAdr.port = StrToPort(strPort.data());
+        if (m_hdl == INVALID_SOCKET)
+            rets;
+        ifu (closesocket(m_hdl) != 0)
+            rete(ErrVal::NET);
+        m_hdl = INVALID_SOCKET;
+        rets;
     }
-    rets;
-}
-dfa ER StrToNetAdrDomain(NetAdr& netAdr, cx std::string_view& str)
-{
-    netAdr.Clr();
-    cx AU divPos = str.find(':');
-    std::string_view strDomain;
-    std::string_view strPort;
-    if (divPos == std::string::npos)
+    dfa ER Reset()
     {
-        strDomain = str;
-        strPort = "";
-    }
-    else
-    {
-        strDomain = str.substr(0, divPos);
-        strPort = str.substr(divPos + 1);
-    }
-    if (!strDomain.empty())
-    {
-        U4 ip;
-        ife (DomainToIp(ip, (divPos == std::string::npos) ? strDomain.data() : std::string(strDomain, 0, divPos).c_str()))
+        ife (tx->Del())
             retep;
-        netAdr.ip = ip;
+        ife (tx->New())
+            retep;
+        rets;
     }
-    if (!strPort.empty())
+    dfa ER Connect(cx NetAdrV4& adr) cx
     {
-        netAdr.port = StrToPort(strPort.data());
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NO_INIT);
+        SOCKADDR_IN adrInfo = {};
+        adrInfo.sin_family = AF_INET;
+        adrInfo.sin_port = adr.port;
+        adrInfo.sin_addr.S_un.S_addr = adr.ip;
+        ifu (connect(m_hdl, (SOCKADDR*)&adrInfo, siz(adrInfo)) != 0)
+        {
+            if (WSAGetLastError() == WSAECONNREFUSED)
+                rete(ErrVal::NET_NO_EXIST);
+            rete(ErrVal::NET);
+        }
+        rets;
+    }
+    dfa ER OpenSrv(U2 port) cx
+    {
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NO_INIT);
+        SOCKADDR_IN adrInfo = {};
+        adrInfo.sin_family = AF_INET;
+        adrInfo.sin_port = port;
+        adrInfo.sin_addr.S_un.S_addr = INADDR_ANY;
+        ifu (bind(m_hdl, (SOCKADDR*)&adrInfo, siz(adrInfo)) != 0)
+            rete(ErrVal::YES_EXIST);
+        ifu (listen(m_hdl, SOMAXCONN) != 0)
+            rete(ErrVal::NET);
+        rets;
+    }
+    dfa ER Accept(SockTcp& sockCli) cx
+    {
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NO_INIT);
+        ifu (sockCli.IsValid())
+            rete(ErrVal::YES_INIT);
+        SOCKADDR_IN adrInfo = {};
+        int adrInfoSize = siz(adrInfo);
+        cx AU result = accept(m_hdl, (SOCKADDR*)&adrInfo, &adrInfoSize);
+        ifu (result == INVALID_SOCKET)
+            rete(ErrVal::NET);
+        sockCli.m_hdl = result;
+        rets;
+    }
+    dfa ER Write(CXGA buf, SI size) cx
+    {
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NO_INIT);
+        AU bufCur = (cx char*)buf;
+        AU sizeRem = (int)size;
+        jdst(again);
+        cx AU result = send(m_hdl, bufCur, sizeRem, 0);
+        ifu (result == SOCKET_ERROR)
+        {
+            if (WSAGetLastError() == WSAECONNRESET)
+                rete(ErrVal::NET_CLOSE);
+            rete(ErrVal::NET);
+        }
+        if (sizeRem != result)
+        {
+            bufCur += result;
+            sizeRem -= result;
+            jsrc(again);
+        }
+        rets;
+    }
+    dfa ER Read(GA buf, SI& sizeResult, SI sizeMax) cx
+    {
+        sizeResult = 0;
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NO_INIT);
+        cx AU result = recv(m_hdl, (char*)buf, int(sizeMax), 0);
+        ifu (result < 1)
+        {
+            if (result == 0)
+                rete(ErrVal::NET_CLOSE);
+            if (result == SOCKET_ERROR)
+            {
+                if (WSAGetLastError() == WSAECONNRESET)
+                    rete(ErrVal::NET_CLOSE);
+                rete(ErrVal::NET);
+            }
+            rete(ErrVal::NET);
+        }
+        sizeResult = result;
+        rets;
+    }
+
+  public:
+    dfa SockTcp() : m_hdl(INVALID_SOCKET)
+    {
+    }
+    dfa ~SockTcp()
+    {
+        tx->Del();
+    }
+};
+
+dfa ER StrToNetAdrV4(NetAdrV4& out, cx CS* in)
+{
+    out.Clr();
+    ifu (in == NUL)
+        rets;
+    AU cur = in;
+    if (IsNumBase10(*cur))
+    {
+        ite (i, i < 4)
+        {
+            U4 val;
+            cur += StrToInt(val, cur);
+            ifu ((*cur != '.' && i != 3) || val > 0xFF)
+            {
+                out.Clr();
+                rete(ErrVal::NO_VALID);
+            }
+            cur += (i != 3);
+            out.ip <<= sizb(U1);
+            out.ip |= val;
+        }
+        out.ip = RevByte(out.ip);
+    }
+    if (*cur == ':')
+    {
+        ++cur;
+        U4 val;
+        cur += StrToInt(val, cur);
+        ifu (val > 0xFFFF)
+        {
+            out.Clr();
+            rete(ErrVal::NO_VALID);
+        }
+        out.port = RevByte(U2(val));
+    }
+    ifu (*cur != '\0')
+    {
+        out.Clr();
+        rete(ErrVal::NO_VALID);
     }
     rets;
-}
-dfa ER StrToNetAdr(NetAdr& netAdr, cx std::string_view& str)
-{
-    BO isIp = str.empty() || IsNumBase10(str[0]) || (str[0] == ':');
-    if (isIp)
-    {
-        for (cx AU& c : str)
-        {
-            if (!IsNumBase10(c))
-            {
-                if (c != '.')
-                    isIp = NO;
-                break;
-            }
-        }
-    }
-    if (isIp)
-    {
-        ret StrToNetAdrIp(netAdr, str);
-    }
-    else
-    {
-        ret StrToNetAdrDomain(netAdr, str);
-    }
-}
-
-dfa NT NetAdrToStr(std::string& str, cx NetAdr& netAdr)
-{
-    str.clear();
-    CS ipStr[16];
-    inet_ntop(AF_INET, &netAdr.ip, ipStr, siz(ipStr));
-    str += ipStr;
-    str += ':';
-    str += std::to_string(S4(netAdr.port));
 }
 
 #endif
