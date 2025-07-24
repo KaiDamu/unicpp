@@ -75,6 +75,27 @@ dfa ER _ProcDllUnload(HD dll, BO doForce)
     rets;
 }
 
+dfa HD ProcMdlCurAdrGet()
+{
+    AU scanAdr = UA(AdrOfNextOpe());
+    scanAdr = AlignBit<UA, 0x1000>(scanAdr) - 0x1000;
+    while (YES)
+    {
+        cx AU& dosHdrGuess = (IMAGE_DOS_HEADER_*)scanAdr;
+        if ((dosHdrGuess->e_magic == IMAGE_DOS_SIGNATURE) && IsBetween<S4>(dosHdrGuess->e_lfanew, siz(IMAGE_DOS_HEADER_), 0x0F00))
+        {
+            cx AU& peHdrGuess = (IMAGE_NT_HEADERS_*)(scanAdr + dosHdrGuess->e_lfanew);
+            if (peHdrGuess->Signature == IMAGE_NT_SIGNATURE)
+            {
+                cx AU& magicGuess = peHdrGuess->OptionalHeader.Magic;
+                if ((magicGuess == IMAGE_NT_OPTIONAL_HDR32_MAGIC) || (magicGuess == IMAGE_NT_OPTIONAL_HDR64_MAGIC) || (magicGuess == IMAGE_ROM_OPTIONAL_HDR_MAGIC))
+                    ret HD(scanAdr);
+            }
+        }
+        scanAdr -= 0x1000;
+    }
+}
+
 dfa HD ProcDllLoad(cx CH* dllName)
 {
     cx UNICODE_STRING_ str(dllName);

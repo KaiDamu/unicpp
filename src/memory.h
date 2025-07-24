@@ -1,31 +1,51 @@
 #pragma once
 
+#ifdef PROG_COMPILER_GCC
+    #define RetAdr() GA(__builtin_return_address(0))
+#else
+    #ifdef PROG_COMPILER_MSVC
+        #pragma intrinsic(_ReturnAddress)
+extern "C" __stdcall void* _ReturnAddress();
+        #define RetAdr() GA(_ReturnAddress())
+    #else
+        #define RetAdr() GA(0)
+    #endif
+#endif
+
+__declspec(noinline) GA AdrOfNextOpe()
+{
+    ret RetAdr();
+}
+
 #ifdef PROG_SYS_WIN
 
-dfa ER MemDelSys(GA ptr)
+dfa ER MemDelSys(GA ptr, HD proc = ProcCurHdl())
 {
-    GA ptr_ = ptr;
-    SIZE_T size_ = 0;
-    ifu (NtFreeVirtualMemory(ProcCurHdl(), &ptr_, &size_, MEM_RELEASE) != STATUS_SUCCESS)
-    {
+    UA size = 0;
+    ifu (NtFreeVirtualMemory_(proc, &ptr, &size, MEM_RELEASE) != STATUS_SUCCESS)
         rete(ErrVal::MEM);
-    }
     rets;
 }
-dfa ER MemNewSys(GA* ptr, SI size)
+dfa ER MemNewSys(GA* ptr, SI size, HD proc = ProcCurHdl(), U4 prot = PAGE_READWRITE)
 {
+    *ptr = NUL;
     GA ptr_ = NUL;
-    SIZE_T size_ = size;
-    ifu (NtAllocateVirtualMemory(ProcCurHdl(), &ptr_, 0, &size_, MEM_COMMIT, PAGE_READWRITE) != STATUS_SUCCESS)
-    {
-        *ptr = NUL;
+    ifu (NtAllocateVirtualMemory_(proc, &ptr_, 0, (UA*)&size, MEM_RESERVE | MEM_COMMIT, prot) != STATUS_SUCCESS)
         rete(ErrVal::MEM_NEW);
-    }
     *ptr = ptr_;
     rets;
 }
 
 #endif
+
+dfa NT MemCpyNocall(GA dst, CXGA src, SI size)
+{
+    AU dst_ = (U1*)dst;
+    AU src_ = (cx U1*)src;
+    cx AU end = src_ + size;
+    while (src_ != end)
+        *dst_++ = *src_++;
+}
 
 dfa NT MemDel(GA ptr)
 {
@@ -74,6 +94,51 @@ dfa GA MemResize(GA ptr, SI sizeAlloc, SI sizeCpy)
 }
 
 #ifdef PROG_SYS_WIN
+
+dfa ER MemCpySys(GA dst, CXGA src, SI size, HD procDst, HD procSrc)
+{
+    cx AU size_ = UA(size);
+    UA sizeResult = 0;
+    if (procSrc == ProcCurHdl())
+    {
+        if (procDst == ProcCurHdl())
+        {
+            MemCpy(dst, src, size);
+            rets;
+        }
+        else
+        {
+            ifu ((NtWriteVirtualMemory_(procDst, dst, src, size_, &sizeResult) != STATUS_SUCCESS) || (sizeResult != size_))
+                rete(ErrVal::MEM);
+            rets;
+        }
+    }
+    else
+    {
+        if (procDst == ProcCurHdl())
+        {
+            ifu ((NtReadVirtualMemory_(procSrc, src, dst, size_, &sizeResult) != STATUS_SUCCESS) || (sizeResult != size_))
+                rete(ErrVal::MEM);
+            rets;
+        }
+        else
+        {
+            GA buf = MemNew(size);
+            ifu ((NtReadVirtualMemory_(procSrc, src, buf, size_, &sizeResult) != STATUS_SUCCESS) || (sizeResult != size_))
+            {
+                MemDel(buf);
+                rete(ErrVal::MEM);
+            }
+            ifu ((NtWriteVirtualMemory_(procDst, dst, buf, size_, &sizeResult) != STATUS_SUCCESS) || (sizeResult != size_))
+            {
+                MemDel(buf);
+                rete(ErrVal::MEM);
+            }
+            MemDel(buf);
+            rets;
+        }
+    }
+}
 
 dfa SI MemPageSize()
 {
