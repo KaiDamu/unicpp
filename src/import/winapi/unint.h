@@ -2053,133 +2053,140 @@ struct THREAD_BASIC_INFORMATION_
     S4 BasePriority;
 };
 
+#define _MDL_NTDLL_DLL
+
 // clang-format off
-using LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);
-using LdrUnloadDll_T = NTSTATUS(NTAPI*)(GA DllHandle);
-using NtAdjustPrivilegesToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, U1 DisableAllPrivileges, TOKEN_PRIVILEGES_* NewState, U4 BufferLength, TOKEN_PRIVILEGES_* PreviousState, U4* ReturnLength);
-using NtAllocateVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA* RegionSize, U4 AllocationType, U4 PageProtection);
-using NtClose_T = NTSTATUS(NTAPI*)(HD Handle);
-using NtCreateEvent_T = NTSTATUS(NTAPI*)(HD* EventHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, EVENT_TYPE_ EventType, U1 InitialState);
-using NtCreateFile_T = NTSTATUS(NTAPI*)(HD* FileHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, IO_STATUS_BLOCK_* IoStatusBlock, LARGE_INTEGER_* AllocationSize, U4 FileAttributes, U4 ShareAccess, U4 CreateDisposition, U4 CreateOptions, GA EaBuffer, U4 EaLength);
-using NtCreateKeyedEvent_T = NTSTATUS(NTAPI*)(HD* KeyedEventHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, U4 Flags);
-using NtCreateProcessEx_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ParentProcess, U4 Flags, HD SectionHandle, HD DebugPort, HD TokenHandle, U4 Reserved);
-using NtCreateSection_T = NTSTATUS(NTAPI*)(HD* SectionHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, LARGE_INTEGER_* MaximumSize, U4 SectionPageProtection, U4 AllocationAttributes, HD FileHandle);
-using NtCreateThreadEx_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ProcessHandle, PUSER_THREAD_START_ROUTINE_ StartRoutine, GA Argument, U4 CreateFlags, UA ZeroBits, UA StackSize, UA MaximumStackSize, PS_ATTRIBUTE_LIST_* AttributeList);
-using NtCreateToken_T = NTSTATUS(NTAPI*)(HD* TokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, TOKEN_TYPE_ Type, LUID_* AuthenticationId, LARGE_INTEGER_* ExpirationTime, TOKEN_USER_* User, TOKEN_GROUPS_* Groups, TOKEN_PRIVILEGES_* Privileges, TOKEN_OWNER_* Owner, TOKEN_PRIMARY_GROUP_* PrimaryGroup, TOKEN_DEFAULT_DACL_* DefaultDacl, TOKEN_SOURCE_* Source);
-using NtCreateUserProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, HD* ThreadHandle, U4 ProcessDesiredAccess, U4 ThreadDesiredAccess, cx OBJECT_ATTRIBUTES_* ProcessObjectAttributes, cx OBJECT_ATTRIBUTES_* ThreadObjectAttributes, U4 ProcessFlags, U4 ThreadFlags, RTL_USER_PROCESS_PARAMETERS_* ProcessParameters, PS_CREATE_INFO_* CreateInfo, PS_ATTRIBUTE_LIST_* AttributeList);
-using NtDelayExecution_T = NTSTATUS(NTAPI*)(U1 Alertable, LARGE_INTEGER_* DelayInterval);
-using NtDuplicateObject_T = NTSTATUS(NTAPI*)(HD SourceProcessHandle, HD SourceHandle, HD TargetProcessHandle, HD* TargetHandle, U4 DesiredAccess, U4 HandleAttributes, U4 Options);
-using NtDuplicateToken_T = NTSTATUS(NTAPI*)(HD ExistingTokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U1 EffectiveOnly, TOKEN_TYPE_ Type, HD* NewTokenHandle);
-using NtFlushInstructionCache_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, UA RegionSize);
-using NtFreeVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA* RegionSize, U4 FreeType);
-using NtImpersonateThread_T = NTSTATUS(NTAPI*)(HD ServerThreadHandle, HD ClientThreadHandle, SECURITY_QUALITY_OF_SERVICE_* SecurityQos);
-using NtLoadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
-using NtMapViewOfSection_T = NTSTATUS(NTAPI*)(HD SectionHandle, HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA CommitSize, LARGE_INTEGER_* SectionOffset, UA* ViewSize, SECTION_INHERIT_ InheritDisposition, U4 AllocationType, U4 PageProtection);
-using NtOpenKeyEx_T = NTSTATUS(NTAPI*)(HD* KeyHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U4 OpenOptions);
-using NtOpenKeyedEvent_T = NTSTATUS(NTAPI*)(HD* KeyedEventHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes);
-using NtOpenProcessTokenEx_T = NTSTATUS(NTAPI*)(HD ProcessHandle, U4 DesiredAccess, U4 HandleAttributes, HD* TokenHandle);
-using NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
-using NtOpenThreadTokenEx_T = NTSTATUS(NTAPI*)(HD ThreadHandle, U4 DesiredAccess, U1 OpenAsSelf, U4 HandleAttributes, HD* TokenHandle);
-using NtOpenThread_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
-using NtQueryDirectoryFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass, U1 ReturnSingleEntry, cx UNICODE_STRING_* FileName, U1 RestartScan);
-using NtQueryInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
-using NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
-using NtQueryInformationThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, THREADINFOCLASS_ ThreadInformationClass, GA ThreadInformation, U4 ThreadInformationLength, U4* ReturnLength);
-using NtQueryInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength, U4* ReturnLength);
-using NtQueryObject_T = NTSTATUS(NTAPI*)(HD Handle, OBJECT_INFORMATION_CLASS_ ObjectInformationClass, GA ObjectInformation, U4 ObjectInformationLength, U4* ReturnLength);
-using NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
-using NtQueryTimerResolution_T = NTSTATUS(NTAPI*)(U4* MaximumTime, U4* MinimumTime, U4* CurrentTime);
-using NtQueryValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, KEY_VALUE_INFORMATION_CLASS_ KeyValueInformationClass, GA KeyValueInformation, U4 Length, U4* ResultLength);
-using NtRaiseHardError_T = NTSTATUS(NTAPI*)(NTSTATUS ErrorStatus, U4 NumberOfParameters, U4 UnicodeStringParameterMask, UA* Parameters, U4 ValidResponseOptions, U4* Response);
-using NtReadFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
-using NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, CXGA BaseAddress, GA Buffer, UA NumberOfBytesToRead, UA* NumberOfBytesRead);
-using NtReleaseKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
-using NtResetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
-using NtSetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
-using NtSetInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
-using NtSetInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength);
-using NtSetInformationThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, THREADINFOCLASS_ ThreadInformationClass, GA ThreadInformation, U4 ThreadInformationLength);
-using NtSetInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength);
-using NtSetTimerResolution_T = NTSTATUS(NTAPI*)(U4 DesiredTime, U1 SetResolution, U4* ActualTime);
-using NtSetValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, U4 TitleIndex, U4 Type, GA Data, U4 DataSize);
-using NtShutdownSystem_T = NTSTATUS(NTAPI*)(SHUTDOWN_ACTION_ Action);
-using NtTerminateProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, NTSTATUS ExitStatus);
-using NtTerminateThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, NTSTATUS ExitStatus);
-using NtUnloadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
-using NtWaitForKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
-using NtWaitForSingleObject_T = NTSTATUS(NTAPI*)(HD Handle, U1 Alertable, LARGE_INTEGER_* Timeout);
-using NtWriteFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
-using NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, CXGA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
-using NtYieldExecution_T = NTSTATUS(NTAPI*)();
-using RtlAcquirePebLock_T = NTSTATUS(NTAPI*)();
-using RtlAdjustPrivilege_T = NTSTATUS(NTAPI*)(U4 Privilege, U1 Enable, U1 Client, U1* WasEnabled);
-using RtlExitUserProcess_T = NT(NTAPI*)(NTSTATUS ExitStatus);
-using RtlReleasePebLock_T = NTSTATUS(NTAPI*)();
+// code-gen begin 1
+using _MDL_NTDLL_DLL LdrLoadDll_T = NTSTATUS(NTAPI*)(cx CH* DllPath, U4* DllCharacteristics, cx UNICODE_STRING_* DllName, GA* DllHandle);
+using _MDL_NTDLL_DLL LdrUnloadDll_T = NTSTATUS(NTAPI*)(GA DllHandle);
+using _MDL_NTDLL_DLL NtAdjustPrivilegesToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, U1 DisableAllPrivileges, TOKEN_PRIVILEGES_* NewState, U4 BufferLength, TOKEN_PRIVILEGES_* PreviousState, U4* ReturnLength);
+using _MDL_NTDLL_DLL NtAllocateVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA* RegionSize, U4 AllocationType, U4 PageProtection);
+using _MDL_NTDLL_DLL NtClose_T = NTSTATUS(NTAPI*)(HD Handle);
+using _MDL_NTDLL_DLL NtCreateEvent_T = NTSTATUS(NTAPI*)(HD* EventHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, EVENT_TYPE_ EventType, U1 InitialState);
+using _MDL_NTDLL_DLL NtCreateFile_T = NTSTATUS(NTAPI*)(HD* FileHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, IO_STATUS_BLOCK_* IoStatusBlock, LARGE_INTEGER_* AllocationSize, U4 FileAttributes, U4 ShareAccess, U4 CreateDisposition, U4 CreateOptions, GA EaBuffer, U4 EaLength);
+using _MDL_NTDLL_DLL NtCreateKeyedEvent_T = NTSTATUS(NTAPI*)(HD* KeyedEventHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, U4 Flags);
+using _MDL_NTDLL_DLL NtCreateProcessEx_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ParentProcess, U4 Flags, HD SectionHandle, HD DebugPort, HD TokenHandle, U4 Reserved);
+using _MDL_NTDLL_DLL NtCreateSection_T = NTSTATUS(NTAPI*)(HD* SectionHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, LARGE_INTEGER_* MaximumSize, U4 SectionPageProtection, U4 AllocationAttributes, HD FileHandle);
+using _MDL_NTDLL_DLL NtCreateThreadEx_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, HD ProcessHandle, PUSER_THREAD_START_ROUTINE_ StartRoutine, GA Argument, U4 CreateFlags, UA ZeroBits, UA StackSize, UA MaximumStackSize, PS_ATTRIBUTE_LIST_* AttributeList);
+using _MDL_NTDLL_DLL NtCreateToken_T = NTSTATUS(NTAPI*)(HD* TokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, TOKEN_TYPE_ Type, LUID_* AuthenticationId, LARGE_INTEGER_* ExpirationTime, TOKEN_USER_* User, TOKEN_GROUPS_* Groups, TOKEN_PRIVILEGES_* Privileges, TOKEN_OWNER_* Owner, TOKEN_PRIMARY_GROUP_* PrimaryGroup, TOKEN_DEFAULT_DACL_* DefaultDacl, TOKEN_SOURCE_* Source);
+using _MDL_NTDLL_DLL NtCreateUserProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, HD* ThreadHandle, U4 ProcessDesiredAccess, U4 ThreadDesiredAccess, cx OBJECT_ATTRIBUTES_* ProcessObjectAttributes, cx OBJECT_ATTRIBUTES_* ThreadObjectAttributes, U4 ProcessFlags, U4 ThreadFlags, RTL_USER_PROCESS_PARAMETERS_* ProcessParameters, PS_CREATE_INFO_* CreateInfo, PS_ATTRIBUTE_LIST_* AttributeList);
+using _MDL_NTDLL_DLL NtDelayExecution_T = NTSTATUS(NTAPI*)(U1 Alertable, LARGE_INTEGER_* DelayInterval);
+using _MDL_NTDLL_DLL NtDuplicateObject_T = NTSTATUS(NTAPI*)(HD SourceProcessHandle, HD SourceHandle, HD TargetProcessHandle, HD* TargetHandle, U4 DesiredAccess, U4 HandleAttributes, U4 Options);
+using _MDL_NTDLL_DLL NtDuplicateToken_T = NTSTATUS(NTAPI*)(HD ExistingTokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U1 EffectiveOnly, TOKEN_TYPE_ Type, HD* NewTokenHandle);
+using _MDL_NTDLL_DLL NtFlushInstructionCache_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, UA RegionSize);
+using _MDL_NTDLL_DLL NtFreeVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA* RegionSize, U4 FreeType);
+using _MDL_NTDLL_DLL NtImpersonateThread_T = NTSTATUS(NTAPI*)(HD ServerThreadHandle, HD ClientThreadHandle, SECURITY_QUALITY_OF_SERVICE_* SecurityQos);
+using _MDL_NTDLL_DLL NtLoadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
+using _MDL_NTDLL_DLL NtMapViewOfSection_T = NTSTATUS(NTAPI*)(HD SectionHandle, HD ProcessHandle, GA* BaseAddress, UA ZeroBits, UA CommitSize, LARGE_INTEGER_* SectionOffset, UA* ViewSize, SECTION_INHERIT_ InheritDisposition, U4 AllocationType, U4 PageProtection);
+using _MDL_NTDLL_DLL NtOpenKeyEx_T = NTSTATUS(NTAPI*)(HD* KeyHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U4 OpenOptions);
+using _MDL_NTDLL_DLL NtOpenKeyedEvent_T = NTSTATUS(NTAPI*)(HD* KeyedEventHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes);
+using _MDL_NTDLL_DLL NtOpenProcessTokenEx_T = NTSTATUS(NTAPI*)(HD ProcessHandle, U4 DesiredAccess, U4 HandleAttributes, HD* TokenHandle);
+using _MDL_NTDLL_DLL NtOpenProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
+using _MDL_NTDLL_DLL NtOpenThreadTokenEx_T = NTSTATUS(NTAPI*)(HD ThreadHandle, U4 DesiredAccess, U1 OpenAsSelf, U4 HandleAttributes, HD* TokenHandle);
+using _MDL_NTDLL_DLL NtOpenThread_T = NTSTATUS(NTAPI*)(HD* ThreadHandle, U4 DesiredAccess, cx OBJECT_ATTRIBUTES_* ObjectAttributes, CLIENT_ID_* ClientId);
+using _MDL_NTDLL_DLL NtQueryDirectoryFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass, U1 ReturnSingleEntry, cx UNICODE_STRING_* FileName, U1 RestartScan);
+using _MDL_NTDLL_DLL NtQueryInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
+using _MDL_NTDLL_DLL NtQueryInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength, U4* ReturnLength);
+using _MDL_NTDLL_DLL NtQueryInformationThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, THREADINFOCLASS_ ThreadInformationClass, GA ThreadInformation, U4 ThreadInformationLength, U4* ReturnLength);
+using _MDL_NTDLL_DLL NtQueryInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength, U4* ReturnLength);
+using _MDL_NTDLL_DLL NtQueryObject_T = NTSTATUS(NTAPI*)(HD Handle, OBJECT_INFORMATION_CLASS_ ObjectInformationClass, GA ObjectInformation, U4 ObjectInformationLength, U4* ReturnLength);
+using _MDL_NTDLL_DLL NtQuerySystemInformation_T = NTSTATUS(NTAPI*)(SYSTEM_INFORMATION_CLASS_ SystemInformationClass, GA SystemInformation, U4 SystemInformationLength, U4* ReturnLength);
+using _MDL_NTDLL_DLL NtQueryTimerResolution_T = NTSTATUS(NTAPI*)(U4* MaximumTime, U4* MinimumTime, U4* CurrentTime);
+using _MDL_NTDLL_DLL NtQueryValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, KEY_VALUE_INFORMATION_CLASS_ KeyValueInformationClass, GA KeyValueInformation, U4 Length, U4* ResultLength);
+using _MDL_NTDLL_DLL NtRaiseHardError_T = NTSTATUS(NTAPI*)(NTSTATUS ErrorStatus, U4 NumberOfParameters, U4 UnicodeStringParameterMask, UA* Parameters, U4 ValidResponseOptions, U4* Response);
+using _MDL_NTDLL_DLL NtReadFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
+using _MDL_NTDLL_DLL NtReadVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, CXGA BaseAddress, GA Buffer, UA NumberOfBytesToRead, UA* NumberOfBytesRead);
+using _MDL_NTDLL_DLL NtReleaseKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
+using _MDL_NTDLL_DLL NtResetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
+using _MDL_NTDLL_DLL NtSetEvent_T = NTSTATUS(NTAPI*)(HD EventHandle, S4* PreviousState);
+using _MDL_NTDLL_DLL NtSetInformationFile_T = NTSTATUS(NTAPI*)(HD FileHandle, IO_STATUS_BLOCK_* IoStatusBlock, GA FileInformation, U4 Length, FILE_INFORMATION_CLASS_ FileInformationClass);
+using _MDL_NTDLL_DLL NtSetInformationProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, PROCESSINFOCLASS_ ProcessInformationClass, GA ProcessInformation, U4 ProcessInformationLength);
+using _MDL_NTDLL_DLL NtSetInformationThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, THREADINFOCLASS_ ThreadInformationClass, GA ThreadInformation, U4 ThreadInformationLength);
+using _MDL_NTDLL_DLL NtSetInformationToken_T = NTSTATUS(NTAPI*)(HD TokenHandle, TOKEN_INFORMATION_CLASS_ TokenInformationClass, GA TokenInformation, U4 TokenInformationLength);
+using _MDL_NTDLL_DLL NtSetTimerResolution_T = NTSTATUS(NTAPI*)(U4 DesiredTime, U1 SetResolution, U4* ActualTime);
+using _MDL_NTDLL_DLL NtSetValueKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, cx UNICODE_STRING_* ValueName, U4 TitleIndex, U4 Type, GA Data, U4 DataSize);
+using _MDL_NTDLL_DLL NtShutdownSystem_T = NTSTATUS(NTAPI*)(SHUTDOWN_ACTION_ Action);
+using _MDL_NTDLL_DLL NtTerminateProcess_T = NTSTATUS(NTAPI*)(HD ProcessHandle, NTSTATUS ExitStatus);
+using _MDL_NTDLL_DLL NtTerminateThread_T = NTSTATUS(NTAPI*)(HD ThreadHandle, NTSTATUS ExitStatus);
+using _MDL_NTDLL_DLL NtUnloadDriver_T = NTSTATUS(NTAPI*)(cx UNICODE_STRING_* DriverServiceName);
+using _MDL_NTDLL_DLL NtWaitForKeyedEvent_T = NTSTATUS(NTAPI*)(HD KeyedEventHandle, GA KeyValue, U1 Alertable, LARGE_INTEGER_* Timeout);
+using _MDL_NTDLL_DLL NtWaitForSingleObject_T = NTSTATUS(NTAPI*)(HD Handle, U1 Alertable, LARGE_INTEGER_* Timeout);
+using _MDL_NTDLL_DLL NtWriteFile_T = NTSTATUS(NTAPI*)(HD FileHandle, HD Event, PIO_APC_ROUTINE_ ApcRoutine, GA ApcContext, IO_STATUS_BLOCK_* IoStatusBlock, GA Buffer, U4 Length, LARGE_INTEGER_* ByteOffset, U4* Key);
+using _MDL_NTDLL_DLL NtWriteVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, CXGA Buffer, UA NumberOfBytesToWrite, UA* NumberOfBytesWritten);
+using _MDL_NTDLL_DLL NtYieldExecution_T = NTSTATUS(NTAPI*)();
+using _MDL_NTDLL_DLL RtlAcquirePebLock_T = NTSTATUS(NTAPI*)();
+using _MDL_NTDLL_DLL RtlAdjustPrivilege_T = NTSTATUS(NTAPI*)(U4 Privilege, U1 Enable, U1 Client, U1* WasEnabled);
+using _MDL_NTDLL_DLL RtlExitUserProcess_T = NT(NTAPI*)(NTSTATUS ExitStatus);
+using _MDL_NTDLL_DLL RtlReleasePebLock_T = NTSTATUS(NTAPI*)();
+// code-gen end 1
 // clang-format on
 
-// Note: this creates global variables & initializes them
-#define _UNI_NT_INIT_FN(fnName) fnName##_T fnName##_ = NUL
+// [generated code begin]
+cxex SI UNI_NT_FN_CNT = 61;
 
-_UNI_NT_INIT_FN(LdrLoadDll);
-_UNI_NT_INIT_FN(LdrUnloadDll);
-_UNI_NT_INIT_FN(NtAdjustPrivilegesToken);
-_UNI_NT_INIT_FN(NtAllocateVirtualMemory);
-_UNI_NT_INIT_FN(NtClose);
-_UNI_NT_INIT_FN(NtCreateEvent);
-_UNI_NT_INIT_FN(NtCreateFile);
-_UNI_NT_INIT_FN(NtCreateKeyedEvent);
-_UNI_NT_INIT_FN(NtCreateProcessEx);
-_UNI_NT_INIT_FN(NtCreateSection);
-_UNI_NT_INIT_FN(NtCreateThreadEx);
-_UNI_NT_INIT_FN(NtCreateToken);
-_UNI_NT_INIT_FN(NtCreateUserProcess);
-_UNI_NT_INIT_FN(NtDelayExecution);
-_UNI_NT_INIT_FN(NtDuplicateObject);
-_UNI_NT_INIT_FN(NtDuplicateToken);
-_UNI_NT_INIT_FN(NtFlushInstructionCache);
-_UNI_NT_INIT_FN(NtFreeVirtualMemory);
-_UNI_NT_INIT_FN(NtImpersonateThread);
-_UNI_NT_INIT_FN(NtLoadDriver);
-_UNI_NT_INIT_FN(NtMapViewOfSection);
-_UNI_NT_INIT_FN(NtOpenKeyEx);
-_UNI_NT_INIT_FN(NtOpenKeyedEvent);
-_UNI_NT_INIT_FN(NtOpenProcess);
-_UNI_NT_INIT_FN(NtOpenProcessTokenEx);
-_UNI_NT_INIT_FN(NtOpenThread);
-_UNI_NT_INIT_FN(NtOpenThreadTokenEx);
-_UNI_NT_INIT_FN(NtQueryDirectoryFile);
-_UNI_NT_INIT_FN(NtQueryInformationFile);
-_UNI_NT_INIT_FN(NtQueryInformationProcess);
-_UNI_NT_INIT_FN(NtQueryInformationThread);
-_UNI_NT_INIT_FN(NtQueryInformationToken);
-_UNI_NT_INIT_FN(NtQueryObject);
-_UNI_NT_INIT_FN(NtQuerySystemInformation);
-_UNI_NT_INIT_FN(NtQueryTimerResolution);
-_UNI_NT_INIT_FN(NtQueryValueKey);
-_UNI_NT_INIT_FN(NtRaiseHardError);
-_UNI_NT_INIT_FN(NtReadFile);
-_UNI_NT_INIT_FN(NtReadVirtualMemory);
-_UNI_NT_INIT_FN(NtReleaseKeyedEvent);
-_UNI_NT_INIT_FN(NtResetEvent);
-_UNI_NT_INIT_FN(NtSetEvent);
-_UNI_NT_INIT_FN(NtSetInformationFile);
-_UNI_NT_INIT_FN(NtSetInformationProcess);
-_UNI_NT_INIT_FN(NtSetInformationThread);
-_UNI_NT_INIT_FN(NtSetInformationToken);
-_UNI_NT_INIT_FN(NtSetTimerResolution);
-_UNI_NT_INIT_FN(NtSetValueKey);
-_UNI_NT_INIT_FN(NtShutdownSystem);
-_UNI_NT_INIT_FN(NtTerminateProcess);
-_UNI_NT_INIT_FN(NtTerminateThread);
-_UNI_NT_INIT_FN(NtUnloadDriver);
-_UNI_NT_INIT_FN(NtWaitForKeyedEvent);
-_UNI_NT_INIT_FN(NtWaitForSingleObject);
-_UNI_NT_INIT_FN(NtWriteFile);
-_UNI_NT_INIT_FN(NtWriteVirtualMemory);
-_UNI_NT_INIT_FN(NtYieldExecution);
-_UNI_NT_INIT_FN(RtlAcquirePebLock);
-_UNI_NT_INIT_FN(RtlAdjustPrivilege);
-_UNI_NT_INIT_FN(RtlExitUserProcess);
-_UNI_NT_INIT_FN(RtlReleasePebLock);
+GAFN g_uniNtFn[UNI_NT_FN_CNT] = {};
+
+#define LdrLoadDll_ ((LdrLoadDll_T)g_uniNtFn[0])
+#define LdrUnloadDll_ ((LdrUnloadDll_T)g_uniNtFn[1])
+#define NtAdjustPrivilegesToken_ ((NtAdjustPrivilegesToken_T)g_uniNtFn[2])
+#define NtAllocateVirtualMemory_ ((NtAllocateVirtualMemory_T)g_uniNtFn[3])
+#define NtClose_ ((NtClose_T)g_uniNtFn[4])
+#define NtCreateEvent_ ((NtCreateEvent_T)g_uniNtFn[5])
+#define NtCreateFile_ ((NtCreateFile_T)g_uniNtFn[6])
+#define NtCreateKeyedEvent_ ((NtCreateKeyedEvent_T)g_uniNtFn[7])
+#define NtCreateProcessEx_ ((NtCreateProcessEx_T)g_uniNtFn[8])
+#define NtCreateSection_ ((NtCreateSection_T)g_uniNtFn[9])
+#define NtCreateThreadEx_ ((NtCreateThreadEx_T)g_uniNtFn[10])
+#define NtCreateToken_ ((NtCreateToken_T)g_uniNtFn[11])
+#define NtCreateUserProcess_ ((NtCreateUserProcess_T)g_uniNtFn[12])
+#define NtDelayExecution_ ((NtDelayExecution_T)g_uniNtFn[13])
+#define NtDuplicateObject_ ((NtDuplicateObject_T)g_uniNtFn[14])
+#define NtDuplicateToken_ ((NtDuplicateToken_T)g_uniNtFn[15])
+#define NtFlushInstructionCache_ ((NtFlushInstructionCache_T)g_uniNtFn[16])
+#define NtFreeVirtualMemory_ ((NtFreeVirtualMemory_T)g_uniNtFn[17])
+#define NtImpersonateThread_ ((NtImpersonateThread_T)g_uniNtFn[18])
+#define NtLoadDriver_ ((NtLoadDriver_T)g_uniNtFn[19])
+#define NtMapViewOfSection_ ((NtMapViewOfSection_T)g_uniNtFn[20])
+#define NtOpenKeyEx_ ((NtOpenKeyEx_T)g_uniNtFn[21])
+#define NtOpenKeyedEvent_ ((NtOpenKeyedEvent_T)g_uniNtFn[22])
+#define NtOpenProcessTokenEx_ ((NtOpenProcessTokenEx_T)g_uniNtFn[23])
+#define NtOpenProcess_ ((NtOpenProcess_T)g_uniNtFn[24])
+#define NtOpenThreadTokenEx_ ((NtOpenThreadTokenEx_T)g_uniNtFn[25])
+#define NtOpenThread_ ((NtOpenThread_T)g_uniNtFn[26])
+#define NtQueryDirectoryFile_ ((NtQueryDirectoryFile_T)g_uniNtFn[27])
+#define NtQueryInformationFile_ ((NtQueryInformationFile_T)g_uniNtFn[28])
+#define NtQueryInformationProcess_ ((NtQueryInformationProcess_T)g_uniNtFn[29])
+#define NtQueryInformationThread_ ((NtQueryInformationThread_T)g_uniNtFn[30])
+#define NtQueryInformationToken_ ((NtQueryInformationToken_T)g_uniNtFn[31])
+#define NtQueryObject_ ((NtQueryObject_T)g_uniNtFn[32])
+#define NtQuerySystemInformation_ ((NtQuerySystemInformation_T)g_uniNtFn[33])
+#define NtQueryTimerResolution_ ((NtQueryTimerResolution_T)g_uniNtFn[34])
+#define NtQueryValueKey_ ((NtQueryValueKey_T)g_uniNtFn[35])
+#define NtRaiseHardError_ ((NtRaiseHardError_T)g_uniNtFn[36])
+#define NtReadFile_ ((NtReadFile_T)g_uniNtFn[37])
+#define NtReadVirtualMemory_ ((NtReadVirtualMemory_T)g_uniNtFn[38])
+#define NtReleaseKeyedEvent_ ((NtReleaseKeyedEvent_T)g_uniNtFn[39])
+#define NtResetEvent_ ((NtResetEvent_T)g_uniNtFn[40])
+#define NtSetEvent_ ((NtSetEvent_T)g_uniNtFn[41])
+#define NtSetInformationFile_ ((NtSetInformationFile_T)g_uniNtFn[42])
+#define NtSetInformationProcess_ ((NtSetInformationProcess_T)g_uniNtFn[43])
+#define NtSetInformationThread_ ((NtSetInformationThread_T)g_uniNtFn[44])
+#define NtSetInformationToken_ ((NtSetInformationToken_T)g_uniNtFn[45])
+#define NtSetTimerResolution_ ((NtSetTimerResolution_T)g_uniNtFn[46])
+#define NtSetValueKey_ ((NtSetValueKey_T)g_uniNtFn[47])
+#define NtShutdownSystem_ ((NtShutdownSystem_T)g_uniNtFn[48])
+#define NtTerminateProcess_ ((NtTerminateProcess_T)g_uniNtFn[49])
+#define NtTerminateThread_ ((NtTerminateThread_T)g_uniNtFn[50])
+#define NtUnloadDriver_ ((NtUnloadDriver_T)g_uniNtFn[51])
+#define NtWaitForKeyedEvent_ ((NtWaitForKeyedEvent_T)g_uniNtFn[52])
+#define NtWaitForSingleObject_ ((NtWaitForSingleObject_T)g_uniNtFn[53])
+#define NtWriteFile_ ((NtWriteFile_T)g_uniNtFn[54])
+#define NtWriteVirtualMemory_ ((NtWriteVirtualMemory_T)g_uniNtFn[55])
+#define NtYieldExecution_ ((NtYieldExecution_T)g_uniNtFn[56])
+#define RtlAcquirePebLock_ ((RtlAcquirePebLock_T)g_uniNtFn[57])
+#define RtlAdjustPrivilege_ ((RtlAdjustPrivilege_T)g_uniNtFn[58])
+#define RtlExitUserProcess_ ((RtlExitUserProcess_T)g_uniNtFn[59])
+#define RtlReleasePebLock_ ((RtlReleasePebLock_T)g_uniNtFn[60])
+// [generated code end]
 
 dfa ER UniNtLoad();

@@ -19,76 +19,24 @@ dfa OBJECT_ATTRIBUTES_::OBJECT_ATTRIBUTES_()
     tx->SecurityQualityOfService = NUL;
 }
 
-#define _UNI_NT_LOAD_FN(fnName)                                                       \
-    ifu ((fnName##_ = (fnName##_T)uniNtLoadCache.FnAdrGet(MdlFnHash::fnName)) == NUL) \
-        rete(ErrVal::NO_EXIST);
+// [generated code begin]
+cxex cx FNV1A64 g_uniNtFnHash[UNI_NT_FN_CNT] = {
+    0x43F66F86D3C067A4, 0xFC8493E3D4BC8B09, 0xECDBF8E39DC3F188, 0xF9A4A82670D9FD19, 0x0EA8815DD2EFDD00, 0x0FAEF1F8C3DC5610, 0x7334688B27564FBE, 0x6001B2CBC458EE62, 0x68366B100519EC48,
+    0xEDF66E9A64A8869F, 0x74F2310CFAAD517D, 0x7791746A7256241D, 0x99E7C5711E0F4C40, 0x62D0D897D70E466B, 0x2E0D8B2AD6DBA8C2, 0x390FFEAD230EA7FA, 0x2A8438B44D3A709C, 0x84B21891C1103302,
+    0x2B317E2929076FA5, 0x439C9C963CF7677E, 0xD09B1F094A5E8961, 0xFF3367EA540125F6, 0xF9B7FFC77E174586, 0x7E3399C0B3006553, 0x18A1232E3C0B0A91, 0xCD0B1E659F3932FC, 0xEB3418764049AAE4,
+    0x809212E1E5C0E1B5, 0x29F3773442299460, 0x97660899AF920B9B, 0x38EEBC3F3D4267A2, 0x30ADCF95DB777C33, 0xC433B989E0BE2AAF, 0x90DC89908361D8F9, 0x2A8EF8C52DE4FE8B, 0x4C79C7D07705B820,
+    0x667C4AA603EC3BC5, 0x6D519A49D97618C6, 0x068D37D5AD0FFC34, 0x3BC3B3E9970BFE53, 0x3E28A3BBBE69FB99, 0x1CC78F8D7AC6E8CC, 0x56D8705FD5D5F1E4, 0x2575C4D304CAB68F, 0x3F2557CF5A1BD436,
+    0xCB68D7538BCE4E17, 0xC314D04A18EAC16F, 0x256C1F8D2076BB84, 0x1BC8D22D39EB3C57, 0x8245D3153CEFF688, 0x030262C15C392BDB, 0xE350019B59F6795D, 0x0FFD4DA4C115C542, 0xF1A591FD26D0C873,
+    0x50C2A7BA992CF725, 0xCEA0739A32888649, 0x9DF8CD4A2D43943D, 0x448F3628D84BC4C0, 0xA4C60E712A549D92, 0x00610A0CC27A81C4, 0x23134CF8AC8E868F};
+// [generated code end]
 
 dfa ER UniNtLoad()
 {
     MdlFnCache uniNtLoadCache;
-    uniNtLoadCache.CacheDll(L"ntdll.dll");
-
-    _UNI_NT_LOAD_FN(LdrLoadDll);
-    _UNI_NT_LOAD_FN(LdrUnloadDll);
-    _UNI_NT_LOAD_FN(NtAdjustPrivilegesToken);
-    _UNI_NT_LOAD_FN(NtAllocateVirtualMemory);
-    _UNI_NT_LOAD_FN(NtClose);
-    _UNI_NT_LOAD_FN(NtCreateEvent);
-    _UNI_NT_LOAD_FN(NtCreateFile);
-    _UNI_NT_LOAD_FN(NtCreateKeyedEvent);
-    _UNI_NT_LOAD_FN(NtCreateProcessEx);
-    _UNI_NT_LOAD_FN(NtCreateSection);
-    _UNI_NT_LOAD_FN(NtCreateThreadEx);
-    _UNI_NT_LOAD_FN(NtCreateToken);
-    _UNI_NT_LOAD_FN(NtCreateUserProcess);
-    _UNI_NT_LOAD_FN(NtDelayExecution);
-    _UNI_NT_LOAD_FN(NtDuplicateObject);
-    _UNI_NT_LOAD_FN(NtDuplicateToken);
-    _UNI_NT_LOAD_FN(NtFlushInstructionCache);
-    _UNI_NT_LOAD_FN(NtFreeVirtualMemory);
-    _UNI_NT_LOAD_FN(NtImpersonateThread);
-    _UNI_NT_LOAD_FN(NtLoadDriver);
-    _UNI_NT_LOAD_FN(NtMapViewOfSection);
-    _UNI_NT_LOAD_FN(NtOpenKeyEx);
-    _UNI_NT_LOAD_FN(NtOpenKeyedEvent);
-    _UNI_NT_LOAD_FN(NtOpenProcess);
-    _UNI_NT_LOAD_FN(NtOpenProcessTokenEx);
-    _UNI_NT_LOAD_FN(NtOpenThread);
-    _UNI_NT_LOAD_FN(NtOpenThreadTokenEx);
-    _UNI_NT_LOAD_FN(NtQueryDirectoryFile);
-    _UNI_NT_LOAD_FN(NtQueryInformationFile);
-    _UNI_NT_LOAD_FN(NtQueryInformationProcess);
-    _UNI_NT_LOAD_FN(NtQueryInformationThread);
-    _UNI_NT_LOAD_FN(NtQueryInformationToken);
-    _UNI_NT_LOAD_FN(NtQueryObject);
-    _UNI_NT_LOAD_FN(NtQuerySystemInformation);
-    _UNI_NT_LOAD_FN(NtQueryTimerResolution);
-    _UNI_NT_LOAD_FN(NtQueryValueKey);
-    _UNI_NT_LOAD_FN(NtRaiseHardError);
-    _UNI_NT_LOAD_FN(NtReadFile);
-    _UNI_NT_LOAD_FN(NtReadVirtualMemory);
-    _UNI_NT_LOAD_FN(NtReleaseKeyedEvent);
-    _UNI_NT_LOAD_FN(NtResetEvent);
-    _UNI_NT_LOAD_FN(NtSetEvent);
-    _UNI_NT_LOAD_FN(NtSetInformationFile);
-    _UNI_NT_LOAD_FN(NtSetInformationProcess);
-    _UNI_NT_LOAD_FN(NtSetInformationThread);
-    _UNI_NT_LOAD_FN(NtSetInformationToken);
-    _UNI_NT_LOAD_FN(NtSetTimerResolution);
-    _UNI_NT_LOAD_FN(NtSetValueKey);
-    _UNI_NT_LOAD_FN(NtShutdownSystem);
-    _UNI_NT_LOAD_FN(NtTerminateProcess);
-    _UNI_NT_LOAD_FN(NtTerminateThread);
-    _UNI_NT_LOAD_FN(NtUnloadDriver);
-    _UNI_NT_LOAD_FN(NtWaitForKeyedEvent);
-    _UNI_NT_LOAD_FN(NtWaitForSingleObject);
-    _UNI_NT_LOAD_FN(NtWriteFile);
-    _UNI_NT_LOAD_FN(NtWriteVirtualMemory);
-    _UNI_NT_LOAD_FN(NtYieldExecution);
-    _UNI_NT_LOAD_FN(RtlAcquirePebLock);
-    _UNI_NT_LOAD_FN(RtlAdjustPrivilege);
-    _UNI_NT_LOAD_FN(RtlExitUserProcess);
-    _UNI_NT_LOAD_FN(RtlReleasePebLock);
-
+    ife (uniNtLoadCache.CacheDll(L"ntdll.dll"))
+        retep;
+    ite (i, i < UNI_NT_FN_CNT)
+        ifu ((g_uniNtFn[i] = uniNtLoadCache.FnAdrGet(g_uniNtFnHash[i])) == NUL)
+            rete(ErrVal::NO_EXIST);
     rets;
 }

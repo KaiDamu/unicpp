@@ -178,9 +178,9 @@ class MdlFnCache
         }
         rets;
     }
-    dfa GAFN FnAdrGet(MdlFnHash hash)
+    dfa GAFN FnAdrGet(FNV1A64 hash)
     {
-        cx AU it = m_fnCache.find(FNV1A64(hash));
+        cx AU it = m_fnCache.find(hash);
         ifu (it == m_fnCache.end())
             ret NUL;
         ret it->second;
