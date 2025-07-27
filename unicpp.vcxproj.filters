@@ -254,5 +254,8 @@
     <ClInclude Include="src\token.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\codegen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

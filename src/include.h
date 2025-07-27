@@ -143,6 +143,7 @@
 #include "bada.h"
 #include "hunic.h"
 #include "dumb.h"
+#include "codegen.h"
 
 #include "main.h"
 

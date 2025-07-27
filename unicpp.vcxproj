@@ -28,6 +28,7 @@
     <ClInclude Include="src\bada.h" />
     <ClInclude Include="src\char.h" />
     <ClInclude Include="src\clipboard.h" />
+    <ClInclude Include="src\codegen.h" />
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\console.h" />
     <ClInclude Include="src\container.h" />
