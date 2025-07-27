@@ -475,3 +475,110 @@ tpl1 dfa SI StrWordWrap(std::vector<cx T1*>& lineDivs, cx T1* str, SI lineMax, T
 
     ret longestLine;
 }
+
+tpl1 class StrArgList
+{
+  private:
+    U1* m_buf;
+    SI m_argCnt;
+    T1** m_argVal;
+
+  public:
+    dfa SI Cnt() cx
+    {
+        ret m_argCnt;
+    }
+    dfa cx T1* Val(SI i) cx
+    {
+        ifu (i >= m_argCnt)
+            ret NUL;
+        ret m_argVal[i];
+    }
+    dfa NT Clr()
+    {
+        if (m_buf == NUL)
+            ret;
+        MemDel(m_buf);
+        m_buf = NUL;
+        m_argCnt = 0;
+        m_argVal = NUL;
+    }
+    dfa ER Set(cx T1* argStr)
+    {
+        tx->Clr();
+
+        SI argCntGuess = 0;
+        BO wasSpace = YES;
+        AU cur = argStr;
+        while (*cur != '\0')
+        {
+            cx BO isSpace = (*cur++ == ' ');
+            argCntGuess += (isSpace ^ wasSpace);
+            wasSpace = isSpace;
+        }
+        argCntGuess = DivCeil(argCntGuess, SI(2));
+        cx AU argStrSize = SI(cur - argStr + STR_EX_LEN) * siz(T1);
+        cx AU bufStrSize = AlignBit(argStrSize, siz(T1*));
+        cx AU bufAdrSize = argCntGuess * siz(T1*);
+        m_buf = (U1*)MemNew(bufStrSize + bufAdrSize);
+        MemCpy(m_buf, argStr, argStrSize);
+        m_argVal = (T1**)(m_buf + bufStrSize);
+
+        m_argCnt = 0;
+        wasSpace = YES;
+        AU curBuf = (T1*)m_buf;
+        BO isInQuote = NO;
+        while (*curBuf != '\0')
+        {
+            BO isSpace = (*curBuf == ' ');
+            if (isSpace ^ wasSpace)
+            {
+                if (wasSpace)
+                {
+                    cx BO isQuote = (*curBuf == '\"');
+                    m_argVal[m_argCnt++] = curBuf + isQuote;
+                    isInQuote = isQuote;
+                }
+                else // isSpace
+                {
+                    if (isInQuote)
+                    {
+                        cx BO isQuotePrev = (*(curBuf - 1) == '\"');
+                        if (isQuotePrev)
+                        {
+                            *(curBuf - 1) = '\0';
+                            isInQuote = NO;
+                        }
+                        else
+                        {
+                            isSpace = NO;
+                        }
+                    }
+                    else
+                    {
+                        *curBuf = '\0';
+                    }
+                }
+            }
+            wasSpace = isSpace;
+            ++curBuf;
+        }
+        if (isInQuote)
+            *(curBuf - 1) = '\0';
+
+        rets;
+    }
+
+  public:
+    dfa StrArgList() : m_buf(NUL), m_argCnt(0), m_argVal(NUL)
+    {
+    }
+    dfa StrArgList(cx T1* argStr) : m_buf(NUL), m_argCnt(0), m_argVal(NUL)
+    {
+        tx->Set(argStr);
+    }
+    dfa ~StrArgList()
+    {
+        tx->Clr();
+    }
+};
