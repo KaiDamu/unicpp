@@ -485,6 +485,29 @@ class MemFile
         m_cur += fullSize;
         ValSeqBoxDecode(vals, box);
     }
+    dfa SI ReadLine(std::string& str)
+    {
+        cx AU curBase = m_cur;
+        while (m_cur < m_end)
+        {
+            if (*m_cur == '\r' || *m_cur == '\n')
+            {
+                cx AU lineLen = SI(m_cur - curBase);
+                str.assign((CS*)curBase, lineLen);
+                m_cur += (1 + ((*m_cur == '\r') && (m_cur + 1 < m_end) && (*(m_cur + 1) == '\n')));
+                ret lineLen + 1;
+            }
+            ++m_cur;
+        }
+        if (m_cur > curBase)
+        {
+            cx AU lineLen = SI(m_cur - curBase);
+            str.assign((CS*)curBase, lineLen);
+            ret lineLen + 1;
+        }
+        str.clear();
+        ret 0;
+    }
     dfa NT Write(CXGA buf, SI size)
     {
         if (m_cur + size > m_end)

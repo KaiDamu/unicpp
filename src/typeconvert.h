@@ -298,3 +298,22 @@ tpl2 dfa SI IntToStr(T1* dst, T2 src)
     }
     ret len;
 }
+tpl2 dfa SI IntToStrBase16(T1* dst, T2 src, SI padToLen = siz(T2) * 2, T1 padVal = '0')
+{
+    static_assert(IsTypeU<T2>, "T2 (input int) must be an unsigned type");
+    cx AU strLen = DivCeil(LenBin(src), SI(4));
+    cx AU padLen = (padToLen > strLen) ? (padToLen - strLen) : SI(0);
+    AU dstCur = dst;
+    ite (i, i < padLen)
+        *dstCur++ = padVal;
+    cx AU curEnd = dstCur;
+    dstCur += strLen;
+    *dstCur = '\0';
+    while (dstCur != curEnd)
+    {
+        cx AU digit = T1(src & 0xF);
+        *(--dstCur) = (digit >= 10) * 7 + digit + '0';
+        src >>= 4;
+    }
+    ret padLen + strLen;
+}

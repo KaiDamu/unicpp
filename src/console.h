@@ -20,7 +20,7 @@ enum class ConCol : U1
     WHITE = 15,
 };
 
-cxex SI CON_BUF_LEN_MAX = 1024;
+cxex SI CON_SBO_LENX_MAX = BYTE_IN_KB;
 cxex SI CON_HISTORY_CNT_MAX = 32;
 
 ConCol g_conCol = ConCol::WHITE;
@@ -219,11 +219,25 @@ dfa ER _ConWriteRawCol(ConCol col, cx CS* buf, SI bufLen)
 }
 dfa ER _ConWriteRawAl(cx CS* format, cx AL& args)
 {
-    CS buf[CON_BUF_LEN_MAX + 1];
-    cx SI bufLen = vsnprintf(buf, CON_BUF_LEN_MAX, format, args);
-    ifu (bufLen < 0 || bufLen >= CON_BUF_LEN_MAX)
+    CS bufStack[CON_SBO_LENX_MAX];
+    std::vector<CS> bufHeap;
+    CS* buf = bufStack;
+    SI bufLenx = CON_SBO_LENX_MAX;
+    jdst(retry);
+    cx AU bufLenResult = SI(vsnprintf(buf, bufLenx - STR_EX_LEN, format, args));
+    ifu (bufLenResult < 0)
         rete(ErrVal::CON);
-    ife (_ConWriteRaw(buf, bufLen))
+    ifu (bufLenResult >= bufLenx - STR_EX_LEN)
+    {
+        if (bufHeap.size() == 0)
+            bufHeap.resize(CON_SBO_LENX_MAX * 4);
+        else
+            bufHeap.resize(bufHeap.size() * 4);
+        buf = bufHeap.data();
+        bufLenx = SI(bufHeap.size());
+        jsrc(retry);
+    }
+    ife (_ConWriteRaw(buf, bufLenResult))
         retep;
     rets;
 }

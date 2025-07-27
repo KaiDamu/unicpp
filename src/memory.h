@@ -5,7 +5,6 @@
 #else
     #ifdef PROG_COMPILER_MSVC
         #pragma intrinsic(_ReturnAddress)
-extern "C" __stdcall void* _ReturnAddress();
         #define RetAdr() GA(_ReturnAddress())
     #else
         #define RetAdr() GA(0)
