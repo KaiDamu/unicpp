@@ -69,3 +69,7 @@
 #ifdef PROG_COMPILER_MSVC
     #pragma warning(disable : 4996) // _CRT_SECURE_NO_WARNINGS
 #endif
+
+#ifndef _HAS_CXX20
+    #define _HAS_CXX20 1
+#endif
