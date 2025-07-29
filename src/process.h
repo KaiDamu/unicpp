@@ -9,7 +9,7 @@ dfa NT ProcCrash()
 dfa NT ProcExit(U4 retVal)
 {
 #ifdef PROG_SYS_WIN
-    RtlExitUserProcess(retVal);
+    RtlExitUserProcess_(retVal);
 #else
     exit(retVal);
 #endif

@@ -71,17 +71,17 @@ dfa ER _DirEnum(CH* path, SI pathLen, SI depth, DirEnumCallbFnType callb, U4 fla
     ife (dir._OpenNt(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, 0, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, FILE_OPEN, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT))
         retep;
     Arr<U1> buf(BYTE_IN_KB * 4); // maybe this should be configurable
-    IO_STATUS_BLOCK isb;
-    U4 queryFlags = 0;
+    IO_STATUS_BLOCK_ isb;
+    U1 doRestartScan = NO;
     jdst(retry);
-    cx NTSTATUS status = NtQueryDirectoryFileEx(dir.Hdl(), NUL, NUL, NUL, &isb, buf.Ptr(), ULONG(buf.Cap()), FileDirectoryInformation, queryFlags, NUL);
+    cx NTSTATUS status = NtQueryDirectoryFile_(dir.Hdl(), NUL, NUL, NUL, &isb, buf.Ptr(), ULONG(buf.Cap()), FILE_INFORMATION_CLASS_::FileDirectoryInformation, NO, NUL, doRestartScan);
     ifu (status == STATUS_BUFFER_OVERFLOW)
     {
         buf.New(buf.Cap() * 2);
-        queryFlags |= SL_RESTART_SCAN;
+        doRestartScan = YES;
         jsrc(retry);
     }
-    queryFlags &= ~SL_RESTART_SCAN;
+    doRestartScan = NO;
     if (status == STATUS_NO_MORE_FILES)
         rets;
     if (status != STATUS_SUCCESS)
@@ -230,7 +230,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
                      ife (DirNew(path))
                      {
                          ((Param*)param1)->err = ErrLastGet();
-                 ret NO;
+                         ret NO;
                      }
                  }
                  else
@@ -238,7 +238,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
                      ife (FileCpy(path, fileInfo.path, ((Param*)param1)->isReplace))
                      {
                          ((Param*)param1)->err = ErrLastGet();
-                 ret NO;
+                         ret NO;
                      }
                  }
                  ret YES;
@@ -267,7 +267,7 @@ dfa ER DirDel(cx CH* path)
                      ife (_DirDel(fileInfo.path))
                      {
                          ((Param*)param1)->err = ErrLastGet();
-                 ret NO;
+                         ret NO;
                      }
                  }
                  else
@@ -275,7 +275,7 @@ dfa ER DirDel(cx CH* path)
                      ife (FileDel(fileInfo.path))
                      {
                          ((Param*)param1)->err = ErrLastGet();
-                 ret NO;
+                         ret NO;
                      }
                  }
                  ret YES;
