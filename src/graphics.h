@@ -289,16 +289,16 @@ tpl1 dfa NT _ColGridDrawLineN(ColGrid<T1>& grid, cx Line2<SI>& line, SI thicknes
 
     cx SI dx = line.b.x - line.a.x;
     cx SI dy = line.b.y - line.a.y;
-    cx F4 len = Dist0<F4>(dx, dy);
+    cx F4 len = Dist0(F4(dx), F4(dy));
     cx F4 ofsX = (dy * (ValPrev(thickness) / 2.0f)) / len * -1;
     cx F4 ofsY = (dx * (ValPrev(thickness) / 2.0f)) / len;
 
     cxex SI ptCnt = 4;
     std::array<Pos2<SI>, ptCnt> pt;
-    pt[0] = Pos2<SI>(line.b.x - ofsX, line.b.y - ofsY);
-    pt[1] = Pos2<SI>(line.a.x - ofsX, line.a.y - ofsY);
-    pt[2] = Pos2<SI>(line.a.x + ofsX, line.a.y + ofsY);
-    pt[3] = Pos2<SI>(line.b.x + ofsX, line.b.y + ofsY);
+    pt[0] = Pos2<SI>(RoundToInt(F4(line.b.x) - ofsX), RoundToInt(F4(line.b.y) - ofsY));
+    pt[1] = Pos2<SI>(RoundToInt(F4(line.a.x) - ofsX), RoundToInt(F4(line.a.y) - ofsY));
+    pt[2] = Pos2<SI>(RoundToInt(F4(line.a.x) + ofsX), RoundToInt(F4(line.a.y) + ofsY));
+    pt[3] = Pos2<SI>(RoundToInt(F4(line.b.x) + ofsX), RoundToInt(F4(line.b.y) + ofsY));
     cxex SI lineCnt = 4;
     std::array<Line2<SI>, lineCnt> lines;
     lines[0] = Line2<SI>(pt[0], pt[1]);
@@ -799,8 +799,8 @@ class ScnDrawCtx
 
         BITMAPINFO bmi = {};
         bmi.bmiHeader.biSize = siz(BITMAPINFOHEADER);
-        bmi.bmiHeader.biWidth = m_scnGrid.size.w;
-        bmi.bmiHeader.biHeight = -m_scnGrid.size.h;
+        bmi.bmiHeader.biWidth = LONG(m_scnGrid.size.w);
+        bmi.bmiHeader.biHeight = LONG(-m_scnGrid.size.h);
         bmi.bmiHeader.biPlanes = 1;
         bmi.bmiHeader.biBitCount = 32;
         bmi.bmiHeader.biCompression = BI_RGB;
@@ -868,8 +868,8 @@ dfa DWORD WINAPI _ScnDrawThd(LPVOID code)
         codeInt = SCN_DRAW_THD_CODE_ERR_YES;
         ret 1;
     }
-    g_scnDrawWinHdl =
-        CreateWindowExW(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_TOPMOST, (LPCWSTR)(uintptr_t)winClassHdl, L"", WS_POPUP, 0, 0, scnSize.w, scnSize.h, NUL, NUL, instance, NUL);
+    g_scnDrawWinHdl = CreateWindowExW(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_TOPMOST, (LPCWSTR)(uintptr_t)winClassHdl, L"", WS_POPUP, 0, 0, int(scnSize.w), int(scnSize.h), NUL,
+                                      NUL, instance, NUL);
     ifu (g_scnDrawWinHdl == NUL)
     {
         UnregisterClassW((LPCWSTR)(uintptr_t)winClassHdl, instance);

@@ -695,7 +695,7 @@ class TimerCpu
         cx AU timeNow = tx->TimeGet();
         cx AU timeRet = m_isRunning ? (m_time + timeNow - m_timeStart) : m_time;
         m_isRunning = YES;
-        m_time = 0.0;
+        m_time = TmCpu(0);
         m_timeStart = timeNow;
         ret timeRet;
     }

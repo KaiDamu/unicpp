@@ -38,11 +38,11 @@ struct ColRgb
     }
     dfa cxex ColRgb operator*(F4 scalar) cx
     {
-        ret ColRgb(r * scalar, g * scalar, b * scalar);
+        ret ColRgb(U1(r * scalar), U1(g * scalar), U1(b * scalar));
     }
     dfa cxex ColRgb operator/(F4 scalar) cx
     {
-        ret ColRgb(r / scalar, g / scalar, b / scalar);
+        ret ColRgb(U1(r / scalar), U1(g / scalar), U1(b / scalar));
     }
     dfa cxex ColRgb operator-() cx
     {
@@ -64,16 +64,16 @@ struct ColRgb
     }
     dfa ColRgb& operator*=(F4 scalar)
     {
-        r *= scalar;
-        g *= scalar;
-        b *= scalar;
+        r = U1(r * scalar);
+        g = U1(g * scalar);
+        b = U1(b * scalar);
         ret *tx;
     }
     dfa ColRgb& operator/=(F4 scalar)
     {
-        r /= scalar;
-        g /= scalar;
-        b /= scalar;
+        r = U1(r / scalar);
+        g = U1(g / scalar);
+        b = U1(b / scalar);
         ret *tx;
     }
 };
@@ -190,11 +190,11 @@ struct ColRgba
     }
     dfa cxex ColRgba operator*(F4 scalar) cx
     {
-        ret ColRgba(r * scalar, g * scalar, b * scalar, a * scalar);
+        ret ColRgba(U1(r * scalar), U1(g * scalar), U1(b * scalar), U1(a * scalar));
     }
     dfa cxex ColRgba operator/(F4 scalar) cx
     {
-        ret ColRgba(r / scalar, g / scalar, b / scalar, a / scalar);
+        ret ColRgba(U1(r / scalar), U1(g / scalar), U1(b / scalar), U1(a / scalar));
     }
     dfa cxex ColRgba operator-() cx
     {
@@ -218,18 +218,18 @@ struct ColRgba
     }
     dfa ColRgba& operator*=(F4 scalar)
     {
-        r *= scalar;
-        g *= scalar;
-        b *= scalar;
-        a *= scalar;
+        r = U1(r * scalar);
+        g = U1(g * scalar);
+        b = U1(b * scalar);
+        a = U1(a * scalar);
         ret *tx;
     }
     dfa ColRgba& operator/=(F4 scalar)
     {
-        r /= scalar;
-        g /= scalar;
-        b /= scalar;
-        a /= scalar;
+        r = U1(r / scalar);
+        g = U1(g / scalar);
+        b = U1(b / scalar);
+        a = U1(a / scalar);
         ret *tx;
     }
 };
@@ -263,11 +263,11 @@ struct ColV
     }
     dfa cxex ColV operator*(F4 scalar) cx
     {
-        ret ColV(v * scalar);
+        ret ColV(U1(v * scalar));
     }
     dfa cxex ColV operator/(F4 scalar) cx
     {
-        ret ColV(v / scalar);
+        ret ColV(U1(v / scalar));
     }
     dfa cxex ColV operator-() cx
     {
@@ -285,12 +285,12 @@ struct ColV
     }
     dfa ColV& operator*=(F4 scalar)
     {
-        v *= scalar;
+        v = U1(v * scalar);
         ret *tx;
     }
     dfa ColV& operator/=(F4 scalar)
     {
-        v /= scalar;
+        v = U1(v / scalar);
         ret *tx;
     }
 
@@ -535,7 +535,7 @@ tpl0 dfa NT ToType(ColVN& dst, cx ColRgbN& src)
 }
 tpl0 dfa NT ToType(ColV& dst, cx ColRgba& src)
 {
-    dst.v = (U4(src.r) * 299 + U4(src.g) * 587 + U4(src.b) * 114) / 1000;
+    dst.v = U1((U4(src.r) * 299 + U4(src.g) * 587 + U4(src.b) * 114) / 1000);
 }
 tpl0 dfa NT ToType(ColVN& dst, cx ColRgba& src)
 {

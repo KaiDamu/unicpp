@@ -39,7 +39,7 @@ dfa ER _CodeGenEnd1(CodeGenResult& result, CodeGenCtx& ctx)
 {
     result.code[2] += "};\r\n";
     CS globalStr[256];
-    CsstrSetForm(globalStr, "cxex SI UNI_NT_FN_CNT = %d;\r\n\r\nGAFN g_uniNtFn[UNI_NT_FN_CNT] = {};\r\n", ctx.fnCnt);
+    CsstrSetForm(globalStr, "cxex SI UNI_NT_FN_CNT = %d;\r\n\r\nGAFN g_uniNtFn[UNI_NT_FN_CNT] = {};\r\n", S4(ctx.fnCnt));
     result.code[0] += globalStr;
     rets;
 }
@@ -73,7 +73,7 @@ dfa ER _CodeGenLine1(std::string& line, CodeGenResult& result, CodeGenCtx& ctx)
         result.code[2] += ", ";
     result.code[2] += hashAsStr;
     CS defineStr[256];
-    CsstrSetForm(defineStr, "#define %s_ ((%s_T)g_uniNtFn[%d])\r\n", hashStrCur, hashStrCur, ctx.fnCnt);
+    CsstrSetForm(defineStr, "#define %s_ ((%s_T)g_uniNtFn[%d])\r\n", hashStrCur, hashStrCur, S4(ctx.fnCnt));
     result.code[1] += defineStr;
     ++ctx.fnCnt;
     rets;

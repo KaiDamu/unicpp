@@ -5,8 +5,8 @@ dfa UNICODE_STRING_::UNICODE_STRING_()
 }
 dfa UNICODE_STRING_::UNICODE_STRING_(cx CH* Buffer)
 {
-    tx->Length = StrLen(Buffer) * siz(Buffer[0]);
-    tx->MaximumLength = tx->Length + siz(Buffer[0]);
+    tx->Length = U2(StrLen(Buffer) * siz(Buffer[0]));
+    tx->MaximumLength = U2(tx->Length + siz(Buffer[0]));
     tx->Buffer = TO(tx->Buffer)(Buffer);
 }
 dfa OBJECT_ATTRIBUTES_::OBJECT_ATTRIBUTES_()

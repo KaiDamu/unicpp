@@ -19,8 +19,8 @@ dfa ER CurPosSet(cx Pos2<F4>& pos)
 {
     ife (ProcDpiAwareSet())
         retep;
-    cx S4 x = RoundToInt(pos.x);
-    cx S4 y = RoundToInt(pos.y);
+    cx AU x = S4(RoundToInt(pos.x));
+    cx AU y = S4(RoundToInt(pos.y));
     ifu (SetCursorPos(x, y) == 0)
         rete(ErrVal::CUR);
     g_curPosOfs = Pos2<F4>(pos.x - F4(x), pos.y - F4(y));

@@ -122,7 +122,7 @@ dfa cx CS* StrFindAnyFnv1a64l(FNV1A64L& found, cx CS* main, cx std::span<cx FNV1
     {
         FNV1A64 hash = FNV1A64_INIT_VAL;
         SI subLenPrev = 0;
-        ite (j, j < subList_.size())
+        ite (j, j < SI(subList_.size()))
         {
             cx AU subLen = Fnv1a64lLen(subList_[j]);
             if (subLen > mainLen - i)

@@ -202,7 +202,7 @@ class BadaCodec
         m_thdTaskMgr.WaitAll();
 
         AU stratMinI = SI(-1);
-        AU stratMinSize = 1e9;
+        AU stratMinSize = SI(1e9);
         AU isTie = NO;
         ite (i, i < SI(PixelPath::BuildStrat::CNT))
         {
@@ -458,7 +458,7 @@ class BadaCodec
             while (pixel != pixelEnd)
             {
                 cx AU isWhite = pixel->v >= TO(ColV::v)(0x80);
-                ifu (isWhite ^ m_colCur)
+                ifu (U1(isWhite) ^ m_colCur)
                 {
                     m_file.WriteVarint(U4(m_cntCur));
                     m_colCur = isWhite;

@@ -67,6 +67,7 @@
 #endif
 
 #ifdef PROG_COMPILER_MSVC
+    #pragma warning(disable : 4200) // nonstandard extension used: zero-sized array in struct/union
     #pragma warning(disable : 4996) // _CRT_SECURE_NO_WARNINGS
 #endif
 

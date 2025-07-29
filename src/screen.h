@@ -33,7 +33,7 @@ dfa ER ScnSizeList(std::vector<Size2<SI>>& sizes)
     SetLastError(0);
     ite (i, i < 1000) // 1000 is an arbitrary limit to prevent infinite loop in rare cases
     {
-        if (!EnumDisplaySettingsW(NUL, i, &devMode))
+        if (!EnumDisplaySettingsW(NUL, DWORD(i), &devMode))
         {
             ifu (GetLastError() != 0)
                 rete(ErrVal::SCN);

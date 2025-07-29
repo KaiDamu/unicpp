@@ -335,7 +335,7 @@ tpl1 dfa NT ValSeqBoxEncode(BitVec& out, cx T1* vals, SI valCnt)
     {
         ite (i, i < valCnt)
         {
-            bufSize = VarbaseintEncode(buf, vals[i], encodingBestI);
+            bufSize = VarbaseintEncode(buf, vals[i], U1(encodingBestI));
             out.AddLast(buf, Min(bufSize * BIT_IN_BYTE, encodingBest.valMaxLenb));
         }
     }
@@ -370,7 +370,7 @@ tpl1 dfa NT ValSeqBoxDecode(std::vector<T1>& vals, BitVec& in)
     else
     {
         for (AU& val : vals)
-            in.ReadVarbasetruncint(val, encodingBestI, valMaxLenb);
+            in.ReadVarbasetruncint(val, U1(encodingBestI), valMaxLenb);
     }
 }
 

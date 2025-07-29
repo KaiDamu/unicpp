@@ -138,7 +138,7 @@ class Win
             ret std::wstring(L"");
         cx AU strLenx = strLen + STR_EX_LEN;
         std::vector<CH> str(strLenx);
-        ifu (GetWindowTextW(m_hdl, str.data(), strLenx) == 0)
+        ifu (GetWindowTextW(m_hdl, str.data(), int(strLenx)) == 0)
             ret std::wstring(L"");
         ret std::wstring(str.data());
     }
@@ -155,7 +155,7 @@ class Win
             ret std::wstring(L"");
         cx AU strLenx = strLen + STR_EX_LEN;
         std::vector<CH> str(strLenx);
-        ifu (GetClassNameW(m_hdl, str.data(), strLenx) == 0)
+        ifu (GetClassNameW(m_hdl, str.data(), int(strLenx)) == 0)
             ret std::wstring(L"");
         ret std::wstring(str.data());
     }
@@ -182,12 +182,12 @@ class Win
         {
             if (doSetSize)
             {
-                ifu (MoveWindow(m_hdl, rect.pos.x, rect.pos.y, rect.size.w, rect.size.h, TRUE) == 0)
+                ifu (MoveWindow(m_hdl, int(rect.pos.x), int(rect.pos.y), int(rect.size.w), int(rect.size.h), TRUE) == 0)
                     rete(ErrVal::WIN);
             }
             else
             {
-                ifu (SetWindowPos(m_hdl, NUL, rect.pos.x, rect.pos.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER) == 0)
+                ifu (SetWindowPos(m_hdl, NUL, int(rect.pos.x), int(rect.pos.y), 0, 0, SWP_NOSIZE | SWP_NOZORDER) == 0)
                     rete(ErrVal::WIN);
             }
         }
@@ -195,7 +195,7 @@ class Win
         {
             if (doSetSize)
             {
-                ifu (SetWindowPos(m_hdl, NUL, 0, 0, rect.size.w, rect.size.h, SWP_NOMOVE | SWP_NOZORDER) == 0)
+                ifu (SetWindowPos(m_hdl, NUL, 0, 0, int(rect.size.w), int(rect.size.h), SWP_NOMOVE | SWP_NOZORDER) == 0)
                     rete(ErrVal::WIN);
             }
             else

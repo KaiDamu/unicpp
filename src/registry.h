@@ -15,7 +15,7 @@ class RegKey
         ArrSbo<U1, siz(KEY_VALUE_PARTIAL_INFORMATION_) + BYTE_IN_KB / 2> info;
         jdst(retry);
         U4 resultSize = 0;
-        ifu (NtQueryValueKey_(m_hdl, &str, KEY_VALUE_INFORMATION_CLASS_::KeyValuePartialInformation, info.Dat(), info.Size(), &resultSize) != STATUS_SUCCESS)
+        ifu (NtQueryValueKey_(m_hdl, &str, KEY_VALUE_INFORMATION_CLASS_::KeyValuePartialInformation, info.Dat(), U4(info.Size()), &resultSize) != STATUS_SUCCESS)
         {
             if (resultSize > info.Size())
             {

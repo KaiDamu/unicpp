@@ -325,7 +325,7 @@ class PixelPath
             ++pixelCurMain;
         }
 
-        datSizeSum = pixelPath.SizeByte() - siz(U4); // exclude 'datSizeSum' itself
+        datSizeSum = U4(pixelPath.SizeByte() - siz(U4)); // exclude 'datSizeSum' itself
         pixelPath.Set(&datSizeSum, 0, siz(U4) * BIT_IN_BYTE);
     }
     tpl1 static dfa NT Draw(ColGrid<T1>& colGrid, cx BitVec& pixelPath, cx T1& col)
