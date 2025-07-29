@@ -2052,6 +2052,13 @@ struct THREAD_BASIC_INFORMATION_
     S4 Priority;
     S4 BasePriority;
 };
+struct KEY_VALUE_PARTIAL_INFORMATION_
+{
+    U4 TitleIndex;
+    U4 Type;
+    U4 DataLength;
+    U1 Data flexarr;
+};
 
 #define _MDL_NTDLL_DLL
 

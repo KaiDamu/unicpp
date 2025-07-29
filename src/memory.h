@@ -37,6 +37,14 @@ dfa ER MemNewSys(GA* ptr, SI size, HD proc = ProcCurHdl(), U4 prot = PAGE_READWR
 
 #endif
 
+dfa NT MemSet0Force(GA dst, SI size)
+{
+    ifu (size < 1)
+        ret;
+    __stosb((U1*)dst, 0, size);
+    cx volatile U1 tmp = AsType<volatile U1>(((U1*)dst)[size >> 1]);
+    unused(tmp);
+}
 dfa NT MemCpyNocall(GA dst, CXGA src, SI size)
 {
     AU dst_ = (U1*)dst;

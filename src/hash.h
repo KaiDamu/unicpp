@@ -35,6 +35,16 @@ tpl<typename T1, U1 M> dfa T1 _HashFnv1a64Str(cx CS* str, FNV1A64 init)
     ret T1(hash);
 }
 
+dfa FNV1A64L Fnv1a64ToFnv1a64l(FNV1A64 in, SI len)
+{
+    _HashFnv1a64_2(in, len);
+    ret FNV1A64L(in);
+}
+dfa SI Fnv1a64lLen(FNV1A64L hash)
+{
+    ret SI(hash & 0xFF);
+}
+
 dfa FNV1A64 HashFnv1a64(CXGA buf, SI size, FNV1A64 init = FNV1A64_INIT_VAL)
 {
     ret _HashFnv1a64<FNV1A64, 1>(buf, size, init);

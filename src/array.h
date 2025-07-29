@@ -314,3 +314,76 @@ tpl1 class Arr
         tx->Del();
     }
 };
+
+tpl<typename T1, SI sboLen> class ArrSbo
+{
+  private:
+    T1 m_bufStack[sboLen];
+    std::vector<T1> m_bufHeap;
+    T1* m_buf;
+
+  public:
+    dfa SI Cnt() cx
+    {
+        if (m_buf == m_bufStack)
+            ret sboLen;
+        ret m_bufHeap.size();
+    }
+    dfa SI Size() cx
+    {
+        ret tx->Cnt() * siz(T1);
+    }
+    dfa NT Resize(SI cntAlloc, SI cntCpy)
+    {
+        if (m_buf == m_bufStack)
+        {
+            ifl (cntAlloc > sboLen)
+            {
+                m_bufHeap.resize(cntAlloc);
+                m_buf = m_bufHeap.data();
+                MemCpy(m_buf, m_bufStack, Min(cntCpy, sboLen) * siz(T1));
+            }
+        }
+        else
+        {
+            ifu (cntAlloc <= sboLen)
+            {
+                MemCpy(m_bufStack, m_buf, Min(cntCpy, sboLen, m_bufHeap.size()) * siz(T1));
+                m_buf = m_bufStack;
+                m_bufHeap.clear();
+                m_bufHeap.shrink_to_fit();
+            }
+            else
+            {
+                m_bufHeap.resize(cntAlloc);
+                m_buf = m_bufHeap.data();
+            }
+        }
+    }
+    dfa NT Req(SI cntReq, SI cntAlloc, SI cntCpy)
+    {
+        ifu (tx->Cnt() < cntReq)
+            tx->Resize(cntAlloc, cntCpy);
+    }
+    dfa NT Req(SI cntReq, SI cntAlloc)
+    {
+        tx->Req(cntReq, cntAlloc, tx->Cnt());
+    }
+    dfa NT Req(SI cntReq)
+    {
+        tx->Req(cntReq, cntReq, tx->Cnt());
+    }
+    dfa T1* Dat() cx
+    {
+        ret m_buf;
+    }
+    dfa T1& operator[](SI i) cx
+    {
+        ret m_buf[i];
+    }
+
+  public:
+    dfa ArrSbo() : m_buf(m_bufStack)
+    {
+    }
+};

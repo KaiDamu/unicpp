@@ -2,6 +2,84 @@
 
 #ifdef PROG_SYS_WIN
 
+class RegKey
+{
+  private:
+    HD m_hdl;
+
+  public:
+    dfa ER GetU4(U4& val, cx CH* name) cx
+    {
+        val = 0;
+        UNICODE_STRING_ str(name);
+        ArrSbo<U1, siz(KEY_VALUE_PARTIAL_INFORMATION_) + BYTE_IN_KB / 2> info;
+        jdst(retry);
+        U4 resultSize = 0;
+        ifu (NtQueryValueKey_(m_hdl, &str, KEY_VALUE_INFORMATION_CLASS_::KeyValuePartialInformation, info.Dat(), info.Size(), &resultSize) != STATUS_SUCCESS)
+        {
+            if (resultSize > info.Size())
+            {
+                info.Resize(resultSize / siz(U1), 0);
+                jsrc(retry);
+            }
+            rete(ErrVal::REG);
+        }
+        cx AU& info_ = *(KEY_VALUE_PARTIAL_INFORMATION_*)info.Dat();
+        ifu ((info_.Type != REG_DWORD_LITTLE_ENDIAN && info_.Type != REG_DWORD_BIG_ENDIAN) || (info_.DataLength != siz(U4)))
+            rete(ErrVal::REG);
+        val = *(U4*)(info_.Data);
+        if (info_.Type == REG_DWORD_BIG_ENDIAN)
+            val = RevByte(val);
+        rets;
+    }
+    dfa ER SetU4(cx CH* name, U4 val) cx
+    {
+        UNICODE_STRING_ str(name);
+        ifu (NtSetValueKey_(m_hdl, &str, 0, REG_DWORD_LITTLE_ENDIAN, &val, siz(val)) != STATUS_SUCCESS)
+            rete(ErrVal::REG);
+        rets;
+    }
+    dfa ER Open(cx CH* path, U4 access, U4 options)
+    {
+        ifu (m_hdl != NUL)
+            rete(ErrVal::YES_INIT);
+        UNICODE_STRING_ str(path);
+        OBJECT_ATTRIBUTES_ oa;
+        oa.ObjectName = &str;
+        oa.Attributes = OBJ_CASE_INSENSITIVE;
+        ifu (NtOpenKeyEx_(&m_hdl, access, &oa, options) != STATUS_SUCCESS)
+            rete(ErrVal::REG);
+        rets;
+    }
+    dfa ER Close()
+    {
+        if (m_hdl == NUL)
+            rets;
+        ifu (NtClose_(m_hdl) != STATUS_SUCCESS)
+            rete(ErrVal::REG);
+        m_hdl = NUL;
+        rets;
+    }
+
+  public:
+    dfa RegKey() : m_hdl(NUL)
+    {
+    }
+    dfa ~RegKey()
+    {
+        tx->Close();
+    }
+};
+
+dfa BO RegKeyIsExist(cx CH* path)
+{
+    RegKey regKey;
+    ife (regKey.Open(path, 0, 0))
+        ret NO;
+    regKey.Close(); // error ignored
+    ret YES;
+}
+
 dfa cx CH* _RegKeySplitSub(cx CH* path, HKEY& key)
 {
     ifu (StrCmp(path, L"HKEY_", 5) != 0)
