@@ -22,11 +22,22 @@ dfa NT ProcExit()
 
 #ifdef PROG_SYS_WIN
 
+dfa LDR_DATA_TABLE_ENTRY_* _ProcMdlEntryGet(SI i)
+{
+    cx AU teb = ThdTeb();
+    cx AU list = &teb->ProcessEnvironmentBlock->Ldr->InLoadOrderModuleList;
+    for (AU cur = list->Flink; cur != list; cur = cur->Flink)
+    {
+        cx AU entry = (LDR_DATA_TABLE_ENTRY_*)cur;
+        if (i == 0)
+            ret entry;
+        --i;
+    }
+    ret NUL;
+}
 dfa LDR_DATA_TABLE_ENTRY_* _ProcDllEntryGet(cx CH* dllName)
 {
     cx AU teb = ThdTeb();
-    ifu (teb == NUL)
-        ret NUL;
     cx AU mdlNameSize = StrLen(dllName) * siz(dllName[0]);
     cx AU list = &teb->ProcessEnvironmentBlock->Ldr->InLoadOrderModuleList;
     for (AU cur = list->Flink->Flink; cur != list; cur = cur->Flink)
@@ -48,8 +59,6 @@ dfa LDR_DATA_TABLE_ENTRY_* _ProcDllEntryGet(cx CH* dllName)
 dfa LDR_DATA_TABLE_ENTRY_* _ProcDllEntryGet(HD dll)
 {
     cx AU teb = ThdTeb();
-    ifu (teb == NUL)
-        ret NUL;
     cx AU list = &teb->ProcessEnvironmentBlock->Ldr->InLoadOrderModuleList;
     for (AU cur = list->Flink->Flink; cur != list; cur = cur->Flink)
     {
@@ -197,6 +206,44 @@ dfa HD ProcCurHdl()
 dfa HD ProcCurId()
 {
     ret ThdTeb()->ClientId.UniqueProcess;
+}
+
+dfa cx CH* ProcFilePath()
+{
+    static CH s_cache[PATH_LENX_MAX] = {};
+    ifu (s_cache[0] == '\0')
+    {
+        cx AU entry = _ProcMdlEntryGet(0);
+        ifu (entry == NUL)
+            ret NUL;
+        cx AU& path = entry->FullDllName;
+        MemCpy(s_cache, path.Buffer, path.Length);
+        s_cache[path.Length / siz(CH)] = '\0';
+    }
+    ret s_cache;
+}
+dfa cx CH* ProcDirPath()
+{
+    static CH s_cache[PATH_LENX_MAX] = {};
+    ifu (s_cache[0] == '\0')
+    {
+        StrCpy(s_cache, ProcFilePath());
+        PathDirUp(s_cache);
+    }
+    ret s_cache;
+}
+dfa cx CH* ProcWorkPath()
+{
+    static CH s_buf[PATH_LENX_MAX] = {};
+
+    cx AU teb = ThdTeb();
+    cx AU& path = teb->ProcessEnvironmentBlock->ProcessParameters->CurrentDirectory.DosPath;
+    MemCpy(s_buf, path.Buffer, path.Length);
+    cx AU pathLen = SI(path.Length / siz(CH));
+    cx BO hasTrailSlash = (s_buf[pathLen - 1] == CH_PATH_DIR && s_buf[pathLen - 2] != CH_PATH_DRIVE);
+    s_buf[pathLen - hasTrailSlash] = '\0';
+
+    ret s_buf;
 }
 
 dfa BO ProcIsElevated()
@@ -394,6 +441,46 @@ dfa ER _ProcIsUserLocalSystemByPid(BO& isTrue, HD pid)
     ife (proc.Open(pid, PROCESS_QUERY_LIMITED_INFORMATION))
         retep;
     ret _ProcIsUserLocalSystemByHdl(isTrue, proc.Hdl());
+}
+
+dfa ER ProcUsernameGet(HD proc, std::wstring* user, std::wstring* domain)
+{
+    if (user != NUL)
+        user->clear();
+    if (domain != NUL)
+        domain->clear();
+    Token token;
+    ife (token.OpenByProc(proc, TOKEN_QUERY, 0))
+        retep;
+    cx AU sidUser = token.SidUser();
+    ifu (sidUser == NUL)
+        rete(ErrVal::TOKEN);
+    LSA_OBJECT_ATTRIBUTES loa = {};
+    loa.Length = siz(loa);
+    LSA_HANDLE policy;
+    ifu (LsaOpenPolicy(NUL, &loa, POLICY_LOOKUP_NAMES, &policy) != STATUS_SUCCESS)
+        rete(ErrVal::PROC);
+    LSA_REFERENCED_DOMAIN_LIST* domainList = NUL;
+    LSA_TRANSLATED_NAME* userList = NUL;
+    ifu (LsaLookupSids(policy, 1, (PSID*)&sidUser, &domainList, &userList) != STATUS_SUCCESS)
+        rete(ErrVal::TOKEN);
+    if (domainList)
+    {
+        if ((domain != NUL) && (domainList->Entries > 0))
+            domain->assign(domainList->Domains[0].Name.Buffer, domainList->Domains[0].Name.Length / siz(WCHAR));
+        ifu (LsaFreeMemory(domainList) != STATUS_SUCCESS)
+            rete(ErrVal::MEM);
+    }
+    if (userList)
+    {
+        if (user != NUL)
+            user->assign(userList->Name.Buffer, userList->Name.Length / siz(WCHAR));
+        ifu (LsaFreeMemory(userList) != STATUS_SUCCESS)
+            rete(ErrVal::MEM);
+    }
+    ifu (LsaClose(policy) != STATUS_SUCCESS)
+        rete(ErrVal::PROC);
+    rets;
 }
 
 class Proc

@@ -17,6 +17,11 @@ cxex SI STR_EX_LEN = 1;
     #define ChstrGetForm swscanf
 #endif
 
+dfa BO _CmpAsc_FNV1A64L(cx FNV1A64L& a, cx FNV1A64L& b)
+{
+    ret Fnv1a64lLen(a) < Fnv1a64lLen(b);
+}
+
 dfa SI StrLen(cx CS* str)
 {
     ret __builtin_strlen(str);
@@ -92,6 +97,48 @@ dfa cx CS* StrFind(cx CS* main, cx CS* sub)
 dfa cx CH* StrFind(cx CH* main, cx CH* sub)
 {
     ret wcsstr(main, sub);
+}
+dfa cx CS* StrFindFnv1a64l(cx CS* main, FNV1A64L sub)
+{
+    cx AU mainLen = StrLen(main);
+    cx AU subLen = Fnv1a64lLen(sub);
+    cx AU loopCnt = mainLen - subLen + SI(1);
+    ite (i, i < loopCnt)
+        if (HashFnv1a64l(main + i, subLen * siz(CS)) == sub)
+            ret main + i;
+    ret NUL;
+}
+dfa cx CS* StrFindAnyFnv1a64l(FNV1A64L& found, cx CS* main, cx std::span<cx FNV1A64L>& subList)
+{
+    found = FNV1A64L(0);
+    ifu (subList.size() == 0)
+        ret NUL;
+    cx AU mainLen = StrLen(main);
+    std::vector<FNV1A64L> subList_(subList.size());
+    MemCpy(subList_.data(), subList.data(), subList.size() * siz(FNV1A64L));
+    SortQuick<FNV1A64L, _CmpAsc_FNV1A64L>(subList_.data(), subList_.size());
+    cx AU loopCnt = mainLen - Fnv1a64lLen(subList_[0]) + SI(1);
+    ite (i, i < loopCnt)
+    {
+        FNV1A64 hash = FNV1A64_INIT_VAL;
+        SI subLenPrev = 0;
+        ite (j, j < subList_.size())
+        {
+            cx AU subLen = Fnv1a64lLen(subList_[j]);
+            if (subLen > mainLen - i)
+                break;
+            cx AU subLenDiff = subLen - subLenPrev;
+            hash = HashFnv1a64(main + i + subLenPrev, subLenDiff * siz(CS), hash);
+            cx AU hashL = Fnv1a64ToFnv1a64l(hash, subLen);
+            if (hashL == subList_[j])
+            {
+                found = subList_[j];
+                ret main + i;
+            }
+            subLenPrev = subLen;
+        }
+    }
+    ret NUL;
 }
 dfa SI CsstrToChstr(CH* dst, cx CS* src)
 {

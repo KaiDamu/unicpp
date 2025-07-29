@@ -1,5 +1,8 @@
 #pragma once
 
+// pre-defined:
+dfa cx CH* ProcWorkPath();
+
 cxex SI PATH_LEN_MAX = 260;
 cxex SI PATH_LENX_MAX = PATH_LEN_MAX + STR_EX_LEN;
 
@@ -131,7 +134,7 @@ dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)
     ifu (size != size2)
         ret 0;
     buf[size - 1] = ';';
-    CH str[PATH_LEN_MAX];
+    CH str[PATH_LENX_MAX];
     SI strLen = 0;
     ite (i, i < size)
     {
@@ -165,43 +168,6 @@ dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)
         }
     }
     ret 0;
-}
-
-dfa cx CH* ProcFilePath()
-{
-    static CH s_cache[PATH_LEN_MAX] = {};
-    ifu (s_cache[0] == '\0')
-    {
-        cx DWORD result = GetModuleFileNameW(NUL, s_cache, PATH_LEN_MAX);
-        Assert(result > 0 && result < PATH_LEN_MAX);
-    #ifdef PROG_BUILD_TYPE_RELEASE
-        unused(result);
-    #endif
-    }
-    ret s_cache;
-}
-dfa cx CH* ProcDirPath()
-{
-    static CH s_cache[PATH_LEN_MAX] = {};
-    ifu (s_cache[0] == '\0')
-    {
-        StrCpy(s_cache, ProcFilePath());
-        PathDirUp(s_cache);
-    }
-    ret s_cache;
-}
-dfa cx CH* ProcWorkPath()
-{
-    static CH s_cache[PATH_LEN_MAX] = {};
-    ifu (s_cache[0] == '\0')
-    {
-        cx DWORD result = GetCurrentDirectoryW(PATH_LEN_MAX, s_cache);
-        Assert(result > 0 && result < PATH_LEN_MAX);
-    #ifdef PROG_BUILD_TYPE_RELEASE
-        unused(result);
-    #endif
-    }
-    ret s_cache;
 }
 
 dfa SI PathToAbs(CH* path)
@@ -284,11 +250,11 @@ dfa SI PathEnvvarResolve(CH* path)
             } while (*p != CH_PATH_ENVVAR && *p != CH_PATH_DIR && *p != '\0');
             if (*p == CH_PATH_ENVVAR)
             {
-                CH buf[PATH_LEN_MAX + 1];
+                CH buf[PATH_LENX_MAX];
                 *p = '\0';
-                cx SI bufLen = ProcEnvvarGet(buf, pFirst + 1, PATH_LEN_MAX + 1);
+                cx SI bufLen = ProcEnvvarGet(buf, pFirst + 1, PATH_LENX_MAX);
                 *p = CH_PATH_ENVVAR;
-                if (bufLen > 0 && bufLen < PATH_LEN_MAX + 1)
+                if (bufLen > 0 && bufLen < PATH_LENX_MAX)
                 {
                     StrReplace(pFirst, buf, 0, SI(p - pFirst) + 1);
                     p = pFirst + bufLen;
