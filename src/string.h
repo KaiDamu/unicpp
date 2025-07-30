@@ -50,6 +50,14 @@ dfa NT StrCpy(CH* dst, cx CH* src)
 {
     wcscpy(dst, src);
 }
+tpl1 dfa SI StrCpyStrLen(T1* dst, cx T1* src)
+{
+    T1* p = dst;
+    while (*src != '\0')
+        *p++ = *src++;
+    *p = '\0';
+    ret p - dst;
+}
 dfa NT StrAdd(CS* dst, cx CS* src)
 {
 #ifdef PROG_COMPILER_GCC
@@ -476,15 +484,6 @@ tpl1 dfa SI StrFindReplaceMulti(T1* dst, cx T1* src, std::span<cx T1*> strReplac
     ret dstP - dst;
 }
 
-tpl1 dfa SI StrSetLenGet(T1* dst, cx T1* src)
-{
-    T1* p = dst;
-    while (*src != '\0')
-        *p++ = *src++;
-    *p = '\0';
-    ret p - dst;
-}
-
 tpl1 dfa SI StrWordWrap(std::vector<cx T1*>& lineDivs, cx T1* str, SI lineMax, T1 wrapVal = ' ')
 {
     lineDivs.clear();
@@ -522,6 +521,73 @@ tpl1 dfa SI StrWordWrap(std::vector<cx T1*>& lineDivs, cx T1* str, SI lineMax, T
 
     ret longestLine;
 }
+
+tpl<SI N> class StrObfuscated
+{
+  private:
+    std::array<U1, N> m_buf;
+
+  public:
+    dfa NT Encode()
+    {
+        MemObfuscate(m_buf.data(), N * siz(U1));
+    }
+    dfa NT Decode()
+    {
+        MemUnobfuscate(m_buf.data(), N * siz(U1));
+    }
+    dfa NT Clr()
+    {
+        MemSet0Force(m_buf.data(), N * siz(U1));
+    }
+
+  public:
+    dfa cx CS* Csstr(BO doDecode = NO)
+    {
+        if (doDecode)
+            tx->Decode();
+        ret (cx CS*)m_buf.data();
+    }
+    dfa cx CH* Chstr(BO doDecode = NO)
+    {
+        if (doDecode)
+            tx->Decode();
+        ret (cx CH*)m_buf.data();
+    }
+
+  public:
+    dfa std::string CodeGen(cx CH* strToEncode) cx
+    {
+        cx AU strSize = (StrLen(strToEncode) + STR_EX_LEN) * siz(CH);
+        std::string code;
+        CS intStr[8];
+        code += "StrObfuscated<";
+        IntToStr(intStr, strSize);
+        code += intStr;
+        code += "> customName({";
+        ite (i, i < strSize)
+        {
+            IntToStr(intStr, ByteObfuscate(*(((U1*)strToEncode) + i), U1(i)));
+            code += intStr;
+            ifl (i + 1 < strSize)
+                code += ", ";
+        }
+        code += "});\n";
+        ret code;
+    }
+
+  public:
+    dfa cxex StrObfuscated()
+    {
+    }
+    dfa cxex StrObfuscated(cx std::array<U1, N>& dat) : m_buf(dat)
+    {
+    }
+    dfa cxex ~StrObfuscated()
+    {
+        tx->Clr();
+    }
+};
 
 tpl1 class StrArgList
 {

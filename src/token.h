@@ -148,6 +148,13 @@ dfa ER ProcTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc)
         out.push_back(privis->Privileges[i]);
     rets;
 }
+dfa ER ProcTokenPriviEnable(TokenPriviId priviId)
+{
+    U1 tmp;
+    ifu (RtlAdjustPrivilege_(U4(priviId), YES, NO, &tmp) != STATUS_SUCCESS)
+        rete(ErrVal::TOKEN);
+    rets;
+}
 dfa ER ProcTokenPriviEnableAll()
 {
     std::vector<LUID_AND_ATTRIBUTES_> privis;

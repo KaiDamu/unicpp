@@ -8,6 +8,24 @@ cxex SI FILE_READ_SIZE_HIGH = FILE_READ_SIZE_MED * 64;
 
 dfa ER DirNew(cx CH* path); // referenced here for FileMove
 
+dfa BO FileIsExist(cx CH* path, BO acceptFile = YES, BO acceptDir = YES)
+{
+    CH path_[PATH_LENX_MAX];
+    cx AU pathLen = PathToNtpath(path_, path);
+    UNICODE_STRING_ str(path, pathLen);
+    OBJECT_ATTRIBUTES_ oa(str);
+    FILE_BASIC_INFORMATION_ info;
+    if (NtQueryAttributesFile_(&oa, &info) != STATUS_SUCCESS)
+        ret NO;
+    if (info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+        ret NO;
+    if (!acceptFile && !(info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+        ret NO;
+    if (!acceptDir && (info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+        ret NO;
+    ret YES;
+}
+
 dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
 {
     SI tryCnt = 0;
@@ -18,7 +36,7 @@ dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
         ++tryCnt;
         ifu (tryCnt == 2)
             rete(ErrVal::FILE);
-        if (GetLastError() == ERROR_PATH_NOT_FOUND && PathIsExist(src))
+        if (GetLastError() == ERROR_PATH_NOT_FOUND && FileIsExist(src, YES, YES))
         {
             CH dirPath[PATH_LENX_MAX];
             PathToAbs(dirPath, dst);
@@ -50,7 +68,7 @@ dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES)
         ++tryCnt;
         ifu (tryCnt == 2)
             rete(ErrVal::FILE);
-        if (GetLastError() == ERROR_PATH_NOT_FOUND && PathIsExist(src))
+        if (GetLastError() == ERROR_PATH_NOT_FOUND && FileIsExist(src, YES, YES))
         {
             CH dirPath[PATH_LENX_MAX];
             PathToAbs(dirPath, dst);
@@ -382,7 +400,7 @@ class MemFile
         }
         ife (FileToBuf(m_buf, path))
         {
-            if (!mustExist && !PathIsExist(path))
+            if (!mustExist && !FileIsExist(path, YES, YES))
             {
                 m_path = path;
                 jsrc(jmp1);

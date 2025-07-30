@@ -188,7 +188,7 @@ dfa ER DirNew(cx CH* path)
     {
         if (GetLastError() == ERROR_ALREADY_EXISTS)
         {
-            if (PathIsDir(path))
+            if (FileIsExist(path, NO, YES))
                 rets;
             rete(ErrVal::DIR);
         }

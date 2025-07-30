@@ -2,6 +2,7 @@
 
 // pre-defined:
 dfa cx CH* ProcWorkPath();
+dfa BO FileIsExist(cx CH* path, BO acceptFile, BO acceptDir);
 
 cxex SI PATH_LEN_MAX = 260;
 cxex SI PATH_LENX_MAX = PATH_LEN_MAX + STR_EX_LEN;
@@ -95,31 +96,7 @@ dfa BO PathIsNtpath(cx CH* path)
     ret StrIsFirst(path, STR_NTPATH_PRE);
 }
 
-dfa BO PathIsExist(cx CH* path)
-{
 #ifdef PROG_SYS_WIN
-    ret GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES;
-#else
-    ret _waccess(path, 0) == 0; // F_OK == 0
-#endif
-}
-
-#ifdef PROG_SYS_WIN
-
-dfa BO PathIsFile(cx CH* path)
-{
-    cx DWORD attrib = GetFileAttributesW(path);
-    if (attrib == INVALID_FILE_ATTRIBUTES)
-        ret NO;
-    ret ((attrib & FILE_ATTRIBUTE_DIRECTORY) == 0) && ((attrib & FILE_ATTRIBUTE_REPARSE_POINT) == 0);
-}
-dfa BO PathIsDir(cx CH* path)
-{
-    cx DWORD attrib = GetFileAttributesW(path);
-    if (attrib == INVALID_FILE_ATTRIBUTES)
-        ret NO;
-    ret ((attrib & FILE_ATTRIBUTE_DIRECTORY) != 0) && ((attrib & FILE_ATTRIBUTE_REPARSE_POINT) == 0);
-}
 
 dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)
 {
@@ -158,7 +135,7 @@ dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)
                 str[strLen] = '\0';
             }
             StrCpy(str + strLen, src);
-            if (PathIsExist(str))
+            if (FileIsExist(str, YES, YES))
             {
                 cx SI dstLen = strLen + StrLen(src);
                 MemCpy(dst, str, (dstLen + STR_EX_LEN) * siz(CH));
@@ -189,10 +166,10 @@ dfa SI PathToAbs(CH* path)
 dfa SI PathToAbs(CH* dst, cx CH* src)
 {
     if (PathIsAbs(src))
-        ret StrSetLenGet(dst, src);
-    cx SI workPathLen = StrSetLenGet(dst, ProcWorkPath());
+        ret StrCpyStrLen(dst, src);
+    cx SI workPathLen = StrCpyStrLen(dst, ProcWorkPath());
     dst[workPathLen] = CH_PATH_DIR;
-    ret StrSetLenGet(dst + workPathLen + 1, src) + workPathLen + 1; // +1 for the CH_PATH_DIR
+    ret StrCpyStrLen(dst + workPathLen + 1, src) + workPathLen + 1; // +1 for the CH_PATH_DIR
 }
 
 dfa SI PathToNtpath(CH* path)
@@ -212,7 +189,7 @@ dfa SI PathToNtpath(CH* path)
 dfa SI PathToNtpath(CH* dst, cx CH* src)
 {
     if (PathIsNtpath(src))
-        ret StrSetLenGet(dst, src);
+        ret StrCpyStrLen(dst, src);
     cx SI pathLen = PathToAbs(dst + STR_NTPATH_PRE_LEN, src);
     MemCpy(dst, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
     ret pathLen + STR_NTPATH_PRE_LEN;
