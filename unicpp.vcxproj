@@ -87,6 +87,7 @@
     <ClInclude Include="src\sound.h" />
     <ClInclude Include="src\stack.h" />
     <ClInclude Include="src\string.h" />
+    <ClInclude Include="src\system.h" />
     <ClInclude Include="src\test.h" />
     <ClInclude Include="src\thread.h" />
     <ClInclude Include="src\time.h" />

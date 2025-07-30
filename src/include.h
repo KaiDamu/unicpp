@@ -108,6 +108,7 @@
 #include "event.h"
 #include "token.h"
 #include "thread.h"
+#include "system.h"
 #include "process.h"
 #include "file.h"
 #include "dictionary.h"

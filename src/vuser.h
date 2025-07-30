@@ -224,7 +224,7 @@ class VuserInput
     }
     dfa ER _CurPosGet(Pos2<F4>& pos)
     {
-        ife (::CurPosGet(pos))
+        ife (::SysCurPosGet(pos))
             retep;
         rets;
     }
@@ -453,7 +453,7 @@ class VuserInput
                 retep;
 
             // set cursor to intermediate position
-            ife (::CurPosSet(nowPos))
+            ife (::SysCurPosSet(nowPos))
                 retep;
 
             // wait for simulated update frequency
@@ -463,7 +463,7 @@ class VuserInput
         }
 
         // set cursor to destination position
-        ife (::CurPosSet(dstPos))
+        ife (::SysCurPosSet(dstPos))
             retep;
 
         // delay

@@ -4,7 +4,7 @@
 
 thdlocal Pos2<F4> g_curPosOfs;
 
-dfa ER CurPosGet(Pos2<F4>& pos)
+dfa ER SysCurPosGet(Pos2<F4>& pos)
 {
     ife (ProcDpiAwareSet())
         retep;
@@ -15,7 +15,7 @@ dfa ER CurPosGet(Pos2<F4>& pos)
     pos = Pos2<F4>(F4(tmp.x) + g_curPosOfs.x, F4(tmp.y) + g_curPosOfs.y);
     rets;
 }
-dfa ER CurPosSet(cx Pos2<F4>& pos)
+dfa ER SysCurPosSet(cx Pos2<F4>& pos)
 {
     ife (ProcDpiAwareSet())
         retep;
@@ -26,13 +26,13 @@ dfa ER CurPosSet(cx Pos2<F4>& pos)
     g_curPosOfs = Pos2<F4>(pos.x - F4(x), pos.y - F4(y));
     rets;
 }
-dfa ER CurPosMove(cx Pos2<F4>& pos)
+dfa ER SysCurPosMove(cx Pos2<F4>& pos)
 {
     Pos2<F4> tmp;
-    ife (CurPosGet(tmp))
+    ife (SysCurPosGet(tmp))
         retep;
     tmp = Pos2<F4>(tmp.x + pos.x, tmp.y + pos.y);
-    ife (CurPosSet(tmp))
+    ife (SysCurPosSet(tmp))
         retep;
     rets;
 }

