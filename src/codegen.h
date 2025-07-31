@@ -2,8 +2,9 @@
 
 enum class CodeGenHash : FNV1A64
 {
-    Begin = 0x9A848D5E6672B3DE, // "begin"
-    End = 0xC2F00318F053500A,   // "end"
+    Begin = 0x9A848D5E6672B3DE,   // "begin"
+    End = 0xC2F00318F053500A,     // "end"
+    Hashkey = 0x92FB1E886EE90AB8, // "hashkey"
 };
 
 enum class CodeGenOpeId : U4
@@ -24,14 +25,17 @@ struct CodeGenCtx
 {
     CodeGenOpeId opeId;
     SI fnCnt;
+    U8 hashKey;
 
-    dfa CodeGenCtx() : opeId(CodeGenOpeId::None), fnCnt(0)
+    dfa CodeGenCtx() : opeId(CodeGenOpeId::None), fnCnt(0), hashKey(0)
     {
     }
 };
 
 dfa ER _CodeGenBegin1(CodeGenResult& result, CodeGenCtx& ctx)
 {
+    ctx.fnCnt = 0;
+    ctx.hashKey = 0;
     result.code[2] += "cxex cx FNV1A64 g_uniNtFnHash[UNI_NT_FN_CNT] = {";
     rets;
 }
@@ -43,7 +47,23 @@ dfa ER _CodeGenEnd1(CodeGenResult& result, CodeGenCtx& ctx)
     result.code[0] += globalStr;
     rets;
 }
-dfa ER _CodeGenLine1(std::string& line, CodeGenResult& result, CodeGenCtx& ctx)
+dfa ER _CodeGenCmd1(CodeGenResult& result, CodeGenCtx& ctx, cx StrArgList<CS>& argList, CodeGenHash cmdHash)
+{
+    switch (cmdHash)
+    {
+    case CodeGenHash::Hashkey: {
+        ifu (argList.Cnt() != 2)
+            rete(ErrVal::NO_VALID);
+        ctx.hashKey = StrToInt<U8>(argList.Val(1));
+        break;
+    }
+    default: {
+        rete(ErrVal::NO_VALID);
+    }
+    }
+    rets;
+}
+dfa ER _CodeGenLine1(CodeGenResult& result, CodeGenCtx& ctx, cx std::string& line)
 {
     cx AU prefix = "using _MDL_";
     cx AU prefixLen = StrLen(prefix);
@@ -66,7 +86,8 @@ dfa ER _CodeGenLine1(std::string& line, CodeGenResult& result, CodeGenCtx& ctx)
         ++hashStrCur;
     }
     *hashStrCur++ = '!';
-    cx AU hash = HashFnv1a64Str(hashStr.data());
+    AU hash = HashFnv1a64Str(hashStr.data());
+    hash ^= ctx.hashKey;
     CS hashAsStr[32] = "0x";
     IntToStrBase16(hashAsStr + 2, hash);
     if (ctx.fnCnt > 0)
@@ -141,7 +162,18 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
                 break;
             }
             default: {
-                rete(ErrVal::NO_VALID);
+                ifu (ctx.opeId == CodeGenOpeId::None)
+                    rete(ErrVal::NO_VALID);
+                switch (ctx.opeId)
+                {
+                case CodeGenOpeId::UniNtFn:
+                    ife (_CodeGenCmd1(*resultCur, ctx, argList, argVal0Hash))
+                        retep;
+                    break;
+                default:
+                    break;
+                }
+                break;
             }
             }
         }
@@ -150,7 +182,7 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
             switch (ctx.opeId)
             {
             case CodeGenOpeId::UniNtFn:
-                ife (_CodeGenLine1(line, *resultCur, ctx))
+                ife (_CodeGenLine1(*resultCur, ctx, line))
                     retep;
                 break;
             default:

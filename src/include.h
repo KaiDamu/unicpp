@@ -130,6 +130,7 @@
 #include "console.h"
 #include "network.h"
 #include "clipboard.h"
+#include "sandbox.h"
 #include "vfs.h"
 #include "input.h"
 #include "keyboard.h"
