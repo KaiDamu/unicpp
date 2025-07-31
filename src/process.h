@@ -232,18 +232,21 @@ dfa cx CH* ProcDirPath()
     }
     ret s_cache;
 }
-dfa cx CH* ProcWorkPath()
+dfa SI ProcWorkPath(CH* out)
 {
-    static CH s_buf[PATH_LENX_MAX] = {};
-
-    cx AU teb = ThdTeb();
-    cx AU& path = teb->ProcessEnvironmentBlock->ProcessParameters->CurrentDirectory.DosPath;
-    MemCpy(s_buf, path.Buffer, path.Length);
+    cx AU& path = ThdTeb()->ProcessEnvironmentBlock->ProcessParameters->CurrentDirectory.DosPath;
+    MemCpy(out, path.Buffer, path.Length);
     cx AU pathLen = SI(path.Length / siz(CH));
-    cx BO hasTrailSlash = (s_buf[pathLen - 1] == CH_PATH_DIR && s_buf[pathLen - 2] != CH_PATH_DRIVE);
-    s_buf[pathLen - hasTrailSlash] = '\0';
-
-    ret s_buf;
+    cx BO hasTrailSlash = (out[pathLen - 1] == CH_PATH_DIR && out[pathLen - 2] != CH_PATH_DRIVE);
+    out[pathLen - hasTrailSlash] = '\0';
+    ret SI(pathLen - hasTrailSlash);
+}
+dfa SI ProcWorkPathLen()
+{
+    cx AU& path = ThdTeb()->ProcessEnvironmentBlock->ProcessParameters->CurrentDirectory.DosPath;
+    cx AU pathLen = SI(path.Length / siz(CH));
+    cx BO hasTrailSlash = (path.Buffer[pathLen - 1] == CH_PATH_DIR && path.Buffer[pathLen - 2] != CH_PATH_DRIVE);
+    ret SI(pathLen - hasTrailSlash);
 }
 
 dfa BO ProcIsElevated()
@@ -628,7 +631,9 @@ dfa ER ProcRestartElevated()
     if (ProcIsElevated())
         rets;
     Proc proc;
-    ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcArgFullGet()), ProcWorkPath()))
+    CH workPath[PATH_LENX_MAX];
+    ProcWorkPath(workPath);
+    ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcArgFullGet()), workPath))
         retep;
     proc.__Drop();
     ProcExit(0);

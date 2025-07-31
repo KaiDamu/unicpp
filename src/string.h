@@ -1,5 +1,8 @@
 #pragma once
 
+// pre-defined:
+dfa TEB_* ThdTeb();
+
 cxex SI STR_EX_LEN = 1;
 
 #ifdef PROG_COMPILER_GCC
@@ -693,5 +696,65 @@ tpl1 class StrArgList
     dfa ~StrArgList()
     {
         tx->Clr();
+    }
+};
+
+class EnvvarCache
+{
+  private:
+    std::vector<CH> m_strBuf;
+    std::unordered_map<FNV1A64, cx CH*> m_varCache;
+
+  public:
+    dfa ER CacheState()
+    {
+        m_strBuf.clear();
+        m_varCache.clear();
+        cx AU envBase = (cx CH*)(ThdTeb()->ProcessEnvironmentBlock->ProcessParameters->Environment);
+        AU envCur = envBase;
+        while (*envCur != '\0')
+            envCur += StrLen(envCur) + STR_EX_LEN;
+        cx AU envEnd = envCur;
+        cx AU envLenx = SI(envEnd - envBase);
+        m_strBuf.resize(envLenx);
+        cx AU bufCurBase = m_strBuf.data();
+        AU bufCur = bufCurBase;
+        envCur = envBase;
+        while (envCur != envEnd)
+        {
+            FNV1A64 hash = FNV1A64_INIT_VAL;
+            while (*envCur != '=')
+                _HashFnv1a64_1(hash, ToLowcase(U1(*envCur++)));
+            ++envCur;
+            cx AU ofsLenx = StrCpyStrLen(bufCur, envCur) + STR_EX_LEN;
+            m_varCache[hash] = bufCur;
+            bufCur += ofsLenx;
+            envCur += ofsLenx;
+        }
+        m_strBuf.resize(bufCur - bufCurBase);
+        cx AU bufCurBaseDiff = SI(m_strBuf.data() - bufCurBase);
+        if (bufCurBaseDiff != 0)
+            for (AU& it : m_varCache)
+                it.second += bufCurBaseDiff;
+        rets;
+    }
+    dfa cx CH* ValGet(FNV1A64 hash) cx
+    {
+        cx AU& it = m_varCache.find(hash);
+        ifu (it == m_varCache.end())
+            ret NUL;
+        ret it->second;
+    }
+    dfa cx CH* ValGet(cx CS* name) cx
+    {
+        FNV1A64 hash = FNV1A64_INIT_VAL;
+        while (*name != '\0')
+            _HashFnv1a64_1(hash, ToLowcase(*name++));
+        ret tx->ValGet(hash);
+    }
+
+  public:
+    dfa EnvvarCache()
+    {
     }
 };

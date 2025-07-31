@@ -97,7 +97,7 @@ class Vfs
     dfa SI PathOfs(cx CH* path) cx
     {
         CH path_[PATH_LENX_MAX];
-        ret PathToAbs(path_, path) + 1; // +1 for CH_PATH_DIR
+        ret PathToAbspath(path_, path) + 1; // +1 for CH_PATH_DIR
     }
 
   private:

@@ -91,7 +91,7 @@ dfa NT ThdWait(TmMain ms)
     NtDelayExecution_(NO, &tmp);
 }
 
-dfa SI CpuThdCnt()
+dfa SI SysCpuCnt()
 {
     static SI s_cache = -1;
     ifu (s_cache == -1)
@@ -409,7 +409,7 @@ class ThdTaskMgr
     }
     dfa ER Init()
     {
-        ret tx->Init(CpuThdCnt());
+        ret tx->Init(SysCpuCnt());
     }
 
   public:

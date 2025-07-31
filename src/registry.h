@@ -7,35 +7,65 @@ class RegKey
   private:
     HD m_hdl;
 
-  public:
-    dfa ER GetU4(U4& val, cx CH* name) cx
+  private:
+    dfa ER _Get(ArrSbo<U1, 512>& buf, cx CH* name) cx
     {
-        val = 0;
         UNICODE_STRING_ str(name);
-        ArrSbo<U1, siz(KEY_VALUE_PARTIAL_INFORMATION_) + BYTE_IN_KB / 2> info;
         jdst(retry);
         U4 resultSize = 0;
-        ifu (NtQueryValueKey_(m_hdl, &str, KEY_VALUE_INFORMATION_CLASS_::KeyValuePartialInformation, info.Dat(), U4(info.Size()), &resultSize) != STATUS_SUCCESS)
+        ifu (NtQueryValueKey_(m_hdl, &str, KEY_VALUE_INFORMATION_CLASS_::KeyValuePartialInformation, buf.Dat(), U4(buf.Size()), &resultSize) != STATUS_SUCCESS)
         {
-            if (resultSize > info.Size())
+            if (resultSize > buf.Size())
             {
-                info.Resize(resultSize / siz(U1), 0);
+                buf.Resize(resultSize / siz(U1), 0);
                 jsrc(retry);
             }
             rete(ErrVal::REG);
         }
-        cx AU& info_ = *(KEY_VALUE_PARTIAL_INFORMATION_*)info.Dat();
-        ifu ((info_.Type != REG_DWORD_LITTLE_ENDIAN && info_.Type != REG_DWORD_BIG_ENDIAN) || (info_.DataLength != siz(U4)))
+        rets;
+    }
+
+  public:
+    dfa ER GetU4(U4& val, cx CH* name) cx
+    {
+        val = 0;
+        ArrSbo<U1, 512> buf;
+        ife (tx->_Get(buf, name))
+            retep;
+        cx AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
+        ifu ((info.Type != REG_DWORD_LITTLE_ENDIAN && info.Type != REG_DWORD_BIG_ENDIAN) || (info.DataLength != siz(U4)))
             rete(ErrVal::REG);
-        val = *(U4*)(info_.Data);
-        if (info_.Type == REG_DWORD_BIG_ENDIAN)
+        val = *(U4*)info.Data;
+        if (info.Type == REG_DWORD_BIG_ENDIAN)
             val = RevByte(val);
+        rets;
+    }
+    dfa ER GetStr(std::wstring& val, cx CH* name) cx
+    {
+        val.clear();
+        ArrSbo<U1, 512> buf;
+        ife (tx->_Get(buf, name))
+            retep;
+        cx AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
+        ifu (info.Type != REG_SZ)
+            rete(ErrVal::REG);
+        AU len = SI(info.DataLength) / siz(CH);
+        if (len > 0 && ((CH*)info.Data)[len - 1] == '\0')
+            --len;
+        val.assign((CH*)info.Data, len);
         rets;
     }
     dfa ER SetU4(cx CH* name, U4 val) cx
     {
         UNICODE_STRING_ str(name);
         ifu (NtSetValueKey_(m_hdl, &str, 0, REG_DWORD_LITTLE_ENDIAN, &val, siz(val)) != STATUS_SUCCESS)
+            rete(ErrVal::REG);
+        rets;
+    }
+    dfa ER SetStr(cx CH* name, cx CH* val) cx
+    {
+        UNICODE_STRING_ str(name);
+        ifu (NtSetValueKey_(m_hdl, &str, 0, REG_SZ, val, U4(StrLenx(val) * siz(val[0]))) != STATUS_SUCCESS)
             rete(ErrVal::REG);
         rets;
     }
@@ -78,6 +108,19 @@ dfa BO RegKeyIsExist(cx CH* path)
         ret NO;
     regKey.Close(); // error ignored
     ret YES;
+}
+
+dfa ER RegKeyGetStr(std::wstring& val, cx CH* path, cx CH* name)
+{
+    val.clear();
+    RegKey regKey;
+    ife (regKey.Open(path, KEY_READ, 0))
+        retep;
+    ife (regKey.GetStr(val, name))
+        retep;
+    ife (regKey.Close())
+        retep;
+    rets;
 }
 
 dfa cx CH* _RegKeySplitSub(cx CH* path, HKEY& key)

@@ -1,8 +1,10 @@
 #pragma once
 
 // pre-defined:
-dfa cx CH* ProcWorkPath();
+dfa SI ProcWorkPath(CH* out);
+dfa SI ProcWorkPathLen();
 dfa BO FileIsExist(cx CH* path, BO acceptFile, BO acceptDir);
+dfa SI ProcEnvvarGet(CH*, cx CH*, SI);
 
 cxex SI PATH_LEN_MAX = 260;
 cxex SI PATH_LENX_MAX = PATH_LEN_MAX + STR_EX_LEN;
@@ -20,6 +22,7 @@ cxex CH CH_PATH_ENVVAR = '%';
 
 cxex cx CH* STR_NTPATH_PRE = L"\\??\\";
 cxex SI STR_NTPATH_PRE_LEN = 4;
+cxex SI STR_NTPATH_PRE_SIZE = STR_NTPATH_PRE_LEN * siz(CH);
 
 dfa cx CH* PathExtPtr(cx CH* path)
 {
@@ -36,7 +39,6 @@ dfa cx CH* PathExtPtr(cx CH* path)
         ret path;
     ret last + 1;
 }
-
 dfa cx CH* PathNamePtr(cx CH* path, SI& nameoLen)
 {
     cx CH* cx pathBase = path;
@@ -56,7 +58,6 @@ dfa cx CH* PathNamePtr(cx CH* path, SI& nameoLen)
     nameoLen = (lastExt == NUL) ? (path - namePtr) : (lastExt - namePtr);
     ret namePtr;
 }
-
 dfa cx CH* PathNamePtr(cx CH* path)
 {
     SI nameLen;
@@ -87,7 +88,7 @@ dfa SI PathDirUp(CH* dst, BO* isRoot = NUL)
     ret last - dst;
 }
 
-dfa BO PathIsAbs(cx CH* path)
+dfa BO PathIsAbspath(cx CH* path)
 {
     ret (path[0] != '\0' && path[1] == CH_PATH_DRIVE);
 }
@@ -147,51 +148,45 @@ dfa SI PathEnvRelToAbs(CH* dst, cx CH* src)
     ret 0;
 }
 
-dfa SI PathToAbs(CH* path)
+dfa SI PathToAbspath(CH* path)
 {
-    if (PathIsAbs(path))
-        ret StrLen(path);
-    cx SI pathLen = StrLen(path);
-    cx SI workPathLen = StrLen(ProcWorkPath());
-    SI i = pathLen;
-    while (i > -1)
-    {
-        path[i + workPathLen + 1] = path[i]; // +1 to simulate the extra CH_PATH_DIR
-        --i;
-    }
+    cx AU pathLen = StrLen(path);
+    if (PathIsAbspath(path))
+        ret pathLen;
+    cx AU workPathLen = ProcWorkPathLen();
+    cxex SI CH_PATH_DIR_ADD = 1;
+    for (SI i = pathLen; i > -1; --i)
+        path[i + workPathLen + CH_PATH_DIR_ADD] = path[i];
+    ProcWorkPath(path);
     path[workPathLen] = CH_PATH_DIR;
-    MemCpy(path, ProcWorkPath(), workPathLen * siz(CH));
-    ret pathLen + workPathLen + 1; // +1 for the CH_PATH_DIR
+    ret workPathLen + CH_PATH_DIR_ADD + pathLen;
 }
-dfa SI PathToAbs(CH* dst, cx CH* src)
+dfa SI PathToAbspath(CH* dst, cx CH* src)
 {
-    if (PathIsAbs(src))
+    if (PathIsAbspath(src))
         ret StrCpyStrLen(dst, src);
-    cx SI workPathLen = StrCpyStrLen(dst, ProcWorkPath());
+    cx AU workPathLen = ProcWorkPath(dst);
     dst[workPathLen] = CH_PATH_DIR;
-    ret StrCpyStrLen(dst + workPathLen + 1, src) + workPathLen + 1; // +1 for the CH_PATH_DIR
+    cxex SI CH_PATH_DIR_ADD = 1;
+    cx AU srcLen = StrCpyStrLen(dst + workPathLen + CH_PATH_DIR_ADD, src);
+    ret workPathLen + CH_PATH_DIR_ADD + srcLen;
 }
-
 dfa SI PathToNtpath(CH* path)
 {
     if (PathIsNtpath(path))
         ret StrLen(path);
-    cx SI pathLen = PathToAbs(path);
-    SI i = pathLen;
-    while (i > -1)
-    {
+    cx AU pathLen = PathToAbspath(path);
+    for (SI i = pathLen; i > -1; --i)
         path[i + STR_NTPATH_PRE_LEN] = path[i];
-        --i;
-    }
-    MemCpy(path, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
+    MemCpy(path, STR_NTPATH_PRE, STR_NTPATH_PRE_SIZE);
     ret pathLen + STR_NTPATH_PRE_LEN;
 }
 dfa SI PathToNtpath(CH* dst, cx CH* src)
 {
     if (PathIsNtpath(src))
         ret StrCpyStrLen(dst, src);
-    cx SI pathLen = PathToAbs(dst + STR_NTPATH_PRE_LEN, src);
-    MemCpy(dst, STR_NTPATH_PRE, STR_NTPATH_PRE_LEN * siz(CH));
+    cx AU pathLen = PathToAbspath(dst + STR_NTPATH_PRE_LEN, src);
+    MemCpy(dst, STR_NTPATH_PRE, STR_NTPATH_PRE_SIZE);
     ret pathLen + STR_NTPATH_PRE_LEN;
 }
 
@@ -210,8 +205,6 @@ dfa SI PathSanitize(CH* dst, cx CH* src)
     *dst = '\0';
     ret dst - base;
 }
-
-dfa SI ProcEnvvarGet(CH*, cx CH*, SI);
 
 dfa SI PathEnvvarResolve(CH* path)
 {

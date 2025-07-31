@@ -12,7 +12,7 @@ dfa BO FileIsExist(cx CH* path, BO acceptFile = YES, BO acceptDir = YES)
 {
     CH path_[PATH_LENX_MAX];
     cx AU pathLen = PathToNtpath(path_, path);
-    UNICODE_STRING_ str(path, pathLen);
+    UNICODE_STRING_ str(path_, pathLen);
     OBJECT_ATTRIBUTES_ oa(str);
     FILE_BASIC_INFORMATION_ info;
     if (NtQueryAttributesFile_(&oa, &info) != STATUS_SUCCESS)
@@ -39,7 +39,7 @@ dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
         if (GetLastError() == ERROR_PATH_NOT_FOUND && FileIsExist(src, YES, YES))
         {
             CH dirPath[PATH_LENX_MAX];
-            PathToAbs(dirPath, dst);
+            PathToAbspath(dirPath, dst);
             PathDirUp(dirPath);
             ife (DirNew(dirPath))
                 retep;
@@ -71,7 +71,7 @@ dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace = YES)
         if (GetLastError() == ERROR_PATH_NOT_FOUND && FileIsExist(src, YES, YES))
         {
             CH dirPath[PATH_LENX_MAX];
-            PathToAbs(dirPath, dst);
+            PathToAbspath(dirPath, dst);
             PathDirUp(dirPath);
             ife (DirNew(dirPath))
                 retep;

@@ -166,7 +166,7 @@ dfa ER DirEnum(cx CH* path, SI depth, DirEnumCallbFnType callb, U4 flags, GA par
 {
     CH path2[PATH_LENX_MAX];
     CH path3[PATH_LENX_MAX];
-    PathToAbs(path2, path);
+    PathToAbspath(path2, path);
     cx SI pathLen = StrEnclose(path3, path2, STR_NTPATH_PRE, STR_PATH_DIR);
     ret _DirEnum(path3, pathLen, depth, callb, flags, param1, param2, pathLen - STR_NTPATH_PRE_LEN);
 }
@@ -208,7 +208,7 @@ dfa ER DirNew(cx CH* path)
 dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
 {
     CH dst_[PATH_LENX_MAX];
-    PathToAbs(dst_, dst);
+    PathToAbspath(dst_, dst);
     ife (DirNew(dst_))
         retep;
     struct Param
@@ -252,7 +252,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace = YES)
 dfa ER DirDel(cx CH* path)
 {
     CH path_[PATH_LENX_MAX];
-    PathToAbs(path_, path);
+    PathToAbspath(path_, path);
     struct Param
     {
         ErrVal err;
