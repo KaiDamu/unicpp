@@ -32,6 +32,7 @@ enum class ErrVal : U4
     //
     MEM_NEW,
     TIME_RES,
+    DIR_NO_ENUM,
     NET_CLOSE,
     NET_NO_EXIST,
     //

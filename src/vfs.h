@@ -50,7 +50,7 @@ class Vfs
   private:
     struct FileEntry
     {
-        FileInfo info;
+        FileInfoCommon info;
         std::wstring path;
     };
 
@@ -103,20 +103,18 @@ class Vfs
   private:
     dfa ER FileEntryListGet(std::list<FileEntry>& fileEntryList, cx CH* path) cx
     {
-        ife (DirEnum(
-                 path, -1,
-                 [](cx FileInfo& fileInfo, GA param1, GA param2) {
-                     std::list<FileEntry>& fileEntryList_ = *(std::list<FileEntry>*)param1;
-                     FileEntry fileEntry = {};
-                     fileEntry.info = fileInfo;
-                     fileEntry.path = fileInfo.path;
-                     if ((fileEntry.info.attrib & FILE_ATTRIB_DIR) != 0)
-                         fileEntry.info.datSize = 0;
-                     fileEntryList_.emplace_back(fileEntry);
-                     ret YES;
-                     unused(param2);
-                 },
-                 0, &fileEntryList, NUL))
+        cx DirFileEnumCallbFnT callb = [](cx FileInfoCommon& fileInfo, GA param1, GA param2) -> BO {
+            std::list<FileEntry>& fileEntryList_ = *(std::list<FileEntry>*)param1;
+            FileEntry fileEntry = {};
+            fileEntry.info = fileInfo;
+            fileEntry.path = fileInfo.path;
+            if ((fileEntry.info.attrib & FILE_ATTRIBUTE_DIRECTORY) != 0)
+                fileEntry.info.sizeDat = 0;
+            fileEntryList_.emplace_back(fileEntry);
+            ret YES;
+            unused(param2);
+        };
+        ife (DirFileEnum(path, -1, callb, &fileEntryList, NUL, NO))
             retep;
         rets;
     }
@@ -128,7 +126,7 @@ class Vfs
         U8 datSize = 0;
         // ited (fileEntry, fileEntryList) datSize += fileEntry->info.datSize;
         for (cx AU& fileEntry : fileEntryList)
-            datSize += fileEntry.info.datSize;
+            datSize += fileEntry.info.sizeDat;
         fileDst.Write(VFS_MAGIC, VFS_MAGIC_SIZE);
         fileDst.Write(&VFS_FORMAT_NEW, siz(U1));
         fileDst.Write(&info.flags, siz(U4));
@@ -140,7 +138,7 @@ class Vfs
     }
     dfa ER WriteEntry(MemFile& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, SI pathOfs) cx
     {
-        cx U8 datSize = U8(fileEntry.info.datSize);
+        cx U8 datSize = U8(fileEntry.info.sizeDat);
         cx U8 pathLen = U8(fileEntry.path.size() - pathOfs);
         CH path[PATH_LENX_MAX];
         MemObfuscate(path, fileEntry.path.c_str() + pathOfs, pathLen * siz(CH));
@@ -156,7 +154,7 @@ class Vfs
     dfa ER WriteEntryDat(MemFile& fileDst, Arr<SI>& datOfsList, cx FileEntry& fileEntry, cx VfsNewInfo& info) cx
     {
         cx SI datOfsHdr = datOfsList.Read();
-        if (fileEntry.info.datSize == 0)
+        if (fileEntry.info.sizeDat == 0)
             rets;
         cx SI datOfsNow = fileDst.CurGet();
         cx U8 datOfsNow_ = U8(datOfsNow);
@@ -167,8 +165,8 @@ class Vfs
         ife (fileSrc.Open(fileEntry.path.c_str(), YES))
             retep;
         if (info.encrypt == VfsEncrypt::OBFUSCATE)
-            MemObfuscate(fileSrc.Dat(), fileEntry.info.datSize);
-        fileDst.Write(fileSrc.Dat(), fileEntry.info.datSize);
+            MemObfuscate(fileSrc.Dat(), fileEntry.info.sizeDat);
+        fileDst.Write(fileSrc.Dat(), fileEntry.info.sizeDat);
         ife (fileSrc.Close())
             retep;
         rets;

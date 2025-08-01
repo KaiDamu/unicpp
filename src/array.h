@@ -387,3 +387,132 @@ tpl<typename T1, SI sboLen> class ArrSbo
     {
     }
 };
+
+tpl<typename T1> class ArrDFast
+{
+  private:
+    T1* m_buf;
+    SI m_cnt;
+
+  public:
+    dfa SI Cnt() cx
+    {
+        ret m_cnt;
+    }
+    dfa SI Size() cx
+    {
+        ret m_cnt * siz(T1);
+    }
+    dfa NT Del()
+    {
+        MemDel(m_buf);
+        m_buf = NUL;
+        m_cnt = 0;
+    }
+    dfa NT New(SI cnt)
+    {
+        m_buf = (T1*)MemNew((m_cnt = cnt) * siz(T1));
+    }
+    dfa NT ReNew(SI cnt)
+    {
+        MemDel(m_buf);
+        m_buf = (T1*)MemNew((m_cnt = cnt) * siz(T1));
+    }
+    dfa T1* Dat() cx
+    {
+        ret m_buf;
+    }
+    dfa T1& operator[](SI i) cx
+    {
+        ret m_buf[i];
+    }
+
+  public:
+    dfa ArrDFast() : m_buf(NUL), m_cnt(0)
+    {
+    }
+    dfa ArrDFast(SI cnt)
+    {
+        m_buf = (T1*)MemNew((m_cnt = cnt) * siz(T1));
+    }
+    dfa ~ArrDFast()
+    {
+        if (m_buf != NUL)
+            MemDel(m_buf);
+    }
+};
+
+tpl<typename T1> class ArrSFree
+{
+  private:
+    T1* m_buf;
+    T1** m_free;
+    T1** m_freeEndCur;
+    SI m_cap;
+
+  private:
+    dfa NT _Init()
+    {
+        m_buf = NUL;
+        m_free = NUL;
+        m_freeEndCur = NUL;
+        m_cap = 0;
+    }
+
+  public:
+    dfa SI Cnt() cx
+    {
+        ret m_cap - (m_freeEndCur - m_free);
+    }
+    dfa SI Cap() cx
+    {
+        ret m_cap;
+    }
+    dfa NT Del()
+    {
+        if (m_buf == NUL)
+            ret;
+        MemDel(m_buf);
+        MemDel(m_free);
+        m_buf = NUL;
+        m_free = NUL;
+        m_freeEndCur = NUL;
+        m_cap = 0;
+    }
+    dfa NT New(SI cap)
+    {
+        tx->Del();
+        m_buf = (T1*)MemNew(cap * siz(T1));
+        m_free = (T1**)MemNew(cap * siz(T1*));
+        m_freeEndCur = m_free + cap;
+        m_cap = cap;
+        ite (i, i < cap)
+            m_free[i] = m_buf + i;
+    }
+    dfa NT ElemDel(T1* ptr)
+    {
+        // WARNING: 'ptr' is not validated
+        *m_freeEndCur++ = ptr;
+    }
+    dfa T1* ElemNew()
+    {
+        ifu (m_freeEndCur == m_free)
+            ret NUL;
+        ret *(--m_freeEndCur);
+    }
+
+  public:
+    dfa ArrSFree()
+    {
+        tx->_Init();
+    }
+    dfa ArrSFree(SI cap)
+    {
+        tx->_Init();
+        tx->New(cap);
+    }
+    dfa ~ArrSFree()
+    {
+        tx->Del();
+    }
+};

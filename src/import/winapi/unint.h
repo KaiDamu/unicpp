@@ -6,6 +6,7 @@ cxex SI RTL_MAX_DRIVE_LETTERS = 32;
 cxex SI GDI_BATCH_BUFFER_SIZE = 310;
 cxex SI WIN32_CLIENT_INFO_LENGTH = 62;
 cxex SI STATIC_UNICODE_BUFFER_LENGTH = 261;
+cxex UA PS_ATTRIBUTE_CLIENT_ID = 0x10003;
 
 cxex SI TOKEN_USER_MAX_SIZE_ = 76;
 
@@ -757,6 +758,20 @@ enum class THREADINFOCLASS_
     ThreadIndexInformation,               // THREAD_INDEX_INFORMATION
     MaxThreadInfoClass
 };
+enum class KEY_INFORMATION_CLASS_
+{
+    KeyBasicInformation,          // KEY_BASIC_INFORMATION
+    KeyNodeInformation,           // KEY_NODE_INFORMATION
+    KeyFullInformation,           // KEY_FULL_INFORMATION
+    KeyNameInformation,           // KEY_NAME_INFORMATION
+    KeyCachedInformation,         // KEY_CACHED_INFORMATION
+    KeyFlagsInformation,          // KEY_FLAGS_INFORMATION
+    KeyVirtualizationInformation, // KEY_VIRTUALIZATION_INFORMATION
+    KeyHandleTagsInformation,     // KEY_HANDLE_TAGS_INFORMATION
+    KeyTrustInformation,          // KEY_TRUST_INFORMATION
+    KeyLayerInformation,          // KEY_LAYER_INFORMATION
+    MaxKeyInfoClass
+};
 enum class SECTION_INHERIT_
 {
     ViewShare = 1,
@@ -850,6 +865,9 @@ struct LARGE_INTEGER_
         };
         S8 QuadPart;
     };
+
+    dfa LARGE_INTEGER_();
+    dfa LARGE_INTEGER_(S8 val);
 };
 struct ULARGE_INTEGER_
 {
@@ -2190,6 +2208,27 @@ struct FILE_BASIC_INFORMATION_
     LARGE_INTEGER_ ChangeTime;     // Specifies the last time the file was changed.
     U4 FileAttributes;             // Specifies one or more FILE_ATTRIBUTE_XXX flags.
 };
+struct KEY_BASIC_INFORMATION_
+{
+    LARGE_INTEGER_ LastWriteTime; // Number of 100-nanosecond intervals since this key or any of its values changed.
+    U4 TitleIndex;                // Reserved // A legacy field originally intended for use with localization such as an index of a resource table.
+    U4 NameLength;                // The size, in bytes, of the key name string in the Name array.
+    CH Name flexarr;              // The name of the registry key. This string is not null-terminated.
+};
+struct FILE_DIRECTORY_INFORMATION_
+{
+    U4 NextEntryOffset;
+    U4 FileIndex;
+    LARGE_INTEGER_ CreationTime;
+    LARGE_INTEGER_ LastAccessTime;
+    LARGE_INTEGER_ LastWriteTime;
+    LARGE_INTEGER_ ChangeTime;
+    LARGE_INTEGER_ EndOfFile;
+    LARGE_INTEGER_ AllocationSize;
+    U4 FileAttributes;
+    U4 FileNameLength;
+    CH FileName flexarr;
+};
 
 #define _MDL_NTDLL_DLL
 
@@ -2217,6 +2256,7 @@ using _MDL_NTDLL_DLL NtCreateUserProcess_T = NTSTATUS(NTAPI*)(HD* ProcessHandle,
 using _MDL_NTDLL_DLL NtDelayExecution_T = NTSTATUS(NTAPI*)(U1 Alertable, LARGE_INTEGER_* DelayInterval);
 using _MDL_NTDLL_DLL NtDuplicateObject_T = NTSTATUS(NTAPI*)(HD SourceProcessHandle, HD SourceHandle, HD TargetProcessHandle, HD* TargetHandle, U4 DesiredAccess, U4 HandleAttributes, U4 Options);
 using _MDL_NTDLL_DLL NtDuplicateToken_T = NTSTATUS(NTAPI*)(HD ExistingTokenHandle, U4 DesiredAccess, OBJECT_ATTRIBUTES_* ObjectAttributes, U1 EffectiveOnly, TOKEN_TYPE_ Type, HD* NewTokenHandle);
+using _MDL_NTDLL_DLL NtEnumerateKey_T = NTSTATUS(NTAPI*)(HD KeyHandle, U4 Index, KEY_INFORMATION_CLASS_ KeyInformationClass, GA KeyInformation, U4 Length, U4* ResultLength);
 using _MDL_NTDLL_DLL NtFlushInstructionCache_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA BaseAddress, UA RegionSize);
 using _MDL_NTDLL_DLL NtFreeVirtualMemory_T = NTSTATUS(NTAPI*)(HD ProcessHandle, GA* BaseAddress, UA* RegionSize, U4 FreeType);
 using _MDL_NTDLL_DLL NtImpersonateThread_T = NTSTATUS(NTAPI*)(HD ServerThreadHandle, HD ClientThreadHandle, SECURITY_QUALITY_OF_SERVICE_* SecurityQos);
@@ -2262,7 +2302,7 @@ using _MDL_NTDLL_DLL RtlReleasePebLock_T = NTSTATUS(NTAPI*)();
 // clang-format on
 
 // [generated code begin]
-cxex SI UNI_NT_FN_CNT = 62;
+cxex SI UNI_NT_FN_CNT = 63;
 
 GAFN g_uniNtFn[UNI_NT_FN_CNT] = {};
 
@@ -2287,47 +2327,48 @@ GAFN g_uniNtFn[UNI_NT_FN_CNT] = {};
 #define NtDelayExecution_ ((NtDelayExecution_T)g_uniNtFn[18])
 #define NtDuplicateObject_ ((NtDuplicateObject_T)g_uniNtFn[19])
 #define NtDuplicateToken_ ((NtDuplicateToken_T)g_uniNtFn[20])
-#define NtFlushInstructionCache_ ((NtFlushInstructionCache_T)g_uniNtFn[21])
-#define NtFreeVirtualMemory_ ((NtFreeVirtualMemory_T)g_uniNtFn[22])
-#define NtImpersonateThread_ ((NtImpersonateThread_T)g_uniNtFn[23])
-#define NtLoadDriver_ ((NtLoadDriver_T)g_uniNtFn[24])
-#define NtMapViewOfSection_ ((NtMapViewOfSection_T)g_uniNtFn[25])
-#define NtOpenKeyedEvent_ ((NtOpenKeyedEvent_T)g_uniNtFn[26])
-#define NtOpenProcess_ ((NtOpenProcess_T)g_uniNtFn[27])
-#define NtOpenThreadTokenEx_ ((NtOpenThreadTokenEx_T)g_uniNtFn[28])
-#define NtOpenThread_ ((NtOpenThread_T)g_uniNtFn[29])
-#define NtQueryDirectoryFile_ ((NtQueryDirectoryFile_T)g_uniNtFn[30])
-#define NtQueryInformationFile_ ((NtQueryInformationFile_T)g_uniNtFn[31])
-#define NtQueryInformationProcess_ ((NtQueryInformationProcess_T)g_uniNtFn[32])
-#define NtQueryInformationThread_ ((NtQueryInformationThread_T)g_uniNtFn[33])
-#define NtQueryObject_ ((NtQueryObject_T)g_uniNtFn[34])
-#define NtQuerySystemInformation_ ((NtQuerySystemInformation_T)g_uniNtFn[35])
-#define NtQueryTimerResolution_ ((NtQueryTimerResolution_T)g_uniNtFn[36])
-#define NtRaiseHardError_ ((NtRaiseHardError_T)g_uniNtFn[37])
-#define NtReadFile_ ((NtReadFile_T)g_uniNtFn[38])
-#define NtReadVirtualMemory_ ((NtReadVirtualMemory_T)g_uniNtFn[39])
-#define NtReleaseKeyedEvent_ ((NtReleaseKeyedEvent_T)g_uniNtFn[40])
-#define NtResetEvent_ ((NtResetEvent_T)g_uniNtFn[41])
-#define NtSetEvent_ ((NtSetEvent_T)g_uniNtFn[42])
-#define NtSetInformationFile_ ((NtSetInformationFile_T)g_uniNtFn[43])
-#define NtSetInformationProcess_ ((NtSetInformationProcess_T)g_uniNtFn[44])
-#define NtSetInformationThread_ ((NtSetInformationThread_T)g_uniNtFn[45])
-#define NtSetInformationToken_ ((NtSetInformationToken_T)g_uniNtFn[46])
-#define NtSetTimerResolution_ ((NtSetTimerResolution_T)g_uniNtFn[47])
-#define NtSetValueKey_ ((NtSetValueKey_T)g_uniNtFn[48])
-#define NtShutdownSystem_ ((NtShutdownSystem_T)g_uniNtFn[49])
-#define NtTerminateProcess_ ((NtTerminateProcess_T)g_uniNtFn[50])
-#define NtTerminateThread_ ((NtTerminateThread_T)g_uniNtFn[51])
-#define NtUnloadDriver_ ((NtUnloadDriver_T)g_uniNtFn[52])
-#define NtWaitForKeyedEvent_ ((NtWaitForKeyedEvent_T)g_uniNtFn[53])
-#define NtWaitForSingleObject_ ((NtWaitForSingleObject_T)g_uniNtFn[54])
-#define NtWriteFile_ ((NtWriteFile_T)g_uniNtFn[55])
-#define NtWriteVirtualMemory_ ((NtWriteVirtualMemory_T)g_uniNtFn[56])
-#define NtYieldExecution_ ((NtYieldExecution_T)g_uniNtFn[57])
-#define RtlAcquirePebLock_ ((RtlAcquirePebLock_T)g_uniNtFn[58])
-#define RtlAdjustPrivilege_ ((RtlAdjustPrivilege_T)g_uniNtFn[59])
-#define RtlExitUserProcess_ ((RtlExitUserProcess_T)g_uniNtFn[60])
-#define RtlReleasePebLock_ ((RtlReleasePebLock_T)g_uniNtFn[61])
+#define NtEnumerateKey_ ((NtEnumerateKey_T)g_uniNtFn[21])
+#define NtFlushInstructionCache_ ((NtFlushInstructionCache_T)g_uniNtFn[22])
+#define NtFreeVirtualMemory_ ((NtFreeVirtualMemory_T)g_uniNtFn[23])
+#define NtImpersonateThread_ ((NtImpersonateThread_T)g_uniNtFn[24])
+#define NtLoadDriver_ ((NtLoadDriver_T)g_uniNtFn[25])
+#define NtMapViewOfSection_ ((NtMapViewOfSection_T)g_uniNtFn[26])
+#define NtOpenKeyedEvent_ ((NtOpenKeyedEvent_T)g_uniNtFn[27])
+#define NtOpenProcess_ ((NtOpenProcess_T)g_uniNtFn[28])
+#define NtOpenThreadTokenEx_ ((NtOpenThreadTokenEx_T)g_uniNtFn[29])
+#define NtOpenThread_ ((NtOpenThread_T)g_uniNtFn[30])
+#define NtQueryDirectoryFile_ ((NtQueryDirectoryFile_T)g_uniNtFn[31])
+#define NtQueryInformationFile_ ((NtQueryInformationFile_T)g_uniNtFn[32])
+#define NtQueryInformationProcess_ ((NtQueryInformationProcess_T)g_uniNtFn[33])
+#define NtQueryInformationThread_ ((NtQueryInformationThread_T)g_uniNtFn[34])
+#define NtQueryObject_ ((NtQueryObject_T)g_uniNtFn[35])
+#define NtQuerySystemInformation_ ((NtQuerySystemInformation_T)g_uniNtFn[36])
+#define NtQueryTimerResolution_ ((NtQueryTimerResolution_T)g_uniNtFn[37])
+#define NtRaiseHardError_ ((NtRaiseHardError_T)g_uniNtFn[38])
+#define NtReadFile_ ((NtReadFile_T)g_uniNtFn[39])
+#define NtReadVirtualMemory_ ((NtReadVirtualMemory_T)g_uniNtFn[40])
+#define NtReleaseKeyedEvent_ ((NtReleaseKeyedEvent_T)g_uniNtFn[41])
+#define NtResetEvent_ ((NtResetEvent_T)g_uniNtFn[42])
+#define NtSetEvent_ ((NtSetEvent_T)g_uniNtFn[43])
+#define NtSetInformationFile_ ((NtSetInformationFile_T)g_uniNtFn[44])
+#define NtSetInformationProcess_ ((NtSetInformationProcess_T)g_uniNtFn[45])
+#define NtSetInformationThread_ ((NtSetInformationThread_T)g_uniNtFn[46])
+#define NtSetInformationToken_ ((NtSetInformationToken_T)g_uniNtFn[47])
+#define NtSetTimerResolution_ ((NtSetTimerResolution_T)g_uniNtFn[48])
+#define NtSetValueKey_ ((NtSetValueKey_T)g_uniNtFn[49])
+#define NtShutdownSystem_ ((NtShutdownSystem_T)g_uniNtFn[50])
+#define NtTerminateProcess_ ((NtTerminateProcess_T)g_uniNtFn[51])
+#define NtTerminateThread_ ((NtTerminateThread_T)g_uniNtFn[52])
+#define NtUnloadDriver_ ((NtUnloadDriver_T)g_uniNtFn[53])
+#define NtWaitForKeyedEvent_ ((NtWaitForKeyedEvent_T)g_uniNtFn[54])
+#define NtWaitForSingleObject_ ((NtWaitForSingleObject_T)g_uniNtFn[55])
+#define NtWriteFile_ ((NtWriteFile_T)g_uniNtFn[56])
+#define NtWriteVirtualMemory_ ((NtWriteVirtualMemory_T)g_uniNtFn[57])
+#define NtYieldExecution_ ((NtYieldExecution_T)g_uniNtFn[58])
+#define RtlAcquirePebLock_ ((RtlAcquirePebLock_T)g_uniNtFn[59])
+#define RtlAdjustPrivilege_ ((RtlAdjustPrivilege_T)g_uniNtFn[60])
+#define RtlExitUserProcess_ ((RtlExitUserProcess_T)g_uniNtFn[61])
+#define RtlReleasePebLock_ ((RtlReleasePebLock_T)g_uniNtFn[62])
 // [generated code end]
 
 dfa ER UniNtLoad();
