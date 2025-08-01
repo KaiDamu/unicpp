@@ -110,7 +110,7 @@ dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp)
     jsrc(next);
 }
 
-dfa DWORD WINAPI _KeybHookThd(LPVOID code)
+dfa S4 _KeybHookThd(GA code)
 {
     cx HHOOK hook = SetWindowsHookExW(WH_KEYBOARD_LL, _KeybHookCallb, GetModuleHandleW(NUL), 0);
     ifu (hook == NUL)
@@ -156,7 +156,7 @@ dfa ER KeybInit()
     ifu (g_keybThdIsValid)
         rets;
     volatile AU code = KEYB_HOOK_THD_CODE_WAIT;
-    ife (g_keybThd.Start(_KeybHookThd, const_cast<U1*>(&code)))
+    ife (g_keybThd.New(_KeybHookThd, const_cast<U1*>(&code)))
         retep;
     while (code == KEYB_HOOK_THD_CODE_WAIT)
         NtYieldExecution_();
@@ -169,7 +169,7 @@ dfa ER KeybFree()
 {
     ifu (!g_keybThdIsValid)
         rets;
-    ifu (PostThreadMessageW(g_keybThd.Id(), WM_QUIT, 0, 0) == 0)
+    ifu (PostThreadMessageW(DWORD(g_keybThd.Id()), WM_QUIT, 0, 0) == 0)
         rete(ErrVal::THD);
     ife (g_keybThd.Wait())
         retep;

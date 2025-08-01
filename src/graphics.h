@@ -846,7 +846,7 @@ dfa LRESULT CALLBACK _ScnDrawWinProc(HWND win, UINT code, WPARAM wp, LPARAM lp)
     ret 0;
 }
 
-dfa DWORD WINAPI _ScnDrawThd(LPVOID code)
+dfa S4 _ScnDrawThd(GA code)
 {
     AU& codeInt = *reinterpret_cast<U1*>(code);
     Size2<SI> scnSize;
@@ -908,7 +908,7 @@ dfa DWORD WINAPI _ScnDrawThd(LPVOID code)
 dfa ER ScnDrawInit()
 {
     volatile AU code = SCN_DRAW_THD_CODE_WAIT;
-    ife (g_scnDrawThd.Start(_ScnDrawThd, const_cast<U1*>(&code)))
+    ife (g_scnDrawThd.New(_ScnDrawThd, const_cast<U1*>(&code)))
         retep;
     while (code == SCN_DRAW_THD_CODE_WAIT)
         NtYieldExecution_();
@@ -918,7 +918,7 @@ dfa ER ScnDrawInit()
 }
 dfa ER ScnDrawFree()
 {
-    ifu (PostThreadMessageW(g_scnDrawThd.Id(), WM_QUIT, 0, 0) == 0)
+    ifu (PostThreadMessageW(DWORD(g_scnDrawThd.Id()), WM_QUIT, 0, 0) == 0)
         rete(ErrVal::THD);
     ife (g_scnDrawThd.Wait())
         retep;

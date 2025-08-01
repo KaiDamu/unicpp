@@ -121,29 +121,6 @@ class File
     HD m_hdl;
 
   public:
-    dfa ER _OpenNt(cx CH* path, U4 access, SI allocSize, U4 attrib, U4 share, U4 openMode, U4 flags)
-    {
-        ifu (tx->IsOpen())
-            rete(ErrVal::YES_INIT);
-        CH path_[PATH_LENX_MAX];
-        cx SI pathLen = PathToNtpath(path_, path);
-        UNICODE_STRING_ us = {};
-        us.Length = USHORT(pathLen * siz(CH));
-        us.MaximumLength = us.Length;
-        us.Buffer = path_;
-        OBJECT_ATTRIBUTES_ objAttrib;
-        objAttrib.ObjectName = &us;
-        IO_STATUS_BLOCK_ iosb;
-        LARGE_INTEGER_ allocSize_ = {};
-        allocSize_.QuadPart = allocSize;
-        cx NTSTATUS status = NtCreateFile_(&m_hdl, access, &objAttrib, &iosb, &allocSize_, attrib, share, openMode, flags, NUL, 0);
-        ifu (status != STATUS_SUCCESS)
-        {
-            m_hdl = INVALID_HANDLE_VALUE;
-            rete(ErrVal::FILE);
-        }
-        rets;
-    }
     dfa ER _OpenWin(cx CH* path, U4 access, U4 share, U4 openMode, U4 attrib)
     {
         ifu (tx->IsOpen())
@@ -196,17 +173,36 @@ class File
         pos = tmp.QuadPart;
         rets;
     }
+    dfa ER Open(cx CH* path, U4 access, U4 share, U4 openMode, U4 attrib = FILE_ATTRIBUTE_NORMAL, SI allocSize = 0, U4 options = FILE_SYNCHRONOUS_IO_NONALERT, HD hdlRoot = NUL)
+    {
+        ifu (m_hdl != INVALID_HANDLE_VALUE)
+            rete(ErrVal::YES_INIT);
+        CH path_[PATH_LENX_MAX];
+        cx AU pathLen = ((hdlRoot == NUL) ? PathToNtpath(path_, path) : StrCpyStrLen(path_, path));
+        UNICODE_STRING_ us(path_, pathLen);
+        OBJECT_ATTRIBUTES_ oa(us);
+        oa.RootDirectory = hdlRoot;
+        IO_STATUS_BLOCK_ isb;
+        LARGE_INTEGER_ allocSize_(allocSize);
+        cx AU status = NtCreateFile_(&m_hdl, access, &oa, &isb, &allocSize_, attrib, share, openMode, options, NUL, 0);
+        ifu (status != STATUS_SUCCESS)
+        {
+            m_hdl = INVALID_HANDLE_VALUE;
+            rete(ErrVal::FILE);
+        }
+        rets;
+    }
     dfa ER OpenRead(cx CH* path)
     {
-        ret tx->_OpenWin(path, FILE_READ_DATA, FILE_SHARE_READ, OPEN_EXISTING, 0);
+        ret tx->Open(path, FILE_READ_DATA | SYNCHRONIZE, FILE_SHARE_READ, FILE_OPEN);
     }
     dfa ER OpenWrite(cx CH* path)
     {
-        ret tx->_OpenWin(path, FILE_WRITE_DATA, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+        ret tx->Open(path, FILE_WRITE_DATA | SYNCHRONIZE, 0, FILE_OVERWRITE);
     }
     dfa ER OpenReadWrite(cx CH* path)
     {
-        ret tx->_OpenWin(path, FILE_READ_DATA | FILE_WRITE_DATA, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+        ret tx->Open(path, FILE_READ_DATA | FILE_WRITE_DATA | SYNCHRONIZE, 0, FILE_OPEN_IF);
     }
     dfa ER Close()
     {

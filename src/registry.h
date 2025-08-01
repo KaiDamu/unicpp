@@ -26,6 +26,10 @@ class RegKey
     }
 
   public:
+    dfa HD Hdl() cx
+    {
+        ret m_hdl;
+    }
     dfa ER GetU4(U4& val, cx CH* name) cx
     {
         val = 0;
@@ -69,13 +73,13 @@ class RegKey
             rete(ErrVal::REG);
         rets;
     }
-    dfa ER Open(cx CH* path, U4 access, U4 options)
+    dfa ER Open(cx CH* path, U4 access, U4 options = 0, HD hdlRoot = NUL)
     {
         ifu (m_hdl != NUL)
             rete(ErrVal::YES_INIT);
         UNICODE_STRING_ str(path);
-        OBJECT_ATTRIBUTES_ oa;
-        oa.ObjectName = &str;
+        OBJECT_ATTRIBUTES_ oa(str);
+        oa.RootDirectory = hdlRoot;
         oa.Attributes = OBJ_CASE_INSENSITIVE;
         ifu (NtOpenKeyEx_(&m_hdl, access, &oa, options) != STATUS_SUCCESS)
             rete(ErrVal::REG);
@@ -104,10 +108,33 @@ class RegKey
 dfa BO RegKeyIsExist(cx CH* path)
 {
     RegKey regKey;
-    ife (regKey.Open(path, 0, 0))
+    ife (regKey.Open(path, 0))
         ret NO;
-    regKey.Close(); // error ignored
     ret YES;
+}
+dfa BO RegKeyIsExist(cx CH* pathBase, cx std::span<FNV1A64L>& subKeyList, HD hdlRoot = NUL)
+{
+    RegKey regKey;
+    ife (regKey.Open(pathBase, KEY_ENUMERATE_SUB_KEYS, 0, hdlRoot))
+        ret NO;
+    U1 buf[BYTE_IN_KB];
+    U4 resultSize;
+    ite (i, YES)
+    {
+        if (NtEnumerateKey_(regKey.Hdl(), U4(i), KEY_INFORMATION_CLASS_::KeyBasicInformation, buf, BYTE_IN_KB, &resultSize) != STATUS_SUCCESS)
+            ret NO;
+        AU& info = *(KEY_BASIC_INFORMATION_*)buf;
+        if (info.NameLength != Fnv1a64lLen(subKeyList[0]))
+            continue;
+        info.Name[info.NameLength / siz(CH)] = '\0';
+        StrToLowcase(info.Name);
+        if (HashFnv1a64l(info.Name, info.NameLength) == subKeyList[0])
+        {
+            if (subKeyList.size() == 1)
+                ret YES;
+            ret RegKeyIsExist(info.Name, subKeyList.subspan(1), regKey.Hdl());
+        }
+    }
 }
 
 dfa ER RegKeyGetStr(std::wstring& val, cx CH* path, cx CH* name)

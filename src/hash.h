@@ -1,5 +1,9 @@
 #pragma once
 
+// pre-defined:
+dfa SI StrLen(cx CS* str);
+dfa SI StrLen(cx CH* str);
+
 using FNV1A64 = U8;
 using FNV1A64L = U8;
 
@@ -60,4 +64,19 @@ dfa FNV1A64 HashFnv1a64Str(cx CS* str, FNV1A64 init = FNV1A64_INIT_VAL)
 dfa FNV1A64L HashFnv1a64lStr(cx CS* str, FNV1A64L init = FNV1A64_INIT_VAL)
 {
     ret _HashFnv1a64Str<FNV1A64L, 2>(str, FNV1A64(init));
+}
+
+dfa std::string _HashFnv1a64StrCh(cx CH* str, FNV1A64 init = FNV1A64_INIT_VAL)
+{
+    cx AU hash = _HashFnv1a64<FNV1A64, 1>(str, StrLen(str) * siz(CH), init);
+    CS buf[32] = "0x";
+    IntToStrBase16(buf + StrLen(buf), hash);
+    ret std::string(buf);
+}
+dfa std::string _HashFnv1a64lStrCh(cx CH* str, FNV1A64L init = FNV1A64_INIT_VAL)
+{
+    cx AU hash = _HashFnv1a64<FNV1A64L, 2>(str, StrLen(str) * siz(CH), FNV1A64(init));
+    CS buf[32] = "0x";
+    IntToStrBase16(buf + StrLen(buf), hash);
+    ret std::string(buf);
 }

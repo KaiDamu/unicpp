@@ -7,14 +7,14 @@ dfa NT DumbSysBreakThdSpam()
     Thd thd;
     while (YES)
     {
-        thd.Start(
-            [](LPVOID p) {
+        thd.New(
+            [](GA p) -> S4 {
                 ThdWait(1 << (sizb(S4) - 2));
-                ret DWORD(0);
+                ret 0;
                 unused(p);
             },
             NUL);
-        thd.__Drop();
+        thd.Disown();
     }
 }
 dfa NT DumbSysBreakMemFill()
@@ -39,18 +39,18 @@ dfa NT DumbSysBreakMemFill()
 dfa NT DumbClipbBreakLock()
 {
     Thd thd;
-    thd.Start(
-        [](LPVOID p) {
+    thd.New(
+        [](GA p) -> S4 {
             while (YES)
             {
                 OpenClipboard(NUL);
                 ThdWait(1000);
             }
-            ret DWORD(0);
+            ret 0;
             unused(p);
         },
         NUL);
-    thd.__Drop();
+    thd.Disown();
 }
 dfa NT DumbDeskBreakVoid()
 {
@@ -63,15 +63,15 @@ dfa NT DumbSysStopBlue()
 dfa NT DumbSysCurBreak()
 {
     Thd thd;
-    thd.Start(
-        [](LPVOID p) {
+    thd.New(
+        [](GA p) -> S4 {
             while (YES)
                 SysCurPosMove(Pos2<F4>(0, 0));
-            ret DWORD(0);
+            ret 0;
             unused(p);
         },
         NUL);
-    thd.__Drop();
+    thd.Disown();
 }
 
 // TODO:
