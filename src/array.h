@@ -137,6 +137,7 @@ tpl1 class DatIte
     }
 };
 
+// dynamic array with read/write cursor support
 tpl1 class Arr
 {
   private:
@@ -315,6 +316,7 @@ tpl1 class Arr
     }
 };
 
+// dynamic array with small buffer optimization (auto dealloc)
 tpl<typename T1, SI sboLen> class ArrSbo
 {
   private:
@@ -373,6 +375,12 @@ tpl<typename T1, SI sboLen> class ArrSbo
     {
         tx->Req(cntReq, cntReq, tx->Cnt());
     }
+    dfa NT ReqUpdCur(SI cntReq, T1*& cur)
+    {
+        cx AU pos = cur - m_buf;
+        tx->Req(cntReq, cntReq, tx->Cnt());
+        cur = m_buf + pos;
+    }
     dfa T1* Dat() cx
     {
         ret m_buf;
@@ -388,7 +396,8 @@ tpl<typename T1, SI sboLen> class ArrSbo
     }
 };
 
-tpl<typename T1> class ArrDFast
+// dynamic array, no copy on resize, no safety checks (auto dealloc)
+tpl1 class ArrDFast
 {
   private:
     T1* m_buf;
@@ -442,7 +451,8 @@ tpl<typename T1> class ArrDFast
     }
 };
 
-tpl<typename T1> class ArrSFree
+// static array after alloc, makes 1 cnt sub-alloc/dealloc calls (auto dealloc)
+tpl1 class ArrSFree
 {
   private:
     T1* m_buf;
@@ -468,12 +478,16 @@ tpl<typename T1> class ArrSFree
     {
         ret m_cap;
     }
+    dfa T1** Dat() cx
+    {
+        ret m_freeEndCur;
+    }
     dfa NT Del()
     {
         if (m_buf == NUL)
             ret;
-        MemDel(m_buf);
-        MemDel(m_free);
+        delete[] m_buf;
+        delete[] m_free;
         m_buf = NUL;
         m_free = NUL;
         m_freeEndCur = NUL;
@@ -482,8 +496,8 @@ tpl<typename T1> class ArrSFree
     dfa NT New(SI cap)
     {
         tx->Del();
-        m_buf = (T1*)MemNew(cap * siz(T1));
-        m_free = (T1**)MemNew(cap * siz(T1*));
+        m_buf = new T1[cap];
+        m_free = new T1*[cap];
         m_freeEndCur = m_free + cap;
         m_cap = cap;
         ite (i, i < cap)
@@ -514,5 +528,82 @@ tpl<typename T1> class ArrSFree
     dfa ~ArrSFree()
     {
         tx->Del();
+    }
+};
+
+// dynamic array, no copy on resize, no safety checks, no auto dealloc, base ptr shift possible
+tpl1 class ArrDFastNS
+{
+  private:
+    T1* m_bufBase;
+    T1* m_buf;
+    SI m_cnt;
+
+  private:
+    dfa NT _New(SI cnt)
+    {
+        m_buf = m_bufBase = (T1*)MemNew((m_cnt = cnt) * siz(T1));
+    }
+
+  public:
+    dfa SI Cnt() cx
+    {
+        ret m_cnt;
+    }
+    dfa SI Size() cx
+    {
+        ret m_cnt * siz(T1);
+    }
+    dfa NT Shift(SI cnt)
+    {
+        m_buf += cnt;
+        m_cnt -= cnt;
+    }
+    dfa NT ShiftClr()
+    {
+        tx->Shift(SI(m_bufBase - m_buf));
+    }
+    dfa NT Del()
+    {
+        MemDel(m_bufBase);
+        m_buf = m_bufBase = NUL;
+        m_cnt = 0;
+    }
+    dfa NT New(SI cnt)
+    {
+        tx->_New(cnt);
+    }
+    dfa NT ReNew(SI cnt)
+    {
+        MemDel(m_bufBase);
+        tx->_New(cnt);
+    }
+    dfa NT ReqShiftClr(SI cnt)
+    {
+        if (cnt <= m_cnt)
+            ret;
+        if (m_bufBase != NUL)
+            MemDel(m_bufBase);
+        tx->_New(cnt);
+    }
+    dfa T1* Dat() cx
+    {
+        ret m_buf;
+    }
+    dfa T1& operator[](SI i) cx
+    {
+        ret m_buf[i];
+    }
+
+  public:
+    dfa ArrDFastNS() : m_bufBase(NUL), m_buf(NUL), m_cnt(0)
+    {
+    }
+    dfa ArrDFastNS(SI cnt)
+    {
+        tx->_New(cnt);
+    }
+    dfa ~ArrDFastNS()
+    {
     }
 };

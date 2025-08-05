@@ -227,7 +227,8 @@ tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right)
     ret leftLen + srcLen + rightLen;
 }
 tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len)
-{ // insert 'str' at 'i' in 'dst' while overwriting 'len' characters
+{
+    // insert 'str' at 'i' in 'dst' while overwriting 'len' characters
     i += len;
     SI dstLen = StrLen(dst);
     cx SI strLen = StrLen(str) - len;
@@ -246,19 +247,22 @@ tpl1 dfa SI StrReplace(T1* dst, cx T1* str, SI i, SI len)
     ret dstLen + strLen;
 }
 tpl1 dfa SI StrInsert(T1* dst, cx T1* str, SI i)
-{ // insert 'str' at 'i' in 'dst'
+{
+    // insert 'str' at 'i' in 'dst'
     ret StrReplace(dst, str, i, 0);
 }
-tpl1 dfa SI StrRemove(T1* dst, SI i, SI len)
-{ // remove 'len' characters from 'dst' starting at 'i'
-    T1* dstP = dst + i;
-    while (*dstP != '\0')
+tpl1 dfa SI StrRemove(T1* dst, SI i, SI cnt)
+{
+    // remove 'cnt' characters from 'dst' starting at 'i'
+    AU dstCur = dst + i;
+    do
     {
-        *dstP = *(dstP + len);
-        ++dstP;
-    }
-    *dstP = '\0';
-    ret SI(dstP - dst);
+        *dstCur = *(dstCur + cnt);
+        if (*dstCur == '\0')
+            break;
+        ++dstCur;
+    } while (YES);
+    ret SI(dstCur - dst);
 }
 tpl1 dfa SI StrSubChar(T1* dst, cx T1* charList)
 {

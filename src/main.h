@@ -82,6 +82,7 @@ inline int _main_unused()
         ConWriteInfo("End of program");
         ConWait();
     }
+    _ConFree(); // error ignored
     ProcExit(U4(errVal));
     #ifndef UCPP_MAIN_TYPE_BASE
     ret int(errVal);
