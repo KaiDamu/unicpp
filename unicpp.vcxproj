@@ -163,6 +163,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -178,6 +179,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -193,6 +195,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_DBG;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -208,6 +211,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_RELEASE;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

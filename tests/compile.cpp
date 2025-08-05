@@ -1,4 +1,4 @@
-#include "../src/unicpp.h"
+#include <unicpp.h>
 
 ER Main()
 {
