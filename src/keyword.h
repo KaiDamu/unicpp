@@ -33,6 +33,13 @@
     #define ifl(cond) if (cond)
 #endif
 
+#ifdef PROG_COMPILER_GCC
+    #define memalign(size) __attribute__((aligned(size)))
+#endif
+#ifdef PROG_COMPILER_MSVC
+    #define memalign(size) __declspec(align(size))
+#endif
+
 #define ifs(cond) ifl ((cond) == ERR_NO)
 #define ife(cond) ifu ((cond) == ERR_YES)
 

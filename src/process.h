@@ -149,7 +149,28 @@ dfa GAFN ProcFnAdrGet(HD mdl, cx CS* fnName)
     {
         cx AU name = (CS*)(baseAdr + nameList[i]);
         if (StrCmp(name, fnName) == 0)
-            ret AsType<GAFN>(baseAdr + fnList[ordinalList[i]]);
+        {
+            cx AU fnAdr = baseAdr + fnList[ordinalList[i]];
+            if (UA(fnAdr) - UA(exportDir) < UA(exportDirInfo.Size))
+            {
+                AU dllFnNameCur = fnAdr;
+                U1 nameBuf[256];
+                AU nameCur = nameBuf;
+                do
+                {
+                    *nameCur++ = *dllFnNameCur++;
+                    *nameCur++ = '\0';
+                } while (*dllFnNameCur != '.');
+                *nameCur++ = *dllFnNameCur++;
+                *nameCur++ = '\0';
+                cxex U8 DLL_EXT = 0x0000006C006C0064;
+                MemCpy(nameCur, &DLL_EXT, siz(DLL_EXT));
+                AU dllNameRedir = (CH*)nameBuf;
+                AU fnNameRedir = (CS*)dllFnNameCur;
+                ret ProcFnAdrGet(ProcDllAdrGet(dllNameRedir, YES), fnNameRedir);
+            }
+            ret AsType<GAFN>(fnAdr);
+        }
     }
     ret NUL;
 }
@@ -182,8 +203,29 @@ class MdlFnCache
         {
             cx AU name = (CS*)(baseAdr + nameList[i]);
             cx AU hash = HashFnv1a64Str(name, hashBase);
-            cx AU fnAdr = AsType<GAFN>(baseAdr + fnList[ordinalList[i]]);
-            m_fnCache[hash] = fnAdr;
+            cx AU fnAdr = baseAdr + fnList[ordinalList[i]];
+            if (UA(fnAdr) - UA(exportDir) < UA(exportDirInfo.Size))
+            {
+                AU dllFnNameCur = fnAdr;
+                U1 nameBuf[256];
+                AU nameCur = nameBuf;
+                do
+                {
+                    *nameCur++ = *dllFnNameCur++;
+                    *nameCur++ = '\0';
+                } while (*dllFnNameCur != '.');
+                *nameCur++ = *dllFnNameCur++;
+                *nameCur++ = '\0';
+                cxex U8 DLL_EXT = 0x0000006C006C0064;
+                MemCpy(nameCur, &DLL_EXT, siz(DLL_EXT));
+                AU dllNameRedir = (CH*)nameBuf;
+                AU fnNameRedir = (CS*)dllFnNameCur;
+                m_fnCache[hash] = ProcFnAdrGet(ProcDllAdrGet(dllNameRedir, YES), fnNameRedir);
+            }
+            else
+            {
+                m_fnCache[hash] = AsType<GAFN>(fnAdr);
+            }
         }
         rets;
     }

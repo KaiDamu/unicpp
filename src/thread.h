@@ -121,11 +121,15 @@ class ThdLock
     }
     dfa NT Lock()
     {
+    #ifdef PROG_THD_CNT_MULTI
         EnterCriticalSection(&m_hdl);
+    #endif
     }
     dfa NT Unlock()
     {
+    #ifdef PROG_THD_CNT_MULTI
         LeaveCriticalSection(&m_hdl);
+    #endif
     }
 
   public:
@@ -147,12 +151,16 @@ class ThdLockFast
   public:
     dfa NT Lock()
     {
+    #ifdef PROG_THD_CNT_MULTI
         while (_InterlockedCompareExchange(&isLocked, YES, NO) != NO)
             NtYieldExecution_();
+    #endif
     }
     dfa NT Unlock()
     {
+    #ifdef PROG_THD_CNT_MULTI
         isLocked = NO;
+    #endif
     }
 
   public:

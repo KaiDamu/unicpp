@@ -169,7 +169,7 @@ dfa ER KeybFree()
 {
     ifu (!g_keybThdIsValid)
         rets;
-    ifu (PostThreadMessageW(DWORD(g_keybThd.Id()), WM_QUIT, 0, 0) == 0)
+    ifu (PostThreadMessageW(DWORD(UA(g_keybThd.Id())), WM_QUIT, 0, 0) == 0)
         rete(ErrVal::THD);
     ife (g_keybThd.Wait())
         retep;

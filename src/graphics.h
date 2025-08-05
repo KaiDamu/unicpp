@@ -918,7 +918,7 @@ dfa ER ScnDrawInit()
 }
 dfa ER ScnDrawFree()
 {
-    ifu (PostThreadMessageW(DWORD(g_scnDrawThd.Id()), WM_QUIT, 0, 0) == 0)
+    ifu (PostThreadMessageW(DWORD(UA(g_scnDrawThd.Id())), WM_QUIT, 0, 0) == 0)
         rete(ErrVal::THD);
     ife (g_scnDrawThd.Wait())
         retep;

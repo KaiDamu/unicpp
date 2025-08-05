@@ -830,6 +830,152 @@ using PEXCEPTION_ROUTINE_ = EXCEPTION_DISPOSITION_(NTAPI*)(EXCEPTION_RECORD_* Ex
 using PACTIVATION_CONTEXT_NOTIFY_ROUTINE_ = NT(NTAPI*)(U4 NotificationType, ACTIVATION_CONTEXT_* ActivationContext, ACTIVATION_CONTEXT_DATA_* ActivationContextData, GA NotificationContext,
                                                        GA NotificationData, U1* DisableThisNotification);
 
+struct FLOATING_SAVE_AREA_
+{
+    U4 ControlWord;
+    U4 StatusWord;
+    U4 TagWord;
+    U4 ErrorOffset;
+    U4 ErrorSelector;
+    U4 DataOffset;
+    U4 DataSelector;
+    U1 RegisterArea[80];
+    U4 Spare0;
+};
+struct memalign(16) M128A_
+{
+    U8 Low;
+    S8 High;
+};
+struct memalign(16) XSAVE_FORMAT_
+{
+    U2 ControlWord;
+    U2 StatusWord;
+    U1 TagWord;
+    U1 Reserved1;
+    U2 ErrorOpcode;
+    U4 ErrorOffset;
+    U2 ErrorSelector;
+    U2 Reserved2;
+    U4 DataOffset;
+    U2 DataSelector;
+    U2 Reserved3;
+    U4 MxCsr;
+    U4 MxCsr_Mask;
+    M128A_ FloatRegisters[8];
+#ifdef PROG_ADR_SIZE_4
+    M128A_ XmmRegisters[8];
+    U1 Reserved4[224];
+#endif
+#ifdef PROG_ADR_SIZE_8
+    M128A_ XmmRegisters[16];
+    U1 Reserved4[96];
+#endif
+};
+#ifdef PROG_ADR_SIZE_4
+struct memalign(8) CONTEXT_
+{
+    U4 ContextFlags;
+    U4 Dr0;
+    U4 Dr1;
+    U4 Dr2;
+    U4 Dr3;
+    U4 Dr6;
+    U4 Dr7;
+    FLOATING_SAVE_AREA_ FloatSave;
+    U4 SegGs;
+    U4 SegFs;
+    U4 SegEs;
+    U4 SegDs;
+    U4 Edi;
+    U4 Esi;
+    U4 Ebx;
+    U4 Edx;
+    U4 Ecx;
+    U4 Eax;
+    U4 Ebp;
+    U4 Eip;
+    U4 SegCs;
+    U4 EFlags;
+    U4 Esp;
+    U4 SegSs;
+    U1 ExtendedRegisters[512];
+};
+#endif
+#ifdef PROG_ADR_SIZE_8
+struct memalign(16) CONTEXT_
+{
+    U8 P1Home;
+    U8 P2Home;
+    U8 P3Home;
+    U8 P4Home;
+    U8 P5Home;
+    U8 P6Home;
+    U4 ContextFlags;
+    U4 MxCsr;
+    U2 SegCs;
+    U2 SegDs;
+    U2 SegEs;
+    U2 SegFs;
+    U2 SegGs;
+    U2 SegSs;
+    U4 EFlags;
+    U8 Dr0;
+    U8 Dr1;
+    U8 Dr2;
+    U8 Dr3;
+    U8 Dr6;
+    U8 Dr7;
+    U8 Rax;
+    U8 Rcx;
+    U8 Rdx;
+    U8 Rbx;
+    U8 Rsp;
+    U8 Rbp;
+    U8 Rsi;
+    U8 Rdi;
+    U8 R8;
+    U8 R9;
+    U8 R10;
+    U8 R11;
+    U8 R12;
+    U8 R13;
+    U8 R14;
+    U8 R15;
+    U8 Rip;
+    union {
+        XSAVE_FORMAT_ FltSave;
+        struct
+        {
+            M128A_ Header[2];
+            M128A_ Legacy[8];
+            M128A_ Xmm0;
+            M128A_ Xmm1;
+            M128A_ Xmm2;
+            M128A_ Xmm3;
+            M128A_ Xmm4;
+            M128A_ Xmm5;
+            M128A_ Xmm6;
+            M128A_ Xmm7;
+            M128A_ Xmm8;
+            M128A_ Xmm9;
+            M128A_ Xmm10;
+            M128A_ Xmm11;
+            M128A_ Xmm12;
+            M128A_ Xmm13;
+            M128A_ Xmm14;
+            M128A_ Xmm15;
+        };
+    };
+    M128A_ VectorRegister[26];
+    U8 VectorControl;
+    U8 DebugControl;
+    U8 LastBranchToRip;
+    U8 LastBranchFromRip;
+    U8 LastExceptionToRip;
+    U8 LastExceptionFromRip;
+};
+#endif
 struct EXCEPTION_RECORD_
 {
     U4 ExceptionCode;
@@ -912,6 +1058,12 @@ struct UNICODE_STRING_
     dfa UNICODE_STRING_();
     dfa UNICODE_STRING_(cx CH* buf, SI len);
     dfa UNICODE_STRING_(cx CH* buf);
+};
+struct USTRING_
+{
+    U4 Length;
+    U4 MaximumLength;
+    GA Buffer;
 };
 struct SECURITY_DESCRIPTOR_
 {

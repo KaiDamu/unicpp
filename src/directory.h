@@ -43,8 +43,8 @@ dfa ER _DirFileEnum(cx CH* path, SI depth, DirFileEnumCallbFnT callb, GA param1,
     while (YES)
     {
         AU& info = *infoCur;
-        cx AU isSpecialA = (info.FileNameLength == siz(U2) && *(U2*)info.FileName == 0x002E);
-        cx AU isSpecialB = (info.FileNameLength == siz(U4) && *(U4*)info.FileName == 0x002E002E);
+        cx AU isSpecialA = (info.FileNameLength == siz(U2) && info.FileName[0] == '.');
+        cx AU isSpecialB = (info.FileNameLength == siz(U4) && info.FileName[0] == '.' && info.FileName[1] == '.');
         if (!(isSpecialA || isSpecialB))
         {
             cx AU fileNameLen = SI(info.FileNameLength) / siz(CH);
