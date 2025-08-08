@@ -530,6 +530,10 @@ tpl1 dfa SI LenInt(T1 val)
         num = 20;
     ret num + sign;
 }
+tpl1 dfa T1 HiBitVal(T1 val)
+{
+    ret ((val == 0) ? 0 : (1 << (LenBin(val) - 1)));
+}
 tpl1 dfa T1 AppendInt(cx T1& high, cx T1& low)
 {
     static_assert(IsTypeU<T1>, "AppendInt: T1 must be TypeU");

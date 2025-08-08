@@ -33,11 +33,22 @@
     #define ifl(cond) if (cond)
 #endif
 
-#ifdef PROG_COMPILER_GCC
+#if __cplusplus >= 201103L
+    #define memalign(size) alignas(size)
+#elif defined(PROG_COMPILER_GCC)
     #define memalign(size) __attribute__((aligned(size)))
-#endif
-#ifdef PROG_COMPILER_MSVC
+#elif defined(PROG_COMPILER_MSVC)
     #define memalign(size) __declspec(align(size))
+#else
+    #define memalign(size)
+#endif
+
+#if defined(PROG_COMPILER_GCC)
+    #define restx __restrict__
+#elif defined(PROG_COMPILER_MSVC)
+    #define restx __restrict
+#else
+    #define restx
 #endif
 
 #define ifs(cond) ifl ((cond) == ERR_NO)

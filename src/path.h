@@ -94,7 +94,7 @@ dfa BO PathIsAbspath(cx CH* path)
 }
 dfa BO PathIsNtpath(cx CH* path)
 {
-    ret StrIsFirst(path, STR_NTPATH_PRE);
+    ret StrHasPre(path, STR_NTPATH_PRE);
 }
 
 #ifdef PROG_SYS_WIN

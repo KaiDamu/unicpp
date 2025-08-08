@@ -159,3 +159,25 @@ dfa NT SortRadixAscF4(F4* buf, SI cnt)
     ite (i, i < iEnd)
         Swap(buf1[i], buf1[ofs - i]);
 }
+
+tpl1 dfa NT SortShellAsc(T1* buf, SI cnt)
+{
+    static cx SI gaps[8] = {701, 301, 132, 57, 23, 10, 4, 1};
+    ite (g, g < 8)
+    {
+        cx AU& gap = gaps[g];
+        if (gap >= cnt)
+            continue;
+        for (AU i = gap; i < cnt; ++i)
+        {
+            cx AU tmp = buf[i];
+            AU j = i;
+            while (j >= gap && buf[j - gap] > tmp)
+            {
+                buf[j] = buf[j - gap];
+                j -= gap;
+            }
+            buf[j] = tmp;
+        }
+    }
+}

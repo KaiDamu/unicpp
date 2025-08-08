@@ -372,7 +372,7 @@ tpl1 dfa cx T1* StrArgSkip(cx T1* str)
         ++p;
     ret p;
 }
-tpl1 dfa BO StrIsFirst(cx T1* main, cx T1* sub)
+tpl1 dfa BO StrHasPre(cx T1* main, cx T1* sub)
 {
     cx T1* p1 = main;
     cx T1* p2 = sub;
