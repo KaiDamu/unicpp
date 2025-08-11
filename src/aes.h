@@ -74,7 +74,6 @@ cxex U1 g_aesGfm14[256] = {0x00, 0x0e, 0x1c, 0x12, 0x38, 0x36, 0x24, 0x2a, 0x70,
                            0x47, 0x49, 0x5b, 0x55, 0x7f, 0x71, 0x63, 0x6d, 0xd7, 0xd9, 0xcb, 0xc5, 0xef, 0xe1, 0xf3, 0xfd, 0xa7, 0xa9, 0xbb, 0xb5, 0x9f, 0x91, 0x83, 0x8d};
 
 cxex SI AES_COL_SIZE = 4;
-cxex SI AES_BLOCK_SIZE = AES_COL_SIZE * AES_COL_SIZE;
 
 enum class AesMode : U1
 {
@@ -83,18 +82,11 @@ enum class AesMode : U1
     CTR = 3,
 };
 
-struct memalign(AES_BLOCK_SIZE) AesBlock
+struct AesBlock : DatBlock<AES_COL_SIZE * AES_COL_SIZE, AES_COL_SIZE * AES_COL_SIZE>
 {
-    union {
-        U1 u1[AES_BLOCK_SIZE / siz(U1)];
-        U4 u4[AES_BLOCK_SIZE / siz(U4)];
-        U8 u8[AES_BLOCK_SIZE / siz(U8)];
-    };
-
-    dfa NT Clr();
 };
 
-tpl<SI keySize4> struct memalign(AES_BLOCK_SIZE) AesCtx
+tpl<SI keySize4> struct memalign(AesBlock::SIZE) AesCtx
 {
     enum class State : U1
     {
@@ -114,9 +106,9 @@ tpl<SI keySize4> struct memalign(AES_BLOCK_SIZE) AesCtx
     dfa AesCtx(cx U1* key = NUL, cx AesBlock* iv = NUL);
 };
 
-using AesCtx128 = AesCtx<4>;
-using AesCtx192 = AesCtx<6>;
-using AesCtx256 = AesCtx<8>;
+using Aes128Ctx = AesCtx<4>;
+using Aes192Ctx = AesCtx<6>;
+using Aes256Ctx = AesCtx<8>;
 
 dfa NT _AesXorIv(AesBlock* restx dst, cx AesBlock* restx iv)
 {
@@ -296,7 +288,7 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesEncrypt(std::vector<AesBlock>& dst, cx
     cx AU srcSize = SI(src.size_bytes());
     cx AU blockCntPre = SI(mode == AesMode::CBC);
     cx AU blockCntPad = SI(1);
-    cx AU blockCnt = blockCntPre + (srcSize / AES_BLOCK_SIZE) + blockCntPad;
+    cx AU blockCnt = blockCntPre + (srcSize / AesBlock::SIZE) + blockCntPad;
     dst.resize(blockCnt);
     std::vector<AesBlock> src_(blockCnt - blockCntPre);
     MemCpy(src_.data(), src.data(), srcSize);
@@ -305,17 +297,12 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesEncrypt(std::vector<AesBlock>& dst, cx
     ifcx (mode == AesMode::CBC)
     {
         if (ctx.iv.u8[0] == 0 && ctx.iv.u8[1] == 0)
-        {
-            ctx.iv.u4[0] = RandU4();
-            ctx.iv.u4[2] = RandU4();
-            ctx.iv.u4[3] = RandU4();
-            ctx.iv.u4[1] = RandU4() ^ 0xAAAAAAAA;
-        }
+            RandCrypt(ctx.iv.u1, AesBlock::SIZE);
         dst[0] = ctx.iv;
     }
 
     // pad scheme is automatically PKCS#7
-    cx AU padSize = (blockCnt - blockCntPre) * AES_BLOCK_SIZE - srcSize;
+    cx AU padSize = (blockCnt - blockCntPre) * AesBlock::SIZE - srcSize;
     MemSet((U1*)src_.data() + srcSize, U1(padSize), padSize);
 
     for (SI i = blockCntPre; i < blockCnt; ++i)
@@ -363,15 +350,15 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesDecrypt(std::vector<U1>& dst, cx std::
     }
 
     // pad scheme is automatically PKCS#7
-    AU padCur = &dst_.back().u1[AES_BLOCK_SIZE - 1];
+    AU padCur = &dst_.back().u1[AesBlock::SIZE - 1];
     cx AU padSize = *padCur;
-    ifu (padSize > AES_BLOCK_SIZE || padSize == 0)
+    ifu (padSize > AesBlock::SIZE || padSize == 0)
         rete(ErrVal::NO_VALID);
     ite (i, i < padSize)
         ifu (*padCur-- != padSize)
             rete(ErrVal::NO_VALID);
 
-    cx AU srcSizeNoPreNoPad = SI(src.size_bytes()) - (blockCntPre * AES_BLOCK_SIZE) - padSize;
+    cx AU srcSizeNoPreNoPad = SI(src.size_bytes()) - (blockCntPre * AesBlock::SIZE) - padSize;
     dst.resize(srcSizeNoPreNoPad);
     MemCpy(dst.data(), dst_.data(), srcSizeNoPreNoPad);
 
@@ -390,7 +377,7 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesEncryptStream(std::vector<U1>& dst, cx
         rete(ErrVal::NO_VALID);
 
     cx AU srcSize = SI(src.size_bytes());
-    cx AU dstSizePre = ((ctx.state == AesCtx<keySize4>::State::YES_INIT) ? AES_BLOCK_SIZE : 0);
+    cx AU dstSizePre = ((ctx.state == AesCtx<keySize4>::State::YES_INIT) ? AesBlock::SIZE : 0);
     cx AU dstSize = dstSizePre + srcSize;
     dst.resize(dstSize);
 
@@ -398,16 +385,16 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesEncryptStream(std::vector<U1>& dst, cx
     if (ctx.state == AesCtx<keySize4>::State::YES_INIT)
     {
         ctx.state = AesCtx<keySize4>::State::STREAM;
-        MemCpy(dst.data(), &ctx.iv, AES_BLOCK_SIZE);
+        MemCpy(dst.data(), &ctx.iv, AesBlock::SIZE);
     }
 
     ite (i, i < srcSize)
     {
-        if (ctx.streamBlockPos == AES_BLOCK_SIZE)
+        if (ctx.streamBlockPos == AesBlock::SIZE)
         {
             _AesBlockWrite<keySize4>(&ctx.streamBlock, &ctx.iv, ctx.rkey);
             ctx.streamBlockPos = 0;
-            for (SI j = AES_BLOCK_SIZE - 1; j >= 0; --j)
+            for (SI j = AesBlock::SIZE - 1; j >= 0; --j)
             {
                 if (ctx.iv.u1[j] == 0xFF)
                 {
@@ -434,24 +421,26 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesDecryptStream(std::vector<U1>& dst, cx
         rete(ErrVal::NO_VALID);
 
     cx AU srcSize = SI(src.size_bytes());
-    cx AU srcSizePre = ((ctx.state == AesCtx<keySize4>::State::YES_INIT) ? AES_BLOCK_SIZE : 0);
+    cx AU srcSizePre = ((ctx.state == AesCtx<keySize4>::State::YES_INIT) ? AesBlock::SIZE : SI(0));
     cx AU dstSize = srcSize - srcSizePre;
+    ifu (dstSize < 0)
+        rete(ErrVal::NO_VALID);
     dst.resize(dstSize);
 
     // iv scheme is automatically prepend mode
     if (ctx.state == AesCtx<keySize4>::State::YES_INIT)
     {
         ctx.state = AesCtx<keySize4>::State::STREAM;
-        MemCpy(&ctx.iv, src.data(), AES_BLOCK_SIZE);
+        MemCpy(&ctx.iv, src.data(), AesBlock::SIZE);
     }
 
     ite (i, i < dstSize)
     {
-        if (ctx.streamBlockPos == AES_BLOCK_SIZE)
+        if (ctx.streamBlockPos == AesBlock::SIZE)
         {
             _AesBlockWrite<keySize4>(&ctx.streamBlock, &ctx.iv, ctx.rkey);
             ctx.streamBlockPos = 0;
-            for (SI j = AES_BLOCK_SIZE - 1; j >= 0; --j)
+            for (SI j = AesBlock::SIZE - 1; j >= 0; --j)
             {
                 if (ctx.iv.u1[j] == 0xFF)
                 {
@@ -468,35 +457,29 @@ tpl<SI keySize4, AesMode mode> dfa ER _AesDecryptStream(std::vector<U1>& dst, cx
     rets;
 }
 
-dfa ER Aes128EcbEncrypt(std::vector<AesBlock>& dst, cx std::span<cx U1>& src, AesCtx128& ctx)
+dfa ER Aes128EcbEncrypt(std::vector<AesBlock>& dst, cx std::span<cx U1>& src, Aes128Ctx& ctx)
 {
     ret _AesEncrypt<4, AesMode::ECB>(dst, src, ctx);
 }
-dfa ER Aes128EcbDecrypt(std::vector<U1>& dst, cx std::span<cx AesBlock>& src, AesCtx128& ctx)
+dfa ER Aes128EcbDecrypt(std::vector<U1>& dst, cx std::span<cx AesBlock>& src, Aes128Ctx& ctx)
 {
     ret _AesDecrypt<4, AesMode::ECB>(dst, src, ctx);
 }
-dfa ER Aes128CbcEncrypt(std::vector<AesBlock>& dst, cx std::span<cx U1>& src, AesCtx128& ctx)
+dfa ER Aes128CbcEncrypt(std::vector<AesBlock>& dst, cx std::span<cx U1>& src, Aes128Ctx& ctx)
 {
     ret _AesEncrypt<4, AesMode::CBC>(dst, src, ctx);
 }
-dfa ER Aes128CbcDecrypt(std::vector<U1>& dst, cx std::span<cx AesBlock>& src, AesCtx128& ctx)
+dfa ER Aes128CbcDecrypt(std::vector<U1>& dst, cx std::span<cx AesBlock>& src, Aes128Ctx& ctx)
 {
     ret _AesDecrypt<4, AesMode::CBC>(dst, src, ctx);
 }
-dfa ER Aes128CtrEncrypt(std::vector<U1>& dst, cx std::span<cx U1>& src, AesCtx128& ctx)
+dfa ER Aes128CtrEncrypt(std::vector<U1>& dst, cx std::span<cx U1>& src, Aes128Ctx& ctx)
 {
     ret _AesEncryptStream<4, AesMode::CTR>(dst, src, ctx);
 }
-dfa ER Aes128CtrDecrypt(std::vector<U1>& dst, cx std::span<cx U1>& src, AesCtx128& ctx)
+dfa ER Aes128CtrDecrypt(std::vector<U1>& dst, cx std::span<cx U1>& src, Aes128Ctx& ctx)
 {
     ret _AesDecryptStream<4, AesMode::CTR>(dst, src, ctx);
-}
-
-dfa NT AesBlock::Clr()
-{
-    u8[0] = 0;
-    u8[1] = 0;
 }
 
 tpl<SI keySize4> dfa NT AesCtx<keySize4>::Init(cx U1* key, cx AesBlock* iv)
@@ -508,7 +491,7 @@ tpl<SI keySize4> dfa NT AesCtx<keySize4>::Init(cx U1* key, cx AesBlock* iv)
     else
         tx->iv = *iv;
     streamBlock.Clr();
-    streamBlockPos = AES_BLOCK_SIZE;
+    streamBlockPos = AesBlock::SIZE;
     state = ((key == NUL) ? State::NO_INIT : State::YES_INIT);
 }
 tpl<SI keySize4> dfa AesCtx<keySize4>::AesCtx(cx U1* key, cx AesBlock* iv) : state(State::NO_INIT)

@@ -124,6 +124,26 @@ dfa F8 RandF8(F8 min, F8 max)
     ret g_randCtx.RandF8(min, max);
 }
 
+dfa NT RandCrypt(GA buf, SI size)
+{
+    // WARNING: currently not cryptographically secure, but difficult to predict and fast to generate
+    AU cur = (U1*)buf;
+    while (size != 0)
+    {
+        cx AU v0 = U8(CpuTsc());
+        cx AU v1 = U8(TimeUnix()) ^ 0xAAAAAAAAAAAAAAAA;
+        cx AU v2 = v0 ^ 0x5555555555555555;
+        cx AU v3 = (v1 + v2) ^ ~RotL(v1 - v2, sizb(U4));
+        cx AU v4 = v3 * (v0 | 1);
+        cx AU v5 = (U8(RandU4()) << sizb(U4)) | U8(RandU4());
+        cx AU v6 = v4 ^ v5;
+        cx AU sizeCpy = Min(size, siz(U8));
+        MemCpy(cur, &v6, sizeCpy);
+        cur += sizeCpy;
+        size -= sizeCpy;
+    }
+}
+
 tpl1 dfa NT MixRand(T1* buf, SI cnt)
 {
     ite (i, i < cnt)

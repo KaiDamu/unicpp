@@ -491,3 +491,63 @@ tpl1 Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio)
         ret Rect2<T1>({rect.pos.x, rect.pos.y + (rect.size.h - h) / 2}, {rect.size.w, h});
     }
 }
+
+tpl<SI TSize, SI TAlign = alignof(U8)> struct memalign(TAlign) DatBlock
+{
+    static_assert(TSize >= siz(U8), "DatBlock size must be at least 8 bytes");
+    static_assert(TSize % TAlign == 0, "DatBlock size must be a multiple of alignment");
+
+    static cxex SI SIZE = TSize;
+    static cxex SI ALIGN = TAlign;
+
+    union {
+        U1 u1[TSize / siz(U1)];
+        U2 u2[TSize / siz(U2)];
+        U4 u4[TSize / siz(U4)];
+        U8 u8[TSize / siz(U8)];
+    };
+
+    dfa U1* Dat() noex
+    {
+        ret u1;
+    }
+    dfa cx U1* Dat() cx noex
+    {
+        ret u1;
+    }
+    dfa NT Clr() noex
+    {
+        MemSet(u1, 0, TSize);
+    }
+    dfa U1& operator[](SI i) noex
+    {
+        ret u1[i];
+    }
+    dfa cx U1& operator[](SI i) cx noex
+    {
+        ret u1[i];
+    }
+    dfa BO operator==(cx DatBlock& other) cx noex
+    {
+        ret MemCmp(u1, other.u1, TSize) == 0;
+    }
+    dfa BO operator!=(cx DatBlock& other) cx noex
+    {
+        ret !(*tx == other);
+    }
+
+    dfa NT operator+(S4) cx = delete;
+    dfa NT operator-(S4) cx = delete;
+};
+
+tpl<SI TSize, SI TAlign = alignof(U8)> struct memalign(TAlign) DatBlockSecure : DatBlock<TSize, TAlign>
+{
+    dfa NT Clr() noex
+    {
+        MemSet0Force(tx->u1, TSize);
+    }
+    dfa ~DatBlockSecure() noex
+    {
+        tx->Clr();
+    }
+};
