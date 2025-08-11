@@ -188,7 +188,7 @@
     <ClInclude Include="src\import\winapi\type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\rsa.h">
+    <ClInclude Include="src\c25519.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\clipboard.h">

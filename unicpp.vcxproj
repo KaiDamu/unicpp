@@ -82,7 +82,7 @@
     <ClInclude Include="src\queue.h" />
     <ClInclude Include="src\random.h" />
     <ClInclude Include="src\registry.h" />
-    <ClInclude Include="src\rsa.h" />
+    <ClInclude Include="src\c25519.h" />
     <ClInclude Include="src\sandbox.h" />
     <ClInclude Include="src\screen.h" />
     <ClInclude Include="src\sha.h" />
