@@ -53,6 +53,50 @@ dfa NT MemCpyNocall(GA dst, CXGA src, SI size)
     while (src_ != end)
         *dst_++ = *src_++;
 }
+tpl1 dfa NT MemCpyValBe(T1& dst, CXGA src)
+{
+    static_assert(IsTypeU<T1> || IsTypeS<T1>, "MemCpyValBe: T1 must be an integer type");
+    cxex AU sizT1 = siz(T1);
+    static_assert(sizT1 > 0 && sizT1 <= siz(U8), "MemCpyValBe: T1 size must be between 1 and 8 bytes");
+    AU p = (cx U1*)src;
+    dst = *p++;
+    ifcx (sizT1 >= 2)
+        dst = (dst << 8) | *p++;
+    ifcx (sizT1 >= 3)
+        dst = (dst << 8) | *p++;
+    ifcx (sizT1 >= 4)
+        dst = (dst << 8) | *p++;
+    ifcx (sizT1 >= 5)
+        dst = (dst << 8) | *p++;
+    ifcx (sizT1 >= 6)
+        dst = (dst << 8) | *p++;
+    ifcx (sizT1 >= 7)
+        dst = (dst << 8) | *p++;
+    ifcx (sizT1 >= 8)
+        dst = (dst << 8) | *p++;
+}
+tpl1 dfa NT MemCpyValBe(GA dst, T1 src)
+{
+    static_assert(IsTypeU<T1> || IsTypeS<T1>, "MemCpyValBe: T1 must be an integer type");
+    cxex AU sizT1 = siz(T1);
+    static_assert(sizT1 > 0 && sizT1 <= siz(U8), "MemCpyValBe: T1 size must be between 1 and 8 bytes");
+    AU p = (U1*)dst;
+    p += sizT1 - 1;
+    *(p--) = src;
+    ifcx (sizT1 < 2)
+        ret;
+    *(p--) = (src >>= 8);
+    ifcx (sizT1 < 3)
+        ret;
+    *(p--) = (src >>= 8);
+    *(p--) = (src >>= 8);
+    ifcx (sizT1 < 5)
+        ret;
+    *(p--) = (src >>= 8);
+    *(p--) = (src >>= 8);
+    *(p--) = (src >>= 8);
+    *(p--) = (src >>= 8);
+}
 
 dfa NT MemDel(GA ptr)
 {

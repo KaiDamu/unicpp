@@ -134,7 +134,7 @@
     <ClInclude Include="src\aes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\sha256.h">
+    <ClInclude Include="src\sha.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\md5.h">
