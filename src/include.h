@@ -122,6 +122,7 @@
 #include "protobuf.h"
 #include "sha.h"
 #include "aes.h"
+#include "fp25519.h"
 #include "rsa.h"
 #include "md5.h"
 #include "qoi.h"
