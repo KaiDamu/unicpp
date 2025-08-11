@@ -263,5 +263,8 @@
     <ClInclude Include="src\sandbox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\bigmath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
