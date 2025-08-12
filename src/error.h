@@ -35,6 +35,8 @@ enum class ErrVal : U4
     DIR_NO_ENUM,
     NET_CLOSE,
     NET_NO_EXIST,
+    NET_HIGH_CLI,
+    NET_MSG_NO_VALID,
     //
     NO_SUPPORT,
     NO_VALID,

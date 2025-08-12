@@ -131,6 +131,7 @@
 #include "window.h"
 #include "console.h"
 #include "network.h"
+#include "ucnet.h"
 #include "clipboard.h"
 #include "sandbox.h"
 #include "vfs.h"

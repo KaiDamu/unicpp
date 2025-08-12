@@ -269,5 +269,8 @@
     <ClInclude Include="src\fp25519.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ucnet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

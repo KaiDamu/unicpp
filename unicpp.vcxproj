@@ -99,6 +99,7 @@
     <ClInclude Include="src\type.h" />
     <ClInclude Include="src\typeconvert.h" />
     <ClInclude Include="src\typeex.h" />
+    <ClInclude Include="src\ucnet.h" />
     <ClInclude Include="src\unicpp.h" />
     <ClInclude Include="src\value.h" />
     <ClInclude Include="src\vector.h" />
