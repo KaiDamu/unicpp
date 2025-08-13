@@ -93,12 +93,12 @@ dfa NT C25519MulScalar(Fp25519& scalar, cx Fp25519& q, cx Fp25519& e)
     Fp25519 zm = {1};
     Fp25519 xm1 = {1};
     Fp25519 zm1 = {};
+    Fp25519 xms, zms;
     for (SI i = 253; i >= 0; --i)
     {
         cx AU bit = BO((e[i >> 3] >> (i & 7)) & 1);
         C25519LsDiffAdd(xm1, zm1, q, g_fp25519One, xm, zm, xm1, zm1);
         C25519LsDouble(xm, zm, xm, zm);
-        Fp25519 xms, zms;
         C25519LsDiffAdd(xms, zms, xm1, zm1, xm, zm, q, g_fp25519One);
         BigSelCt<Fp25519::SIZE>(xm1.Dat(), xm1.Dat(), xm.Dat(), bit);
         BigSelCt<Fp25519::SIZE>(zm1.Dat(), zm1.Dat(), zm.Dat(), bit);
@@ -306,17 +306,11 @@ dfa NT X25519Derive(X25519SharedKey& sharedKey, cx X25519SharedKeyRaw& sharedKey
     cx AU datSize = SI(X25519SharedKeyRaw::SIZE + X25519PubKey::SIZE * 2 + msgSize);
     std::vector<U1> dat(datSize);
     AU datCur = dat.data();
-    MemCpy(datCur, sharedKeyRaw.Dat(), sharedKeyRaw.SIZE);
-    datCur += sharedKeyRaw.SIZE;
-    MemCpy(datCur, pubKeySrv.Dat(), pubKeySrv.SIZE);
-    datCur += pubKeySrv.SIZE;
-    MemCpy(datCur, pubKeyCli.Dat(), pubKeyCli.SIZE);
-    datCur += pubKeyCli.SIZE;
+    MemCpyUpdCur(datCur, sharedKeyRaw.Dat(), sharedKeyRaw.SIZE);
+    MemCpyUpdCur(datCur, pubKeySrv.Dat(), pubKeySrv.SIZE);
+    MemCpyUpdCur(datCur, pubKeyCli.Dat(), pubKeyCli.SIZE);
     if (msgSize > 0)
-    {
-        MemCpy(datCur, msg, msgSize);
-        datCur += msgSize;
-    }
+        MemCpyUpdCur(datCur, msg, msgSize);
     Sha512Hash hash;
     HashSha512(hash, dat.data(), dat.size());
     MemCpy(sharedKey.Dat(), hash.Dat(), hash.SIZE);

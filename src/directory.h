@@ -49,8 +49,7 @@ dfa ER _DirFileEnum(cx CH* path, SI depth, DirFileEnumCallbFnT callb, GA param1,
         {
             cx AU fileNameLen = SI(info.FileNameLength) / siz(CH);
             *pathFullEnd++ = L'\\';
-            MemCpy(pathFullEnd, info.FileName, info.FileNameLength);
-            pathFullEnd += fileNameLen;
+            MemCpyUpdCur(pathFullEnd, info.FileName, info.FileNameLength);
             FileInfoCommon entry;
             entry.path.assign(pathFull, pathFullEnd);
             entry.pathRelOfs = pathRelOfs;

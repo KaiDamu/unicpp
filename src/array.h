@@ -63,8 +63,7 @@ tpl1 class DatIte
     dfa NT Write(cx T1* dat, SI cnt)
     {
         Assert(tx->Pos() + cnt <= m_cap);
-        MemCpy(m_cur, dat, cnt * siz(T1));
-        m_cur += cnt;
+        MemCpyUpdCur(m_cur, dat, cnt * siz(T1));
     }
     dfa NT CurMove(SI cnt)
     {
@@ -236,8 +235,7 @@ tpl1 class Arr
     dfa NT Write(cx T1* dat, SI cnt)
     {
         Assert(tx->Pos() + cnt <= m_cap);
-        MemCpy(m_cur, dat, cnt * siz(T1));
-        m_cur += cnt;
+        MemCpyUpdCur(m_cur, dat, cnt * siz(T1));
     }
     dfa NT CurMove(SI cnt)
     {

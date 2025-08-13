@@ -37,6 +37,52 @@ dfa ER MemNewSys(GA* ptr, SI size, HD proc = ProcCurHdl(), U4 prot = PAGE_READWR
 
 #endif
 
+dfa NT MemDel(GA ptr)
+{
+    free(ptr);
+}
+dfa GA MemNew(SI size)
+{
+    ret malloc(size);
+}
+
+dfa NT MemSet(GA dst, U1 val, SI size)
+{
+#ifdef PROG_COMPILER_GCC
+    __builtin_memset(dst, val, size);
+#else
+    memset(dst, val, size);
+#endif
+}
+dfa NT MemCpy(GA dst, CXGA src, SI size)
+{
+#ifdef PROG_COMPILER_GCC
+    __builtin_memcpy(dst, src, size);
+#else
+    memcpy(dst, src, size);
+#endif
+}
+dfa NT MemMove(GA dst, CXGA src, SI size)
+{
+#ifdef PROG_COMPILER_GCC
+    __builtin_memmove(dst, src, size);
+#else
+    memmove(dst, src, size);
+#endif
+}
+dfa SA MemCmp(CXGA ptr1, CXGA ptr2, SI size)
+{
+    ret SA(__builtin_memcmp(ptr1, ptr2, size));
+}
+
+dfa GA MemResize(GA ptr, SI sizeAlloc, SI sizeCpy)
+{
+    GA r = MemNew(sizeAlloc);
+    MemCpy(r, ptr, sizeCpy);
+    MemDel(ptr);
+    ret r;
+}
+
 dfa NT MemSet0Force(GA dst, SI size)
 {
     ifu (size < 1)
@@ -97,51 +143,15 @@ tpl1 dfa NT MemCpyValBe(GA dst, T1 src)
     *(p--) = (src >>= 8);
     *(p--) = (src >>= 8);
 }
-
-dfa NT MemDel(GA ptr)
+tpl1 dfa NT MemCpyUpdCur(T1*& dstCur, CXGA src, SI size)
 {
-    free(ptr);
+    MemCpy(dstCur, src, size);
+    AsType<UA>(dstCur) += size;
 }
-dfa GA MemNew(SI size)
+tpl1 dfa NT MemCpyUpdCurSrc(GA dst, cx T1*& srcCur, SI size)
 {
-    ret malloc(size);
-}
-
-dfa NT MemSet(GA dst, U1 val, SI size)
-{
-#ifdef PROG_COMPILER_GCC
-    __builtin_memset(dst, val, size);
-#else
-    memset(dst, val, size);
-#endif
-}
-dfa NT MemCpy(GA dst, CXGA src, SI size)
-{
-#ifdef PROG_COMPILER_GCC
-    __builtin_memcpy(dst, src, size);
-#else
-    memcpy(dst, src, size);
-#endif
-}
-dfa NT MemMove(GA dst, CXGA src, SI size)
-{
-#ifdef PROG_COMPILER_GCC
-    __builtin_memmove(dst, src, size);
-#else
-    memmove(dst, src, size);
-#endif
-}
-dfa SA MemCmp(CXGA ptr1, CXGA ptr2, SI size)
-{
-    ret SA(__builtin_memcmp(ptr1, ptr2, size));
-}
-
-dfa GA MemResize(GA ptr, SI sizeAlloc, SI sizeCpy)
-{
-    GA r = MemNew(sizeAlloc);
-    MemCpy(r, ptr, sizeCpy);
-    MemDel(ptr);
-    ret r;
+    MemCpy(dst, srcCur, size);
+    AsType<UA>(srcCur) += size;
 }
 
 #ifdef PROG_SYS_WIN

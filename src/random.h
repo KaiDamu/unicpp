@@ -138,8 +138,7 @@ dfa NT RandCrypt(GA buf, SI size)
         cx AU v5 = (U8(RandU4()) << sizb(U4)) | U8(RandU4());
         cx AU v6 = v4 ^ v5;
         cx AU sizeCpy = Min(size, siz(U8));
-        MemCpy(cur, &v6, sizeCpy);
-        cur += sizeCpy;
+        MemCpyUpdCur(cur, &v6, sizeCpy);
         size -= sizeCpy;
     }
 }

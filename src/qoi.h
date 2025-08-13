@@ -58,8 +58,7 @@ tpl1 dfa ER QoiEncode(std::vector<U1>& out, cx T1* in, cx Size2<SI>& inSize)
 
     cx AU QoiWriteU4 = [](U1*& outCur, U4 val) -> NT {
         val = RevByte(val);
-        MemCpy(outCur, &val, siz(val));
-        outCur += siz(val);
+        MemCpyUpdCur(outCur, &val, siz(val));
     };
 
     QoiWriteU4(outCur, QOI_MAGIC);
@@ -160,8 +159,7 @@ tpl1 dfa ER QoiEncode(std::vector<U1>& out, cx T1* in, cx Size2<SI>& inSize)
         }
     }
 
-    MemCpy(outCur, QOI_EOF, siz(QOI_EOF));
-    outCur += siz(QOI_EOF);
+    MemCpyUpdCur(outCur, QOI_EOF, siz(QOI_EOF));
 
     cx AU outSize = SI(outCur - outBase);
     out.resize(outSize);

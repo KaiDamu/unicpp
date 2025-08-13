@@ -535,8 +535,7 @@ class MemFile
             }
             m_end = m_cur + size;
         }
-        MemCpy(m_cur, buf, size);
-        m_cur += size;
+        MemCpyUpdCur(m_cur, buf, size);
     }
     tpl1 dfa NT WriteVal(cx T1& val)
     {
