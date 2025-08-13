@@ -34,9 +34,13 @@ enum class ErrVal : U4
     TIME_RES,
     DIR_NO_ENUM,
     NET_CLOSE,
+    NET_VER,
+    NET_NO_SUPPORT,
     NET_NO_EXIST,
+    NET_YES_INIT,
     NET_HIGH_CLI,
     NET_MSG_NO_VALID,
+    NET_MSG_NO_PRIVI,
     //
     NO_SUPPORT,
     NO_VALID,
