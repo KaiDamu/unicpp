@@ -412,7 +412,7 @@ dfa ER _ConWriteRawAl(cx CS* form, cx AL& args, cx CS* pre, cx CS* post)
     ret _ConWriteRawAl_(form_.c_str(), args);
 }
 
-dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
+dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, cx CS* prefix, ThdLockFast* prefixLock, BO isShow)
 {
 #ifdef PROG_SYS_WIN
     strLen = -1;
@@ -430,15 +430,71 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
     if (s_history == NUL)
         s_history = new std::vector<std::string>;
     SI historyPos = -1;
+    std::string prefixLast;
+    SI prefixLastLenShow;
+    if (prefix != NUL)
+    {
+        if (prefixLock != NUL)
+            prefixLock->Lock();
+        prefixLast = prefix;
+        if (prefixLock != NUL)
+            prefixLock->Unlock();
+        ife (_ConWriteRaw(prefixLast.c_str(), prefixLast.size(), YES))
+            retep;
+        if (prefixLock != NUL)
+        {
+            Pos2<SI> curPos;
+            ife (_ConCurPosGet(curPos))
+                retep;
+            prefixLastLenShow = curPos.x;
+        }
+    }
     while (YES)
     {
+        if (prefixLock != NUL && prefix != NUL)
+        {
+            prefixLock->Lock();
+            ifu (StrCmp(prefixLast.c_str(), prefix) != 0)
+            {
+                Pos2<SI> curPos;
+                ife (_ConCurPosGet(curPos))
+                    retep;
+                std::vector<CHAR_INFO> rowDatOld;
+                ife (_ConReadRow(rowDatOld, curPos.y))
+                    retep;
+                cx Pos2<SI> curPosHome(0, curPos.y);
+                ife (_ConCurPosSet(curPosHome))
+                    retep;
+                ife (_ConWriteRaw(prefix, StrLen(prefix), YES))
+                    retep;
+                Pos2<SI> curPosAfterWrite;
+                ife (_ConCurPosGet(curPosAfterWrite))
+                    retep;
+                cx AU prefixLenShow = curPosAfterWrite.x;
+                std::vector<CHAR_INFO> rowDatNew;
+                ife (_ConReadRow(rowDatNew, curPos.y))
+                    retep;
+                rowDatNew.resize(prefixLenShow);
+                cx AU cpyCnt = SI(rowDatOld.size()) - Max(prefixLenShow, prefixLastLenShow);
+                ite (i, i < cpyCnt)
+                    rowDatNew.emplace_back(rowDatOld[i + prefixLastLenShow]);
+                ife (_ConWriteRow(rowDatNew, curPos.y))
+                    retep;
+                cx Pos2<SI> curPosNew(curPos.x + (prefixLenShow - prefixLastLenShow), curPos.y);
+                ife (_ConCurPosSet(curPosNew))
+                    retep;
+                prefixLast = prefix;
+                prefixLastLenShow = prefixLenShow;
+            }
+            prefixLock->Unlock();
+        }
         INPUT_RECORD ir;
         DWORD irRead;
         ifu (PeekConsoleInputW(hdl, &ir, 1, &irRead) == 0)
             rete(ErrVal::CON);
         if (irRead == 0)
         {
-            ThdWait(1);
+            ThdWait(10);
             continue;
         }
         ifu (ReadConsoleInputW(hdl, &ir, 1, &irRead) == 0)
@@ -449,15 +505,16 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
         switch (vkCode)
         {
         case VK_RETURN: {
-            if (historyPos != -1)
+            if (strLen > 0)
             {
-                s_history->pop_back();
-            }
-            if (s_history->size() == 0 || StrCmp(str, (*s_history)[s_history->size() - 1].c_str()) != 0)
-            {
-                if (s_history->size() == CON_HISTORY_CNT_MAX)
-                    s_history->erase(s_history->begin());
-                s_history->push_back(str);
+                if (historyPos != -1)
+                    s_history->pop_back();
+                if (s_history->size() == 0 || StrCmp(str, (*s_history)[s_history->size() - 1].c_str()) != 0)
+                {
+                    if (s_history->size() == CON_HISTORY_CNT_MAX)
+                        s_history->erase(s_history->begin());
+                    s_history->push_back(str);
+                }
             }
             ife (_ConWriteRaw("\n", 1, YES))
                 retep;
@@ -492,6 +549,8 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
             strLen = StrRemove(str, strPos, 1);
             if (isShow)
             {
+                ife (_ConCurShow(NO))
+                    retep;
                 ife (_ConWriteRaw("\b", 1, YES))
                     retep;
                 cx AU writeLen = strLen - strPos;
@@ -502,6 +561,8 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
                 std::vector<CS> buf(writeLen + 1);
                 MemSet(buf.data(), '\b', buf.size() * siz(CS));
                 ife (_ConWriteRaw(buf.data(), buf.size(), YES))
+                    retep;
+                ife (_ConCurShow(YES))
                     retep;
             }
             break;
@@ -586,6 +647,33 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
                 retep;
             break;
         }
+        case VK_HOME: {
+            if (strPos > 0)
+            {
+                if (isShow)
+                {
+                    std::vector<CS> buf(strPos);
+                    MemSet(buf.data(), '\b', buf.size() * siz(CS));
+                    ife (_ConWriteRaw(buf.data(), buf.size(), YES))
+                        retep;
+                }
+                strPos = 0;
+            }
+            break;
+        }
+        case VK_END: {
+            if (strPos < strLen)
+            {
+                if (isShow)
+                {
+                    cx AU writeLen = strLen - strPos;
+                    ife (_ConWriteRaw(str + strPos, writeLen, YES))
+                        retep;
+                }
+                strPos = strLen;
+            }
+            break;
+        }
         default: {
             if (strLen >= strLenxMax - STR_EX_LEN)
                 break;
@@ -596,6 +684,8 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
             strLen = StrInsert(str, s, strPos);
             if (isShow)
             {
+                ife (_ConCurShow(NO))
+                    retep;
                 cx AU writeLen = strLen - strPos;
                 ife (_ConWriteRaw(str + strPos, writeLen, YES))
                     retep;
@@ -606,6 +696,8 @@ dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, BO isShow)
                     ife (_ConWriteRaw(buf.data(), buf.size(), YES))
                         retep;
                 }
+                ife (_ConCurShow(YES))
+                    retep;
             }
             ++strPos;
             break;
@@ -898,24 +990,21 @@ dfa ER ConWriteErr(cx CS* form, ...)
     ret err;
 }
 
-dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, cx CS* prefix = NUL, BO isShow = YES)
+dfa ER ConReadStr(CS* str, SI strLenxMax, SI& strLen, cx CS* prefix = NUL, ThdLockFast* prefixLock = NUL, BO isShow = YES)
 {
     ife (_ConReadModeSet(YES))
         retep;
-    if (prefix != NUL)
-        ife (_ConWriteRaw(prefix, StrLen(prefix), YES))
-            retep;
-    cx AU err = _ConReadStr(str, strLenxMax, strLen, isShow);
+    cx AU err = _ConReadStr(str, strLenxMax, strLen, prefix, prefixLock, isShow);
     ife (_ConReadModeSet(NO))
         retep;
     ret err;
 }
-dfa ER ConReadStr(std::string& str, cx CS* prefix = NUL, BO isShow = YES)
+dfa ER ConReadStr(std::string& str, cx CS* prefix = NUL, ThdLockFast* prefixLock = NUL, BO isShow = YES)
 {
     str.clear();
     ArrSbo<CS, CON_SBO_LENX_MAX> buf;
     SI strLen;
-    ife (ConReadStr(buf.Dat(), buf.Cnt(), strLen, prefix, isShow))
+    ife (ConReadStr(buf.Dat(), buf.Cnt(), strLen, prefix, prefixLock, isShow))
         retep;
     str.assign(buf.Dat(), strLen);
     rets;
