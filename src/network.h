@@ -228,6 +228,43 @@ class SockTcp
         }
         rets;
     }
+    dfa ER Write(cx std::span<cx std::span<cx U1>>& bufList) cx
+    {
+        ifu (m_hdl == INVALID_SOCKET)
+            rete(ErrVal::NO_INIT);
+        ArrSbo<WSABUF, 8> bufListWsa(bufList.size());
+        ite (i, i < bufList.size())
+        {
+            bufListWsa[i].len = (ULONG)bufList[i].size();
+            bufListWsa[i].buf = (CHAR*)bufList[i].data();
+        }
+        SI bufICur = 0;
+        DWORD writeSize;
+        jdst(again);
+        cx AU result = WSASend(m_hdl, &bufListWsa[bufICur], bufList.size() - bufICur, &writeSize, 0, NUL, NUL);
+        ifu (result == SOCKET_ERROR)
+        {
+            if (WSAGetLastError() == WSAECONNRESET)
+                rete(ErrVal::NET_CLOSE);
+            rete(ErrVal::NET);
+        }
+        AU rem = SI(writeSize);
+        while (rem != 0)
+            if (rem < bufListWsa[bufICur].len)
+            {
+                bufListWsa[bufICur].len -= rem;
+                bufListWsa[bufICur].buf += rem;
+                rem = 0;
+            }
+            else
+            {
+                rem -= bufListWsa[bufICur].len;
+                ++bufICur;
+            }
+        if (bufICur < bufList.size())
+            jsrc(again);
+        rets;
+    }
     dfa ER Read(GA buf, SI& sizeResult, SI sizeMax, SI sizeMin = 1) cx
     {
         sizeResult = 0;

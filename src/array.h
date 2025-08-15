@@ -392,6 +392,10 @@ tpl<typename T1, SI sboLen> class ArrSbo
     dfa ArrSbo() : m_buf(m_bufStack)
     {
     }
+    dfa ArrSbo(SI cnt) : m_buf(m_bufStack)
+    {
+        tx->Req(cnt, cnt, 0);
+    }
 };
 
 // dynamic array, no copy on resize, no safety checks (auto dealloc)

@@ -85,6 +85,7 @@
     <ClInclude Include="src\c25519.h" />
     <ClInclude Include="src\sandbox.h" />
     <ClInclude Include="src\screen.h" />
+    <ClInclude Include="src\serial.h" />
     <ClInclude Include="src\sha.h" />
     <ClInclude Include="src\sort.h" />
     <ClInclude Include="src\sound.h" />

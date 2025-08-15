@@ -370,6 +370,24 @@ tpl1 dfa SI VarintDecode(T1& out, cx U1* in)
     } while (YES);
     ret SI(in - inBase);
 }
+tpl1 dfa ER VarintDecode(T1& out, SI& inReadSize, cx U1* in, cx U1* end)
+{
+    out = 0;
+    cx U1* cx inBase = in;
+    while (in != end)
+    {
+        out |= ((*in) & 0x7F) << (0x07 * U1(in - inBase));
+        if (!(*in & 0x80))
+        {
+            ++in;
+            inReadSize = SI(in - inBase);
+            rets;
+        }
+        ++in;
+    }
+    inReadSize = SI(in - inBase);
+    rete(ErrVal::NO_VALID);
+}
 tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base)
 {
     cx U1* cx outBase = out;

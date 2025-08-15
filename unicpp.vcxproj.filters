@@ -287,5 +287,8 @@
     <ClInclude Include="src\ucnetcd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\serial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -53,6 +53,11 @@
 
 #define ifs(cond) ifl ((cond) == ERR_NO)
 #define ife(cond) ifu ((cond) == ERR_YES)
+#define ifep(cond) \
+    do             \
+        ife (cond) \
+            retep; \
+    while (NO)
 
 #define ifcx(...) if cxex (__VA_ARGS__)
 

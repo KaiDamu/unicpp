@@ -106,6 +106,7 @@
 #include "stack.h"
 #include "list.h"
 #include "queue.h"
+#include "serial.h"
 #include "event.h"
 #include "token.h"
 #include "thread.h"
