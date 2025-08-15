@@ -6,7 +6,6 @@ namespace Ucnet
 {
 
 cxex SI MSG_SIZE_MAX = 4 * BYTE_IN_MB;
-cxex U4 MSG_TYPE_VER_CX = 0x1B204B73;
 
 using TMsgSize = U4;
 using TMsgNum = U4;
@@ -31,15 +30,14 @@ enum class MsgType : TMsgType
     CNT,                // not a valid message type, used for counting the number of message types
 };
 
-using TMsgDatWriteToBuf = ArrSbo<U1, 256>;
 struct MsgDatAny
 {
     dfa virtual MsgType Type() cx = 0;
-    dfa virtual ER WriteTo(TMsgDatWriteToBuf& buf, U1*& bufCur) cx
+    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx
     {
         rets;
     }
-    dfa virtual ER ReadFrom(cx U1* buf, SI size)
+    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end)
     {
         rets;
     }
@@ -55,6 +53,8 @@ tpl<MsgType T> struct _MsgDatAnyT : MsgDatAny
 
 struct MsgDatVer : _MsgDatAnyT<MsgType::VER>
 {
+    static cxex U4 CX = 0x1B204B73;
+
     BO isReq;
     U4 verCx;
     TProtoVer verMin;
@@ -64,60 +64,22 @@ struct MsgDatVer : _MsgDatAnyT<MsgType::VER>
     TSessionId sessionId;
     std::string userName;
 
-    dfa virtual ER WriteTo(TMsgDatWriteToBuf& buf, U1*& bufCur) cx override
+    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx override
     {
-        AU datSize = siz(isReq) + siz(verCx) + siz(verMin);
+        ifep(Serial::Write(buf, curI, isReq, verCx, verMin));
         if (isReq)
-            datSize += siz(verMax);
+            ifep(Serial::Write(buf, curI, verMax));
         else
-            datSize += siz(msgNumToWrite) + siz(msgNumToRead) + siz(sessionId) + siz(U1) + (userName.size() * siz(CS));
-        buf.ReqUpdCur(SI(bufCur - buf.Dat()) + datSize, bufCur);
-
-        MemCpyUpdCur(bufCur, &isReq, siz(isReq));
-        MemCpyUpdCur(bufCur, &verCx, siz(verCx));
-        MemCpyUpdCur(bufCur, &verMin, siz(verMin));
-        if (isReq)
-        {
-            MemCpyUpdCur(bufCur, &verMax, siz(verMax));
-        }
-        else
-        {
-            MemCpyUpdCur(bufCur, &msgNumToWrite, siz(msgNumToWrite));
-            MemCpyUpdCur(bufCur, &msgNumToRead, siz(msgNumToRead));
-            MemCpyUpdCur(bufCur, &sessionId, siz(sessionId));
-            cx AU userNameSize = U1(userName.size() * siz(CS));
-            MemCpyUpdCur(bufCur, &userNameSize, siz(userNameSize));
-            MemCpyUpdCur(bufCur, userName.data(), userNameSize);
-        }
+            ifep(Serial::Write(buf, curI, msgNumToWrite, msgNumToRead, sessionId, userName));
         rets;
     }
-    dfa virtual ER ReadFrom(cx U1* buf, SI size) override
+    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end) override
     {
-        cx AU datSize = siz(isReq) + siz(verCx) + siz(verMin);
-        ifu (size < datSize)
-            rete(ErrVal::NET_MSG_NO_VALID);
-        MemCpyUpdCurSrc(&isReq, buf, siz(isReq));
-        MemCpyUpdCurSrc(&verCx, buf, siz(verCx));
-        MemCpyUpdCurSrc(&verMin, buf, siz(verMin));
+        ifep(Serial::Read(cur, end, isReq, verCx, verMin));
         if (isReq)
-        {
-            ifu (size < datSize + siz(verMax))
-                rete(ErrVal::NET_MSG_NO_VALID);
-            MemCpyUpdCurSrc(&verMax, buf, siz(verMax));
-        }
+            ifep(Serial::Read(cur, end, verMax));
         else
-        {
-            ifu (size < datSize + siz(msgNumToWrite) + siz(msgNumToRead) + siz(sessionId) + siz(U1))
-                rete(ErrVal::NET_MSG_NO_VALID);
-            MemCpyUpdCurSrc(&msgNumToWrite, buf, siz(msgNumToWrite));
-            MemCpyUpdCurSrc(&msgNumToRead, buf, siz(msgNumToRead));
-            MemCpyUpdCurSrc(&sessionId, buf, siz(sessionId));
-            U1 userNameSize;
-            MemCpyUpdCurSrc(&userNameSize, buf, siz(userNameSize));
-            ifu (size != datSize + siz(msgNumToWrite) + siz(msgNumToRead) + siz(sessionId) + siz(U1) + userNameSize)
-                rete(ErrVal::NET_MSG_NO_VALID);
-            userName.assign((cx CS*)buf, userNameSize / siz(CS));
-        }
+            ifep(Serial::Read(cur, end, msgNumToWrite, msgNumToRead, sessionId, userName));
         rets;
     }
 };
@@ -143,17 +105,14 @@ struct MsgDatDbg : _MsgDatAnyT<MsgType::DBG>
 {
     std::string text;
 
-    dfa virtual ER WriteTo(TMsgDatWriteToBuf& buf, U1*& bufCur) cx override
+    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx override
     {
-        cx AU datSize = SI(text.size()) * siz(CS);
-        buf.ReqUpdCur(SI(bufCur - buf.Dat()) + datSize, bufCur);
-
-        MemCpyUpdCur(bufCur, text.data(), SI(text.size()) * siz(CS));
+        ifep(Serial::Write(buf, curI, text));
         rets;
     }
-    dfa virtual ER ReadFrom(cx U1* buf, SI size) override
+    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end) override
     {
-        text.assign((cx CS*)buf, size);
+        ifep(Serial::Read(cur, end, text));
         rets;
     }
 };
@@ -161,21 +120,14 @@ struct MsgDatPing : _MsgDatAnyT<MsgType::PING>
 {
     TmMain time;
 
-    dfa virtual ER WriteTo(TMsgDatWriteToBuf& buf, U1*& bufCur) cx override
+    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx override
     {
-        cx AU datSize = siz(time);
-        buf.ReqUpdCur(SI(bufCur - buf.Dat()) + datSize, bufCur);
-
-        MemCpyUpdCur(bufCur, &time, siz(time));
+        ifep(Serial::Write(buf, curI, time));
         rets;
     }
-    dfa virtual ER ReadFrom(cx U1* buf, SI size) override
+    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end) override
     {
-        cx AU datSize = siz(time);
-        ifu (size != datSize)
-            rete(ErrVal::NET_MSG_NO_VALID);
-
-        MemCpyUpdCurSrc(&time, buf, siz(time));
+        ifep(Serial::Read(cur, end, time));
         rets;
     }
 };

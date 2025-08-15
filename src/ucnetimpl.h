@@ -5,12 +5,12 @@
 namespace Ucnet
 {
 
-tpl3 dfa BaseMsgCallbDat<T2> _UcnetMsgCallbDatCreate(T3&& fn, GA ctx)
+tpl3 dfa BaseMsgCallbDat<T2> _MsgCallbDatCreate(T3&& fn, GA ctx)
 {
     static_assert(std::is_invocable_r_v<ER, std::decay_t<T3>, T2&, cx T1&, GA>, "T3 must be callable as ER(T2&, cx T1&, GA)");
     ret BaseMsgCallbDat<T2>{[fn_ = std::forward<T3>(fn)](T2& cli, cx MsgDatAny& msgDat, GA ctx) { ret fn_(cli, (cx T1&)msgDat, ctx); }, ctx};
 }
-dfa NT _UcnetMsgNumGen(TMsgNum& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
+dfa NT _MsgNumGen(TMsgNum& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
 {
     // format:
     // 0b ABCD DDDD DDDD DDDD DDDD DDDD DDDD DDDD
@@ -25,104 +25,7 @@ dfa NT _UcnetMsgNumGen(TMsgNum& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
     if (isForCliElseSrv)
         dst |= 0x40000000;
 }
-dfa ER _UcnetSockWrite(cx SockTcp& sock, CXGA buf, SI size)
-{
-    cx AU msgSize = TMsgSize(siz(TMsgSize) + size);
-    ArrDFast<U1> bufTmp(msgSize);
-    MemCpy(bufTmp.Dat(), &msgSize, siz(msgSize));
-    MemCpy(bufTmp.Dat() + siz(msgSize), buf, size);
-
-    // ConWriteRaw("[SockWrite]");
-    // ite (i, i < bufTmp.Size())
-    // ConWriteRaw(" %02X", bufTmp.Dat()[i]);
-    // ConWriteRaw("\n");
-
-    ife (sock.Write(bufTmp.Dat(), bufTmp.Size()))
-        retep;
-    rets;
-}
-dfa ER _UcnetSockRead(std::vector<U1>& buf, cx SockTcp& sock)
-{
-    buf.clear();
-    TMsgSize msgSize;
-    SI sizeResult;
-    ife (sock.Read(&msgSize, sizeResult, siz(msgSize), siz(msgSize)))
-        retep;
-    ifu (SI(msgSize) < siz(msgSize) || SI(msgSize) > MSG_SIZE_MAX)
-        rete(ErrVal::NET_MSG_NO_VALID);
-    buf.resize(msgSize - siz(msgSize));
-    ife (sock.Read(buf.data(), sizeResult, buf.size(), buf.size()))
-    {
-        buf.clear();
-        retep;
-    }
-
-    // ConWriteRaw("[SockRead]");
-    // ite (i, i < siz(msgSize))
-    // ConWriteRaw(" %02X", ((U1*)&msgSize)[i]);
-    // ite (i, i < sizeResult)
-    // ConWriteRaw(" %02X", buf.data()[i]);
-    // ConWriteRaw("\n");
-
-    rets;
-}
-dfa ER _UcnetMsgWrite(cx SockTcp& sock, cx MsgDatAny& msgDat, Cd& cd)
-{
-    cx AU msgType = msgDat.Type();
-    TMsgDatWriteToBuf buf;
-    buf.Req(siz(msgType) + cd.hdrSize);
-    AU bufCur = buf.Dat();
-    MemCpyUpdCur(bufCur, &msgType, siz(msgType));
-    MemCpyUpdCur(bufCur, &cd.msgNumToWrite, siz(cd.msgNumToWrite));
-    ife (msgDat.WriteTo(buf, bufCur))
-        retep;
-    ife (_UcnetSockWrite(sock, buf.Dat(), SI(bufCur - buf.Dat()) * siz(U1)))
-        retep;
-    // ConWriteDbg("[_UcnetMsgWrite] writes MsgType=%u, MsgNum=%u", TMsgType(msgType), cd.msgNumToWrite);
-    ++cd.msgNumToWrite;
-    rets;
-}
-dfa ER _UcnetMsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock, Cd& cd)
-{
-    msgDat.reset();
-    std::vector<U1> buf;
-    ife (_UcnetSockRead(buf, sock))
-        retep;
-    ifu (SI(buf.size()) < siz(MsgType) + cd.hdrSize)
-    {
-        ConWriteDbg("[_UcnetMsgRead] buffer size too small");
-        rete(ErrVal::NET_MSG_NO_VALID);
-    }
-    MsgType msgType;
-    TMsgNum msgNum;
-    AU bufCur = (cx U1*)buf.data();
-    MemCpyUpdCurSrc(&msgType, bufCur, siz(msgType));
-    MemCpyUpdCurSrc(&msgNum, bufCur, siz(msgNum));
-    // ConWriteDbg("[_UcnetMsgRead] reads MsgType=%u, MsgNum=%u | expected MsgNum=%u", TMsgType(msgType), msgNum, cd.msgNumToRead);
-    ifu (msgNum != cd.msgNumToRead)
-        rete(ErrVal::NET_MSG_NO_VALID);
-    using TMsgDatFactory = std::unordered_map<MsgType, std::function<std::unique_ptr<MsgDatAny>()>>;
-    static cx TMsgDatFactory s_msgDatFactory = {
-        {MsgType::VER, []() { ret std::make_unique<MsgDatVer>(); }},
-        {MsgType::DBG, []() { ret std::make_unique<MsgDatDbg>(); }},
-        {MsgType::PING, []() { ret std::make_unique<MsgDatPing>(); }},
-    };
-    cx AU msgKeyVal = s_msgDatFactory.find(msgType);
-    ifu (msgKeyVal == s_msgDatFactory.end())
-    {
-        ConWriteDbg("[_UcnetMsgRead] s_msgDatFactory does not contain MsgType=%d", SI(msgType));
-        rete(ErrVal::NET_MSG_NO_VALID);
-    }
-    msgDat = msgKeyVal->second();
-    ife (msgDat->ReadFrom(bufCur, SI(buf.size()) - (bufCur - buf.data())))
-    {
-        ConWriteDbg("[_UcnetMsgRead] ReadFrom error");
-        retep;
-    }
-    ++cd.msgNumToRead;
-    rets;
-}
-dfa S4 _UcnetCliThdFn(GA param)
+dfa S4 _CliThdFn(GA param)
 {
     AU& cli = *(Cli*)param;
     while (YES)
@@ -152,10 +55,10 @@ dfa S4 _UcnetCliThdFn(GA param)
             cli._Cd().doDisconnect = YES;
         ifu (cli.Cd().doDisconnect)
             ife (cli.Disconnect())
-                ConWriteDbg("[_UcnetCliThdFn] failed to disconnect client");
+                ConWriteDbg("[_CliThdFn] failed to disconnect client");
     }
 }
-dfa S4 _UcnetSrvThdFn(GA param)
+dfa S4 _SrvThdFn(GA param)
 {
     AU& srv = *(Srv*)param;
     while (YES)
@@ -170,7 +73,7 @@ dfa S4 _UcnetSrvThdFn(GA param)
     }
     ret 0;
 }
-dfa S4 _UcnetSrvCliThdFn(GA param)
+dfa S4 _SrvCliThdFn(GA param)
 {
     AU cliDat = (Srv::CliDat*)param;
     cx AU err = cliDat->srv->CliThdFn(*cliDat);
@@ -178,7 +81,7 @@ dfa S4 _UcnetSrvCliThdFn(GA param)
     {
         std::unique_ptr<MsgDatAny> msgDat = std::make_unique<MsgDatSysCliDisconnect>();
         ife (cliDat->srv->_CallMsgCallbFn(*cliDat, *msgDat.get()))
-            ConWriteDbg("[_UcnetSrvCliThdFn] ignoring disconnect callback error on client [%s]", cliDat->adr.ToStr().c_str());
+            ConWriteDbg("[_SrvCliThdFn] ignoring disconnect callback error on client [%s]", cliDat->adr.ToStr().c_str());
     }
 
     ife (cliDat->srv->Release(cliDat))
@@ -192,9 +95,11 @@ dfa S4 _UcnetSrvCliThdFn(GA param)
 
 dfa NT Cd::Clr(BO isCli)
 {
+    tmpBufWrite.clear();
+    tmpBufRead.clear();
     ver = TProtoVer(0);
-    _UcnetMsgNumGen(msgNumToWrite, NO, isCli);
-    _UcnetMsgNumGen(msgNumToRead, NO, !isCli);
+    _MsgNumGen(msgNumToWrite, NO, isCli);
+    _MsgNumGen(msgNumToRead, NO, !isCli);
     sessionId = TSessionId(0);
     userName.clear();
     doDisconnect = NO;
@@ -203,6 +108,79 @@ dfa NT Cd::Clr(BO isCli)
 dfa NT Cd::HdrSizeUpd()
 {
     hdrSize = siz(TMsgNum);
+}
+dfa ER Cd::MsgWrite(cx SockTcp& sock, cx MsgDatAny& msgDat)
+{
+    cx AU msgType = msgDat.Type();
+
+    tmpBufWrite.clear();
+    SI curI = 0;
+    ifep(msgDat.WriteTo(tmpBufWrite, curI));
+    tmpBufWrite.resize(curI);
+
+    TMsgSize msgSize = 0;
+
+    std::array<std::span<cx U1>, 4> bufList;
+    bufList[0] = std::span<cx U1>((U1*)&msgSize, siz(msgSize));
+    bufList[1] = std::span<cx U1>((U1*)&msgType, siz(msgType));
+    bufList[2] = std::span<cx U1>((U1*)&msgNumToWrite, siz(msgNumToWrite));
+    bufList[3] = tmpBufWrite;
+
+    for (cx AU& buf : bufList)
+        msgSize += TMsgSize(buf.size());
+
+    ifep(sock.Write(bufList));
+
+    ++msgNumToWrite;
+    rets;
+}
+dfa ER Cd::MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock)
+{
+    msgDat.reset();
+    tmpBufRead.clear();
+    TMsgSize msgSize;
+    SI sizeResult;
+    ifep(sock.Read(&msgSize, sizeResult, siz(msgSize), siz(msgSize)));
+    ifu (SI(msgSize) < siz(msgSize) || SI(msgSize) > MSG_SIZE_MAX)
+        rete(ErrVal::NET_MSG_NO_VALID);
+    tmpBufRead.resize(msgSize - siz(msgSize));
+    ife (sock.Read(tmpBufRead.data(), sizeResult, tmpBufRead.size(), tmpBufRead.size()))
+    {
+        tmpBufRead.clear();
+        retep;
+    }
+    ifu (SI(tmpBufRead.size()) < siz(MsgType) + hdrSize)
+    {
+        ConWriteDbg("[_MsgRead] buffer size too small");
+        rete(ErrVal::NET_MSG_NO_VALID);
+    }
+    MsgType msgType;
+    TMsgNum msgNum;
+    AU bufCur = (cx U1*)tmpBufRead.data();
+    MemCpyUpdCurSrc(&msgType, bufCur, siz(msgType));
+    MemCpyUpdCurSrc(&msgNum, bufCur, siz(msgNum));
+    ifu (msgNum != msgNumToRead)
+        rete(ErrVal::NET_MSG_NO_VALID);
+    using TMsgDatFactory = std::unordered_map<MsgType, std::function<std::unique_ptr<MsgDatAny>()>>;
+    static cx TMsgDatFactory s_msgDatFactory = {
+        {MsgType::VER, []() { ret std::make_unique<MsgDatVer>(); }},
+        {MsgType::DBG, []() { ret std::make_unique<MsgDatDbg>(); }},
+        {MsgType::PING, []() { ret std::make_unique<MsgDatPing>(); }},
+    };
+    cx AU msgKeyVal = s_msgDatFactory.find(msgType);
+    ifu (msgKeyVal == s_msgDatFactory.end())
+    {
+        ConWriteDbg("[_MsgRead] s_msgDatFactory does not contain MsgType=%d", SI(msgType));
+        rete(ErrVal::NET_MSG_NO_VALID);
+    }
+    msgDat = msgKeyVal->second();
+    ife (msgDat->ReadFrom(bufCur, bufCur + SI(SI(tmpBufRead.size()) - (bufCur - tmpBufRead.data()))))
+    {
+        ConWriteDbg("[_MsgRead] ReadFrom error");
+        retep;
+    }
+    ++msgNumToRead;
+    rets;
 }
 dfa Cd::Cd()
 {
@@ -216,7 +194,7 @@ dfa ER Cli::_DefaMsgCallbSet()
         rets; // NOTE: as the client, we try to silently ignore unhandled messages
     });
     tx->MsgCallbSet<MsgType::VER>([](Cli& cli, cx MsgDatVer& msg, GA ctx) {
-        ifu (msg.isReq || (msg.verCx != MSG_TYPE_VER_CX))
+        ifu (msg.isReq || (msg.verCx != MsgDatVer::CX))
         {
             ConWriteErr("[Server] Invalid version message [isReq = %u, verCx = 0x%08X]", msg.isReq, msg.verCx);
             rete(ErrVal::NET_MSG_NO_VALID);
@@ -258,11 +236,11 @@ dfa Cd& Cli::_Cd()
 }
 dfa ER Cli::_Write(cx MsgDatAny& msgDat)
 {
-    ret _UcnetMsgWrite(m_sock, msgDat, m_cd);
+    ret m_cd.MsgWrite(m_sock, msgDat);
 }
 dfa ER Cli::_Read(std::unique_ptr<MsgDatAny>& msgDat)
 {
-    ret _UcnetMsgRead(msgDat, m_sock, m_cd);
+    ret m_cd.MsgRead(msgDat, m_sock);
 }
 dfa ER Cli::_CallMsgCallbFn(cx MsgDatAny& msgDat)
 {
@@ -273,8 +251,7 @@ dfa ER Cli::_CallMsgCallbFn(cx MsgDatAny& msgDat)
     // call the message specific callback function & extended callback function if exists
     if (m_msgCallbList[msgTypeI].fn)
     {
-        ife (m_msgCallbList[msgTypeI].fn(*tx, msgDat, m_msgCallbList[msgTypeI].ctx))
-            retep;
+        ifep(m_msgCallbList[msgTypeI].fn(*tx, msgDat, m_msgCallbList[msgTypeI].ctx));
         if (m_msgCallbExList[msgTypeI].fn)
         {
             jdst(callEx);
@@ -323,8 +300,7 @@ dfa ER Cli::Connect(cx NetAdrV4& adr)
 {
     ifu (tx->IsConnected() || m_sock.IsValid())
         rete(ErrVal::YES_INIT);
-    ife (m_sock.New())
-        retep;
+    ifep(m_sock.New());
     ife (m_sock.Connect(adr))
     {
         cx AU err = ErrLastGet();
@@ -335,8 +311,7 @@ dfa ER Cli::Connect(cx NetAdrV4& adr)
     m_cd.Clr(YES);
 
     std::unique_ptr<MsgDatAny> msgDat = std::make_unique<MsgDatSysSrvConnect>();
-    ife (tx->_CallMsgCallbFn(*msgDat.get()))
-        retep;
+    ifep(tx->_CallMsgCallbFn(*msgDat.get()));
 
     rets;
 }
@@ -346,10 +321,8 @@ dfa ER Cli::Disconnect()
         rets;
     ifu (!m_sock.IsValid())
         rete(ErrVal::NO_INIT);
-    ife (m_sock.Disconnect())
-        retep;
-    ife (m_sock.Del())
-        retep;
+    ifep(m_sock.Disconnect());
+    ifep(m_sock.Del());
     m_srvAdr.Clr();
     m_cd.Clr(YES);
     rets;
@@ -359,7 +332,7 @@ dfa ER Cli::Init()
     ifu (m_isInit)
         rete(ErrVal::YES_INIT);
     m_isInit = YES;
-    ife (m_thd.New(_UcnetCliThdFn, GA(tx)))
+    ife (m_thd.New(_CliThdFn, GA(tx)))
     {
         m_isInit = NO;
         retep;
@@ -385,11 +358,11 @@ dfa ER Cli::Free()
 }
 tpl<MsgType TMsg, typename TFn> dfa NT Cli::MsgCallbSet(TFn&& fn, GA ctx)
 {
-    m_msgCallbList[SI(TMsg)] = _UcnetMsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Cli>(std::forward<TFn>(fn), ctx);
+    m_msgCallbList[SI(TMsg)] = _MsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Cli>(std::forward<TFn>(fn), ctx);
 }
 tpl<MsgType TMsg, typename TFn> dfa NT Cli::MsgCallbExSet(TFn&& fn, GA ctx)
 {
-    m_msgCallbExList[SI(TMsg)] = _UcnetMsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Cli>(std::forward<TFn>(fn), ctx);
+    m_msgCallbExList[SI(TMsg)] = _MsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Cli>(std::forward<TFn>(fn), ctx);
 }
 
 dfa Cli::Cli() : m_isInit(NO)
@@ -431,18 +404,14 @@ dfa Srv::RoomDat::RoomDat()
 }
 dfa ER Srv::_Close()
 {
-    ife (m_sock.Del())
-        retep;
+    ifep(m_sock.Del());
     cx AU cliCnt = m_cliBuf.Cnt();
     ite (i, i < cliCnt)
     {
         AU cliDat = *m_cliBuf.Dat();
-        ife (cliDat->sock.Disconnect())
-            retep;
-        ife (cliDat->sock.Del())
-            retep;
-        ife (cliDat->thd.Wait())
-            retep;
+        ifep(cliDat->sock.Disconnect());
+        ifep(cliDat->sock.Del());
+        ifep(cliDat->thd.Wait());
         m_cliBuf.ElemDel(cliDat);
     }
     m_cliBuf.Del();
@@ -457,7 +426,7 @@ dfa ER Srv::_DefaMsgCallbSet()
         rete(ErrVal::NET_MSG_NO_VALID); // NOTE: since this is the default callback, we return an error directly
     });
     tx->MsgCallbSet<MsgType::VER>([](CliDat& cli, cx MsgDatVer& msg, GA ctx) {
-        ifu (!msg.isReq || (msg.verCx != MSG_TYPE_VER_CX))
+        ifu (!msg.isReq || (msg.verCx != MsgDatVer::CX))
         {
             ConWriteErr("[%s] Invalid version message [isReq = %u, verCx = 0x%08X]", cli.adr.ToStr().c_str(), msg.isReq, msg.verCx);
             rete(ErrVal::NET_MSG_NO_VALID);
@@ -479,7 +448,7 @@ dfa ER Srv::_DefaMsgCallbSet()
 
         MsgDatVer msgVer;
         msgVer.isReq = NO;
-        msgVer.verCx = MSG_TYPE_VER_CX;
+        msgVer.verCx = MsgDatVer::CX;
         msgVer.verMin = PROTO_VER;
         msgVer.msgNumToWrite = cli.cd.msgNumToRead;
         msgVer.msgNumToRead = cli.cd.msgNumToWrite;
@@ -550,14 +519,13 @@ dfa ER Srv::CliThdFn(CliDat& cliDat)
 {
     {
         std::unique_ptr<MsgDatAny> msgDat = std::make_unique<MsgDatSysCliConnect>();
-        ife (cliDat.srv->_CallMsgCallbFn(cliDat, *msgDat.get()))
-            retep;
+        ifep(cliDat.srv->_CallMsgCallbFn(cliDat, *msgDat.get()));
     }
 
     while (YES)
     {
         std::unique_ptr<MsgDatAny> msgDat;
-        ife (_UcnetMsgRead(msgDat, cliDat.sock, cliDat.cd))
+        ife (cliDat.cd.MsgRead(msgDat, cliDat.sock))
         {
             if (ErrLastGet() == ErrVal::NET_CLOSE)
             {
@@ -589,15 +557,14 @@ dfa ER Srv::Open(U2 port, SI cliCntMax)
 {
     ifu (m_sock.IsValid())
         rete(ErrVal::YES_INIT);
-    ife (m_sock.New())
-        retep;
+    ifep(m_sock.New());
     ife (m_sock.OpenSrv(port))
     {
         cx AU err = ErrLastGet();
         m_sock.Del();
         rete(err);
     }
-    ife (m_thd.New(_UcnetSrvThdFn, GA(tx)))
+    ife (m_thd.New(_SrvThdFn, GA(tx)))
     {
         cx AU err = ErrLastGet();
         m_sock.Del();
@@ -613,12 +580,9 @@ dfa ER Srv::Close()
     m_cliListLock.Lock();
     cx AU err = tx->_Close();
     m_cliListLock.Unlock();
-    ife (err)
-        retep;
-    ife (m_thd.Wait())
-        retep;
-    ife (m_thd.Close())
-        retep;
+    ifep(err);
+    ifep(m_thd.Wait());
+    ifep(m_thd.Close());
     rets;
 }
 dfa ER Srv::Accept()
@@ -627,8 +591,7 @@ dfa ER Srv::Accept()
         rete(ErrVal::NO_INIT);
     SockTcp sockCliTmp;
     NetAdrV4 adrTmp;
-    ife (m_sock.Accept(sockCliTmp, adrTmp))
-        retep;
+    ifep(m_sock.Accept(sockCliTmp, adrTmp));
     // TODO: could use application-level blacklisting here
     m_cliListLock.Lock();
     cx AU cliDatNew = m_cliBuf.ElemNew();
@@ -636,7 +599,7 @@ dfa ER Srv::Accept()
     ifu (cliDatNew == NUL)
         rete(ErrVal::NET_HIGH_CLI);
     cliDatNew->Init(tx, sockCliTmp, adrTmp);
-    ife (cliDatNew->thd.New(_UcnetSrvCliThdFn, GA(cliDatNew)))
+    ife (cliDatNew->thd.New(_SrvCliThdFn, GA(cliDatNew)))
     {
         m_cliListLock.Lock();
         m_cliBuf.ElemDel(cliDatNew);
@@ -650,12 +613,9 @@ dfa ER Srv::Release(CliDat*& cliDat)
 {
     ifu (!m_sock.IsValid())
         rete(ErrVal::NO_INIT);
-    ife (cliDat->thd.Close())
-        retep;
-    ife (cliDat->sock.Disconnect())
-        retep;
-    ife (cliDat->sock.Del())
-        retep;
+    ifep(cliDat->thd.Close());
+    ifep(cliDat->sock.Disconnect());
+    ifep(cliDat->sock.Del());
     m_cliListLock.Lock();
     if (cliDat->cd.sessionId != TSessionId(0))
     {
@@ -669,7 +629,7 @@ dfa ER Srv::Release(CliDat*& cliDat)
 }
 dfa NT Srv::MsgWrite(CliDat& cliDat, cx MsgDatAny& msgDat)
 {
-    ife (_UcnetMsgWrite(cliDat.sock, msgDat, cliDat.cd))
+    ife (cliDat.cd.MsgWrite(cliDat.sock, msgDat))
     {
         cx AU msgDat = std::make_unique<MsgDatSysErrWrite>();
         ife (tx->_CallMsgCallbFn(cliDat, *msgDat.get()))
@@ -679,8 +639,8 @@ dfa NT Srv::MsgWrite(CliDat& cliDat, cx MsgDatAny& msgDat)
 dfa NT Srv::CliAuthToNoUser(CliDat& cliDat)
 {
     cliDat.cd.ver = PROTO_VER;
-    _UcnetMsgNumGen(cliDat.cd.msgNumToWrite, YES, NO);
-    _UcnetMsgNumGen(cliDat.cd.msgNumToRead, YES, YES);
+    _MsgNumGen(cliDat.cd.msgNumToWrite, YES, NO);
+    _MsgNumGen(cliDat.cd.msgNumToRead, YES, YES);
 
     m_cliListLock.Lock();
 
@@ -707,7 +667,7 @@ dfa NT Srv::CliAuthToNoUser(CliDat& cliDat)
 }
 tpl<MsgType TMsg, typename TFn> dfa NT Srv::MsgCallbSet(TFn&& fn, GA ctx)
 {
-    m_msgCallbList[SI(TMsg)] = _UcnetMsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Srv::CliDat>(std::forward<TFn>(fn), ctx);
+    m_msgCallbList[SI(TMsg)] = _MsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Srv::CliDat>(std::forward<TFn>(fn), ctx);
 }
 dfa Srv::Srv()
 {
