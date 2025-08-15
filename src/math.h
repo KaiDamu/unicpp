@@ -1,5 +1,27 @@
 #pragma once
 
+dfa U8 MulU16(U8 a, U8 b, U8& hi)
+{
+#if defined(PROG_COMPILER_GCC)
+    cx AU r = U16(a) * U16(b);
+    hi = U8(r >> sizb(U8));
+    ret U8(r);
+#elif defined(PROG_COMPILER_MSVC)
+    ret _umul128(a, b, &hi);
+#else
+    cx AU aLo = U8(U4(a));
+    cx AU aHi = a >> sizb(U4);
+    cx AU bLo = U8(U4(b));
+    cx AU bHi = b >> sizb(U4);
+    cx AU p0 = aLo * bLo;
+    cx AU p1 = aLo * bHi;
+    cx AU p2 = aHi * bLo;
+    cx AU p3 = aHi * bHi;
+    cx AU mid = (p0 >> sizb(U4)) + (p1 & 0xFFFFFFFF) + (p2 & 0xFFFFFFFF);
+    hi = p3 + (p1 >> sizb(U4)) + (p2 >> sizb(U4)) + (mid >> sizb(U4));
+    ret (p0 & 0xFFFFFFFF) | (mid << sizb(U4));
+#endif
+}
 tpl<SI TI, typename T1> dfa cxex T1 ByteIVal(cx T1& val)
 {
     static_assert(IsTypeU<T1> || IsTypeS<T1>, "ByteIVal: T1 must be an integer type");
@@ -33,7 +55,10 @@ tpl1 dfa T1 Clamp(T1 val, T1 min, T1 max)
 }
 tpl1 dfa T1 Abs(T1 val)
 {
-    ret ((val < 0) ? -val : val);
+    ifcx (IsTypeU<T1>)
+        ret val;
+    ifcx (!IsTypeU<T1>)
+        ret ((val < 0) ? -val : val);
 }
 tpl0 dfa F4 Abs(F4 val)
 {

@@ -1,9 +1,13 @@
 #pragma once
 
-using TmUnix = U8; // time in unix format
-using TmLdap = U8; // time in ldap format
-using TmCpu = U8;  // time in cpu cycles
-using TmMain = F8; // time in milliseconds, since the start of the program
+using TmUnix = U8;  // time in unix format - seconds since 1970-01-01 00:00:00 UTC
+using TmLdap = U8;  // time in ldap format - 100-nanoseconds since 1601-01-01 00:00:00 UTC
+using TmCpu = U8;   // time in cpu cycles - number of cpu cycles since cpu start/boot
+using TmCpuMs = U8; // time in milliseconds, normalized from cpu cycles
+using TmMain = F8;  // time in milliseconds, since the start of the program
+
+// pre-defined:
+dfa NT ThdWait(TmMain ms);
 
 enum class TimeUnit : U1
 {
@@ -21,6 +25,8 @@ enum class TimeUnit : U1
 
 U8 g_timeMainOfs = 0;
 F8 g_timeMainDiv = 0.0;
+TmCpu g_cpuTscPerMs = 0;
+TmCpu g_cpuTscMsMul = 0;
 
 dfa TmUnix LdapToUnix(TmLdap ldap)
 {
@@ -103,6 +109,37 @@ dfa TmMain TimeMain()
 #else
     ret U8ToF8(U8(clock()) - g_timeMainOfs) / g_timeMainDiv;
 #endif
+}
+
+dfa NT _CpuTscMsInit()
+{
+    ifl (g_cpuTscMsMul != 0)
+        ret;
+
+    cx AU timeMainPre = TimeMain();
+    cx AU cpuTscPre = CpuTsc();
+    ThdWait(15);
+    cx AU timeMainPost = TimeMain();
+    cx AU cpuTscPost = CpuTsc();
+
+    cx AU timeMainDiff = timeMainPost - timeMainPre;
+    cx AU cpuTscDiff = cpuTscPost - cpuTscPre;
+
+    g_cpuTscPerMs = TmCpu(RoundToInt(TmMain(cpuTscDiff) / timeMainDiff));
+
+    cx AU devi = DiffWrap(TmCpu(0), g_cpuTscPerMs % 10000, TmCpu(10000));
+    if (devi < 100)
+        g_cpuTscPerMs = RoundToInt(F8(g_cpuTscPerMs) / 100.0) * 100;
+
+    g_cpuTscMsMul = ((TmCpu(1) << (sizb(TmCpu) - 1)) / g_cpuTscPerMs) << 1;
+}
+
+dfa TmCpuMs CpuTscMs()
+{
+    _CpuTscMsInit();
+    U8 r;
+    MulU16(CpuTsc(), g_cpuTscMsMul, r);
+    ret TmCpuMs(r);
 }
 
 #ifdef PROG_SYS_WIN

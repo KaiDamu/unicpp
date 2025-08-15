@@ -124,6 +124,11 @@ dfa F8 RandF8(F8 min, F8 max)
     ret g_randCtx.RandF8(min, max);
 }
 
+tpl1 dfa T1 RandMag()
+{
+    ret T1(F8(T1(1) << RandU4(0, sizb(T1) - 1)) * RandF8(0.5, 2.0));
+}
+
 dfa NT RandCrypt(GA buf, SI size)
 {
     // WARNING: currently not cryptographically secure, but difficult to predict and fast to generate

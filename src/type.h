@@ -11,6 +11,11 @@ using S8 = signed long long int;
 using F4 = float;
 using F8 = double;
 
+#ifdef PROG_COMPILER_GCC
+using U16 = unsigned __int128;
+using S16 = signed __int128;
+#endif
+
 using CS = char;
 using CH = wchar_t;
 using BO = bool;
@@ -58,6 +63,11 @@ static_assert(siz(S4) == 4, "\"S4\" type size is not 4 byte!");
 static_assert(siz(S8) == 8, "\"S8\" type size is not 8 byte!");
 static_assert(siz(F4) == 4, "\"F4\" type size is not 4 byte!");
 static_assert(siz(F8) == 8, "\"F8\" type size is not 8 byte!");
+
+#ifdef PROG_COMPILER_GCC
+static_assert(siz(U16) == 16, "\"U16\" type size is not 16 byte!");
+static_assert(siz(S16) == 16, "\"S16\" type size is not 16 byte!");
+#endif
 
 static_assert(siz(bool) == 1, "\"bool\" type size is not 1 byte! (assumed)");
 static_assert(siz(char) == 1, "\"char\" type size is not 1 byte! (assumed)");
