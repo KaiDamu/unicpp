@@ -269,7 +269,22 @@
     <ClInclude Include="src\fp25519.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ucnet.h">
+    <ClInclude Include="src\ucnetimpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ucnetcommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ucnetmsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ucnetcli.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ucnetsrv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ucnetcd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
