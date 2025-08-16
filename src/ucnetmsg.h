@@ -14,8 +14,10 @@ using TMsgType = U2;
 enum class MsgType : TMsgType
 {
     NONE = 0,           // no message type specified, also used for unhandled messages
-    ERR,                // error message, this is the main message type for errors
-    VER,                // establish protocol version and common state
+    SUC,                // success message, this is the main message type for explicit success
+    ERR,                // error message, this is the main message type for explicit errors
+    VER_REQ,            // establish protocol version and common state
+    VER_RES,            // .
     SYS_ERR_WRITE = 10, // internal error while writing a message
     SYS_ERR_READ,       // internal error while reading a message
     SYS_CLI_CONNECT,    // a new client connected to the server (raw connection established)
@@ -24,7 +26,8 @@ enum class MsgType : TMsgType
     SYS_SRV_DISCONNECT, // the server disconnected from the client (raw connection closed)
     DBG = 30,           // debug message for testing purposes
     PING,               // ping to check latency and keep the connection alive
-    ROOM_PRESENCE,      // join or leave a room, or list them
+    ROOM_PRESENCE_REQ,  // join or leave a room, or list them
+    ROOM_PRESENCE_RES,  // .
     ROOM_CFG,           // create or update room configuration
     ROOM_MSG,           // operations on a room's message, like sending a message to a room
     CNT,                // not a valid message type, used for counting the number of message types
@@ -33,13 +36,21 @@ enum class MsgType : TMsgType
 struct MsgDatAny
 {
     dfa virtual MsgType Type() cx = 0;
-    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx
+    dfa virtual ER Trans(Serial::TransIo& io)
     {
         rets;
     }
-    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end)
+    dfa ER WriteTo(std::vector<U1>& buf, SI& curI) cx
     {
-        rets;
+        AU tuple = std::tie(buf, curI);
+        AU io = Serial::TransIo(&tuple);
+        ret const_cast<MsgDatAny*>(tx)->Trans(io);
+    }
+    dfa ER ReadFrom(cx U1* cur, cx U1* end)
+    {
+        AU tuple = std::tie(cur, end);
+        AU io = Serial::TransIo(&tuple);
+        ret tx->Trans(io);
     }
     dfa virtual ~MsgDatAny() = default;
 };
@@ -51,35 +62,40 @@ tpl<MsgType T> struct _MsgDatAnyT : MsgDatAny
     }
 };
 
-struct MsgDatVer : _MsgDatAnyT<MsgType::VER>
+struct MsgDatSuc : _MsgDatAnyT<MsgType::SUC>
+{
+};
+struct MsgDatErr : _MsgDatAnyT<MsgType::ERR>
+{
+};
+struct MsgDatVerReq : _MsgDatAnyT<MsgType::VER_REQ>
 {
     static cxex U4 CX = 0x1B204B73;
 
-    BO isReq;
     U4 verCx;
     TProtoVer verMin;
     TProtoVer verMax;
+
+    dfa ER Trans(Serial::TransIo& io) override final
+    {
+        ifep(Serial::Trans(io, verCx, verMin, verMax));
+        rets;
+    }
+};
+struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES>
+{
+    static cxex U4 CX = 0x734B201B;
+
+    U4 verCx;
+    TProtoVer ver;
     TMsgNum msgNumToWrite;
     TMsgNum msgNumToRead;
     TSessionId sessionId;
     std::string userName;
 
-    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx override
+    dfa ER Trans(Serial::TransIo& io) override final
     {
-        ifep(Serial::Write(buf, curI, isReq, verCx, verMin));
-        if (isReq)
-            ifep(Serial::Write(buf, curI, verMax));
-        else
-            ifep(Serial::Write(buf, curI, msgNumToWrite, msgNumToRead, sessionId, userName));
-        rets;
-    }
-    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end) override
-    {
-        ifep(Serial::Read(cur, end, isReq, verCx, verMin));
-        if (isReq)
-            ifep(Serial::Read(cur, end, verMax));
-        else
-            ifep(Serial::Read(cur, end, msgNumToWrite, msgNumToRead, sessionId, userName));
+        ifep(Serial::Trans(io, verCx, ver, msgNumToWrite, msgNumToRead, sessionId, userName));
         rets;
     }
 };
@@ -105,14 +121,9 @@ struct MsgDatDbg : _MsgDatAnyT<MsgType::DBG>
 {
     std::string text;
 
-    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx override
+    dfa ER Trans(Serial::TransIo& io) override final
     {
-        ifep(Serial::Write(buf, curI, text));
-        rets;
-    }
-    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end) override
-    {
-        ifep(Serial::Read(cur, end, text));
+        ifep(Serial::Trans(io, text));
         rets;
     }
 };
@@ -120,19 +131,41 @@ struct MsgDatPing : _MsgDatAnyT<MsgType::PING>
 {
     TmMain time;
 
-    dfa virtual ER WriteTo(std::vector<U1>& buf, SI& curI) cx override
+    dfa ER Trans(Serial::TransIo& io) override final
     {
-        ifep(Serial::Write(buf, curI, time));
-        rets;
-    }
-    dfa virtual ER ReadFrom(cx U1* cur, cx U1* end) override
-    {
-        ifep(Serial::Read(cur, end, time));
+        ifep(Serial::Trans(io, time));
         rets;
     }
 };
-struct MsgDatRoomPresence : _MsgDatAnyT<MsgType::ROOM_PRESENCE>
+struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ>
 {
+    enum class Act : U1
+    {
+        LIST = 1, // list all visible rooms
+        JOIN,     // join a room
+        LEAVE,    // leave the room
+    };
+
+    Act act;
+    std::string name;
+    Sha512Hash pwHash;
+};
+struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES>
+{
+    enum class Act : U1
+    {
+        LIST = 1, // list all visible rooms
+    };
+
+    struct ListElem
+    {
+        std::string name;
+        SI cliCnt;
+        SI cliCntMax;
+    };
+
+    Act act;
+    std::vector<ListElem> roomList;
 };
 struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG>
 {
@@ -150,7 +183,11 @@ tpl<MsgType> struct MsgTypeMap;
         };
 
 _MsgTypeMapDef(NONE, MsgDatAny);
-_MsgTypeMapDef(VER, MsgDatVer);
+_MsgTypeMapDef(SUC, MsgDatSuc);
+_MsgTypeMapDef(ERR, MsgDatErr);
+_MsgTypeMapDef(VER_REQ, MsgDatVerReq);
+_MsgTypeMapDef(VER_RES, MsgDatVerRes);
+_MsgTypeMapDef(SYS_ERR_WRITE, MsgDatSysErrWrite);
 _MsgTypeMapDef(SYS_ERR_READ, MsgDatSysErrRead);
 _MsgTypeMapDef(SYS_CLI_CONNECT, MsgDatSysCliConnect);
 _MsgTypeMapDef(SYS_CLI_DISCONNECT, MsgDatSysCliDisconnect);
@@ -158,6 +195,10 @@ _MsgTypeMapDef(SYS_SRV_CONNECT, MsgDatSysSrvConnect);
 _MsgTypeMapDef(SYS_SRV_DISCONNECT, MsgDatSysSrvDisconnect);
 _MsgTypeMapDef(DBG, MsgDatDbg);
 _MsgTypeMapDef(PING, MsgDatPing);
+_MsgTypeMapDef(ROOM_PRESENCE_REQ, MsgDatRoomPresenceReq);
+_MsgTypeMapDef(ROOM_PRESENCE_RES, MsgDatRoomPresenceRes);
+_MsgTypeMapDef(ROOM_CFG, MsgDatRoomCfg);
+_MsgTypeMapDef(ROOM_MSG, MsgDatRoomMsg);
 
 // return ERR_YES to disconnect
 tpl1 using BaseMsgCallbFnT = std::function<ER(T1& cli, cx MsgDatAny& msgDat, GA ctx)>;
@@ -173,5 +214,28 @@ tpl1 struct BaseMsgCallbDat
 };
 
 } // namespace Ucnet
+
+namespace Serial
+{
+
+tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, std::vector<Ucnet::MsgDatRoomPresenceRes::ListElem>& val)
+{
+    ZzVarint elemCnt;
+    ifep(Serial::Read(cur, end, elemCnt));
+    val.clear();
+    val.resize(elemCnt.val);
+    for (AU& room : val)
+        ifep(Serial::Read(cur, end, room.name, room.cliCnt, room.cliCntMax));
+    rets;
+}
+tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::vector<Ucnet::MsgDatRoomPresenceRes::ListElem>& val)
+{
+    ifep(Serial::Write(buf, curI, ZzVarint(val.size())));
+    for (cx AU& elem : val)
+        ifep(Serial::Write(buf, curI, elem.name, elem.cliCnt, elem.cliCntMax));
+    rets;
+}
+
+} // namespace Serial
 
 #endif

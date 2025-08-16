@@ -58,6 +58,45 @@ tpl<typename... TArgs> dfa ER Write(std::vector<U1>& buf, SI& curI, cx TArgs&...
     ret _WriteAll(buf, curI, args...);
 }
 
+struct TransIo
+{
+    BO isWrite;
+    std::tuple<cx U1*&, cx U1*&>* read;
+    std::tuple<std::vector<U1>&, SI&>* write;
+
+    dfa TransIo()
+    {
+    }
+    dfa TransIo(std::tuple<cx U1*&, cx U1*&>* read) : isWrite(NO), read(read), write(NUL)
+    {
+    }
+    dfa TransIo(std::tuple<std::vector<U1>&, SI&>* write) : isWrite(YES), read(NUL), write(write)
+    {
+    }
+};
+
+tpl<typename T1, typename... TArgs> dfa ER Trans(T1&, TArgs&...)
+{
+    static_assert(NO, "Serial::Trans could not deduce the action");
+    rete(ErrVal::NA);
+}
+tpl<typename... TArgs> dfa ER Trans(std::tuple<cx U1*&, cx U1*&>& io, TArgs&... args)
+{
+    AU& cur = std::get<0>(io);
+    AU end = std::get<1>(io);
+    ret Read(cur, end, args...);
+}
+tpl<typename... TArgs> dfa ER Trans(std::tuple<std::vector<U1>&, SI&>& io, TArgs&... args)
+{
+    AU& buf = std::get<0>(io);
+    AU& curI = std::get<1>(io);
+    ret Write(buf, curI, args...);
+}
+tpl<typename... TArgs> dfa ER Trans(TransIo& io, TArgs&... args)
+{
+    ret (io.isWrite ? Trans(*io.write, args...) : Trans(*io.read, args...));
+}
+
 } // namespace Serial
 
 namespace Serial
@@ -74,12 +113,27 @@ tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, std::string& val)
     cur += strLen;
     rets;
 }
+tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, ZzVarint& val)
+{
+    SI readSize;
+    ifep(VarintDecode(val.val, readSize, cur, end));
+    cur += readSize;
+    val.val = ZigzagDecode(val.val);
+    rets;
+}
+
 tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::string& val)
 {
     Req(buf, curI + VarintSizeMax<SI>() + SI(val.size()));
     curI += VarintEncode(&buf[curI], SI(val.size()));
     MemCpy(&buf[curI], val.data(), val.size());
     curI += val.size();
+    rets;
+}
+tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx ZzVarint& val)
+{
+    Req(buf, curI + VarintSizeMax<TO(val.val)>());
+    curI += VarintEncode(&buf[curI], ZigzagEncode(val.val));
     rets;
 }
 

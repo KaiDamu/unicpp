@@ -6,7 +6,7 @@ namespace Ucnet
 {
 
 using TProtoVer = U2;
-cxex TProtoVer PROTO_VER = 3;
+cxex TProtoVer PROTO_VER = 4;
 
 using TErrType = U2;
 enum class ErrType : TErrType

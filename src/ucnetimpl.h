@@ -163,7 +163,8 @@ dfa ER Cd::MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock)
         rete(ErrVal::NET_MSG_NO_VALID);
     using TMsgDatFactory = std::unordered_map<MsgType, std::function<std::unique_ptr<MsgDatAny>()>>;
     static cx TMsgDatFactory s_msgDatFactory = {
-        {MsgType::VER, []() { ret std::make_unique<MsgDatVer>(); }},
+        {MsgType::VER_REQ, []() { ret std::make_unique<MsgDatVerReq>(); }},
+        {MsgType::VER_RES, []() { ret std::make_unique<MsgDatVerRes>(); }},
         {MsgType::DBG, []() { ret std::make_unique<MsgDatDbg>(); }},
         {MsgType::PING, []() { ret std::make_unique<MsgDatPing>(); }},
     };
@@ -193,21 +194,21 @@ dfa ER Cli::_DefaMsgCallbSet()
         ConWriteErr("[Server] Unhandled message [type = %u]", TMsgType(msg.Type()));
         rets; // NOTE: as the client, we try to silently ignore unhandled messages
     });
-    tx->MsgCallbSet<MsgType::VER>([](Cli& cli, cx MsgDatVer& msg, GA ctx) {
-        ifu (msg.isReq || (msg.verCx != MsgDatVer::CX))
+    tx->MsgCallbSet<MsgType::VER_RES>([](Cli& cli, cx MsgDatVerRes& msg, GA ctx) {
+        ifu (msg.verCx != MsgDatVerRes::CX)
         {
-            ConWriteErr("[Server] Invalid version message [isReq = %u, verCx = 0x%08X]", msg.isReq, msg.verCx);
+            ConWriteErr("[Server] Invalid version message [verCx = 0x%08X]", msg.verCx);
             rete(ErrVal::NET_MSG_NO_VALID);
         }
-        ifu (msg.verMin != PROTO_VER)
+        ifu (msg.ver != PROTO_VER)
         {
-            ConWriteErr("[Server] Protocol version not supported [verMin = %u, PROTO_VER = %u]", msg.verMin, PROTO_VER);
+            ConWriteErr("[Server] Protocol version not supported [ver = %u, PROTO_VER = %u]", msg.ver, PROTO_VER);
             rete(ErrVal::NET_MSG_NO_VALID);
         }
 
         cli._AuthToNoUser(msg);
 
-        ConWriteInfo("[Server] Using UcNet-v.%u", msg.verMin);
+        ConWriteInfo("[Server] Using UcNet-v.%u", msg.ver);
         rets;
     });
     tx->MsgCallbSet<MsgType::SYS_SRV_CONNECT>([](Cli& cli, cx MsgDatSysSrvConnect& msg, GA ctx) {
@@ -271,9 +272,9 @@ dfa ER Cli::_CallMsgCallbFn(cx MsgDatAny& msgDat)
     ConWriteDbg("[Cli::_CallMsgCallbFn] ignoring received MsgType=%d without callback function", SI(msgDat.Type()));
     rets;
 }
-dfa NT Cli::_AuthToNoUser(cx MsgDatVer& msgDat)
+dfa NT Cli::_AuthToNoUser(cx MsgDatVerRes& msgDat)
 {
-    m_cd.ver = msgDat.verMin;
+    m_cd.ver = msgDat.ver;
     m_cd.msgNumToWrite = msgDat.msgNumToWrite;
     m_cd.msgNumToRead = msgDat.msgNumToRead;
     m_cd.sessionId = msgDat.sessionId;
@@ -425,10 +426,10 @@ dfa ER Srv::_DefaMsgCallbSet()
         ConWriteErr("[%s] Unhandled message [type = %u]", cli.adr.ToStr().c_str(), TMsgType(msg.Type()));
         rete(ErrVal::NET_MSG_NO_VALID); // NOTE: since this is the default callback, we return an error directly
     });
-    tx->MsgCallbSet<MsgType::VER>([](CliDat& cli, cx MsgDatVer& msg, GA ctx) {
-        ifu (!msg.isReq || (msg.verCx != MsgDatVer::CX))
+    tx->MsgCallbSet<MsgType::VER_REQ>([](CliDat& cli, cx MsgDatVerReq& msg, GA ctx) {
+        ifu (msg.verCx != MsgDatVerReq::CX)
         {
-            ConWriteErr("[%s] Invalid version message [isReq = %u, verCx = 0x%08X]", cli.adr.ToStr().c_str(), msg.isReq, msg.verCx);
+            ConWriteErr("[%s] Invalid version message [verCx = 0x%08X]", cli.adr.ToStr().c_str(), msg.verCx);
             rete(ErrVal::NET_MSG_NO_VALID);
         }
         ifu (!IsBetween(PROTO_VER, msg.verMin, msg.verMax))
@@ -446,10 +447,9 @@ dfa ER Srv::_DefaMsgCallbSet()
         cli.srv->CliAuthToNoUser(cli);
         cx AU msgNumToWriteNew = cli.cd.msgNumToWrite;
 
-        MsgDatVer msgVer;
-        msgVer.isReq = NO;
-        msgVer.verCx = MsgDatVer::CX;
-        msgVer.verMin = PROTO_VER;
+        MsgDatVerRes msgVer;
+        msgVer.verCx = MsgDatVerRes::CX;
+        msgVer.ver = PROTO_VER;
         msgVer.msgNumToWrite = cli.cd.msgNumToRead;
         msgVer.msgNumToRead = cli.cd.msgNumToWrite;
         msgVer.sessionId = cli.cd.sessionId;
@@ -459,7 +459,7 @@ dfa ER Srv::_DefaMsgCallbSet()
         cli.MsgWrite(msgVer);
         cli.cd.msgNumToWrite = msgNumToWriteNew;
 
-        ConWriteInfo("[%s] Version established [VER = %u, SID = %016llX, userName = \"%s\"]", cli.adr.ToStr().c_str(), msgVer.verMin, msgVer.sessionId, msgVer.userName.c_str());
+        ConWriteInfo("[%s] Version established [ver = %u, SID = %016llX, userName = \"%s\"]", cli.adr.ToStr().c_str(), msgVer.ver, msgVer.sessionId, msgVer.userName.c_str());
         rets;
     });
     tx->MsgCallbSet<MsgType::SYS_CLI_CONNECT>([](CliDat& cli, cx MsgDatSysCliConnect& msg, GA ctx) {
@@ -496,7 +496,7 @@ dfa ER Srv::_PostReadPreMsgCallbProc(CliDat& cliDat, MsgDatAny* msgDat)
         if (cliDat.priviLv == PriviLv::NONE)
             rete(ErrVal::NET_MSG_NO_PRIVI);
         cx AU msgType = msgDat->Type();
-        if (msgType != MsgType::VER)
+        if (msgType != MsgType::VER_REQ)
             rete(ErrVal::NET_MSG_NO_PRIVI);
     }
     rets;

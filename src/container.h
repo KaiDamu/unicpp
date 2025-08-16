@@ -551,3 +551,13 @@ tpl<SI TSize, SI TAlign = alignof(U8)> struct memalign(TAlign) DatBlockSecure : 
         tx->Clr();
     }
 };
+
+// a varint which is serialized using zigzag encoding
+struct ZzVarint
+{
+    S8 val;
+
+    dfa ZzVarint(S8 val = 0) noex : val(val)
+    {
+    }
+};

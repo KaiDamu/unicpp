@@ -28,7 +28,7 @@ class Cli
     dfa ER _Write(cx MsgDatAny& msgDat);
     dfa ER _Read(std::unique_ptr<MsgDatAny>& msgDat);
     dfa ER _CallMsgCallbFn(cx MsgDatAny& msgDat);
-    dfa NT _AuthToNoUser(cx MsgDatVer& msgDat);
+    dfa NT _AuthToNoUser(cx MsgDatVerRes& msgDat);
 
   public:
     dfa BO IsInit() cx;
