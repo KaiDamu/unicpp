@@ -20,7 +20,7 @@ class Srv
         Sec::SrvAuthMode srvAuthMode;
         PriviLv priviLv;
 
-        dfa NT MsgWrite(cx MsgDatAny& msgDat);
+        dfa NT MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
         dfa NT Init(Srv* srv, SockTcp& sock, cx NetAdrV4& adr);
         dfa CliDat();
     };
@@ -67,7 +67,7 @@ class Srv
     dfa ER Close();
     dfa ER Accept();
     dfa ER Release(CliDat*& cliDat);
-    dfa NT MsgWrite(CliDat& cliDat, cx MsgDatAny& msgDat);
+    dfa TMsgNum MsgWrite(CliDat& cliDat, cx MsgDatAny& msgDat, EvtFast* evt = NUL);
     dfa NT CliAuthToNoUser(CliDat& cliDat);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbSet(TFn&& fn, GA ctx = NUL);
 

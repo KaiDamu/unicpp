@@ -10,6 +10,11 @@ cxex SI MSG_SIZE_MAX = 4 * BYTE_IN_MB;
 using TMsgSize = U4;
 using TMsgNum = U4;
 
+struct MsgPend
+{
+    EvtFast* evt;
+};
+
 using TMsgType = U2;
 enum class MsgType : TMsgType
 {
@@ -35,11 +40,15 @@ enum class MsgType : TMsgType
 
 struct MsgDatAny
 {
+    TMsgNum msgNum = 0; // NOTE: initialized here for simplicity
+
     dfa virtual MsgType Type() cx = 0;
+    dfa virtual BO IsPend() cx = 0;
     dfa virtual ER Trans(Serial::TransIo& io)
     {
         rets;
     }
+
     dfa ER WriteTo(std::vector<U1>& buf, SI& curI) cx
     {
         AU tuple = std::tie(buf, curI);
@@ -52,23 +61,28 @@ struct MsgDatAny
         AU io = Serial::TransIo(&tuple);
         ret tx->Trans(io);
     }
+
     dfa virtual ~MsgDatAny() = default;
 };
-tpl<MsgType T> struct _MsgDatAnyT : MsgDatAny
+tpl<MsgType TType, BO TIsPend> struct _MsgDatAnyT : MsgDatAny
 {
     dfa MsgType Type() cx override final
     {
-        ret T;
+        ret TType;
+    }
+    dfa BO IsPend() cx override final
+    {
+        ret TIsPend;
     }
 };
 
-struct MsgDatSuc : _MsgDatAnyT<MsgType::SUC>
+struct MsgDatSuc : _MsgDatAnyT<MsgType::SUC, NO>
 {
 };
-struct MsgDatErr : _MsgDatAnyT<MsgType::ERR>
+struct MsgDatErr : _MsgDatAnyT<MsgType::ERR, NO>
 {
 };
-struct MsgDatVerReq : _MsgDatAnyT<MsgType::VER_REQ>
+struct MsgDatVerReq : _MsgDatAnyT<MsgType::VER_REQ, YES>
 {
     static cxex U4 CX = 0x1B204B73;
 
@@ -82,7 +96,7 @@ struct MsgDatVerReq : _MsgDatAnyT<MsgType::VER_REQ>
         rets;
     }
 };
-struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES>
+struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES, NO>
 {
     static cxex U4 CX = 0x734B201B;
 
@@ -99,25 +113,25 @@ struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES>
         rets;
     }
 };
-struct MsgDatSysErrWrite : _MsgDatAnyT<MsgType::SYS_ERR_WRITE>
+struct MsgDatSysErrWrite : _MsgDatAnyT<MsgType::SYS_ERR_WRITE, NO>
 {
 };
-struct MsgDatSysErrRead : _MsgDatAnyT<MsgType::SYS_ERR_READ>
+struct MsgDatSysErrRead : _MsgDatAnyT<MsgType::SYS_ERR_READ, NO>
 {
 };
-struct MsgDatSysCliConnect : _MsgDatAnyT<MsgType::SYS_CLI_CONNECT>
+struct MsgDatSysCliConnect : _MsgDatAnyT<MsgType::SYS_CLI_CONNECT, NO>
 {
 };
-struct MsgDatSysCliDisconnect : _MsgDatAnyT<MsgType::SYS_CLI_DISCONNECT>
+struct MsgDatSysCliDisconnect : _MsgDatAnyT<MsgType::SYS_CLI_DISCONNECT, NO>
 {
 };
-struct MsgDatSysSrvConnect : _MsgDatAnyT<MsgType::SYS_SRV_CONNECT>
+struct MsgDatSysSrvConnect : _MsgDatAnyT<MsgType::SYS_SRV_CONNECT, NO>
 {
 };
-struct MsgDatSysSrvDisconnect : _MsgDatAnyT<MsgType::SYS_SRV_DISCONNECT>
+struct MsgDatSysSrvDisconnect : _MsgDatAnyT<MsgType::SYS_SRV_DISCONNECT, NO>
 {
 };
-struct MsgDatDbg : _MsgDatAnyT<MsgType::DBG>
+struct MsgDatDbg : _MsgDatAnyT<MsgType::DBG, NO>
 {
     std::string text;
 
@@ -127,7 +141,7 @@ struct MsgDatDbg : _MsgDatAnyT<MsgType::DBG>
         rets;
     }
 };
-struct MsgDatPing : _MsgDatAnyT<MsgType::PING>
+struct MsgDatPing : _MsgDatAnyT<MsgType::PING, NO>
 {
     TmMain time;
 
@@ -137,7 +151,7 @@ struct MsgDatPing : _MsgDatAnyT<MsgType::PING>
         rets;
     }
 };
-struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ>
+struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ, YES>
 {
     enum class Act : U1
     {
@@ -150,7 +164,7 @@ struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ>
     std::string name;
     Sha512Hash pwHash;
 };
-struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES>
+struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES, NO>
 {
     enum class Act : U1
     {
@@ -167,10 +181,10 @@ struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES>
     Act act;
     std::vector<ListElem> roomList;
 };
-struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG>
+struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG, YES>
 {
 };
-struct MsgDatRoomMsg : _MsgDatAnyT<MsgType::ROOM_MSG>
+struct MsgDatRoomMsg : _MsgDatAnyT<MsgType::ROOM_MSG, YES>
 {
 };
 

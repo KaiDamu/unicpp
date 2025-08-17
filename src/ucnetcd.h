@@ -10,6 +10,8 @@ struct Cd
 {
     std::vector<U1> tmpBufWrite;
     std::vector<U1> tmpBufRead;
+    std::unordered_map<TMsgNum, MsgPend> msgPendList;
+    ThdLockFast msgPendListLock;
     TProtoVer ver;
     TMsgNum msgNumToWrite;
     TMsgNum msgNumToRead;
@@ -20,7 +22,7 @@ struct Cd
 
     dfa NT Clr(BO isCli);
     dfa NT HdrSizeUpd();
-    dfa ER MsgWrite(cx SockTcp& sock, cx MsgDatAny& msgDat);
+    dfa ER MsgWrite(TMsgNum& msgNum, cx SockTcp& sock, cx MsgDatAny& msgDat, EvtFast* evt);
     dfa ER MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock);
     dfa Cd();
 };

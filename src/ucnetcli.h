@@ -25,7 +25,6 @@ class Cli
 
   public:
     dfa Cd& _Cd();
-    dfa ER _Write(cx MsgDatAny& msgDat);
     dfa ER _Read(std::unique_ptr<MsgDatAny>& msgDat);
     dfa ER _CallMsgCallbFn(cx MsgDatAny& msgDat);
     dfa NT _AuthToNoUser(cx MsgDatVerRes& msgDat);
@@ -39,6 +38,8 @@ class Cli
     dfa ER Disconnect();
     dfa ER Init();
     dfa ER Free();
+    dfa TMsgNum MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
+    dfa NT MsgResWait(TMsgNum msgNum);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbSet(TFn&& fn, GA ctx = NUL);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbExSet(TFn&& fn, GA ctx = NUL);
 

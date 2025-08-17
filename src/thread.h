@@ -86,6 +86,22 @@ dfa HD ThdIdByHdl(HD hdl)
     ret info.ClientId.UniqueThread;
 }
 
+tpl<SI TBound1 = 64, SI TBound2 = 4000> dfa NT ThdYield(SI spinCntCur)
+{
+    if (spinCntCur < TBound1)
+    {
+        YieldProcessor();
+    }
+    else if (spinCntCur < TBound2)
+    {
+        NtYieldExecution_();
+    }
+    else
+    {
+        LARGE_INTEGER_ tmp(0);
+        NtDelayExecution_(NO, &tmp);
+    }
+}
 dfa NT ThdWait(TmMain ms)
 {
     ifu (ms <= TmMain(0))

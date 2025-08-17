@@ -97,6 +97,12 @@ dfa NT Cd::Clr(BO isCli)
 {
     tmpBufWrite.clear();
     tmpBufRead.clear();
+    msgPendListLock.Lock();
+    for (cx AU& elem : msgPendList)
+        if (elem.second.evt != NUL)
+            elem.second.evt->Set(YES);
+    msgPendList.clear();
+    msgPendListLock.Unlock();
     ver = TProtoVer(0);
     _MsgNumGen(msgNumToWrite, NO, isCli);
     _MsgNumGen(msgNumToRead, NO, !isCli);
@@ -109,21 +115,34 @@ dfa NT Cd::HdrSizeUpd()
 {
     hdrSize = siz(TMsgNum);
 }
-dfa ER Cd::MsgWrite(cx SockTcp& sock, cx MsgDatAny& msgDat)
+dfa ER Cd::MsgWrite(TMsgNum& msgNum, cx SockTcp& sock, cx MsgDatAny& msgDat, EvtFast* evt)
 {
+    msgNum = TMsgNum(0);
+
     cx AU msgType = msgDat.Type();
+    cx AU msgIsPend = msgDat.IsPend();
 
     tmpBufWrite.clear();
     SI curI = 0;
     ifep(msgDat.WriteTo(tmpBufWrite, curI));
     tmpBufWrite.resize(curI);
 
+    cx AU msgNumToWriteOverride = ((msgDat.msgNum == 0) ? msgNumToWrite : msgDat.msgNum);
+
+    if (msgIsPend)
+    {
+        msgPendListLock.Lock();
+        AU& msgPend = msgPendList[msgNumToWriteOverride]; // insert the message into the pending list
+        msgPend.evt = evt;
+        msgPendListLock.Unlock();
+    }
+
     TMsgSize msgSize = 0;
 
     std::array<std::span<cx U1>, 4> bufList;
     bufList[0] = std::span<cx U1>((U1*)&msgSize, siz(msgSize));
     bufList[1] = std::span<cx U1>((U1*)&msgType, siz(msgType));
-    bufList[2] = std::span<cx U1>((U1*)&msgNumToWrite, siz(msgNumToWrite));
+    bufList[2] = std::span<cx U1>((U1*)&msgNumToWriteOverride, siz(msgNumToWriteOverride));
     bufList[3] = tmpBufWrite;
 
     for (cx AU& buf : bufList)
@@ -131,7 +150,9 @@ dfa ER Cd::MsgWrite(cx SockTcp& sock, cx MsgDatAny& msgDat)
 
     ifep(sock.Write(bufList));
 
-    ++msgNumToWrite;
+    if (msgNumToWrite == msgNumToWriteOverride)
+        ++msgNumToWrite;
+    msgNum = msgNumToWriteOverride;
     rets;
 }
 dfa ER Cd::MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock)
@@ -151,16 +172,33 @@ dfa ER Cd::MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock)
     }
     ifu (SI(tmpBufRead.size()) < siz(MsgType) + hdrSize)
     {
-        ConWriteDbg("[_MsgRead] buffer size too small");
+        ConWriteDbg("[MsgRead] buffer size too small");
         rete(ErrVal::NET_MSG_NO_VALID);
     }
+
     MsgType msgType;
     TMsgNum msgNum;
     AU bufCur = (cx U1*)tmpBufRead.data();
     MemCpyUpdCurSrc(&msgType, bufCur, siz(msgType));
     MemCpyUpdCurSrc(&msgNum, bufCur, siz(msgNum));
-    ifu (msgNum != msgNumToRead)
-        rete(ErrVal::NET_MSG_NO_VALID);
+
+    BO doIncMsgNumToRead = YES;
+    if (msgNum != msgNumToRead)
+    {
+        cx AU& it = msgPendList.find(msgNum);
+        ifu (it == msgPendList.end())
+        {
+            ConWriteDbg("[MsgRead] msgNum=%d not found in msgPendList (msgNumToRead=%d)", SI(msgNum), SI(msgNumToRead));
+            rete(ErrVal::NET_MSG_NO_VALID);
+        }
+        doIncMsgNumToRead = NO;
+        msgPendListLock.Lock();
+        if (it->second.evt != NUL)
+            it->second.evt->Set(YES);
+        msgPendList.erase(it);
+        msgPendListLock.Unlock();
+    }
+
     using TMsgDatFactory = std::unordered_map<MsgType, std::function<std::unique_ptr<MsgDatAny>()>>;
     static cx TMsgDatFactory s_msgDatFactory = {
         {MsgType::VER_REQ, []() { ret std::make_unique<MsgDatVerReq>(); }},
@@ -171,16 +209,20 @@ dfa ER Cd::MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock)
     cx AU msgKeyVal = s_msgDatFactory.find(msgType);
     ifu (msgKeyVal == s_msgDatFactory.end())
     {
-        ConWriteDbg("[_MsgRead] s_msgDatFactory does not contain MsgType=%d", SI(msgType));
+        ConWriteDbg("[MsgRead] s_msgDatFactory does not contain MsgType=%d", SI(msgType));
         rete(ErrVal::NET_MSG_NO_VALID);
     }
+
     msgDat = msgKeyVal->second();
+    msgDat->msgNum = msgNum;
     ife (msgDat->ReadFrom(bufCur, bufCur + SI(SI(tmpBufRead.size()) - (bufCur - tmpBufRead.data()))))
     {
-        ConWriteDbg("[_MsgRead] ReadFrom error");
+        ConWriteDbg("[MsgRead] ReadFrom error");
         retep;
     }
-    ++msgNumToRead;
+
+    if (doIncMsgNumToRead)
+        ++msgNumToRead;
     rets;
 }
 dfa Cd::Cd()
@@ -234,10 +276,6 @@ dfa ER Cli::_DefaMsgCallbSet()
 dfa Cd& Cli::_Cd()
 {
     ret m_cd;
-}
-dfa ER Cli::_Write(cx MsgDatAny& msgDat)
-{
-    ret m_cd.MsgWrite(m_sock, msgDat);
 }
 dfa ER Cli::_Read(std::unique_ptr<MsgDatAny>& msgDat)
 {
@@ -357,6 +395,49 @@ dfa ER Cli::Free()
     }
     rets;
 }
+dfa TMsgNum Cli::MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt)
+{
+    TMsgNum msgNum;
+    ife (m_cd.MsgWrite(msgNum, m_sock, msgDat, evt))
+    {
+        if (evt != NUL)
+            evt->Set(YES);
+
+        cx AU msgDatErr = std::make_unique<MsgDatSysErrWrite>();
+        ife (tx->_CallMsgCallbFn(*msgDatErr.get()))
+            m_cd.doDisconnect = YES;
+    }
+    ret msgNum;
+}
+dfa NT Cli::MsgResWait(TMsgNum msgNum)
+{
+    m_cd.msgPendListLock.Lock();
+    cx AU& it = m_cd.msgPendList.find(msgNum);
+    if (it == m_cd.msgPendList.end())
+    {
+        m_cd.msgPendListLock.Unlock();
+        ret;
+    }
+    cx AU evt = it->second.evt;
+    m_cd.msgPendListLock.Unlock();
+    if (evt != NUL)
+    {
+        evt->Wait();
+        ret;
+    }
+    SI spinCnt = 0;
+    while (YES)
+    {
+        m_cd.msgPendListLock.Lock();
+        ifu (m_cd.msgPendList.find(msgNum) == m_cd.msgPendList.end())
+        {
+            m_cd.msgPendListLock.Unlock();
+            ret;
+        }
+        m_cd.msgPendListLock.Unlock();
+        ThdYield<20, 1000>(spinCnt++);
+    }
+}
 tpl<MsgType TMsg, typename TFn> dfa NT Cli::MsgCallbSet(TFn&& fn, GA ctx)
 {
     m_msgCallbList[SI(TMsg)] = _MsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, Cli>(std::forward<TFn>(fn), ctx);
@@ -375,9 +456,9 @@ dfa Cli::~Cli()
     tx->Disconnect();
 }
 
-dfa NT Srv::CliDat::MsgWrite(cx MsgDatAny& msgDat)
+dfa NT Srv::CliDat::MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt)
 {
-    tx->srv->MsgWrite(*tx, msgDat);
+    tx->srv->MsgWrite(*tx, msgDat, evt);
 }
 dfa NT Srv::CliDat::Init(Srv* srv, SockTcp& sock, cx NetAdrV4& adr)
 {
@@ -448,6 +529,7 @@ dfa ER Srv::_DefaMsgCallbSet()
         cx AU msgNumToWriteNew = cli.cd.msgNumToWrite;
 
         MsgDatVerRes msgVer;
+        msgVer.msgNum = msg.msgNum;
         msgVer.verCx = MsgDatVerRes::CX;
         msgVer.ver = PROTO_VER;
         msgVer.msgNumToWrite = cli.cd.msgNumToRead;
@@ -473,7 +555,8 @@ dfa ER Srv::_DefaMsgCallbSet()
     tx->MsgCallbSet<MsgType::DBG>([](CliDat& cli, cx MsgDatDbg& msg, GA ctx) {
         ConWriteInfo("[%s] Debug message [text = \"%s\"]", cli.adr.ToStr().c_str(), msg.text.c_str());
 
-        MsgDatDbg msgDbg = msg;
+        MsgDatDbg msgDbg;
+        msgDbg.text = msg.text;
         cli.MsgWrite(msgDbg);
 
         rets;
@@ -481,7 +564,8 @@ dfa ER Srv::_DefaMsgCallbSet()
     tx->MsgCallbSet<MsgType::PING>([](CliDat& cli, cx MsgDatPing& msg, GA ctx) {
         ConWriteInfo("[%s] Ping [time = %.2f]", cli.adr.ToStr().c_str(), msg.time);
 
-        MsgDatPing msgPing = msg;
+        MsgDatPing msgPing;
+        msgPing.time = msg.time;
         cli.MsgWrite(msgPing);
 
         rets;
@@ -627,14 +711,19 @@ dfa ER Srv::Release(CliDat*& cliDat)
     cliDat = NUL;
     rets;
 }
-dfa NT Srv::MsgWrite(CliDat& cliDat, cx MsgDatAny& msgDat)
+dfa TMsgNum Srv::MsgWrite(CliDat& cliDat, cx MsgDatAny& msgDat, EvtFast* evt)
 {
-    ife (cliDat.cd.MsgWrite(cliDat.sock, msgDat))
+    TMsgNum msgNum;
+    ife (cliDat.cd.MsgWrite(msgNum, cliDat.sock, msgDat, evt))
     {
-        cx AU msgDat = std::make_unique<MsgDatSysErrWrite>();
-        ife (tx->_CallMsgCallbFn(cliDat, *msgDat.get()))
+        if (evt != NUL)
+            evt->Set(YES);
+
+        cx AU msgDatErr = std::make_unique<MsgDatSysErrWrite>();
+        ife (tx->_CallMsgCallbFn(cliDat, *msgDatErr.get()))
             cliDat.cd.doDisconnect = YES;
     }
+    ret msgNum;
 }
 dfa NT Srv::CliAuthToNoUser(CliDat& cliDat)
 {
