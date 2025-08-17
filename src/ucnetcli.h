@@ -5,7 +5,7 @@
 namespace Ucnet
 {
 
-class Cli : public Cd
+class Cli : public CliBase
 {
   public:
     using MsgCallbFnT = BaseMsgCallbFnT<Cli>;

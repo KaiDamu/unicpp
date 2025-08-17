@@ -163,6 +163,16 @@ struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ, YES>
     Act act;
     std::string name;
     Sha512Hash pwHash;
+
+    dfa ER Trans(Serial::TransIo& io) override final
+    {
+        ifu (act != Act::LIST && act != Act::JOIN && act != Act::LEAVE)
+            rete(ErrVal::NET_MSG_NO_VALID);
+        ifep(Serial::Trans(io, act));
+        if (act == Act::JOIN)
+            ifep(Serial::Trans(io, name, pwHash));
+        rets;
+    }
 };
 struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES, NO>
 {
@@ -180,12 +190,78 @@ struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES, NO>
 
     Act act;
     std::vector<ListElem> roomList;
+
+    dfa ER Trans(Serial::TransIo& io) override final
+    {
+        ifu (act != Act::LIST)
+            rete(ErrVal::NET_MSG_NO_VALID);
+        ifep(Serial::Trans(io, act));
+        if (act == Act::LIST)
+            ifep(Serial::Trans(io, roomList));
+        rets;
+    }
 };
 struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG, YES>
 {
+    enum class Act : U1
+    {
+        NEW = 1,     // create a new room
+        DEL,         // delete a room
+        UPD_NAME,    // change room name
+        UPD_PW,      // change room password
+        UPD_CLI_CNT, // change maximum number of clients in the room
+    };
+
+    RoomList::Room::TId id;
+    Act act;
+    std::string name;
+    Sha512Hash pwHash;
+    SI cliCntMax;
+
+    dfa ER Trans(Serial::TransIo& io) override final
+    {
+        ifep(Serial::Trans(io, id, act));
+        switch (act)
+        {
+        case Act::NEW:
+            ifep(Serial::Trans(io, name, pwHash, cliCntMax));
+            break;
+        case Act::DEL:
+            break;
+        case Act::UPD_NAME:
+            ifep(Serial::Trans(io, name));
+            break;
+        case Act::UPD_PW:
+            ifep(Serial::Trans(io, pwHash));
+            break;
+        case Act::UPD_CLI_CNT:
+            ifep(Serial::Trans(io, cliCntMax));
+            break;
+        default:
+            rete(ErrVal::NET_MSG_NO_VALID);
+        }
+        rets;
+    }
 };
 struct MsgDatRoomMsg : _MsgDatAnyT<MsgType::ROOM_MSG, YES>
 {
+    enum class Act : U1
+    {
+        NEW = 1, // send a new message to the room
+    };
+
+    Act act;
+    std::string msg;
+
+    dfa ER Trans(Serial::TransIo& io) override final
+    {
+        ifu (act != Act::NEW)
+            rete(ErrVal::NET_MSG_NO_VALID);
+        ifep(Serial::Trans(io, act));
+        if (act == Act::NEW)
+            ifep(Serial::Trans(io, msg));
+        rets;
+    }
 };
 
 tpl<MsgType> struct MsgTypeMap;

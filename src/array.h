@@ -505,6 +505,14 @@ tpl1 class ArrSFree
         ite (i, i < cap)
             m_free[i] = m_buf + i;
     }
+    dfa NT Clr()
+    {
+        ifu (m_buf == NUL)
+            ret;
+        m_freeEndCur = m_free + m_cap;
+        ite (i, i < m_cap)
+            m_free[i] = m_buf + i;
+    }
     dfa NT ElemDel(T1* ptr)
     {
         // WARNING: 'ptr' is not validated
@@ -515,6 +523,10 @@ tpl1 class ArrSFree
         ifu (m_freeEndCur == m_free)
             ret NUL;
         ret *(--m_freeEndCur);
+    }
+    dfa T1* operator[](SI i) cx
+    {
+        ret m_freeEndCur[i];
     }
 
   public:

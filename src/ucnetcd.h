@@ -5,8 +5,7 @@
 namespace Ucnet
 {
 
-// common client state data
-class Cd
+class CliBase
 {
   public: // NOTE: public by current design
     std::vector<U1> m_tmpBufWrite;
@@ -33,7 +32,7 @@ class Cd
     dfa NT MsgResWait(TMsgNum msgNum);
     dfa NT MsgResWaitAll();
 
-    dfa Cd();
+    dfa CliBase();
 };
 
 } // namespace Ucnet
