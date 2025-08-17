@@ -5,25 +5,34 @@
 namespace Ucnet
 {
 
-// common client state data, valid for the session
-struct Cd
+// common client state data
+class Cd
 {
-    std::vector<U1> tmpBufWrite;
-    std::vector<U1> tmpBufRead;
-    std::unordered_map<TMsgNum, MsgPend> msgPendList;
-    ThdLockFast msgPendListLock;
-    TProtoVer ver;
-    TMsgNum msgNumToWrite;
-    TMsgNum msgNumToRead;
-    TSessionId sessionId;
-    std::string userName;
-    BO doDisconnect;
-    SI hdrSize;
+  public: // NOTE: public by current design
+    std::vector<U1> m_tmpBufWrite;
+    std::vector<U1> m_tmpBufRead;
+    std::unordered_map<TMsgNum, MsgPend> m_msgPendList;
+    ThdLockFast m_msgPendListLock;
+    TProtoVer m_ver;
+    TMsgNum m_msgNumToWrite;
+    TMsgNum m_msgNumToRead;
+    TSessionId m_sessionId;
+    std::string m_userName;
+    BO m_doDisconnect;
+    SI m_hdrSize;
 
-    dfa NT Clr(BO isCli);
+  protected:
+    dfa NT ClrBase(BO isCli);
     dfa NT HdrSizeUpd();
-    dfa ER MsgWrite(TMsgNum& msgNum, cx SockTcp& sock, cx MsgDatAny& msgDat, EvtFast* evt);
-    dfa ER MsgRead(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock);
+
+  public:
+    dfa ER _MsgWriteBase(TMsgNum& msgNum, cx SockTcp& sock, cx MsgDatAny& msgDat, EvtFast* evt);
+    dfa ER _MsgReadBase(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& sock);
+
+  public:
+    dfa NT MsgResWait(TMsgNum msgNum);
+    dfa NT MsgResWaitAll();
+
     dfa Cd();
 };
 

@@ -5,7 +5,7 @@
 namespace Ucnet
 {
 
-class Cli
+class Cli : public Cd
 {
   public:
     using MsgCallbFnT = BaseMsgCallbFnT<Cli>;
@@ -18,28 +18,24 @@ class Cli
     Thd m_thd;
     std::array<MsgCallbDat, TMsgType(MsgType::CNT)> m_msgCallbList;
     std::array<MsgCallbDat, TMsgType(MsgType::CNT)> m_msgCallbExList;
-    Cd m_cd;
 
   private:
     dfa ER _DefaMsgCallbSet();
+    dfa NT _AuthToNoUser(cx MsgDatVerRes& msgDat);
 
   public:
-    dfa Cd& _Cd();
     dfa ER _Read(std::unique_ptr<MsgDatAny>& msgDat);
     dfa ER _CallMsgCallbFn(cx MsgDatAny& msgDat);
-    dfa NT _AuthToNoUser(cx MsgDatVerRes& msgDat);
 
   public:
     dfa BO IsInit() cx;
     dfa BO IsConnected() cx;
     dfa BO IsDisconnecting() cx;
-    dfa cx Cd& Cd() cx;
     dfa ER Connect(cx NetAdrV4& adr);
     dfa ER Disconnect();
     dfa ER Init();
     dfa ER Free();
     dfa TMsgNum MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
-    dfa NT MsgResWait(TMsgNum msgNum);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbSet(TFn&& fn, GA ctx = NUL);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbExSet(TFn&& fn, GA ctx = NUL);
 

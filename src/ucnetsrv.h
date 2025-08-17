@@ -8,20 +8,22 @@ namespace Ucnet
 class Srv
 {
   public:
-    struct CliDat
+    class CliDat : public Cd
     {
-        Srv* srv;
-        SockTcp sock;
-        NetAdrV4 adr;
-        Thd thd;
-        Cd cd;
-        Sec::ChecksumMode checksumMode;
-        Sec::EncryptMode encryptMode;
-        Sec::SrvAuthMode srvAuthMode;
-        PriviLv priviLv;
+      public: // NOTE: public by current design
+        Srv* m_srv;
+        SockTcp m_sock;
+        NetAdrV4 m_adr;
+        Thd m_thd;
+        Sec::ChecksumMode m_checksumMode;
+        Sec::EncryptMode m_encryptMode;
+        Sec::SrvAuthMode m_srvAuthMode;
+        PriviLv m_priviLv;
 
+      public:
         dfa NT MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
         dfa NT Init(Srv* srv, SockTcp& sock, cx NetAdrV4& adr);
+
         dfa CliDat();
     };
 
