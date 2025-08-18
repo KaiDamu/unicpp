@@ -457,24 +457,42 @@ tpl1 class ArrDFast
 tpl1 class ArrSFree
 {
   private:
-    T1* m_buf;
+    struct Elem
+    {
+        alignas(T1) U1 dat[siz(T1)];
+        T1** usePtr;
+    };
+    static_assert(alignof(Elem) % alignof(T1) == 0, "ArrSFree bad Elem align");
+
+  private:
+    Elem* m_bufDat;
+    T1** m_bufPtr;
     T1** m_free;
+    T1** m_use;
     T1** m_freeEndCur;
+    T1** m_useEndCur;
     SI m_cap;
 
   private:
     dfa NT _Init()
     {
-        m_buf = NUL;
+        m_bufDat = NUL;
+        m_bufPtr = NUL;
         m_free = NUL;
+        m_use = NUL;
         m_freeEndCur = NUL;
+        m_useEndCur = NUL;
         m_cap = 0;
     }
 
   public:
     dfa SI Cnt() cx
     {
-        ret m_cap - (m_freeEndCur - m_free);
+        ret SI(m_useEndCur - m_use);
+    }
+    dfa SI Rem() cx
+    {
+        ret SI(m_freeEndCur - m_free);
     }
     dfa SI Cap() cx
     {
@@ -482,51 +500,68 @@ tpl1 class ArrSFree
     }
     dfa T1** Dat() cx
     {
-        ret m_freeEndCur;
+        ret m_use;
     }
     dfa NT Del()
     {
-        if (m_buf == NUL)
+        if (m_bufDat == NUL)
             ret;
-        delete[] m_buf;
-        delete[] m_free;
-        m_buf = NUL;
-        m_free = NUL;
-        m_freeEndCur = NUL;
-        m_cap = 0;
+        while (m_useEndCur != m_use)
+            MemFreeAt(*--m_useEndCur);
+        MemDelNoInit<Elem>(m_bufDat);
+        MemDelNoInit<T1*>(m_bufPtr);
+        tx->_Init();
     }
     dfa NT New(SI cap)
     {
         tx->Del();
-        m_buf = new T1[cap];
-        m_free = new T1*[cap];
+        m_bufDat = MemNewNoInit<Elem>(cap);
+        m_bufPtr = MemNewNoInit<T1*>(cap << 1);
+        m_free = m_bufPtr;
+        m_use = m_bufPtr + cap;
         m_freeEndCur = m_free + cap;
+        m_useEndCur = m_use;
         m_cap = cap;
         ite (i, i < cap)
-            m_free[i] = m_buf + i;
+            m_free[i] = (T1*)(m_bufDat + i);
     }
     dfa NT Clr()
     {
-        ifu (m_buf == NUL)
+        ifu (m_bufDat == NUL)
             ret;
-        m_freeEndCur = m_free + m_cap;
-        ite (i, i < m_cap)
-            m_free[i] = m_buf + i;
+        while (m_useEndCur != m_use)
+        {
+            MemFreeAt(*--m_useEndCur);
+            *m_freeEndCur++ = *m_useEndCur;
+        }
     }
     dfa NT ElemDel(T1* ptr)
     {
-        // WARNING: 'ptr' is not validated
         *m_freeEndCur++ = ptr;
+        MemFreeAt(ptr);
+        AU delElem = (Elem*)ptr;
+        --m_useEndCur;
+        ((Elem*)*m_useEndCur)->usePtr = delElem->usePtr;
+        *(delElem->usePtr) = *m_useEndCur;
     }
-    dfa T1* ElemNew()
+    tpl<typename... TArgs> dfa T1* ElemNew(TArgs&&... args)
     {
-        ifu (m_freeEndCur == m_free)
+        ifu (m_freeEndCur == m_free) // out of free elements
             ret NUL;
-        ret *(--m_freeEndCur);
+        AU newObj = *(m_freeEndCur - 1);
+        MemInitAt(newObj, std::forward<TArgs>(args)...);
+        --m_freeEndCur;
+        ((Elem*)newObj)->usePtr = m_useEndCur;
+        *m_useEndCur++ = newObj;
+        ret newObj;
     }
-    dfa T1* operator[](SI i) cx
+    dfa T1& operator[](SI i)
     {
-        ret m_freeEndCur[i];
+        ret *(m_use[i]);
+    }
+    dfa cx T1& operator[](SI i) cx
+    {
+        ret *(m_use[i]);
     }
 
   public:

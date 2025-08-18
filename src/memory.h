@@ -37,6 +37,16 @@ dfa ER MemNewSys(GA* ptr, SI size, HD proc = ProcCurHdl(), U4 prot = PAGE_READWR
 
 #endif
 
+tpl1 dfa NT MemFreeAt(T1* obj) noex
+{
+    ifcx (!std::is_trivially_destructible_v<T1>)
+        obj->~T1();
+}
+tpl<typename T1, typename... TArgs> dfa T1* MemInitAt(T1* obj, TArgs&&... args)
+{
+    ret ::new (obj) T1(std::forward<TArgs>(args)...);
+}
+
 dfa NT MemDel(GA ptr)
 {
     free(ptr);
@@ -44,6 +54,15 @@ dfa NT MemDel(GA ptr)
 dfa GA MemNew(SI size)
 {
     ret malloc(size);
+}
+
+tpl1 dfa NT MemDelNoInit(GA ptr) noex
+{
+    ::operator delete[](ptr, std::align_val_t(alignof(T1)));
+}
+tpl1 dfa T1* MemNewNoInit(SI cnt)
+{
+    ret (T1*)(::operator new[](cnt * siz(T1), std::align_val_t(alignof(T1))));
 }
 
 dfa NT MemSet(GA dst, U1 val, SI size)
