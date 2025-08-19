@@ -40,6 +40,7 @@
     <ClInclude Include="src\import\winapi\unintimpl.h" />
     <ClInclude Include="src\import\winapi\util.h" />
     <ClInclude Include="src\input.h" />
+    <ClInclude Include="src\lock.h" />
     <ClInclude Include="src\mouse.h" />
     <ClInclude Include="src\debug.h" />
     <ClInclude Include="src\dictionary.h" />

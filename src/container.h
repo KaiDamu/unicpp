@@ -561,3 +561,119 @@ struct ZzVarint
     {
     }
 };
+
+tpl1 class MthdObjList
+{
+  private:
+    using LockT = TypeTraits<T1>::LockT;
+    using IdT = TypeTraits<T1>::IdT;
+    using IdSecT = TypeTraits<T1>::IdSecT;
+    static_assert(IsTypeSame<LockT, ThdLockFast>, "LockT must be ThdLockFast");
+    static_assert(siz(IdT) >= siz(U8), "IdT must be at least 8 bytes");
+
+  public:
+    struct Ref
+    {
+        GA ptrRaw;
+        IdT id;
+
+        dfa Ref(GA ptrRaw = NUL, IdT id = IdT()) noex : ptrRaw(ptrRaw), id(id)
+        {
+        }
+    };
+
+  private:
+    mutable ThdLockFast m_lock;
+    ArrSFree<T1> m_bufStable;
+    std::unordered_map<IdT, T1*> m_mapId;
+    std::unordered_map<IdSecT, T1*> m_mapIdSec;
+
+  private:
+    dfa NT _IdGenUnique(IdT& id) cx
+    {
+        do
+            RandCrypt(&id, siz(id));
+        while ((id == IdT()) || (m_mapId.find(id) != m_mapId.end()));
+    }
+    dfa NT _ClrDel(BO doSkipDel)
+    {
+        cx AU cnt = m_bufStable.Cnt();
+        std::vector<LockT*> lockList(cnt);
+        ite (i, i < cnt)
+        {
+            AU& elem = m_bufStable[i];
+            lockList[i] = &TypeTraits<T1>::lock(elem);
+            TypeTraits<T1>::Lock(*lockList[i]);
+            TypeTraits<T1>::id(elem) = IdT(); // reset id
+        }
+        m_mapId.clear();
+        m_mapIdSec.clear();
+        m_bufStable.Clr();
+        if (!doSkipDel)
+            m_bufStable.Del();
+        ite (i, i < cnt)
+            TypeTraits<T1>::Unlock(*lockList[i]);
+    }
+
+  public:
+    dfa SI Cnt() cx
+    {
+        ThdLockFastAu lock(m_lock);
+        ret m_bufStable.Cnt();
+    }
+    dfa NT List(std::vector<Ref>& refList) cx
+    {
+        refList.clear();
+        ThdLockFastAu lock(m_lock);
+        cx AU cnt = m_bufStable.Cnt();
+        refList.reserve(cnt);
+        ite (i, i < cnt)
+        {
+            AU& elem = m_bufStable[i];
+            refList.emplace_back(&elem, TypeTraits<T1>::id(elem));
+        }
+    }
+    dfa NT Del()
+    {
+        ThdLockFastAu lock(m_lock);
+        tx->_ClrDel(NO);
+    }
+    dfa NT New(SI cap)
+    {
+        ThdLockFastAu lock(m_lock);
+        tx->_ClrDel(NO);
+        m_bufStable.New(cap);
+    }
+    dfa NT Clr()
+    {
+        ThdLockFastAu lock(m_lock);
+        tx->_ClrDel(YES);
+    }
+    dfa NT ElemDel(cx Ref& ref)
+    {
+        ThdLockFastAu lock(m_lock);
+        ThdLockFastAu lockElem(TypeTraits<T1>::lock(*(T1*)ref.ptrRaw));
+        AU elemPtr = (T1*)ref.ptrRaw;
+        if (TypeTraits<T1>::id(*elemPtr) != ref.id) // reference is invalid
+            ret;
+        m_mapId.erase(ref.id);
+        if (TypeTraits<T1>::HasIdSec(*elemPtr))
+            m_mapIdSec.erase(TypeTraits<T1>::idSec(*elemPtr));
+        m_bufStable.ElemDel(elemPtr);
+        TypeTraits<T1>::id(*elemPtr) = IdT(); // reset id
+        ret;
+    }
+    tpl<typename... TArgs> dfa ER ElemNew(Ref& ref, TArgs&&... args)
+    {
+        ref = Ref();
+        ThdLockFastAu lock(m_lock);
+        AU elemPtr = m_bufStable.ElemNew(std::forward<TArgs>(args)...);
+        ifu (elemPtr == NUL) // out of free elements
+            rete(ErrVal::HIGH_SIZE);
+        ref.ptrRaw = elemPtr;
+        tx->_IdGenUnique(ref.id);
+        TypeTraits<T1>::id(*elemPtr) = ref.id;
+        m_mapId[ref.id] = elemPtr;
+        rets;
+    }
+};

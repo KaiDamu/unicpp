@@ -96,6 +96,7 @@
 #include "memory.h"
 #include "pointer.h"
 #include "bigmath.h"
+#include "lock.h"
 #include "array.h"
 #include "container.h"
 #include "random.h"

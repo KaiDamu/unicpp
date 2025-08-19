@@ -290,5 +290,8 @@
     <ClInclude Include="src\serial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\lock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

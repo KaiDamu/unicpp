@@ -44,3 +44,24 @@ tpl2 dfa T1 ToType(cx T2& src)
     ToType<T1, T2>(dst, src);
     ret dst;
 }
+
+// user specialization required for TypeTraits
+tpl1 struct TypeTraits;
+
+// example specialization for TypeTraits on AnyClass
+/*
+tpl0 struct TypeTraits<AnyClass>
+{
+    using Any1T = U8;
+    using Any2T = F4;
+
+    static Any1T& anyVal1(AnyClass& obj)
+    {
+        ret obj.specificAnyVal1;
+    }
+    static Any2T& anyVal2(AnyClass& obj)
+    {
+        ret obj.specificAnyVal2;
+    }
+};
+*/
