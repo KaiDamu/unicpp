@@ -491,110 +491,9 @@ dfa CliSrv::CliSrv()
     NetAdrV4 adr;
     tx->Init(NUL, sock, adr);
 }
-
-dfa BO CliList::_IsValid(cx CliRef& cli) cx
+dfa CliSrv::CliSrv(Srv* srv, SockTcp& sock, cx NetAdrV4& adr)
 {
-    ifu (cli.sid == TSessionId(0))
-        ret YES;
-    if (m_mapBySessionId.find(cli.sid) != m_mapBySessionId.end())
-        ret YES;
-    ret NO;
-}
-
-dfa NT CliList::Clr()
-{
-    m_lock.Lock();
-    m_buf.Clr();
-    m_mapBySessionId.clear();
-    m_mapByUserName.clear();
-    m_lock.Unlock();
-}
-dfa SI CliList::Cnt() cx
-{
-    m_lock.Lock();
-    cx AU cnt = m_buf.Cnt();
-    m_lock.Unlock();
-    ret cnt;
-}
-dfa NT CliList::List(std::vector<CliRef>& cliList) cx
-{
-    cliList.clear();
-    m_lock.Lock();
-    cx AU cnt = m_buf.Cnt();
-    cliList.reserve(cnt);
-    ite (i, i < cnt)
-        cliList.emplace_back(m_buf[i], m_buf[i]->m_sessionId);
-    m_lock.Unlock();
-}
-dfa ER CliList::New(CliRef& cli)
-{
-    cli.Clr();
-    m_lock.Lock();
-    cli.ptr = m_buf.ElemNew();
-    ifu (cli.ptr == NUL)
-    {
-        m_lock.Unlock();
-        rete(ErrVal::HIGH_SIZE);
-    }
-    m_lock.Unlock();
-    rets;
-}
-dfa ER CliList::Del(cx CliRef& cli)
-{
-    m_lock.Lock();
-    ifu (!tx->_IsValid(cli))
-    {
-        m_lock.Unlock();
-        rete(ErrVal::NO_VALID);
-    }
-    if (cli.sid != TSessionId(0))
-    {
-        m_mapBySessionId.erase(cli.sid);
-        m_mapByUserName.erase(cli.ptr->m_userName);
-    }
-    m_buf.ElemDel(cli.ptr);
-    m_lock.Unlock();
-    rets;
-}
-dfa ER CliList::Auth(CliRef& cli)
-{
-    m_lock.Lock();
-    ifu (!tx->_IsValid(cli))
-    {
-        m_lock.Unlock();
-        rete(ErrVal::NO_VALID);
-    }
-    AU& cli_ = *cli.ptr;
-
-    jdst(retrySessionId);
-    RandCrypt(&cli_.m_sessionId, siz(cli_.m_sessionId));
-    ifu (m_mapBySessionId.find(cli_.m_sessionId) != m_mapBySessionId.end())
-        jsrc(retrySessionId);
-    m_mapBySessionId[cli_.m_sessionId] = &cli_;
-
-    jdst(retryUserName);
-    U2 userNameNum;
-    RandCrypt(&userNameNum, siz(userNameNum));
-    userNameNum %= 10000;
-    CS userName[16];
-    CsstrSetForm(userName, "anon-%04u", userNameNum);
-    cli_.m_userName = userName;
-    ifu (m_mapByUserName.find(cli_.m_userName) != m_mapByUserName.end())
-        jsrc(retryUserName);
-    m_mapByUserName[cli_.m_userName] = &cli_;
-
-    m_lock.Unlock();
-    rets;
-}
-dfa NT CliList::Init(SI cliCntMax)
-{
-    m_buf.New(cliCntMax);
-    tx->Clr();
-}
-dfa NT CliList::Free()
-{
-    tx->Clr();
-    m_buf.Del();
+    tx->Init(srv, sock, adr);
 }
 
 dfa ER Srv::_DefaMsgCallbSet()
@@ -750,7 +649,7 @@ dfa ER Srv::Open(U2 port, SI cliCntMax)
         m_sock.Del();
         rete(err);
     }
-    m_cliList.Init(cliCntMax);
+    m_cliList.New(cliCntMax);
     rets;
 }
 dfa ER Srv::Close()
@@ -764,13 +663,16 @@ dfa ER Srv::Close()
     cx AU cliCnt = SI(cliList.size());
     ite (i, i < cliCnt)
     {
-        // NOTE: this might be unsafe to do if a client disconnects while we iterate
-        AU cli = cliList[i].ptr;
-        ifep(cli->m_sock.Disconnect());
-        ifep(cli->m_sock.Del());
-        ifep(cli->m_thd.Wait());
+        CliSrv* cli;
+        MthdObjListAu<CliSrv> au(cli, m_cliList, cliList[i]);
+        ifl (cli != NUL)
+        {
+            ifep(cli->m_sock.Disconnect());
+            ifep(cli->m_sock.Del());
+            ifep(cli->m_thd.Wait());
+        }
     }
-    m_cliList.Free();
+    m_cliList.Del();
 
     ifep(m_thd.Wait());
     ifep(m_thd.Close());
@@ -784,16 +686,16 @@ dfa ER Srv::Accept()
     NetAdrV4 adrTmp;
     ifep(m_sock.Accept(sockCliTmp, adrTmp));
     // TODO: could use application-level blacklisting here
-    CliRef cliNew;
-    ife (m_cliList.New(cliNew))
+    CliRef cliNewRef;
+    ife (m_cliList.ElemNew(cliNewRef, tx, sockCliTmp, adrTmp))
         rete(ErrVal::NET_HIGH_CLI);
-    cliNew.ptr->Init(tx, sockCliTmp, adrTmp);
-    ife (cliNew.ptr->m_thd.New(_SrvCliThdFn, GA(cliNew.ptr)))
+    cx AU cliNewPtr = m_cliList.Get(cliNewRef);
+    ifl (cliNewPtr != NUL)
     {
-        m_cliList.Del(cliNew); // NOTE: error ignored, likely never happens
-        retep;
+        cliNewPtr->m_thd.New(_SrvCliThdFn, GA(cliNewPtr)); // WARNING: error ignored & raw pointer passed on
+        cliNewPtr->m_thd.Disown();
+        m_cliList.Let(cliNewPtr);
     }
-    cliNew.ptr->m_thd.Disown();
     rets;
 }
 dfa ER Srv::Release(CliSrv*& cli)
@@ -803,7 +705,7 @@ dfa ER Srv::Release(CliSrv*& cli)
     ifep(cli->m_thd.Close());
     ifep(cli->m_sock.Disconnect());
     ifep(cli->m_sock.Del());
-    ifep(m_cliList.Del(CliRef(cli, cli->m_sessionId)));
+    m_cliList.ElemDel(CliRef(cli, cli->m_sessionId));
     cli = NUL;
     rets;
 }
@@ -821,14 +723,30 @@ dfa TMsgNum Srv::MsgWrite(CliSrv& cli, cx MsgDatAny& msgDat, EvtFast* evt)
     }
     ret msgNum;
 }
-dfa NT Srv::CliAuthToNoUser(CliSrv& cli)
+dfa NT Srv::CliAuthToNoUser(CliSrv& cli_)
 {
+    CliRef cliRef(&cli_, cli_.m_sessionId); // TEMP: this solution disregards the id-based validity check
+    cx AU cliPtr = m_cliList.Get(cliRef);
+    ifu (cliPtr == NUL)
+        ret;
+    AU& cli = *cliPtr;
+
     cli.m_ver = PROTO_VER;
     _MsgNumGen(cli.m_msgNumToWrite, YES, NO);
     _MsgNumGen(cli.m_msgNumToRead, YES, YES);
-    CliRef cliRef(&cli, cli.m_sessionId);
-    m_cliList.Auth(cliRef); // NOTE: error ignored, likely never happens
+
+    jdst(reGenUserName);
+    U2 userNameNum;
+    RandCrypt(&userNameNum, siz(userNameNum));
+    userNameNum %= 10000;
+    CS userName[16];
+    CsstrSetForm(userName, "anon-%04u", userNameNum);
+    ife (m_cliList.IdSecSet(cliPtr, std::string(userName)))
+        jsrc(reGenUserName);
+
     cli.m_priviLv = PriviLv::NO_USER;
+
+    m_cliList.Let(cliPtr);
 }
 tpl<MsgType TMsg, typename TFn> dfa NT Srv::MsgCallbSet(TFn&& fn, GA ctx)
 {

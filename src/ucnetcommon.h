@@ -15,6 +15,7 @@ enum class ErrType : TErrType
 };
 
 using TSessionId = U8;
+using TRoomId = U8;
 
 using TPriviLv = U1;
 enum class PriviLv : TPriviLv

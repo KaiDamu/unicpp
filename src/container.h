@@ -1,5 +1,8 @@
 #pragma once
 
+// pre-defined:
+dfa NT RandCrypt(GA buf, SI size);
+
 tpl1 struct Line2
 {
     Pos2<T1> a;
@@ -598,12 +601,12 @@ tpl1 class MthdObjList
     dfa NT _ClrDel(BO doSkipDel)
     {
         cx AU cnt = m_bufStable.Cnt();
-        std::vector<LockT*> lockList(cnt);
+        std::vector<T1*> elemList(cnt);
         ite (i, i < cnt)
         {
             AU& elem = m_bufStable[i];
-            lockList[i] = &TypeTraits<T1>::lock(elem);
-            TypeTraits<T1>::Lock(*lockList[i]);
+            elemList[i] = &elem;
+            TypeTraits<T1>::Lock(*elemList[i]);
             TypeTraits<T1>::id(elem) = IdT(); // reset id
         }
         m_mapId.clear();
@@ -611,8 +614,9 @@ tpl1 class MthdObjList
         m_bufStable.Clr();
         if (!doSkipDel)
             m_bufStable.Del();
-        ite (i, i < cnt)
-            TypeTraits<T1>::Unlock(*lockList[i]);
+        if (doSkipDel)
+            ite (i, i < cnt)
+                TypeTraits<T1>::Unlock(*elemList[i]);
     }
 
   public:
@@ -630,7 +634,7 @@ tpl1 class MthdObjList
         ite (i, i < cnt)
         {
             AU& elem = m_bufStable[i];
-            refList.emplace_back(&elem, TypeTraits<T1>::id(elem));
+            refList.emplace_back(const_cast<T1*>(&elem), TypeTraits<T1>::id(elem));
         }
     }
     dfa NT Del()
@@ -653,8 +657,8 @@ tpl1 class MthdObjList
     {
         ThdLockFastAu lock(m_lock);
         ThdLockFastAu lockElem(TypeTraits<T1>::lock(*(T1*)ref.ptrRaw));
-        AU elemPtr = (T1*)ref.ptrRaw;
-        if (TypeTraits<T1>::id(*elemPtr) != ref.id) // reference is invalid
+        cx AU elemPtr = (T1*)ref.ptrRaw;
+        ifu (TypeTraits<T1>::id(*elemPtr) != ref.id) // reference is invalid
             ret;
         m_mapId.erase(ref.id);
         if (TypeTraits<T1>::HasIdSec(*elemPtr))
@@ -675,5 +679,53 @@ tpl1 class MthdObjList
         TypeTraits<T1>::id(*elemPtr) = ref.id;
         m_mapId[ref.id] = elemPtr;
         rets;
+    }
+    dfa ER IdSecSet(T1* ptr, cx IdSecT& idSec)
+    {
+        ThdLockFastAu lock(m_lock);
+        cx AU& it = m_mapIdSec.find(idSec);
+        ifu (it != m_mapIdSec.end())
+        {
+            if (it->second == ptr)
+                rets;
+            rete(ErrVal::YES_EXIST);
+        }
+        if (TypeTraits<T1>::HasIdSec(*ptr))
+            m_mapIdSec.erase(TypeTraits<T1>::idSec(*ptr));
+        TypeTraits<T1>::idSec(*ptr) = idSec;
+        m_mapIdSec[idSec] = ptr;
+        rets;
+    }
+    dfa NT Let(T1* ptr) cx
+    {
+        TypeTraits<T1>::Unlock(*ptr);
+    }
+    dfa T1* Get(cx Ref& ref) cx
+    {
+        TypeTraits<T1>::Lock(*(T1*)ref.ptrRaw);
+        cx AU elemPtr = (T1*)ref.ptrRaw;
+        ifu (TypeTraits<T1>::id(*elemPtr) != ref.id) // reference is invalid
+        {
+            TypeTraits<T1>::Unlock(*(T1*)ref.ptrRaw);
+            ret NUL;
+        }
+        ret elemPtr;
+    }
+};
+
+tpl1 class MthdObjListAu
+{
+  private:
+    T1*& m_ptr;
+    MthdObjList<T1>& m_objList;
+
+  public:
+    dfa MthdObjListAu(T1*& ptr, MthdObjList<T1>& objList, cx MthdObjList<T1>::Ref& ref) : m_ptr(ptr), m_objList(objList)
+    {
+        ptr = m_objList.Get(ref);
+    }
+    dfa ~MthdObjListAu()
+    {
+        m_objList.Let(m_ptr);
     }
 };

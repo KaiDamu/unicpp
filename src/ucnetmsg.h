@@ -212,7 +212,7 @@ struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG, YES>
         UPD_CLI_CNT, // change maximum number of clients in the room
     };
 
-    RoomList::Room::TId id;
+    TRoomId id;
     Act act;
     std::string name;
     Sha512Hash pwHash;
