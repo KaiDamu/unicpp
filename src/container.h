@@ -711,6 +711,13 @@ tpl1 class MthdObjList
         }
         ret elemPtr;
     }
+    dfa T1* PeekUns(cx Ref& ref) cx
+    {
+        cx AU elemPtr = (T1*)ref.ptrRaw;
+        ifu (TypeTraits<T1>::id(*elemPtr) != ref.id) // reference is invalid
+            ret NUL;
+        ret elemPtr;
+    }
 };
 
 tpl1 class MthdObjListAu
@@ -726,6 +733,8 @@ tpl1 class MthdObjListAu
     }
     dfa ~MthdObjListAu()
     {
+        ifu (m_ptr == NUL)
+            ret;
         m_objList.Let(m_ptr);
     }
 };

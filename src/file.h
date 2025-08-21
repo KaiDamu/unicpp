@@ -198,7 +198,7 @@ class File
     }
     dfa ER OpenWrite(cx CH* path)
     {
-        ret tx->Open(path, FILE_WRITE_DATA | SYNCHRONIZE, 0, FILE_OVERWRITE);
+        ret tx->Open(path, FILE_WRITE_DATA | SYNCHRONIZE, 0, FILE_OVERWRITE_IF);
     }
     dfa ER OpenReadWrite(cx CH* path)
     {
@@ -351,6 +351,12 @@ class MemFile
     dfa cx CH* Path() cx
     {
         ret m_path.c_str();
+    }
+    dfa SI Size() cx
+    {
+        ifu (!tx->IsOpen())
+            ret 0;
+        ret SI(m_end - m_buf.data());
     }
     dfa U1* Dat()
     {

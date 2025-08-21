@@ -224,4 +224,44 @@ class Timer
     }
 };
 
+class TimeHackChecker
+{
+  private:
+    TmCpuMs m_diffMaxProc;
+    TmCpuMs m_diffMaxSys;
+    TmCpuMs m_diffValidProc;
+    TmCpuMs m_diffValidSys;
+
+  public:
+    dfa BO IsValidProc() cx
+    {
+        ret (m_diffMaxProc >= Diff(m_diffValidProc, CpuTscMs() - TmCpuMs(TimeMain())));
+    }
+    dfa BO IsValidSys() cx
+    {
+        ret (m_diffMaxSys >= Diff(m_diffValidSys, CpuTscMs() - TmCpuMs(TimeUnix() * 1000)));
+    }
+    dfa BO IsValid() cx
+    {
+        ret (tx->IsValidProc() && tx->IsValidSys());
+    }
+    dfa NT InitProc(TmCpuMs diffMax)
+    {
+        m_diffMaxProc = diffMax;
+        _CpuTscMsInit();
+        m_diffValidProc = CpuTscMs() - TmCpuMs(TimeMain());
+    }
+    dfa NT InitSys(TmCpuMs diffMax)
+    {
+        m_diffMaxSys = diffMax;
+        _CpuTscMsInit();
+        m_diffValidSys = CpuTscMs() - TmCpuMs(TimeUnix() * 1000);
+    }
+    dfa TimeHackChecker()
+    {
+        tx->InitProc(400);
+        tx->InitSys(4000);
+    }
+};
+
 #endif
