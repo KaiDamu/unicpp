@@ -16,8 +16,8 @@ class Cli : public CliBase
     SockTcp m_sock;
     NetAdrV4 m_srvAdr;
     Thd m_thd;
-    std::array<MsgCallbDat, TMsgType(MsgType::CNT)> m_msgCallbList;
-    std::array<MsgCallbDat, TMsgType(MsgType::CNT)> m_msgCallbExList;
+    std::array<MsgCallbDat, MsgTypeT(MsgType::CNT)> m_msgCallbList;
+    std::array<MsgCallbDat, MsgTypeT(MsgType::CNT)> m_msgCallbExList;
 
   private:
     dfa ER _DefaMsgCallbSet();
@@ -35,7 +35,7 @@ class Cli : public CliBase
     dfa ER Disconnect();
     dfa ER Init();
     dfa ER Free();
-    dfa TMsgNum MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
+    dfa MsgNumT MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbSet(TFn&& fn, GA ctx = NUL);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbExSet(TFn&& fn, GA ctx = NUL);
 

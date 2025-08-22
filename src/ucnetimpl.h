@@ -8,9 +8,9 @@ namespace Ucnet
 tpl3 dfa BaseMsgCallbDat<T2> _MsgCallbDatCreate(T3&& fn, GA ctx)
 {
     static_assert(std::is_invocable_r_v<ER, std::decay_t<T3>, T2&, cx T1&, GA>, "T3 must be callable as ER(T2&, cx T1&, GA)");
-    ret BaseMsgCallbDat<T2>{[fn_ = std::forward<T3>(fn)](T2& cli, cx MsgDatAny& msgDat, GA ctx) { ret fn_(cli, (cx T1&)msgDat, ctx); }, ctx};
+    ret BaseMsgCallbDat<T2>{[fn_ = std::forward<T3>(fn)](T2& cli, cx MsgDatAny& msgDat, GA ctx_) { ret fn_(cli, (cx T1&)msgDat, ctx_); }, ctx};
 }
-dfa NT _MsgNumGen(TMsgNum& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
+dfa NT _MsgNumGen(MsgNumT& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
 {
     // format:
     // 0b ABCD DDDD DDDD DDDD DDDD DDDD DDDD DDDD
@@ -18,7 +18,7 @@ dfa NT _MsgNumGen(TMsgNum& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
     if (isAtAuthElseInit)
         RandCrypt(&dst, siz(dst));
     else
-        dst = TMsgNum(0x006D72CA);
+        dst = MsgNumT(0x006D72CA);
     dst &= 0x1FFFFFFF;
     if (!isAtAuthElseInit)
         dst |= 0x80000000;
@@ -73,21 +73,30 @@ dfa S4 _SrvThdFn(GA param)
     }
     ret 0;
 }
+dfa ER _SrvCliThdFn_(CliRef& cliRef)
+{
+    AU& cliUnsPtr = AsType<CliSrv*>(cliRef.ptrRaw); // WARNING: the pointer is extracted from the reference, must stay valid
+    AU& cliUns = *cliUnsPtr;
+
+    cx AU err = cliUns.m_srv->CliThdFn(cliRef);
+
+    std::unique_ptr<MsgDatAny> msgDat = std::make_unique<MsgDatSysCliDisconnect>();
+    ife (cliUns.m_srv->_CallMsgCallbFn(cliRef, *msgDat.get()))
+        ConWriteDbg("[_SrvCliThdFn] ignoring disconnect callback error on client [%s]", cliUns.m_adr.ToStr().c_str());
+
+    ife (cliUns.m_srv->Release(cliUnsPtr))
+        if (ErrLastGet() != ErrVal::NO_INIT)
+            rete(ErrLastGet());
+
+    ife (err)
+        rete(ErrLastGet()); // NOTE: this is not necessarily the same code paired with 'err'
+    rets;
+}
 dfa S4 _SrvCliThdFn(GA param)
 {
-    AU cli = (CliSrv*)param;
-    cx AU err = cli->m_srv->CliThdFn(*cli);
-
-    {
-        std::unique_ptr<MsgDatAny> msgDat = std::make_unique<MsgDatSysCliDisconnect>();
-        ife (cli->m_srv->_CallMsgCallbFn(*cli, *msgDat.get()))
-            ConWriteDbg("[_SrvCliThdFn] ignoring disconnect callback error on client [%s]", cli->m_adr.ToStr().c_str());
-    }
-
-    ife (cli->m_srv->Release(cli))
-        if (ErrLastGet() != ErrVal::NO_INIT)
-            ret 1;
-
+    cx AU cliRefHeap = (CliRef*)param;
+    cx AU err = _SrvCliThdFn_(*cliRefHeap);
+    delete cliRefHeap;
     ife (err)
         ret 1;
     ret 0;
@@ -103,21 +112,21 @@ dfa NT CliBase::ClrBase(BO isCli)
             elem.second.evt->Set(YES);
     m_msgPendList.clear();
     m_msgPendListLock.Unlock();
-    m_ver = TProtoVer(0);
+    m_ver = ProtoVerT(0);
     _MsgNumGen(m_msgNumToWrite, NO, isCli);
     _MsgNumGen(m_msgNumToRead, NO, !isCli);
-    m_sessionId = TSessionId(0);
+    m_sessionId = SessionIdT(0);
     m_userName.clear();
     m_doDisconnect = NO;
     tx->HdrSizeUpd();
 }
 dfa NT CliBase::HdrSizeUpd()
 {
-    m_hdrSize = siz(TMsgNum);
+    m_hdrSize = siz(MsgNumT);
 }
-dfa ER CliBase::_MsgWriteBase(TMsgNum& msgNum, cx SockTcp& sock, cx MsgDatAny& msgDat, EvtFast* evt)
+dfa ER CliBase::_MsgWriteBase(MsgNumT& msgNum, cx SockTcp& sock, cx MsgDatAny& msgDat, EvtFast* evt)
 {
-    msgNum = TMsgNum(0);
+    msgNum = MsgNumT(0);
 
     cx AU msgType = msgDat.Type();
     cx AU msgIsPend = msgDat.IsPend();
@@ -137,16 +146,16 @@ dfa ER CliBase::_MsgWriteBase(TMsgNum& msgNum, cx SockTcp& sock, cx MsgDatAny& m
         m_msgPendListLock.Unlock();
     }
 
-    TMsgSize msgSize = 0;
+    MsgSizeT msgSize = 0;
 
     std::array<std::span<cx U1>, 4> bufList;
-    bufList[0] = std::span<cx U1>((U1*)&msgSize, siz(msgSize));
-    bufList[1] = std::span<cx U1>((U1*)&msgType, siz(msgType));
-    bufList[2] = std::span<cx U1>((U1*)&msgNumToWriteOverride, siz(msgNumToWriteOverride));
+    bufList[0] = std::span<cx U1>((cx U1*)&msgSize, siz(msgSize));
+    bufList[1] = std::span<cx U1>((cx U1*)&msgType, siz(msgType));
+    bufList[2] = std::span<cx U1>((cx U1*)&msgNumToWriteOverride, siz(msgNumToWriteOverride));
     bufList[3] = m_tmpBufWrite;
 
     for (cx AU& buf : bufList)
-        msgSize += TMsgSize(buf.size());
+        msgSize += MsgSizeT(buf.size());
 
     ifep(sock.Write(bufList));
 
@@ -159,7 +168,7 @@ dfa ER CliBase::_MsgReadBase(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& soc
 {
     msgDat.reset();
     m_tmpBufRead.clear();
-    TMsgSize msgSize;
+    MsgSizeT msgSize;
     SI sizeResult;
     ifep(sock.Read(&msgSize, sizeResult, siz(msgSize), siz(msgSize)));
     ifu (SI(msgSize) < siz(msgSize) || SI(msgSize) > MSG_SIZE_MAX)
@@ -177,7 +186,7 @@ dfa ER CliBase::_MsgReadBase(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& soc
     }
 
     MsgType msgType;
-    TMsgNum msgNum;
+    MsgNumT msgNum;
     AU bufCur = (cx U1*)m_tmpBufRead.data();
     MemCpyUpdCurSrc(&msgType, bufCur, siz(msgType));
     MemCpyUpdCurSrc(&msgNum, bufCur, siz(msgNum));
@@ -230,7 +239,7 @@ dfa ER CliBase::_MsgReadBase(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& soc
     rets;
 }
 
-dfa NT CliBase::MsgResWait(TMsgNum msgNum)
+dfa NT CliBase::MsgResWait(MsgNumT msgNum)
 {
     m_msgPendListLock.Lock();
     cx AU& it = m_msgPendList.find(msgNum);
@@ -283,7 +292,7 @@ dfa CliBase::CliBase()
 dfa ER Cli::_DefaMsgCallbSet()
 {
     tx->MsgCallbSet<MsgType::NONE>([](Cli& cli, cx MsgDatAny& msg, GA ctx) {
-        ConWriteErr("[Server] Unhandled message [type = %u]", TMsgType(msg.Type()));
+        ConWriteErr("[Server] Unhandled message [type = %u]", MsgTypeT(msg.Type()));
         rets; // NOTE: as the client, we try to silently ignore unhandled messages
     });
     tx->MsgCallbSet<MsgType::VER_RES>([](Cli& cli, cx MsgDatVerRes& msg, GA ctx) {
@@ -437,9 +446,9 @@ dfa ER Cli::Free()
     }
     rets;
 }
-dfa TMsgNum Cli::MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt)
+dfa MsgNumT Cli::MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt)
 {
-    TMsgNum msgNum;
+    MsgNumT msgNum;
     ife (tx->_MsgWriteBase(msgNum, m_sock, msgDat, evt))
     {
         if (evt != NUL)
@@ -469,9 +478,11 @@ dfa Cli::~Cli()
     tx->Disconnect();
 }
 
-dfa NT CliSrv::MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt)
+dfa MsgNumT CliSrv::MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt)
 {
-    tx->m_srv->MsgWrite(*tx, msgDat, evt);
+    CliRef cliRefUns(tx, tx->m_sessionId); // WARNING: the reference is built from the pointer, might validate what it shouldn't
+
+    ret tx->m_srv->MsgWrite(cliRefUns, msgDat, evt);
 }
 dfa NT CliSrv::Init(Srv* srv, SockTcp& sock, cx NetAdrV4& adr)
 {
@@ -499,7 +510,7 @@ dfa CliSrv::CliSrv(Srv* srv, SockTcp& sock, cx NetAdrV4& adr)
 dfa ER Srv::_DefaMsgCallbSet()
 {
     tx->MsgCallbSet<MsgType::NONE>([](CliSrv& cli, cx MsgDatAny& msg, GA ctx) {
-        ConWriteErr("[%s] Unhandled message [type = %u]", cli.m_adr.ToStr().c_str(), TMsgType(msg.Type()));
+        ConWriteErr("[%s] Unhandled message [type = %u]", cli.m_adr.ToStr().c_str(), MsgTypeT(msg.Type()));
         rete(ErrVal::NET_MSG_NO_VALID); // NOTE: since this is the default callback, we return an error directly
     });
     tx->MsgCallbSet<MsgType::VER_REQ>([](CliSrv& cli, cx MsgDatVerReq& msg, GA ctx) {
@@ -580,8 +591,14 @@ dfa ER Srv::_PostReadPreMsgCallbProc(CliSrv& cli, MsgDatAny* msgDat)
     }
     rets;
 }
-dfa ER Srv::_CallMsgCallbFn(CliSrv& cli, cx MsgDatAny& msgDat)
+dfa ER Srv::_CallMsgCallbFn(CliRef& cliRef, cx MsgDatAny& msgDat)
 {
+    // get the client pointer from the client reference
+    CliSrv* cliPtr;
+    MthdObjListAu au(cliPtr, m_cliList, cliRef);
+    ifu (cliPtr == NUL)
+        rete(ErrVal::NET_NO_EXIST);
+    AU& cli = *cliPtr;
     // call the message specific callback function
     AU msgTypeI = SI(msgDat.Type());
     ifl (msgTypeI < SI(m_msgCallbList.size()) && m_msgCallbList[msgTypeI].fn)
@@ -594,21 +611,24 @@ dfa ER Srv::_CallMsgCallbFn(CliSrv& cli, cx MsgDatAny& msgDat)
     ConWriteDbg("[Srv::_CallMsgCallbFn] ignoring received MsgType=%d from [%s] without callback function", SI(msgDat.Type()), cli.m_adr.ToStr().c_str());
     rets;
 }
-dfa ER Srv::CliThdFn(CliSrv& cli)
+dfa ER Srv::CliThdFn(CliRef& cliRef)
 {
+    AU& cliUnsPtr = AsType<CliSrv*>(cliRef.ptrRaw); // WARNING: the pointer is extracted from the reference, must stay valid
+    AU& cliUns = *cliUnsPtr;
+
     {
         std::unique_ptr<MsgDatAny> msgDat = std::make_unique<MsgDatSysCliConnect>();
-        ifep(cli.m_srv->_CallMsgCallbFn(cli, *msgDat.get()));
+        ifep(cliUns.m_srv->_CallMsgCallbFn(cliRef, *msgDat.get()));
     }
 
     while (YES)
     {
         std::unique_ptr<MsgDatAny> msgDat;
-        ife (cli._MsgReadBase(msgDat, cli.m_sock))
+        ife (cliUns._MsgReadBase(msgDat, cliUns.m_sock))
         {
             if (ErrLastGet() == ErrVal::NET_CLOSE)
             {
-                cli.m_doDisconnect = YES;
+                cliUns.m_doDisconnect = YES;
                 jsrc(noSend);
             }
             else
@@ -616,18 +636,18 @@ dfa ER Srv::CliThdFn(CliSrv& cli)
                 msgDat = std::make_unique<MsgDatSysErrRead>();
             }
         }
-        ife (cli.m_srv->_PostReadPreMsgCallbProc(cli, msgDat.get()))
+        ife (cliUns.m_srv->_PostReadPreMsgCallbProc(cliUns, msgDat.get()))
         {
             // NOTE: currently, we disconnect the client right away if there is any issue with preprocessing the message
-            ConWriteDbg("[Srv::CliThdFn] _PostReadPreMsgCallbProc rejected msg & client from [%s]", cli.m_adr.ToStr().c_str());
-            cli.m_doDisconnect = YES;
+            ConWriteDbg("[Srv::CliThdFn] _PostReadPreMsgCallbProc rejected msg & client from [%s]", cliUns.m_adr.ToStr().c_str());
+            cliUns.m_doDisconnect = YES;
             jsrc(noSend);
         }
-        ife (cli.m_srv->_CallMsgCallbFn(cli, *msgDat.get()))
-            cli.m_doDisconnect = YES;
+        ife (cliUns.m_srv->_CallMsgCallbFn(cliRef, *msgDat.get()))
+            cliUns.m_doDisconnect = YES;
         jdst(noSend);
-        ifu (cli.m_doDisconnect) // NOTE: error value currently not returned
-            rets;                // NOTE: this is not necessarily a graceful disconnect, it triggers Release()
+        ifu (cliUns.m_doDisconnect) // NOTE: error value currently not returned
+            rets;                   // NOTE: this is not necessarily a graceful disconnect, it triggers Release()
     }
 
     rets;
@@ -692,7 +712,8 @@ dfa ER Srv::Accept()
     cx AU cliNewPtr = m_cliList.Get(cliNewRef);
     ifl (cliNewPtr != NUL)
     {
-        cliNewPtr->m_thd.New(_SrvCliThdFn, GA(cliNewPtr)); // WARNING: error ignored & raw pointer passed on
+        cx AU cliNewRefHeap = new CliRef(cliNewRef);
+        cliNewPtr->m_thd.New(_SrvCliThdFn, GA(cliNewRefHeap)); // WARNING: error ignored
         cliNewPtr->m_thd.Disown();
         m_cliList.Let(cliNewPtr);
     }
@@ -709,28 +730,25 @@ dfa ER Srv::Release(CliSrv*& cli)
     cli = NUL;
     rets;
 }
-dfa TMsgNum Srv::MsgWrite(CliSrv& cli, cx MsgDatAny& msgDat, EvtFast* evt)
+dfa MsgNumT Srv::MsgWrite(CliRef& cliRef, cx MsgDatAny& msgDat, EvtFast* evt)
 {
-    TMsgNum msgNum;
-    ife (cli._MsgWriteBase(msgNum, cli.m_sock, msgDat, evt))
+    AU& cliUnsPtr = AsType<CliSrv*>(cliRef.ptrRaw); // WARNING: the pointer is extracted from the reference, must stay valid
+    AU& cliUns = *cliUnsPtr;
+
+    MsgNumT msgNum;
+    ife (cliUns._MsgWriteBase(msgNum, cliUns.m_sock, msgDat, evt))
     {
         if (evt != NUL)
             evt->Set(YES);
 
         cx AU msgDatErr = std::make_unique<MsgDatSysErrWrite>();
-        ife (tx->_CallMsgCallbFn(cli, *msgDatErr.get()))
-            cli.m_doDisconnect = YES;
+        ife (tx->_CallMsgCallbFn(cliRef, *msgDatErr.get()))
+            cliUns.m_doDisconnect = YES;
     }
     ret msgNum;
 }
-dfa NT Srv::CliAuthToNoUser(CliSrv& cli_)
+dfa NT Srv::CliAuthToNoUser(CliSrv& cli)
 {
-    CliRef cliRef(&cli_, cli_.m_sessionId); // TEMP: this solution disregards the id-based validity check
-    cx AU cliPtr = m_cliList.Get(cliRef);
-    ifu (cliPtr == NUL)
-        ret;
-    AU& cli = *cliPtr;
-
     cli.m_ver = PROTO_VER;
     _MsgNumGen(cli.m_msgNumToWrite, YES, NO);
     _MsgNumGen(cli.m_msgNumToRead, YES, YES);
@@ -741,12 +759,10 @@ dfa NT Srv::CliAuthToNoUser(CliSrv& cli_)
     userNameNum %= 10000;
     CS userName[16];
     CsstrSetForm(userName, "anon-%04u", userNameNum);
-    ife (m_cliList.IdSecSet(cliPtr, std::string(userName)))
+    ife (m_cliList.IdSecSet(&cli, std::string(userName)))
         jsrc(reGenUserName);
 
     cli.m_priviLv = PriviLv::NO_USER;
-
-    m_cliList.Let(cliPtr);
 }
 tpl<MsgType TMsg, typename TFn> dfa NT Srv::MsgCallbSet(TFn&& fn, GA ctx)
 {

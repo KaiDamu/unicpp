@@ -21,48 +21,55 @@ class CliSrv : public CliBase
     PriviLv m_priviLv;
 
   public:
-    dfa NT MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
+    dfa MsgNumT MsgWrite(cx MsgDatAny& msgDat, EvtFast* evt = NUL);
     dfa NT Init(Srv* srv, SockTcp& sock, cx NetAdrV4& adr);
 
     dfa CliSrv();
     dfa CliSrv(Srv* srv, SockTcp& sock, cx NetAdrV4& adr);
 };
-tpl0 struct TypeTraits<CliSrv>
-{
-    using IdT = TO(CliSrv::m_sessionId);
-    using IdSecT = TO(CliSrv::m_userName);
-    using LockT = TO(CliSrv::m_lock);
 
-    static IdT& id(CliSrv& obj)
+} // namespace Ucnet
+
+tpl0 struct TypeTraits<Ucnet::CliSrv>
+{
+    using IdT = TO(Ucnet::CliSrv::m_sessionId);
+    using IdSecT = TO(Ucnet::CliSrv::m_userName);
+    using LockT = TO(Ucnet::CliSrv::m_lock);
+
+    static IdT& id(Ucnet::CliSrv& obj)
     {
         ret obj.m_sessionId;
     }
-    static cx IdT& id(cx CliSrv& obj)
+    static cx IdT& id(cx Ucnet::CliSrv& obj)
     {
         ret obj.m_sessionId;
     }
-    static IdSecT& idSec(CliSrv& obj)
+    static IdSecT& idSec(Ucnet::CliSrv& obj)
     {
         ret obj.m_userName;
     }
-    static LockT& lock(CliSrv& obj)
+    static LockT& lock(Ucnet::CliSrv& obj)
     {
         ret obj.m_lock;
     }
 
-    static BO HasIdSec(CliSrv& obj)
+    static BO HasIdSec(Ucnet::CliSrv& obj)
     {
         ret obj.m_userName.size() > 0;
     }
-    static NT Lock(CliSrv& obj)
+    static NT Lock(Ucnet::CliSrv& obj)
     {
         ret obj.m_lock.Lock();
     }
-    static NT Unlock(CliSrv& obj)
+    static NT Unlock(Ucnet::CliSrv& obj)
     {
         ret obj.m_lock.Unlock();
     }
 };
+
+namespace Ucnet
+{
+
 using CliList = MthdObjList<CliSrv>;
 using CliRef = CliList::Ref;
 
@@ -77,24 +84,24 @@ class Srv
     Thd m_thd;
     CliList m_cliList;
     // RoomList m_roomList;
-    std::array<MsgCallbDat, TMsgType(MsgType::CNT)> m_msgCallbList;
+    std::array<MsgCallbDat, MsgTypeT(MsgType::CNT)> m_msgCallbList;
 
   private:
     dfa ER _DefaMsgCallbSet();
 
   public:
     dfa ER _PostReadPreMsgCallbProc(CliSrv& cli, MsgDatAny* msgDat);
-    dfa ER _CallMsgCallbFn(CliSrv& cli, cx MsgDatAny& msgDat);
+    dfa ER _CallMsgCallbFn(CliRef& cliRef, cx MsgDatAny& msgDat);
 
   public:
-    dfa ER CliThdFn(CliSrv& cli);
+    dfa ER CliThdFn(CliRef& cliRef);
 
   public:
     dfa ER Open(U2 port, SI cliCntMax);
     dfa ER Close();
     dfa ER Accept();
     dfa ER Release(CliSrv*& cli);
-    dfa TMsgNum MsgWrite(CliSrv& cli, cx MsgDatAny& msgDat, EvtFast* evt = NUL);
+    dfa MsgNumT MsgWrite(CliRef& cliRef, cx MsgDatAny& msgDat, EvtFast* evt = NUL);
     dfa NT CliAuthToNoUser(CliSrv& cli_);
     tpl<MsgType TMsg, typename TFn> dfa NT MsgCallbSet(TFn&& fn, GA ctx = NUL);
 

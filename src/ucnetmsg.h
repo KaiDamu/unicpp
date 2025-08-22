@@ -7,16 +7,16 @@ namespace Ucnet
 
 cxex SI MSG_SIZE_MAX = 4 * BYTE_IN_MB;
 
-using TMsgSize = U4;
-using TMsgNum = U4;
+using MsgSizeT = U4;
+using MsgNumT = U4;
 
 struct MsgPend
 {
     EvtFast* evt;
 };
 
-using TMsgType = U2;
-enum class MsgType : TMsgType
+using MsgTypeT = U2;
+enum class MsgType : MsgTypeT
 {
     NONE = 0,           // no message type specified, also used for unhandled messages
     SUC,                // success message, this is the main message type for explicit success
@@ -40,7 +40,7 @@ enum class MsgType : TMsgType
 
 struct MsgDatAny
 {
-    TMsgNum msgNum = 0; // NOTE: initialized here for simplicity
+    MsgNumT msgNum = 0; // NOTE: initialized here for simplicity
 
     dfa virtual MsgType Type() cx = 0;
     dfa virtual BO IsPend() cx = 0;
@@ -87,8 +87,8 @@ struct MsgDatVerReq : _MsgDatAnyT<MsgType::VER_REQ, YES>
     static cxex U4 CX = 0x1B204B73;
 
     U4 verCx;
-    TProtoVer verMin;
-    TProtoVer verMax;
+    ProtoVerT verMin;
+    ProtoVerT verMax;
 
     dfa ER Trans(Serial::TransIo& io) override final
     {
@@ -101,10 +101,10 @@ struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES, NO>
     static cxex U4 CX = 0x734B201B;
 
     U4 verCx;
-    TProtoVer ver;
-    TMsgNum msgNumToWrite;
-    TMsgNum msgNumToRead;
-    TSessionId sessionId;
+    ProtoVerT ver;
+    MsgNumT msgNumToWrite;
+    MsgNumT msgNumToRead;
+    SessionIdT sessionId;
     std::string userName;
 
     dfa ER Trans(Serial::TransIo& io) override final
@@ -212,7 +212,7 @@ struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG, YES>
         UPD_CLI_CNT, // change maximum number of clients in the room
     };
 
-    TRoomId id;
+    RoomIdT id;
     Act act;
     std::string name;
     Sha512Hash pwHash;
@@ -270,7 +270,7 @@ tpl<MsgType> struct MsgTypeMap;
         tpl0 struct MsgTypeMap<MsgType::typeVal> \
         {                                        \
             using MsgDatT = datT;                \
-        };
+        }
 
 _MsgTypeMapDef(NONE, MsgDatAny);
 _MsgTypeMapDef(SUC, MsgDatSuc);

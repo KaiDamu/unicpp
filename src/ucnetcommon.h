@@ -5,20 +5,20 @@
 namespace Ucnet
 {
 
-using TProtoVer = U2;
-cxex TProtoVer PROTO_VER = 5;
+using ProtoVerT = U2;
+cxex ProtoVerT PROTO_VER = 5;
 
-using TErrType = U2;
-enum class ErrType : TErrType
+using ErrTypeT = U2;
+enum class ErrType : ErrTypeT
 {
     NONE = 0,
 };
 
-using TSessionId = U8;
-using TRoomId = U8;
+using SessionIdT = U8;
+using RoomIdT = U8;
 
-using TPriviLv = U1;
-enum class PriviLv : TPriviLv
+using PriviLvT = U1;
+enum class PriviLv : PriviLvT
 {
     NONE = 0,  // absolutely no actions allowed
     INIT,      // can only do initialization specific actions
@@ -30,31 +30,34 @@ enum class PriviLv : TPriviLv
     SYSTEM,    // all actions are allowed
 };
 
-struct Sec
+namespace Sec
 {
-    using TChecksumMode = U1;
-    using TEncryptMode = U1;
-    using TSrvAuthMode = U1;
 
-    enum class ChecksumMode : TChecksumMode
-    {
-        NONE = 0,
-        FAST,
-        SECURE,
-    };
-    enum class EncryptMode : TEncryptMode
-    {
-        NONE = 0,
-        FAST,
-        SECURE,
-    };
-    enum class SrvAuthMode : TSrvAuthMode
-    {
-        NONE = 0,
-        FAST,
-        SECURE,
-    };
+using ChecksumModeT = U1;
+enum class ChecksumMode : ChecksumModeT
+{
+    NONE = 0,
+    FAST,
+    SECURE,
 };
+
+using EncryptModeT = U1;
+enum class EncryptMode : EncryptModeT
+{
+    NONE = 0,
+    FAST,
+    SECURE,
+};
+
+using SrvAuthModeT = U1;
+enum class SrvAuthMode : SrvAuthModeT
+{
+    NONE = 0,
+    FAST,
+    SECURE,
+};
+
+} // namespace Sec
 
 } // namespace Ucnet
 
