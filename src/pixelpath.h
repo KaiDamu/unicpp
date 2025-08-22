@@ -142,8 +142,8 @@ class PixelPath
 
                 while (YES)
                 {
-                    cx AU getStratDirMap = [](Dir* stratDirMap, BuildStrat strat, Dir forwardDir) -> NT {
-                        switch (strat)
+                    cx AU getStratDirMap = [](Dir* stratDirMap, BuildStrat strat_, Dir forwardDir_) -> NT {
+                        switch (strat_)
                         {
                         case BuildStrat::PLUS:
                             stratDirMap[0] = Dir::D;
@@ -157,43 +157,43 @@ class PixelPath
                             break;
                         case BuildStrat::FORWARD1: {
                             SI len = 0;
-                            stratDirMap[len++] = forwardDir;
-                            if (Dir::DR != forwardDir)
+                            stratDirMap[len++] = forwardDir_;
+                            if (Dir::DR != forwardDir_)
                                 stratDirMap[len++] = Dir::DR;
-                            if (Dir::D != forwardDir)
+                            if (Dir::D != forwardDir_)
                                 stratDirMap[len++] = Dir::D;
-                            if (Dir::DL != forwardDir)
+                            if (Dir::DL != forwardDir_)
                                 stratDirMap[len++] = Dir::DL;
-                            if (Dir::R != forwardDir)
+                            if (Dir::R != forwardDir_)
                                 stratDirMap[len++] = Dir::R;
-                            if (Dir::L != forwardDir)
+                            if (Dir::L != forwardDir_)
                                 stratDirMap[len++] = Dir::L;
-                            if (Dir::UR != forwardDir)
+                            if (Dir::UR != forwardDir_)
                                 stratDirMap[len++] = Dir::UR;
-                            if (Dir::U != forwardDir)
+                            if (Dir::U != forwardDir_)
                                 stratDirMap[len++] = Dir::U;
-                            if (Dir::UL != forwardDir)
+                            if (Dir::UL != forwardDir_)
                                 stratDirMap[len++] = Dir::UL;
                             break;
                         }
                         case BuildStrat::FORWARD2: {
                             SI len = 0;
-                            stratDirMap[len++] = forwardDir;
-                            if (Dir::UL != forwardDir)
+                            stratDirMap[len++] = forwardDir_;
+                            if (Dir::UL != forwardDir_)
                                 stratDirMap[len++] = Dir::UL;
-                            if (Dir::D != forwardDir)
+                            if (Dir::D != forwardDir_)
                                 stratDirMap[len++] = Dir::D;
-                            if (Dir::UR != forwardDir)
+                            if (Dir::UR != forwardDir_)
                                 stratDirMap[len++] = Dir::UR;
-                            if (Dir::DL != forwardDir)
+                            if (Dir::DL != forwardDir_)
                                 stratDirMap[len++] = Dir::DL;
-                            if (Dir::L != forwardDir)
+                            if (Dir::L != forwardDir_)
                                 stratDirMap[len++] = Dir::L;
-                            if (Dir::R != forwardDir)
+                            if (Dir::R != forwardDir_)
                                 stratDirMap[len++] = Dir::R;
-                            if (Dir::U != forwardDir)
+                            if (Dir::U != forwardDir_)
                                 stratDirMap[len++] = Dir::U;
-                            if (Dir::DR != forwardDir)
+                            if (Dir::DR != forwardDir_)
                                 stratDirMap[len++] = Dir::DR;
                             break;
                         }
@@ -374,7 +374,7 @@ class PixelPath
                         break;
                     pixelPathCur += DIR_SIZEB;
 
-                    moveHash += ((dirNext == dir) ? 1 : 2) * moveHashMul;
+                    moveHash += U1(((dirNext == dir) ? 1 : 2) * moveHashMul);
                     moveHashMul *= 3;
                     moveCnt = MovesToDirLen(moveHash);
 

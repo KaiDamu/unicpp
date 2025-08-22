@@ -6,6 +6,7 @@
 # Manual
 tests/compile_gcc.exe
 tests/Compile C++.lnk
+tests/Compile GCC1520 C++.lnk
 
 # User-specific files
 *.rsuser

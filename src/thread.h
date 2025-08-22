@@ -48,7 +48,7 @@ class ThdTask
     }
     dfa NT Call() cx
     {
-        ifl (m_fn != 0)
+        ifl (m_fn != NUL)
             m_fn();
     }
 };
@@ -139,7 +139,7 @@ class Thd
     }
     dfa HD Id()
     {
-        ifu (m_tid == 0 && m_hdl != NUL)
+        ifu (m_tid == HD(0) && m_hdl != NUL)
             m_tid = ThdIdByHdl(m_hdl);
         ret m_tid;
     }
@@ -204,7 +204,7 @@ class Thd
             rete(ErrVal::THD);
         m_hdl = NUL;
         m_isOwned = NO;
-        m_tid = 0;
+        m_tid = HD(0);
         rets;
     }
     dfa ER New(ThdEntryFnT entryAdr, GA entryParam = NUL, HD hdlProc = ProcCurHdl(), U4 access = THREAD_ALL_ACCESS, U4 flags = 0)
@@ -244,7 +244,7 @@ class Thd
     }
 
   public:
-    dfa Thd() : m_hdl(NUL), m_isOwned(NO), m_tid(0)
+    dfa Thd() : m_hdl(NUL), m_isOwned(NO), m_tid(HD(0))
     {
     }
     dfa ~Thd()

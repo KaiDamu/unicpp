@@ -77,7 +77,7 @@ struct TransIo
 
 tpl<typename T1, typename... TArgs> dfa ER Trans(T1&, TArgs&...)
 {
-    static_assert(NO, "Serial::Trans could not deduce the action");
+    static_assert(NO && siz(T1), "Serial::Trans could not deduce the action");
     rete(ErrVal::NA);
 }
 tpl<typename... TArgs> dfa ER Trans(std::tuple<cx U1*&, cx U1*&>& io, TArgs&... args)

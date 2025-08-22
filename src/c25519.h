@@ -270,7 +270,7 @@ dfa NT Ed25519HashWithPre(Fp25519& scalar, cx U1* pre, SI preSize, cx U1* msg, S
         hasher.Block(block);
         SI i;
         for (i = block.SIZE - preSize; i + block.SIZE <= msgSize; i += block.SIZE)
-            hasher.Block(*(Sha512Block*)(msg + i));
+            hasher.Block(*(cx Sha512Block*)(msg + i));
         hasher.End(msg + i, msgSize + preSize);
     }
     Sha512Hash hash;

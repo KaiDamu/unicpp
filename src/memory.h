@@ -11,6 +11,8 @@
     #endif
 #endif
 
+__declspec(noinline) GA AdrOfNextOpe();
+
 __declspec(noinline) GA AdrOfNextOpe()
 {
     ret RetAdr();
@@ -147,20 +149,20 @@ tpl1 dfa NT MemCpyValBe(GA dst, T1 src)
     static_assert(sizT1 > 0 && sizT1 <= siz(U8), "MemCpyValBe: T1 size must be between 1 and 8 bytes");
     AU p = (U1*)dst;
     p += sizT1 - 1;
-    *(p--) = src;
+    *(p--) = U1(src);
     ifcx (sizT1 < 2)
         ret;
-    *(p--) = (src >>= 8);
+    *(p--) = U1(src >>= 8);
     ifcx (sizT1 < 3)
         ret;
-    *(p--) = (src >>= 8);
-    *(p--) = (src >>= 8);
+    *(p--) = U1(src >>= 8);
+    *(p--) = U1(src >>= 8);
     ifcx (sizT1 < 5)
         ret;
-    *(p--) = (src >>= 8);
-    *(p--) = (src >>= 8);
-    *(p--) = (src >>= 8);
-    *(p--) = (src >>= 8);
+    *(p--) = U1(src >>= 8);
+    *(p--) = U1(src >>= 8);
+    *(p--) = U1(src >>= 8);
+    *(p--) = U1(src >>= 8);
 }
 tpl1 dfa NT MemCpyUpdCur(T1*& dstCur, CXGA src, SI size)
 {

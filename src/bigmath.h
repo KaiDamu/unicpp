@@ -30,10 +30,10 @@ tpl<SI size> dfa NT BigSel(U1* dst, cx U1* ifNo, cx U1* ifYes, BO cond)
 }
 tpl<SI size> dfa NT BigAdd(U1* dst, cx U1* src)
 {
-    U2 carry = 0;
+    U4 carry = 0;
     ite (i, i < size)
     {
-        carry += U2(dst[i]) + U2(src[i]);
+        carry += U4(dst[i]) + U4(src[i]);
         dst[i] = U1(carry);
         carry >>= BIT_IN_BYTE;
     }

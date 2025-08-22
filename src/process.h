@@ -505,9 +505,10 @@ dfa ER ProcUsernameGet(HD proc, std::wstring* user, std::wstring* domain)
     LSA_HANDLE policy;
     ifu (LsaOpenPolicy(NUL, &loa, POLICY_LOOKUP_NAMES, &policy) != STATUS_SUCCESS)
         rete(ErrVal::PROC);
+    cx AU sidUserParam = const_cast<PSID*>((CXGA cx*)&sidUser);
     LSA_REFERENCED_DOMAIN_LIST* domainList = NUL;
     LSA_TRANSLATED_NAME* userList = NUL;
-    ifu (LsaLookupSids(policy, 1, (PSID*)&sidUser, &domainList, &userList) != STATUS_SUCCESS)
+    ifu (LsaLookupSids(policy, 1, sidUserParam, &domainList, &userList) != STATUS_SUCCESS)
         rete(ErrVal::TOKEN);
     if (domainList)
     {

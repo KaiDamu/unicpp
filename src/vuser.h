@@ -371,7 +371,7 @@ class VuserInput
             cx AU pathResolution = F4(1.0); // '1.0' means 100% resolution, can be less for performance or more for extra accuracy
             AU posDistSum = F8(0);
             AU tTest = F4(0);
-            cx AU stepCntBase = F4(timeDurationLinear / timeWaitBase * pathResolution);
+            cx AU stepCntBase = F4(timeDurationLinear / timeWaitBase * TmMain(pathResolution));
             cx AU sectDistMax = posDistLinear / stepCntBase;
             cx AU tTestStep = F4(1) / stepCntBase * tTestStepMul;
             AU prevPos = srcPos;

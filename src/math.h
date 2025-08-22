@@ -199,15 +199,7 @@ tpl1 dfa T1 Pow3(T1 val)
 }
 tpl1 dfa T1 Sqrt(T1 val)
 {
-#ifdef PROG_COMPILER_GCC
-    ifu (val < T1(0))
-        ret T1(-__builtin_sqrt(-val)); // non-standard
-    ret T1(__builtin_sqrt(val));
-#else
-    ifu (val < T1(0))
-        ret T1(-sqrt(-val)); // non-standard
-    ret T1(sqrt(val));
-#endif
+    ret T1(Sqrt(F8(val)));
 }
 tpl0 dfa F4 Sqrt<F4>(F4 val)
 {
@@ -219,6 +211,18 @@ tpl0 dfa F4 Sqrt<F4>(F4 val)
     ifu (val < F4(0))
         ret -sqrtf(-val); // non-standard
     ret sqrtf(val);
+#endif
+}
+tpl0 dfa F8 Sqrt<F8>(F8 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ifu (val < F8(0))
+        ret -__builtin_sqrt(-val); // non-standard
+    ret __builtin_sqrt(val);
+#else
+    ifu (val < F8(0))
+        ret -sqrt(-val); // non-standard
+    ret sqrt(val);
 #endif
 }
 tpl1 dfa T1 RadNorm1(T1 val)

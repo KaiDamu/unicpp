@@ -99,7 +99,7 @@ dfa NT HashSha512(Sha512Hash& hash, CXGA buf, SI size)
     hasher.Begin();
     while (size - i >= Sha512Block::SIZE)
     {
-        hasher.Block(*(Sha512Block*)(buf_ + i));
+        hasher.Block(*(cx Sha512Block*)(buf_ + i));
         i += Sha512Block::SIZE;
     }
     hasher.End(buf_ + i, size);

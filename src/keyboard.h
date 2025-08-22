@@ -93,7 +93,7 @@ dfa LRESULT CALLBACK _KeybHookCallb(int code, WPARAM wp, LPARAM lp)
         break;
     }
     CH buf[KEYB_KEY_STR_LENX_MAX];
-    SI bufSize = ToUnicode(codeVk, codeScan, (BYTE*)g_keybKeyState, buf, KEYB_KEY_STR_LENX_MAX, 0);
+    SI bufSize = ToUnicode(codeVk, codeScan, const_cast<BYTE*>(g_keybKeyState), buf, KEYB_KEY_STR_LENX_MAX, 0);
     if (bufSize < 0)
         bufSize = 0;
     buf[bufSize] = '\0';
@@ -235,7 +235,7 @@ dfa ER KeybKeyPressDown(InputKey key)
     INPUT ip = {};
     ip.type = INPUT_KEYBOARD;
     ip.ki.wVk = TO(ip.ki.wVk)(codeVk);
-    ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
+    ip.ki.wScan = U2(MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC));
     ip.ki.dwExtraInfo = GetMessageExtraInfo();
     ifu (SendInput(1, &ip, siz(ip)) != 1)
         rete(ErrVal::KEYB);
@@ -247,7 +247,7 @@ dfa ER KeybKeyPressUp(InputKey key)
     INPUT ip = {};
     ip.type = INPUT_KEYBOARD;
     ip.ki.wVk = TO(ip.ki.wVk)(codeVk);
-    ip.ki.wScan = MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC);
+    ip.ki.wScan = U2(MapVirtualKeyW(codeVk, MAPVK_VK_TO_VSC));
     ip.ki.dwFlags = KEYEVENTF_KEYUP;
     ip.ki.dwExtraInfo = GetMessageExtraInfo();
     ifu (SendInput(1, &ip, siz(ip)) != 1)

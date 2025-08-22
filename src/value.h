@@ -93,4 +93,4 @@ tpl<typename T1, U1 TBase> cxex dfa SI VarbaseintSizeMax()
     ret (sizb(T1) + (TBase - 1)) / TBase;
 }
 
-#define NUL 0
+#define NUL nullptr

@@ -53,18 +53,9 @@
         #endif
     #endif
 
-    #ifdef PROG_COMPILER_GCC
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wclass-conversion"
-    #endif
-
     #include <wrl/client.h>
     #include <d3d11.h>
     #include <dxgi1_2.h>
-
-    #ifdef PROG_COMPILER_GCC
-        #pragma GCC diagnostic pop
-    #endif
 
     #include "import/winapi/type.h"
     #include "import/winapi/value.h"

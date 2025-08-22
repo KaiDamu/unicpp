@@ -36,7 +36,7 @@ class RegKey
         ArrSbo<U1, 512> buf;
         ife (tx->_Get(buf, name))
             retep;
-        cx AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
+        AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
         ifu ((info.Type != REG_DWORD_LITTLE_ENDIAN && info.Type != REG_DWORD_BIG_ENDIAN) || (info.DataLength != siz(U4)))
             rete(ErrVal::REG);
         val = *(U4*)info.Data;
@@ -50,7 +50,7 @@ class RegKey
         ArrSbo<U1, 512> buf;
         ife (tx->_Get(buf, name))
             retep;
-        cx AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
+        AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
         ifu (info.Type != REG_SZ)
             rete(ErrVal::REG);
         AU len = SI(info.DataLength) / siz(CH);
@@ -239,7 +239,7 @@ dfa ER RegValSetStr(cx CH* path, cx CH* val)
 {
     CH path_[PATH_LEN_MAX];
     StrCpy(path_, path);
-    CH* name = (CH*)StrFindLast(path_, L'\\');
+    AU name = const_cast<CH*>(StrFindLast(path_, L'\\'));
     ifu (name == NUL)
         rete(ErrVal::REG);
     *name++ = '\0';
@@ -250,7 +250,7 @@ dfa ER RegValSetStr(cx CH* path, cx CH* val)
     HKEY subKeyHdl;
     ifu (RegOpenKeyExW(key, subKey, 0, KEY_WRITE, &subKeyHdl) != ERROR_SUCCESS)
         rete(ErrVal::REG);
-    ifu (RegSetValueExW(subKeyHdl, name, 0, REG_SZ, (BYTE*)val, DWORD((StrLen(val) + 1) * siz(val[0]))) != ERROR_SUCCESS)
+    ifu (RegSetValueExW(subKeyHdl, name, 0, REG_SZ, (cx BYTE*)val, DWORD((StrLen(val) + 1) * siz(val[0]))) != ERROR_SUCCESS)
         rete(ErrVal::REG);
     ifu (RegCloseKey(subKeyHdl) != ERROR_SUCCESS)
         rete(ErrVal::REG);
@@ -260,7 +260,7 @@ dfa SI RegValGetStr(cx CH* path, CH* val, SI valLenMax)
 {
     CH path_[PATH_LEN_MAX];
     StrCpy(path_, path);
-    CH* name = (CH*)StrFindLast(path_, L'\\');
+    AU name = const_cast<CH*>(StrFindLast(path_, L'\\'));
     ifu (name == NUL)
         ret -1;
     *name++ = '\0';
@@ -285,7 +285,7 @@ dfa ER RegValSetU4(cx CH* path, U4 val)
 {
     CH path_[PATH_LEN_MAX];
     StrCpy(path_, path);
-    CH* name = (CH*)StrFindLast(path_, L'\\');
+    AU name = const_cast<CH*>(StrFindLast(path_, L'\\'));
     ifu (name == NUL)
         rete(ErrVal::REG);
     *name++ = '\0';
@@ -306,7 +306,7 @@ dfa SI RegValGetU4(cx CH* path, U4& val)
 {
     CH path_[PATH_LEN_MAX];
     StrCpy(path_, path);
-    CH* name = (CH*)StrFindLast(path_, L'\\');
+    AU name = const_cast<CH*>(StrFindLast(path_, L'\\'));
     ifu (name == NUL)
         ret -1;
     *name++ = '\0';

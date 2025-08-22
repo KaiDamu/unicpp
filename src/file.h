@@ -535,7 +535,7 @@ class MemFile
             ifu (m_cur + size > m_buf.data() + m_buf.size())
             {
                 cx AU posI = SI(m_cur - m_buf.data());
-                cx AU sizeNew = Max(SI(m_buf.size() * FILE_MEM_RESIZE_MUL_DEFA + FILE_MEM_RESIZE_ADD_DEFA), posI + size);
+                cx AU sizeNew = Max(SI(F8(m_buf.size()) * FILE_MEM_RESIZE_MUL_DEFA) + FILE_MEM_RESIZE_ADD_DEFA, posI + size);
                 m_buf.resize(sizeNew);
                 m_cur = m_buf.data() + posI;
             }

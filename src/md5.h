@@ -56,11 +56,11 @@ class Md5
       public:
         dfa NT GetCsstr(CS* str) cx
         {
-            CsstrSetForm(str, "%08x%08x%08x%08x", RevByte(b4[0]), RevByte(b4[1]), RevByte(b4[2]), RevByte(b4[3]));
+            CsstrSetForm(str, "%08x%08x%08x%08x", (unsigned)RevByte(b4[0]), (unsigned)RevByte(b4[1]), (unsigned)RevByte(b4[2]), (unsigned)RevByte(b4[3]));
         }
         dfa NT SetCsstr(cx CS* str)
         {
-            CsstrGetForm(str, "%08x%08x%08x%08x", &b4[0], &b4[1], &b4[2], &b4[3]);
+            CsstrGetForm(str, "%08x%08x%08x%08x", &AsType<unsigned>(b4[0]), &AsType<unsigned>(b4[1]), &AsType<unsigned>(b4[2]), &AsType<unsigned>(b4[3]));
             b4[0] = RevByte(b4[0]);
             b4[1] = RevByte(b4[1]);
             b4[2] = RevByte(b4[2]);
@@ -288,7 +288,7 @@ class Md5
             m_ex[0] += U4(bufSize << 3);
             if (m_ex[0] < (bufSize << 3))
                 ++m_ex[1];
-            m_ex[1] += bufSize >> (sizb(TO(bufSize)) - 3);
+            m_ex[1] += U4(bufSize >> (sizb(TO(bufSize)) - 3));
             if (bufSize >= partSize)
             {
                 MemCpy(&m_buf[j], buf, partSize);

@@ -508,8 +508,8 @@ class BadaCodec
 
             // choose the smaller one
             cxex AU FILL_ORIGIN_SIZE_AVG = F4(2.25);
-            cx AU frameCost = frame.pixelPath.SizeByte() + SI(frame.fillOrigins.size() * FILL_ORIGIN_SIZE_AVG);
-            cx AU frameAlterCost = frameAlter.pixelPath.SizeByte() + SI(frameAlter.fillOrigins.size() * FILL_ORIGIN_SIZE_AVG);
+            cx AU frameCost = frame.pixelPath.SizeByte() + SI(F4(frame.fillOrigins.size()) * FILL_ORIGIN_SIZE_AVG);
+            cx AU frameAlterCost = frameAlter.pixelPath.SizeByte() + SI(F4(frameAlter.fillOrigins.size()) * FILL_ORIGIN_SIZE_AVG);
             if (frameAlterCost < frameCost)
                 m_frames.emplace_back(std::move(frameAlter));
             else

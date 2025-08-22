@@ -233,15 +233,15 @@ class SockTcp
         ifu (m_hdl == INVALID_SOCKET)
             rete(ErrVal::NO_INIT);
         ArrSbo<WSABUF, 8> bufListWsa(bufList.size());
-        ite (i, i < bufList.size())
+        ite (i, i < SI(bufList.size()))
         {
             bufListWsa[i].len = (ULONG)bufList[i].size();
-            bufListWsa[i].buf = (CHAR*)bufList[i].data();
+            bufListWsa[i].buf = const_cast<CHAR*>((cx CHAR*)bufList[i].data());
         }
         SI bufICur = 0;
         DWORD writeSize;
         jdst(again);
-        cx AU result = WSASend(m_hdl, &bufListWsa[bufICur], bufList.size() - bufICur, &writeSize, 0, NUL, NUL);
+        cx AU result = WSASend(m_hdl, &bufListWsa[bufICur], U4(bufList.size() - bufICur), &writeSize, 0, NUL, NUL);
         ifu (result == SOCKET_ERROR)
         {
             if (WSAGetLastError() == WSAECONNRESET)
@@ -252,7 +252,7 @@ class SockTcp
         while (rem != 0)
             if (rem < bufListWsa[bufICur].len)
             {
-                bufListWsa[bufICur].len -= rem;
+                bufListWsa[bufICur].len -= U4(rem);
                 bufListWsa[bufICur].buf += rem;
                 rem = 0;
             }
@@ -261,7 +261,7 @@ class SockTcp
                 rem -= bufListWsa[bufICur].len;
                 ++bufICur;
             }
-        if (bufICur < bufList.size())
+        if (bufICur < SI(bufList.size()))
             jsrc(again);
         rets;
     }

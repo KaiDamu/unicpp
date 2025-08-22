@@ -38,7 +38,7 @@ tpl2 class DictAvl
     }
     dfa S1 BalGet(cx DictAvlElem& elem) cx
     {
-        ret tx->LvGet(elem.left) - tx->LvGet(elem.right);
+        ret S1(tx->LvGet(elem.left) - tx->LvGet(elem.right));
     }
     dfa NT RotLL(DictAvlElem*& elem) cx
     {
@@ -427,13 +427,13 @@ class SVarBlock
             buf.Req(dat_.NextLineLen() + 1);
             cx SI readLen = dat_.ReadLine((U1*)buf.Ptr());
             buf[readLen] = '\0';
-            CS* p = (CS*)StrFind(buf.Ptr(), '=');
+            AU p = const_cast<CS*>(StrFind(buf.Ptr(), '='));
             if (p == NUL)
             {
-                p = (CS*)StrFind(buf.Ptr(), '[');
+                p = const_cast<CS*>(StrFind(buf.Ptr(), '['));
                 if (p == NUL)
                     continue;
-                CS* p2 = (CS*)StrFind(p, ']');
+                AU p2 = const_cast<CS*>(StrFind(p, ']'));
                 if (p2 == NUL)
                     continue;
                 ++p;

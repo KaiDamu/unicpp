@@ -28,17 +28,17 @@ tpl1 dfa BO Line2Clip(Line2<T1>& dst, cx Line2<T1>& src, cx Rect2<T1>& keep)
         TOP = 0b1000,
     };
 
-    cx AU outCodeGet = [&](cx Pos2<T1>& pt, cx Size2<T1>& bounds) -> U1 {
+    cx AU outCodeGet = [&](cx Pos2<T1>& pt, cx Size2<T1>& bounds_) -> U1 {
         U1 outCode = OutCode::INSIDE;
 
         if (pt.x < T1(0))
             outCode |= OutCode::LEFT;
-        else if (pt.x >= bounds.w)
+        else if (pt.x >= bounds_.w)
             outCode |= OutCode::RIGHT;
 
         if (pt.y < T1(0))
             outCode |= OutCode::BOTTOM;
-        else if (pt.y >= bounds.h)
+        else if (pt.y >= bounds_.h)
             outCode |= OutCode::TOP;
 
         ret outCode;
@@ -112,17 +112,17 @@ tpl1 dfa BO Line2IsDiscard(cx Line2<T1>& line, cx Rect2<T1>& keep)
         TOP = 0b1000,
     };
 
-    cx AU outCodeGet = [&](cx Pos2<T1>& pt, cx Rect2<T1>& keep) -> U1 {
+    cx AU outCodeGet = [&](cx Pos2<T1>& pt, cx Rect2<T1>& keep_) -> U1 {
         U1 outCode = OutCode::INSIDE;
 
-        if (pt.x < keep.pos.x)
+        if (pt.x < keep_.pos.x)
             outCode |= OutCode::LEFT;
-        else if (pt.x >= keep.XEnd())
+        else if (pt.x >= keep_.XEnd())
             outCode |= OutCode::RIGHT;
 
-        if (pt.y < keep.pos.y)
+        if (pt.y < keep_.pos.y)
             outCode |= OutCode::BOTTOM;
-        else if (pt.y >= keep.YEnd())
+        else if (pt.y >= keep_.YEnd())
             outCode |= OutCode::TOP;
 
         ret outCode;
@@ -290,8 +290,8 @@ tpl1 dfa NT _ColGridDrawLineN(ColGrid<T1>& grid, cx Line2<SI>& line, SI thicknes
     cx SI dx = line.b.x - line.a.x;
     cx SI dy = line.b.y - line.a.y;
     cx F4 len = Dist0(F4(dx), F4(dy));
-    cx F4 ofsX = (dy * (ValPrev(thickness) / 2.0f)) / len * -1;
-    cx F4 ofsY = (dx * (ValPrev(thickness) / 2.0f)) / len;
+    cx F4 ofsX = (F4(dy) * (F4(ValPrev(thickness)) / 2.0f)) / len * -1.0f;
+    cx F4 ofsY = (F4(dx) * (F4(ValPrev(thickness)) / 2.0f)) / len;
 
     cxex SI ptCnt = 4;
     std::array<Pos2<SI>, ptCnt> pt;
@@ -503,7 +503,7 @@ tpl1 dfa NT _ColGridDrawCircle(ColGrid<T1>& grid, cx Circle2<SI>& circle, cx T1&
 
         ite (i, i < pointCnt)
         {
-            cx Pos2<SI> p2 = std::move(Pos2<SI>(circle.center.x + xt[i], circle.center.y + yt[i]));
+            cx Pos2<SI> p2(circle.center.x + xt[i], circle.center.y + yt[i]);
             ifl (p2.x >= 0 && p2.x < grid.size.w && p2.y >= 0 && p2.y < grid.size.h)
                 grid.Pixel(p2) = colUse;
         }

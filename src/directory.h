@@ -30,7 +30,7 @@ dfa ER _DirFileEnum(cx CH* path, SI depth, DirFileEnumCallbFnT callb, GA param1,
     ArrDFast<U1> buf(4 * BYTE_IN_KB - 64);
     cxex SI END_SIZE = siz(CH); // reserve space for null-terminator
     jdst(nextRead);
-    cx AU status = NtQueryDirectoryFile_(dir.Hdl(), NUL, NUL, NUL, &isb, buf.Dat(), buf.Size() - END_SIZE, FILE_INFORMATION_CLASS_::FileDirectoryInformation, NO, NUL, NO);
+    cx AU status = NtQueryDirectoryFile_(dir.Hdl(), NUL, NUL, NUL, &isb, buf.Dat(), U4(buf.Size() - END_SIZE), FILE_INFORMATION_CLASS_::FileDirectoryInformation, NO, NUL, NO);
     if (status != STATUS_SUCCESS)
     {
         ifl (status == STATUS_NO_MORE_FILES)
@@ -133,7 +133,7 @@ dfa ER DirNew(cx CH* path)
         }
         CH path_[PATH_LENX_MAX];
         StrCpy(path_, path);
-        CH* pathSep = (CH*)StrFindLast(path_, CH_PATH_DIR);
+        AU pathSep = const_cast<CH*>(StrFindLast(path_, CH_PATH_DIR));
         ifu (pathSep == NUL)
             rete(ErrVal::DIR);
         *pathSep = '\0';

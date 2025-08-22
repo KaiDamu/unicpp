@@ -312,7 +312,7 @@ tpl2 dfa SI IntToStrBase16(T1* dst, T2 src, SI padToLen = siz(T2) * 2, T1 padVal
     while (dstCur != curEnd)
     {
         cx AU digit = T1(src & 0xF);
-        *(--dstCur) = (digit >= 10) * 7 + digit + '0';
+        *(--dstCur) = T1(((digit >= 10) ? 7 : 0) + digit + '0');
         src >>= 4;
     }
     ret padLen + strLen;

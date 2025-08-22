@@ -75,7 +75,7 @@ dfa SI PathNameo(CH* dst, cx CH* src)
 
 dfa SI PathDirUp(CH* dst, BO* isRoot = NUL)
 {
-    CH* last = (CH*)StrFindLast(dst, CH_PATH_DIR);
+    cx AU last = const_cast<CH*>(StrFindLast(dst, CH_PATH_DIR));
     ifu (last == NUL)
     {
         if (isRoot != NUL)

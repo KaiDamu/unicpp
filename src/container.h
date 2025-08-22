@@ -125,7 +125,7 @@ class BitVec
     {
         ifl (sizeMin <= m_len + m_free)
             ret;
-        tx->Reserve((sizeNew == -1) ? SI(sizeMin * 1.5) : sizeNew);
+        tx->Reserve((sizeNew == -1) ? SI(F8(sizeMin) * 1.5) : sizeNew);
     }
 
   public:
@@ -156,7 +156,7 @@ class BitVec
                 cx U1 srcBits = (srcByte >> srcBitOfs) & ((1 << bitCnt) - 1);
 
                 U1& dstByte = m_dat[dstByteI];
-                dstByte &= ~(((1 << bitCnt) - 1) << dstBitOfs);
+                dstByte &= U1(~(((1 << bitCnt) - 1) << dstBitOfs));
                 dstByte |= srcBits << dstBitOfs;
 
                 dstBitPos += bitCnt;

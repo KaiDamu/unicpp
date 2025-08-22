@@ -924,7 +924,7 @@ dfa ER ConTitleGet(std::wstring& title)
 #ifdef PROG_SYS_WIN
     ArrSbo<CH, CON_SBO_LENX_MAX> buf;
     jdst(retry);
-    cx AU titleLen = SI(GetConsoleTitleW(buf.Dat(), buf.Cnt() - STR_EX_LEN));
+    cx AU titleLen = SI(GetConsoleTitleW(buf.Dat(), U4(buf.Cnt() - STR_EX_LEN)));
     ifu (titleLen < 1)
         rete(ErrVal::CON);
     ifu (titleLen >= buf.Cnt() - STR_EX_LEN)

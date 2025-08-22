@@ -4,7 +4,7 @@ dfa NT UNICODE_STRING_::_Init(cx CH* buf, SI len)
 {
     tx->Length = U2(len * siz(buf[0]));
     tx->MaximumLength = U2(tx->Length + siz(buf[0]));
-    tx->Buffer = TO(tx->Buffer)(buf);
+    tx->Buffer = const_cast<TO(tx->Buffer)>(buf);
 }
 dfa UNICODE_STRING_::UNICODE_STRING_() : Length(0), MaximumLength(0), Buffer(NUL)
 {
