@@ -504,6 +504,7 @@ class MemFile
         MemCpy(box._Dat(), m_cur, fullSize);
         m_cur += fullSize;
         ValSeqBoxDecode(vals, box);
+        ret fullSize;
     }
     dfa SI ReadLine(std::string& str)
     {

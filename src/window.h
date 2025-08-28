@@ -258,6 +258,10 @@ class Win
     {
         ret (m_hdl != NUL) && (IsWindow(m_hdl) != 0);
     }
+    dfa BO IsFocused()
+    {
+        ret m_hdl == GetForegroundWindow();
+    }
     dfa ER Focus()
     {
         ifu (SetForegroundWindow(m_hdl) == 0)
