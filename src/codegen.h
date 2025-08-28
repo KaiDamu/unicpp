@@ -94,7 +94,7 @@ dfa ER _CodeGenLine1(CodeGenResult& result, CodeGenCtx& ctx, cx std::string& lin
         result.code[2] += ", ";
     result.code[2] += hashAsStr;
     CS defineStr[256];
-    CsstrSetForm(defineStr, "#define %s_ ((%s_T)g_uniNtFn[%d])\r\n", hashStrCur, hashStrCur, int(ctx.fnCnt));
+    CsstrSetForm(defineStr, "#define %s_ reinterpret_cast<%s_T>(g_uniNtFn[%d])\r\n", hashStrCur, hashStrCur, int(ctx.fnCnt));
     result.code[1] += defineStr;
     ++ctx.fnCnt;
     rets;
