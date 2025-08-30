@@ -25,6 +25,7 @@
     <ClInclude Include="src\aes.h" />
     <ClInclude Include="src\arg.h" />
     <ClInclude Include="src\array.h" />
+    <ClInclude Include="src\atomic.h" />
     <ClInclude Include="src\bada.h" />
     <ClInclude Include="src\bigmath.h" />
     <ClInclude Include="src\char.h" />

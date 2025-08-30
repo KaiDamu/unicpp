@@ -1,7 +1,9 @@
 #pragma once
 
 // pre-defined:
+#ifdef PROG_SYS_WIN
 dfa TEB_* ThdTeb();
+#endif
 
 cxex SI STR_EX_LEN = 1;
 
@@ -698,6 +700,8 @@ tpl1 class StrArgList
     }
 };
 
+#ifdef PROG_SYS_WIN
+
 class EnvvarCache
 {
   private:
@@ -757,3 +761,5 @@ class EnvvarCache
     {
     }
 };
+
+#endif

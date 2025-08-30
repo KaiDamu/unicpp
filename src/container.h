@@ -495,7 +495,7 @@ tpl1 Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio)
     }
 }
 
-tpl<SI TSize, SI TAlign = alignof(U8)> struct memalign(TAlign) DatBlock
+tpl<SI TSize, SI TAlign = alignof(U8)> struct alignas(TAlign) DatBlock
 {
     static_assert(TSize >= siz(U8), "DatBlock size must be at least 8 bytes");
     static_assert(TSize % TAlign == 0, "DatBlock size must be a multiple of alignment");
@@ -543,7 +543,7 @@ tpl<SI TSize, SI TAlign = alignof(U8)> struct memalign(TAlign) DatBlock
     dfa NT operator-(S4) cx = delete;
 };
 
-tpl<SI TSize, SI TAlign = alignof(U8)> struct memalign(TAlign) DatBlockSecure : DatBlock<TSize, TAlign>
+tpl<SI TSize, SI TAlign = alignof(U8)> struct alignas(TAlign) DatBlockSecure : DatBlock<TSize, TAlign>
 {
     dfa NT Clr() noex
     {

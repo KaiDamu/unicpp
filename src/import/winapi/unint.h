@@ -842,12 +842,12 @@ struct FLOATING_SAVE_AREA_
     U1 RegisterArea[80];
     U4 Spare0;
 };
-struct memalign(16) M128A_
+struct alignas(16) M128A_
 {
     U8 Low;
     S8 High;
 };
-struct memalign(16) XSAVE_FORMAT_
+struct alignas(16) XSAVE_FORMAT_
 {
     U2 ControlWord;
     U2 StatusWord;
@@ -873,7 +873,7 @@ struct memalign(16) XSAVE_FORMAT_
 #endif
 };
 #ifdef PROG_ADR_SIZE_4
-struct memalign(8) CONTEXT_
+struct alignas(8) CONTEXT_
 {
     U4 ContextFlags;
     U4 Dr0;
@@ -903,7 +903,7 @@ struct memalign(8) CONTEXT_
 };
 #endif
 #ifdef PROG_ADR_SIZE_8
-struct memalign(16) CONTEXT_
+struct alignas(16) CONTEXT_
 {
     U8 P1Home;
     U8 P2Home;

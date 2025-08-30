@@ -6,9 +6,7 @@
         #define PROG_COMPILER_GCC
     #elif defined(_MSC_VER)
         #define PROG_COMPILER_MSVC
-    #endif
-
-    #if !defined(PROG_COMPILER_GCC) && !defined(PROG_COMPILER_MSVC)
+    #else
         #error "PROG_COMPILER is not defined! Define either PROG_COMPILER_GCC or PROG_COMPILER_MSVC."
     #endif
 #endif
@@ -22,29 +20,46 @@
     #endif
 #endif
 
-#if !defined(PROG_ADR_SIZE_4) && !defined(PROG_ADR_SIZE_8)
-    // try detecting address size
-    #if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
-        #define PROG_ADR_SIZE_8
-    #elif defined(__i386__) || defined(_M_IX86) || defined(__arm__) || defined(_M_ARM)
-        #define PROG_ADR_SIZE_4
-    #endif
+#if defined(PROG_ADR_SIZE_4)
+    #define PROG_ADR_SIZE 4
+#elif defined(PROG_ADR_SIZE_8)
+    #define PROG_ADR_SIZE 8
+#endif
 
-    #if !defined(PROG_ADR_SIZE_4) && !defined(PROG_ADR_SIZE_8)
-        #error "PROG_ADR_SIZE is not defined! Define either PROG_ADR_SIZE_4 or PROG_ADR_SIZE_8."
+#if !defined(PROG_ADR_SIZE)
+    // try detecting address size
+    #if defined(__SIZEOF_POINTER__)
+        #define PROG_ADR_SIZE (__SIZEOF_POINTER__)
+    #elif defined(__x86_64__) || defined(_M_X64) || defined(_M_AMD64) || defined(__aarch64__) || defined(_M_ARM64)
+        #define PROG_ADR_SIZE 8
+    #elif defined(__i386__) || defined(_M_IX86) || defined(__arm__) || defined(_M_ARM)
+        #define PROG_ADR_SIZE 4
+    #else
+        #error "PROG_ADR_SIZE is not defined! Define it as [PROG_ADR_SIZE <size>], or either PROG_ADR_SIZE_4 or PROG_ADR_SIZE_8."
     #endif
 #endif
 
-#if !defined(PROG_SYS_LINUX) && !defined(PROG_SYS_WIN)
+#if !defined(PROG_ADR_SIZE_4) && !defined(PROG_ADR_SIZE_8)
+    // auto set PROG_ADR_SIZE_X
+    #if defined(PROG_ADR_SIZE) && (PROG_ADR_SIZE == 8)
+        #define PROG_ADR_SIZE_8
+    #elif defined(PROG_ADR_SIZE) && (PROG_ADR_SIZE == 4)
+        #define PROG_ADR_SIZE_4
+    #else
+        #error "PROG_ADR_SIZE is not defined as a supported value!"
+    #endif
+#endif
+
+#if !defined(PROG_SYS_LINUX) && !defined(PROG_SYS_WIN) && !defined(PROG_SYS_ESP32)
     // try detecting system
     #if defined(__linux__)
         #define PROG_SYS_LINUX
     #elif defined(_WIN32) || defined(_WIN64)
         #define PROG_SYS_WIN
-    #endif
-
-    #if !defined(PROG_SYS_LINUX) && !defined(PROG_SYS_WIN)
-        #error "PROG_SYS is not defined! Define either PROG_SYS_LINUX or PROG_SYS_WIN."
+    #elif defined(ESP_PLATFORM) || defined(__XTENSA__) || defined(__riscv)
+        #define PROG_SYS_ESP32
+    #else
+        #error "PROG_SYS is not defined! Define either PROG_SYS_LINUX, PROG_SYS_WIN or PROG_SYS_ESP32."
     #endif
 #endif
 
@@ -64,6 +79,38 @@
     #if !defined(UCPP_MAIN_TYPE_NONE) && !defined(UCPP_MAIN_TYPE_BASE) && !defined(UCPP_MAIN_TYPE_STD) && !defined(UCPP_MAIN_TYPE_DLL)
         #error "UCPP_MAIN_TYPE is not defined! Define either UCPP_MAIN_TYPE_NONE, UCPP_MAIN_TYPE_BASE, UCPP_MAIN_TYPE_STD, or UCPP_MAIN_TYPE_DLL."
     #endif
+#endif
+
+#if defined(PROG_THD_CNT_MULTI)
+    #define IS_THD_SUPPORT 1
+#else
+    #define IS_THD_SUPPORT 0
+#endif
+
+#if defined(__SIZEOF_INT128__)
+    #define IS_U16_SUPPORT 1
+    #define IS_S16_SUPPORT 1
+#else
+    #define IS_U16_SUPPORT 0
+    #define IS_S16_SUPPORT 0
+#endif
+
+#if defined(__SSE__) || (defined(PROG_COMPILER_MSVC) && ((PROG_ADR_SIZE >= 8) || _M_IX86_FP >= 1))
+    #define IS_SSE_SUPPORT 1
+#else
+    #define IS_SSE_SUPPORT 0
+#endif
+
+#if defined(__SSE2__) || (defined(PROG_COMPILER_MSVC) && ((PROG_ADR_SIZE >= 8) || _M_IX86_FP >= 2))
+    #define IS_SSE2_SUPPORT 1
+#else
+    #define IS_SSE2_SUPPORT 0
+#endif
+
+#if defined(__AVX__)
+    #define IS_AVX_SUPPORT 1
+#else
+    #define IS_AVX_SUPPORT 0
 #endif
 
 #ifdef PROG_COMPILER_MSVC

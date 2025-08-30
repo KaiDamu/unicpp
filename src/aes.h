@@ -86,7 +86,7 @@ struct AesBlock : DatBlock<AES_COL_SIZE * AES_COL_SIZE, AES_COL_SIZE * AES_COL_S
 {
 };
 
-tpl<SI keySize4> struct memalign(AesBlock::SIZE) AesCtx
+tpl<SI keySize4> struct alignas(AesBlock::SIZE) AesCtx
 {
     enum class State : U1
     {

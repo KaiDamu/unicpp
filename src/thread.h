@@ -1,6 +1,11 @@
 #pragma once
 
+#ifdef PROG_SYS_WIN
 using ThdEntryFnT = S4(__stdcall*)(GA param);
+#else
+// might require a different definition, but this should be made uniform anyway...
+using ThdEntryFnT = S4 (*)(GA param);
+#endif
 
 class ThdTask
 {
@@ -52,6 +57,17 @@ class ThdTask
             m_fn();
     }
 };
+
+dfa NT ThdYield()
+{
+#if defined(PROG_SYS_WIN)
+    NtYieldExecution_();
+#elif defined(PROG_SYS_ESP32)
+    taskYIELD();
+#else
+    unimp;
+#endif
+}
 
 #ifdef PROG_SYS_WIN
 

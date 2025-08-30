@@ -18,7 +18,6 @@
 #define sizb(_) SI(siz(_) * BIT_IN_BYTE)
 #define sizb4(_) S4(siz(_) * BIT_IN_BYTE)
 #define sizb8(_) S8(siz(_) * BIT_IN_BYTE)
-#define nooptimize __attribute__((optimize("O0")))
 
 #define unused(var) static_cast<NT>(var)
 #define unimp Assert(!"unimplemented")
@@ -28,27 +27,20 @@
     #define ifu(cond) if (__builtin_expect((cond), NO))
     #define ifl(cond) if (__builtin_expect((cond), YES))
 #else
-    #define falltru
+    #define falltru [[fallthrough]]
     #define ifu(cond) if (cond)
     #define ifl(cond) if (cond)
 #endif
 
-#if __cplusplus >= 201103L
-    #define memalign(size) alignas(size)
-#elif defined(PROG_COMPILER_GCC)
-    #define memalign(size) __attribute__((aligned(size)))
-#elif defined(PROG_COMPILER_MSVC)
-    #define memalign(size) __declspec(align(size))
-#else
-    #define memalign(size)
-#endif
-
 #if defined(PROG_COMPILER_GCC)
     #define restx __restrict__
+    #define noinl __attribute__((noinline))
 #elif defined(PROG_COMPILER_MSVC)
     #define restx __restrict
+    #define noinl __declspec(noinline)
 #else
     #define restx
+    #define noinl
 #endif
 
 #define ifs(cond) ifl ((cond) == ERR_NO)

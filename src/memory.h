@@ -11,9 +11,9 @@
     #endif
 #endif
 
-__declspec(noinline) GA AdrOfNextOpe();
+noinl GA AdrOfNextOpe();
 
-__declspec(noinline) GA AdrOfNextOpe()
+noinl GA AdrOfNextOpe()
 {
     ret RetAdr();
 }
@@ -108,8 +108,11 @@ dfa NT MemSet0Force(GA dst, SI size)
 {
     ifu (size < 1)
         ret;
-    __stosb((U1*)dst, 0, size);
-    cx volatile U1 tmp = AsType<volatile U1>(((U1*)dst)[size >> 1]);
+    MemSet((U1*)dst, 0, size);
+    volatile U1 tmp;
+    tmp = AsType<volatile U1>(((U1*)dst)[0]);
+    tmp = AsType<volatile U1>(((U1*)dst)[size >> 1]);
+    tmp = AsType<volatile U1>(((U1*)dst)[size - 1]);
     unused(tmp);
 }
 dfa NT MemCpyNocall(GA dst, CXGA src, SI size)

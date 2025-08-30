@@ -6,7 +6,7 @@ class RandCtx
 {
   private:
     SI m_i;
-    Arr<U4> m_val;
+    std::vector<U4> m_val;
     U4 m_seed;
     BO m_isPrep;
 
@@ -19,7 +19,7 @@ class RandCtx
     }
     dfa NT Prep()
     {
-        m_val.New(RAND_CTX_VAL_CNT);
+        m_val.resize(RAND_CTX_VAL_CNT);
         m_val[0] = m_seed;
         for (m_i = 1; m_i < RAND_CTX_VAL_CNT; ++m_i)
             m_val[m_i] = m_val[m_i - 1] * 6069;

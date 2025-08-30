@@ -2,7 +2,7 @@
 
 dfa U8 MulU16(U8 a, U8 b, U8& hi)
 {
-#if defined(PROG_COMPILER_GCC)
+#if IS_U16_SUPPORT
     cx AU r = U16(a) * U16(b);
     hi = U8(r >> sizb(U8));
     ret U8(r);
@@ -139,11 +139,19 @@ dfa SI BitToByteSize(SI size)
 tpl1 dfa S8 RoundToInt(T1 val) = delete;
 tpl0 dfa S8 RoundToInt<>(F4 val)
 {
+#if IS_SSE_SUPPORT
     ret S8(_mm_cvtss_si32(_mm_set_ss(val)));
+#else
+    ret S8(std::llround(val));
+#endif
 }
 tpl0 dfa S8 RoundToInt<>(F8 val)
 {
+#if IS_SSE2_SUPPORT
     ret S8(_mm_cvtsd_si64(_mm_set_sd(val)));
+#else
+    ret S8(std::llround(val));
+#endif
 }
 tpl1 dfa T1 Sign(T1 val)
 {

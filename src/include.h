@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
-#include <emmintrin.h>
 
 #include <type_traits>
 #include <new>
@@ -36,6 +35,7 @@
     #endif
     #include <windows.h>
     #include <winternl.h>
+    #include <emmintrin.h>
     #include <shellapi.h>
     #include <shellscalingapi.h>
     #include <shlobj.h>
@@ -85,6 +85,7 @@
 #include "tuple.h"
 #include "time.h"
 #include "memory.h"
+#include "atomic.h"
 #include "pointer.h"
 #include "bigmath.h"
 #include "lock.h"

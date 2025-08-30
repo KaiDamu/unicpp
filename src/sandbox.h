@@ -5,6 +5,8 @@ using SandboxKey = U8;
 cxex SandboxKey SANDBOX_KEY_INIT = 6042838584745506632;
 cxex SandboxKey SANDBOX_KEY_CORRECT = 6042838596648640051;
 
+#ifdef PROG_SYS_WIN
+
 enum class SandboxStrHash : FNV1A64L
 {
     Dummy = 0x7A92F300881B9B05,   // "dummy"
@@ -134,8 +136,11 @@ dfa SandboxKey _SysTestSandbox_Wait()
     ret 0;
 }
 
+#endif
+
 dfa SandboxKey SysTestSandbox()
 {
+#ifdef PROG_SYS_WIN
     SandboxKey key = SANDBOX_KEY_INIT;
     key += _SysTestSandbox_Username();
     key += _SysTestSandbox_ProcPath();
@@ -147,6 +152,9 @@ dfa SandboxKey SysTestSandbox()
     key += _SysTestSandbox_Dev();
     key += _SysTestSandbox_Wait();
     ret key;
+#else
+    ret SANDBOX_KEY_CORRECT;
+#endif
 }
 
 // WARNING: By using this function, the SANDBOX_KEY_CORRECT gets included in the binary.

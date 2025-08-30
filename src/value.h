@@ -11,7 +11,9 @@ cxex SI BIT_IN_BYTE = 8;
 cxex SI BYTE_IN_KB = 1024;
 cxex SI BYTE_IN_MB = BYTE_IN_KB * 1024;
 cxex SI BYTE_IN_GB = BYTE_IN_MB * 1024;
+#if PROG_ADR_SIZE >= 8
 cxex SI BYTE_IN_TB = BYTE_IN_GB * 1024;
+#endif
 
 cxex SI USEC_IN_MSEC = 1000;
 cxex SI MSEC_IN_SEC = 1000;
@@ -56,14 +58,6 @@ cxex SI SI_LEN_MAX = S4_LEN_MAX;
 #ifdef PROG_ADR_SIZE_8
 cxex SI SI_VAL_MAX = S8_VAL_MAX;
 cxex SI SI_LEN_MAX = S8_LEN_MAX;
-#endif
-
-#ifdef PROG_THD_CNT_SINGLE
-cxex BO IS_THD_SUPPORT = NO;
-#endif
-
-#ifdef PROG_THD_CNT_MULTI
-cxex BO IS_THD_SUPPORT = YES;
 #endif
 
 tpl1 cxex dfa T1 Pi()

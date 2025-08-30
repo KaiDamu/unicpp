@@ -293,5 +293,8 @@
     <ClInclude Include="src\lock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\atomic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

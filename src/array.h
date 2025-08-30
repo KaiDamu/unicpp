@@ -140,7 +140,7 @@ tpl1 class DatIte
 tpl1 class Arr
 {
   private:
-    Ptr<T1> m_ptr;
+    ::Ptr<T1> m_ptr;
     T1* m_cur;
     SI m_cap;
 

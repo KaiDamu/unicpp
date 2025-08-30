@@ -1,50 +1,19 @@
 #pragma once
 
-class ThdLock
-{
-  private:
-    CRITICAL_SECTION m_hdl;
-
-  public:
-    dfa CRITICAL_SECTION& Hdl()
-    {
-        ret m_hdl;
-    }
-    dfa NT Lock()
-    {
-#ifdef PROG_THD_CNT_MULTI
-        EnterCriticalSection(&m_hdl);
-#endif
-    }
-    dfa NT Unlock()
-    {
-#ifdef PROG_THD_CNT_MULTI
-        LeaveCriticalSection(&m_hdl);
-#endif
-    }
-
-  public:
-    dfa ThdLock()
-    {
-        InitializeCriticalSection(&m_hdl);
-    }
-    dfa ~ThdLock()
-    {
-        DeleteCriticalSection(&m_hdl);
-    }
-};
+// pre-defined:
+dfa NT ThdYield();
 
 class ThdLockFast
 {
   private:
-    volatile S4 m_isLocked;
+    volatile U4 m_isLocked;
 
   public:
     dfa NT Lock()
     {
 #ifdef PROG_THD_CNT_MULTI
-        while (_InterlockedCompareExchange(&m_isLocked, YES, NO) != NO)
-            NtYieldExecution_();
+        while (!AtomCmpSetU4(m_isLocked, NO, YES))
+            ThdYield();
 #endif
     }
     dfa NT Unlock()
@@ -77,6 +46,42 @@ class ThdLockFastAu
     dfa ~ThdLockFastAu()
     {
         m_lock.Unlock();
+    }
+};
+
+#ifdef PROG_SYS_WIN
+
+class ThdLock
+{
+  private:
+    CRITICAL_SECTION m_hdl;
+
+  public:
+    dfa CRITICAL_SECTION& Hdl()
+    {
+        ret m_hdl;
+    }
+    dfa NT Lock()
+    {
+    #ifdef PROG_THD_CNT_MULTI
+        EnterCriticalSection(&m_hdl);
+    #endif
+    }
+    dfa NT Unlock()
+    {
+    #ifdef PROG_THD_CNT_MULTI
+        LeaveCriticalSection(&m_hdl);
+    #endif
+    }
+
+  public:
+    dfa ThdLock()
+    {
+        InitializeCriticalSection(&m_hdl);
+    }
+    dfa ~ThdLock()
+    {
+        DeleteCriticalSection(&m_hdl);
     }
 };
 
@@ -161,3 +166,5 @@ class ThdLockMulti
         ;
     }
 };
+
+#endif
