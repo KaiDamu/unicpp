@@ -13,7 +13,7 @@ cxex SI STR_EX_LEN = 1;
     #define CsstrGetForm sscanf_s
     #define ChstrGetForm swscanf_s
 #else
-    #define CsstrSetForm sprintf
+    #define CsstrSetForm snprintf
     #define ChstrSetForm swprintf
     #define CsstrGetForm sscanf
     #define ChstrGetForm swscanf

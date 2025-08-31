@@ -194,32 +194,32 @@ class VuserInput
     {
         dst = src;
         if (dst.downDelayVari != TmMain(0))
-            dst.downDelay += TmMain(RandF8(-dst.downDelayVari, dst.downDelayVari));
+            dst.downDelay += TmMain(RandVal<F8>(-dst.downDelayVari, dst.downDelayVari));
         if (dst.upDelayVari != TmMain(0))
-            dst.upDelay += TmMain(RandF8(-dst.upDelayVari, dst.upDelayVari));
+            dst.upDelay += TmMain(RandVal<F8>(-dst.upDelayVari, dst.upDelayVari));
     }
     dfa NT _CfgCurVariApply(Cfg::Cur& dst, cx Cfg::Cur& src)
     {
         dst = src;
         if (dst.speedVari != F4(0))
-            dst.speed += RandF4(-dst.speedVari, dst.speedVari);
+            dst.speed += RandVal<F4>(-dst.speedVari, dst.speedVari);
         if (dst.hzVari != F4(0))
-            dst.hz += RandF4(-dst.hzVari, dst.hzVari);
+            dst.hz += RandVal<F4>(-dst.hzVari, dst.hzVari);
         if (dst.delayVari != TmMain(0))
-            dst.delay += TmMain(RandF8(-dst.delayVari, dst.delayVari));
+            dst.delay += TmMain(RandVal<F8>(-dst.delayVari, dst.delayVari));
         if (dst.timeCurve.type == TimeCurve::Type::ADAM_EASE_1)
         {
             if (dst.timeCurve.param.adamEase1.curveVari != F4(0))
-                dst.timeCurve.param.adamEase1.curve += RandF4(-dst.timeCurve.param.adamEase1.curveVari, dst.timeCurve.param.adamEase1.curveVari);
+                dst.timeCurve.param.adamEase1.curve += RandVal<F4>(-dst.timeCurve.param.adamEase1.curveVari, dst.timeCurve.param.adamEase1.curveVari);
         }
         if (dst.posCurve.type == PosCurve::Type::ADAM_HILL_1)
         {
             if (dst.posCurve.param.adamHill1.tMidVari != F4(0))
-                dst.posCurve.param.adamHill1.tMid += RandF4(-dst.posCurve.param.adamHill1.tMidVari, dst.posCurve.param.adamHill1.tMidVari);
+                dst.posCurve.param.adamHill1.tMid += RandVal<F4>(-dst.posCurve.param.adamHill1.tMidVari, dst.posCurve.param.adamHill1.tMidVari);
             if (dst.posCurve.param.adamHill1.fullnessVari != F4(0))
-                dst.posCurve.param.adamHill1.fullness += RandF4(-dst.posCurve.param.adamHill1.fullnessVari, dst.posCurve.param.adamHill1.fullnessVari);
+                dst.posCurve.param.adamHill1.fullness += RandVal<F4>(-dst.posCurve.param.adamHill1.fullnessVari, dst.posCurve.param.adamHill1.fullnessVari);
             if (dst.posCurve.param.adamHill1.hVari != F4(0))
-                dst.posCurve.param.adamHill1.h += RandF4(-dst.posCurve.param.adamHill1.hVari, dst.posCurve.param.adamHill1.hVari);
+                dst.posCurve.param.adamHill1.h += RandVal<F4>(-dst.posCurve.param.adamHill1.hVari, dst.posCurve.param.adamHill1.hVari);
         }
     }
     dfa ER _CurPosGet(Pos2<F4>& pos)
@@ -296,7 +296,7 @@ class VuserInput
             retep;
 
         // get destination position
-        cx Pos2<F4> dstPos = pos + ((posVari == Pos2<F4>(0, 0)) ? Pos2<F4>(0, 0) : Pos2<F4>(RandF4(-posVari.x, posVari.x), RandF4(-posVari.y, posVari.y)));
+        cx Pos2<F4> dstPos = pos + ((posVari == Pos2<F4>(0, 0)) ? Pos2<F4>(0, 0) : Pos2<F4>(RandVal<F4>(-posVari.x, posVari.x), RandVal<F4>(-posVari.y, posVari.y)));
 
         // calculate constant values #1
         cx AU timeBegin = TimeMain();

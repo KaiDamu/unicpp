@@ -23,8 +23,8 @@ enum class TimeUnit : U1
     YEAR,
 };
 
-U8 g_timeMainOfs = 0;
-F8 g_timeMainDiv = 0.0;
+U8 g_timeMainSub = 0;
+F8 g_timeMainMul = 0.0;
 TmCpu g_cpuTscPerMs = 0;
 TmCpu g_cpuTscMsMul = 0;
 
@@ -63,15 +63,12 @@ dfa TmCpu CpuTsc()
         U8 val;
         U4 part[2];
     };
-#ifdef PROG_COMPILER_GCC
+#if defined(PROG_COMPILER_GCC) && (defined(PROG_CPU_TYPE_X86_32) || defined(PROG_CPU_TYPE_X86_64))
     __asm__(".byte 0x0f, 0x31" : "=a"(part[0]), "=d"(part[1]));
-#else
-    #ifdef PROG_SYS_WIN
+#elif defined(PROG_COMPILER_MSVC) && (defined(PROG_CPU_TYPE_X86_32) || defined(PROG_CPU_TYPE_X86_64))
     val = __rdtsc();
-    #else
-    val = 0;
+#else
     unimp;
-    #endif
 #endif
     ret val;
 }
@@ -79,36 +76,32 @@ dfa TmCpu CpuTsc()
 dfa ER _TimeMainInit()
 {
 #ifdef PROG_SYS_WIN
-    LARGE_INTEGER val;
-    ifu (QueryPerformanceFrequency(&val) == 0)
-    {
+    LARGE_INTEGER tmp[2];
+    ifu (QueryPerformanceFrequency(&tmp[1]) == 0)
         rete(ErrVal::TIME);
-    }
-    cx F8 timeMainDivF = S8ToF8(val.QuadPart) / 1000.0;
-    ifu (QueryPerformanceCounter(&val) == 0)
-    {
+    ifu (QueryPerformanceCounter(&tmp[0]) == 0)
         rete(ErrVal::TIME);
-    }
-    cx U8 timeMainOfs = val.QuadPart;
-    g_timeMainOfs = timeMainOfs;
-    g_timeMainDiv = timeMainDivF;
-    rets;
+    cx AU ofs = U8(tmp[0].QuadPart);
+    cx AU tps = F8(tmp[1].QuadPart);
 #else
-    g_timeMainOfs = clock();
-    g_timeMainDiv = TmMain(CLOCKS_PER_SEC) / TmMain(1000);
-    rets;
+    cx AU ofs = U8(clock());
+    cx AU tps = F8(CLOCKS_PER_SEC);
 #endif
+    g_timeMainSub = ofs;
+    g_timeMainMul = 1.0 / (tps / 1000.0);
+    rets;
 }
 
 dfa TmMain TimeMain()
 {
 #ifdef PROG_SYS_WIN
-    LARGE_INTEGER val;
-    QueryPerformanceCounter(&val);
-    ret U8ToF8(val.QuadPart - g_timeMainOfs) / g_timeMainDiv;
+    LARGE_INTEGER tmp;
+    QueryPerformanceCounter(&tmp);
+    cx AU val = U8(tmp.QuadPart);
 #else
-    ret U8ToF8(U8(clock()) - g_timeMainOfs) / g_timeMainDiv;
+    cx AU val = U8(clock());
 #endif
+    ret U8ToF8(val - g_timeMainSub) * g_timeMainMul;
 }
 
 dfa NT _CpuTscMsInit()
@@ -140,29 +133,6 @@ dfa TmCpuMs CpuTscMs()
     U8 r;
     MulU16(CpuTsc(), g_cpuTscMsMul, r);
     ret TmCpuMs(r);
-}
-
-#ifdef PROG_SYS_WIN
-
-dfa ER TimeResClr()
-{
-    U4 resNew;
-    ifu (NtSetTimerResolution_(0, NO, &resNew) != STATUS_SUCCESS)
-        rete(ErrVal::TIME_RES);
-    rets;
-}
-dfa ER TimeResSet(TmMain ms, BO doForce)
-{
-    cx AU resReq = U4(RoundToInt(ms * TmMain(10000)));
-    U4 resNew;
-    ifu (NtSetTimerResolution_(resReq, YES, &resNew) != STATUS_SUCCESS)
-        rete(ErrVal::TIME_RES);
-    ifu (doForce && (resReq != resNew))
-    {
-        TimeResClr();
-        rete(ErrVal::TIME_RES);
-    }
-    rets;
 }
 
 class Timer
@@ -223,6 +193,29 @@ class Timer
     {
     }
 };
+
+#ifdef PROG_SYS_WIN
+
+dfa ER TimeResClr()
+{
+    U4 resNew;
+    ifu (NtSetTimerResolution_(0, NO, &resNew) != STATUS_SUCCESS)
+        rete(ErrVal::TIME_RES);
+    rets;
+}
+dfa ER TimeResSet(TmMain ms, BO doForce)
+{
+    cx AU resReq = U4(RoundToInt(ms * TmMain(10000)));
+    U4 resNew;
+    ifu (NtSetTimerResolution_(resReq, YES, &resNew) != STATUS_SUCCESS)
+        rete(ErrVal::TIME_RES);
+    ifu (doForce && (resReq != resNew))
+    {
+        TimeResClr();
+        rete(ErrVal::TIME_RES);
+    }
+    rets;
+}
 
 class TimeHackChecker
 {

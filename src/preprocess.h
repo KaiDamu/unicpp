@@ -50,6 +50,28 @@
     #endif
 #endif
 
+#if !defined(PROG_CPU_TYPE_X86_32) && !defined(PROG_CPU_TYPE_X86_64) && !defined(PROG_CPU_TYPE_ARM_32) && !defined(PROG_CPU_TYPE_ARM_64) && !defined(PROG_CPU_TYPE_RISCV_32) && \
+    !defined(PROG_CPU_TYPE_RISCV_64) && !defined(PROG_CPU_TYPE_XTENSA)
+    // try detecting cpu type
+    #if defined(__i386__) || defined(_M_IX86)
+        #define PROG_CPU_TYPE_X86_32
+    #elif defined(__x86_64__) || defined(_M_X64) || defined(_M_AMD64)
+        #define PROG_CPU_TYPE_X86_64
+    #elif defined(__arm__) || defined(_M_ARM)
+        #define PROG_CPU_TYPE_ARM_32
+    #elif defined(__aarch64__) || defined(_M_ARM64)
+        #define PROG_CPU_TYPE_ARM_64
+    #elif defined(__riscv) && (__riscv_xlen == 32)
+        #define PROG_CPU_TYPE_RISCV_32
+    #elif defined(__riscv) && (__riscv_xlen == 64)
+        #define PROG_CPU_TYPE_RISCV_64
+    #elif defined(__XTENSA__) || defined(__xtensa__)
+        #define PROG_CPU_TYPE_XTENSA
+    #else
+        #error "PROG_CPU_TYPE is not defined! Define it..."
+    #endif
+#endif
+
 #if !defined(PROG_SYS_LINUX) && !defined(PROG_SYS_WIN) && !defined(PROG_SYS_ESP32)
     // try detecting system
     #if defined(__linux__)

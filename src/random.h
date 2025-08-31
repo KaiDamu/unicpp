@@ -1,9 +1,10 @@
 #pragma once
 
-cxex SI RAND_CTX_VAL_CNT = 624;
-
 class RandCtx
 {
+  public:
+    static cxex SI VAL_CNT = 624;
+
   private:
     SI m_i;
     std::vector<U4> m_val;
@@ -13,15 +14,15 @@ class RandCtx
   private:
     dfa NT Init(U4 seed)
     {
-        m_i = RAND_CTX_VAL_CNT;
+        m_i = VAL_CNT;
         m_seed = seed;
         m_isPrep = NO;
     }
     dfa NT Prep()
     {
-        m_val.resize(RAND_CTX_VAL_CNT);
+        m_val.resize(VAL_CNT);
         m_val[0] = m_seed;
-        for (m_i = 1; m_i < RAND_CTX_VAL_CNT; ++m_i)
+        for (m_i = 1; m_i < VAL_CNT; ++m_i)
             m_val[m_i] = m_val[m_i - 1] * 6069;
         m_isPrep = YES;
     }
@@ -40,17 +41,17 @@ class RandCtx
             tx->Roll(i, i + 1, i, i + 397);
             ++i;
         }
-        while (i < RAND_CTX_VAL_CNT - 1)
+        while (i < VAL_CNT - 1)
         {
             tx->Roll(i, i + 1, i, i - 227);
             ++i;
         }
-        tx->Roll(RAND_CTX_VAL_CNT - 1, 0, RAND_CTX_VAL_CNT - 1, 396);
+        tx->Roll(VAL_CNT - 1, 0, VAL_CNT - 1, 396);
         m_i = 0;
     }
     dfa U4 Next()
     {
-        ifu (m_i == RAND_CTX_VAL_CNT)
+        ifu (m_i == VAL_CNT)
             tx->Gen();
         U4 r = m_val[m_i++];
         r ^= r >> 11;
@@ -69,6 +70,8 @@ class RandCtx
     {
         ret tx->Next();
     }
+
+  private:
     dfa U4 RandU4(U4 min, U4 max)
     {
         ret min + F8ToU4(U4ToF8(max - min + 1) * tx->RandNormal());
@@ -84,6 +87,21 @@ class RandCtx
     dfa F8 RandF8(F8 min, F8 max)
     {
         ret min + ((max - min) * tx->RandNormal());
+    }
+
+  public:
+    tpl1 dfa T1 RandVal(T1 min, T1 max)
+    {
+        ifcx (IsTypeSame<T1, U4>)
+            ret tx->RandU4(min, max);
+        else ifcx (IsTypeSame<T1, S4>)
+            ret tx->RandS4(min, max);
+        else ifcx (IsTypeSame<T1, F4>)
+            ret tx->RandF4(min, max);
+        else ifcx (IsTypeSame<T1, F8>)
+            ret tx->RandF8(min, max);
+        else
+            static_assert(NO && siz(T1), "RandCtx::RandVal: unsupported type");
     }
 
   public:
@@ -107,26 +125,14 @@ dfa U4 RandU4()
 {
     ret g_randCtx.RandU4();
 }
-dfa U4 RandU4(U4 min, U4 max)
+tpl1 dfa T1 RandVal(T1 min, T1 max)
 {
-    ret g_randCtx.RandU4(min, max);
-}
-dfa S4 RandS4(S4 min, S4 max)
-{
-    ret g_randCtx.RandS4(min, max);
-}
-dfa F4 RandF4(F4 min, F4 max)
-{
-    ret g_randCtx.RandF4(min, max);
-}
-dfa F8 RandF8(F8 min, F8 max)
-{
-    ret g_randCtx.RandF8(min, max);
+    ret g_randCtx.RandVal(min, max);
 }
 
 tpl1 dfa T1 RandMag()
 {
-    ret T1(F8(T1(1) << RandU4(0, sizb(T1) - 1)) * RandF8(0.5, 2.0));
+    ret T1(F8(T1(1) << RandU4(0, sizb(T1) - 1)) * RandVal<F8>(0.5, 2.0));
 }
 
 dfa NT RandCrypt(GA buf, SI size)
@@ -151,5 +157,5 @@ dfa NT RandCrypt(GA buf, SI size)
 tpl1 dfa NT MixRand(T1* buf, SI cnt)
 {
     ite (i, i < cnt)
-        Swap<T1>(buf[i], buf[SI(RandU4(0, U4(cnt - 1)))]);
+        Swap<T1>(buf[i], buf[SI(RandVal<U4>(0, U4(cnt - 1)))]);
 }

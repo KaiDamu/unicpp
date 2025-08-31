@@ -19,6 +19,7 @@
 #include <limits>
 #include <functional>
 #include <filesystem>
+#include <cmath>
 
 #include "import/stdc/type.h"
 #include "import/stdc/value.h"
