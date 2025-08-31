@@ -1,11 +1,40 @@
 #pragma once
 
-#ifdef PROG_SYS_WIN
-
 // pre-defined:
 tpl<SI TBound1, SI TBound2> dfa NT ThdYield(SI spinCntCur);
 
-class EvtWin
+class EvtFast
+{
+  private:
+    volatile BO m_isSignaled;
+
+  public:
+    dfa NT Set(BO isSignaled)
+    {
+#ifdef PROG_THD_CNT_MULTI
+        m_isSignaled = isSignaled;
+#endif
+    }
+    dfa NT Wait(BO doResetAfter = NO)
+    {
+#ifdef PROG_THD_CNT_MULTI
+        SI spinCnt = 0;
+        while (!m_isSignaled)
+            ThdYield<64, 4000>(spinCnt++);
+        if (doResetAfter)
+            tx->Set(NO);
+#endif
+    }
+
+  public:
+    dfa EvtFast() : m_isSignaled(NO)
+    {
+    }
+};
+
+#ifdef PROG_SYS_WIN
+
+class _EvtWin
 {
   private:
     HANDLE m_hdl;
@@ -58,43 +87,14 @@ class EvtWin
     }
 
   public:
-    dfa EvtWin()
+    dfa _EvtWin()
     {
         m_hdl = NUL;
         tx->Init();
     }
-    dfa ~EvtWin()
+    dfa ~_EvtWin()
     {
         tx->Free();
-    }
-};
-
-class EvtFast
-{
-  private:
-    volatile BO m_isSignaled;
-
-  public:
-    dfa NT Set(BO isSignaled)
-    {
-    #ifdef PROG_THD_CNT_MULTI
-        m_isSignaled = isSignaled;
-    #endif
-    }
-    dfa NT Wait(BO doResetAfter = NO)
-    {
-    #ifdef PROG_THD_CNT_MULTI
-        SI spinCnt = 0;
-        while (!m_isSignaled)
-            ThdYield<64, 4000>(spinCnt++);
-        if (doResetAfter)
-            tx->Set(NO);
-    #endif
-    }
-
-  public:
-    dfa EvtFast() : m_isSignaled(NO)
-    {
     }
 };
 

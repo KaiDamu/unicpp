@@ -68,6 +68,29 @@ dfa NT ThdYield()
     unimp;
 #endif
 }
+tpl<SI TBound1 = 64, SI TBound2 = 4000> dfa NT ThdYield(SI spinCntCur)
+{
+#if defined(PROG_SYS_WIN)
+    if (spinCntCur < TBound1)
+        YieldProcessor();
+    else if (spinCntCur < TBound2)
+        NtYieldExecution_();
+    else
+    {
+        LARGE_INTEGER_ tmp(0);
+        NtDelayExecution_(NO, &tmp);
+    }
+#elif defined(PROG_SYS_ESP32)
+    if (spinCntCur < TBound1)
+        portNOP();
+    else if (spinCntCur < TBound2)
+        taskYIELD();
+    else
+        vTaskDelay(1);
+#else
+    unimp;
+#endif
+}
 
 dfa NT ThdWait(TmMain ms)
 {
@@ -114,23 +137,6 @@ dfa HD ThdIdByHdl(HD hdl)
     ifu (NtQueryInformationThread_(hdl, THREADINFOCLASS_::ThreadBasicInformation, &info, siz(info), NUL) != STATUS_SUCCESS)
         ret HD(0);
     ret info.ClientId.UniqueThread;
-}
-
-tpl<SI TBound1 = 64, SI TBound2 = 4000> dfa NT ThdYield(SI spinCntCur)
-{
-    if (spinCntCur < TBound1)
-    {
-        YieldProcessor();
-    }
-    else if (spinCntCur < TBound2)
-    {
-        NtYieldExecution_();
-    }
-    else
-    {
-        LARGE_INTEGER_ tmp(0);
-        NtDelayExecution_(NO, &tmp);
-    }
 }
 
 dfa SI SysCpuCnt()
@@ -282,7 +288,7 @@ class ThdTaskMgr
     std::vector<Thd> m_thdList;
     DQueue<ThdTask> m_taskQueue;
     ThdLockMulti m_lock;
-    EvtWin m_evtWait;
+    EvtFast m_evtWait;
     SI m_taskCnt;
 
   public:
@@ -309,8 +315,7 @@ class ThdTaskMgr
     dfa ER WaitAll()
     {
         while (tx->TaskCnt() != 0)
-            ife (m_evtWait.Wait(NO))
-                retep;
+            m_evtWait.Wait(YES);
         rets;
     }
     dfa ER Free()
