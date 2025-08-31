@@ -24,7 +24,7 @@ dfa ER _DirFileEnum(cx CH* path, SI depth, DirFileEnumCallbFnT callb, GA param1,
         rets;
     --depth;
     File dir;
-    ife (dir.Open(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, FILE_SHARE_READ, FILE_OPEN, 0, 0, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT, hdlRoot))
+    ife (dir._OpenNt(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, FILE_SHARE_READ, FILE_OPEN, 0, 0, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT, hdlRoot))
         retep;
     IO_STATUS_BLOCK_ isb;
     ArrDFast<U1> buf(4 * BYTE_IN_KB - 64);

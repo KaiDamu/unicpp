@@ -7,15 +7,12 @@ dfa TEB_* ThdTeb();
 
 cxex SI STR_EX_LEN = 1;
 
-#ifdef PROG_COMPILER_GCC
-    #define CsstrSetForm sprintf
-    #define ChstrSetForm swprintf
-    #define CsstrGetForm sscanf
-    #define ChstrGetForm swscanf
-#endif
-
-// has some bugs
-#ifdef PROG_COMPILER_MSVC
+#ifdef PROG_SYS_WIN
+    #define CsstrSetForm sprintf_s
+    #define ChstrSetForm swprintf_s
+    #define CsstrGetForm sscanf_s
+    #define ChstrGetForm swscanf_s
+#else
     #define CsstrSetForm sprintf
     #define ChstrSetForm swprintf
     #define CsstrGetForm sscanf

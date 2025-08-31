@@ -49,11 +49,13 @@ dfa ER _Main(MainInitCtx& ctx)
     rets;
 }
 
-    #ifdef UCPP_MAIN_TYPE_BASE
+    #if defined(UCPP_MAIN_TYPE_BASE)
 extern "C" void _start()
     #elif defined(UCPP_MAIN_TYPE_STD)
-        #ifdef PROG_SYS_WIN
+        #if defined(PROG_SYS_WIN)
 int main() // define UCPP_MAIN_TYPE_NONE if you're using your own main function
+        #elif defined(PROG_SYS_ESP32)
+extern "C" void app_main() // define UCPP_MAIN_TYPE_NONE if you're using your own main function
         #else
 int main(int argc, char** argv) // define UCPP_MAIN_TYPE_NONE if you're using your own main function
         #endif
@@ -67,9 +69,14 @@ inline int _main_unused()
     }
     ErrVal errVal = ErrVal::NONE;
     MainInitCtx ctx = {};
-    #ifndef PROG_SYS_WIN
+    #if !defined(PROG_SYS_WIN)
+        #if defined(PROG_SYS_ESP32)
+    ctx.argc = 0;
+    ctx.argv = NUL;
+        #else
     ctx.argc = argc;
     ctx.argv = argv;
+        #endif
     #endif
     ife (_Main(ctx))
         errVal = ErrLastGet();
@@ -84,7 +91,7 @@ inline int _main_unused()
     }
     _ConFree(); // error ignored
     ProcExit(U4(errVal));
-    #ifndef UCPP_MAIN_TYPE_BASE
+    #if !defined(UCPP_MAIN_TYPE_BASE) && !defined(PROG_SYS_ESP32)
     ret int(errVal);
     #endif
 }

@@ -18,6 +18,7 @@
 #include <memory>
 #include <limits>
 #include <functional>
+#include <filesystem>
 
 #include "import/stdc/type.h"
 #include "import/stdc/value.h"

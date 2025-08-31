@@ -69,6 +69,20 @@ dfa NT ThdYield()
 #endif
 }
 
+dfa NT ThdWait(TmMain ms)
+{
+    ifu (ms <= TmMain(0))
+        ret;
+#if defined(PROG_SYS_WIN)
+    LARGE_INTEGER_ tmp(S8(ms * TmMain(-10000)));
+    NtDelayExecution_(NO, &tmp);
+#elif defined(PROG_SYS_ESP32)
+    vTaskDelay(CeilToInt(ms * (TmMain(configTICK_RATE_HZ) / TmMain(1000))));
+#else
+    unimp;
+#endif
+}
+
 #ifdef PROG_SYS_WIN
 
 // pre-defined:
@@ -117,15 +131,6 @@ tpl<SI TBound1 = 64, SI TBound2 = 4000> dfa NT ThdYield(SI spinCntCur)
         LARGE_INTEGER_ tmp(0);
         NtDelayExecution_(NO, &tmp);
     }
-}
-dfa NT ThdWait(TmMain ms)
-{
-    ifu (ms <= TmMain(0))
-        ret;
-    cx AU t = S8(ms * TmMain(-10000));
-    LARGE_INTEGER_ tmp = {};
-    tmp.QuadPart = t;
-    NtDelayExecution_(NO, &tmp);
 }
 
 dfa SI SysCpuCnt()

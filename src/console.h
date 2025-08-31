@@ -26,8 +26,13 @@ enum class ConWaitAnim : U1
     DOTS = 2,    // four dots that appear one by one
 };
 
+#if defined(PROG_SYS_ESP32)
+cxex SI CON_SBO_LENX_MAX = BYTE_IN_KB / 4;
+cxex SI CON_HISTORY_CNT_MAX = 16;
+#else
 cxex SI CON_SBO_LENX_MAX = BYTE_IN_KB;
 cxex SI CON_HISTORY_CNT_MAX = 32;
+#endif
 cxex ConCol CON_COL_DEFA = ConCol::WHITE;
 
 struct ConCtx
@@ -49,11 +54,19 @@ ConCtx* g_conCtx = NUL;
 
 dfa HD _ConOutHdl()
 {
+#ifdef PROG_SYS_WIN
     ret GetStdHandle(STD_OUTPUT_HANDLE);
+#else
+    ret NUL;
+#endif
 }
 dfa HD _ConInHdl()
 {
+#ifdef PROG_SYS_WIN
     ret GetStdHandle(STD_INPUT_HANDLE);
+#else
+    ret NUL;
+#endif
 }
 
 dfa ConCol _ConColByCs(CS c)
@@ -98,7 +111,7 @@ dfa ConCol _ConColByCs(CS c)
 }
 dfa ER _ConColRealSet(ConCol col)
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     cx AU hdl = _ConOutHdl();
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -106,13 +119,15 @@ dfa ER _ConColRealSet(ConCol col)
         rete(ErrVal::CON);
     g_conCtx->colReal = col;
     rets;
+#elif defined(PROG_SYS_ESP32)
+    rets; // assume no color support & ignore the request
 #else
     rete(ErrVal::NO_SUPPORT);
 #endif
 }
 dfa ER _ConColRealGet(ConCol& col)
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     cx AU hdl = _ConOutHdl();
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -120,6 +135,9 @@ dfa ER _ConColRealGet(ConCol& col)
     ifu (GetConsoleScreenBufferInfo(hdl, &info) == 0)
         rete(ErrVal::CON);
     col = ConCol(info.wAttributes & 0x000F);
+    rets;
+#elif defined(PROG_SYS_ESP32)
+    col = CON_COL_DEFA; // assume no color support & return default color
     rets;
 #else
     rete(ErrVal::NO_SUPPORT);
@@ -165,7 +183,7 @@ dfa ER _ConCurPosGet(Pos2<SI>& pos)
 }
 dfa ER _ConCurShow(BO isShown)
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     cx AU hdl = _ConOutHdl();
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -176,13 +194,15 @@ dfa ER _ConCurShow(BO isShown)
     ifu (SetConsoleCursorInfo(hdl, &info) == 0)
         rete(ErrVal::CON);
     rets;
+#elif defined(PROG_SYS_ESP32)
+    rets; // assume no cursor visibility control & ignore the request
 #else
     rete(ErrVal::NO_SUPPORT);
 #endif
 }
 dfa ER _ConInBufClr()
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     cx AU hdl = _ConInHdl();
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -198,6 +218,8 @@ dfa ER _ConInBufClr()
             rete(ErrVal::CON);
     }
     rets;
+#elif defined(PROG_SYS_ESP32)
+    rets; // assume this is not possible & ignore the request
 #else
     rete(ErrVal::NO_SUPPORT);
 #endif
@@ -221,9 +243,12 @@ dfa ER _ConReadModeSet(BO isEnabled)
         retep;
     rets;
 }
+
+#ifdef PROG_SYS_WIN
+
 dfa ER _ConWriteRow(cx std::vector<CHAR_INFO>& in, SI y)
 {
-#ifdef PROG_SYS_WIN
+    #ifdef PROG_SYS_WIN
     cx AU hdl = _ConOutHdl();
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
@@ -233,13 +258,13 @@ dfa ER _ConWriteRow(cx std::vector<CHAR_INFO>& in, SI y)
     ifu (WriteConsoleOutputA(hdl, in.data(), bufSize, pos, &area) == 0)
         rete(ErrVal::CON);
     rets;
-#else
+    #else
     rete(ErrVal::NO_SUPPORT);
-#endif
+    #endif
 }
 dfa ER _ConReadRow(std::vector<CHAR_INFO>& out, SI y)
 {
-#ifdef PROG_SYS_WIN
+    #ifdef PROG_SYS_WIN
     out.clear();
     cx AU hdl = _ConOutHdl();
     ifu (hdl == INVALID_HANDLE_VALUE)
@@ -257,9 +282,9 @@ dfa ER _ConReadRow(std::vector<CHAR_INFO>& out, SI y)
         rete(ErrVal::CON);
     }
     rets;
-#else
+    #else
     rete(ErrVal::NO_SUPPORT);
-#endif
+    #endif
 }
 dfa ER _ConClrRow(SI y)
 {
@@ -273,20 +298,31 @@ dfa ER _ConClrRow(SI y)
     rets;
 }
 
+#endif
+
 dfa ER _ConWriteRaw__(HD hdl, cx CS* buf, SI bufLen)
 {
+    if (bufLen < 1)
+        rets;
+#ifdef PROG_SYS_WIN
     DWORD result;
-    if (bufLen > 0)
-        ifu ((WriteConsoleA(hdl, buf, DWORD(bufLen), &result, NUL) == 0) || (SI(result) != bufLen))
-            rete(ErrVal::CON);
+    ifu ((WriteConsoleA(hdl, buf, DWORD(bufLen), &result, NUL) == 0) || (SI(result) != bufLen))
+        rete(ErrVal::CON);
+#else
+    cx AU result = fwrite(buf, 1, bufLen, stdout);
+    ifu (SI(result) != bufLen)
+        rete(ErrVal::CON);
+    unused(hdl);
+#endif
     rets;
 }
 dfa ER _ConWriteRaw_(cx CS* buf, SI bufLen, BO isInput)
 {
-#ifdef PROG_SYS_WIN
     cx AU hdl = _ConOutHdl();
+#if defined(PROG_SYS_WIN)
     ifu (hdl == INVALID_HANDLE_VALUE)
         rete(ErrVal::NO_EXIST);
+#endif
     ife (_ConColUpd())
         retep;
     cx AU bufEnd = buf + bufLen;
@@ -295,6 +331,7 @@ dfa ER _ConWriteRaw_(cx CS* buf, SI bufLen, BO isInput)
     ife (ConColGet(colOld))
         retep;
 
+#if defined(PROG_SYS_WIN)
     Pos2<SI> posWritePre;
     Pos2<SI> posInput;
     std::vector<CHAR_INFO> rowInputSave;
@@ -314,6 +351,7 @@ dfa ER _ConWriteRaw_(cx CS* buf, SI bufLen, BO isInput)
         ife (_ConCurPosSet(posWritePre))
             retep;
     }
+#endif
 
     while (bufCur != bufEnd)
     {
@@ -347,6 +385,7 @@ dfa ER _ConWriteRaw_(cx CS* buf, SI bufLen, BO isInput)
         }
     }
 
+#if defined(PROG_SYS_WIN)
     if (doWriteRedir)
     {
         Pos2<SI> posWritePost;
@@ -366,13 +405,11 @@ dfa ER _ConWriteRaw_(cx CS* buf, SI bufLen, BO isInput)
         ife (_ConCurPosSet(posInput))
             retep;
     }
+#endif
 
     ife (ConColSet(colOld))
         retep;
     rets;
-#else
-    rete(ErrVal::NO_SUPPORT);
-#endif
 }
 dfa ER _ConWriteRaw(cx CS* buf, SI bufLen, BO isInput)
 {
@@ -804,25 +841,24 @@ dfa ER _ConWait(cx CS* prefix, ConWaitAnim anim)
 
 dfa BO _ConIsInit()
 {
-#ifdef PROG_SYS_WIN
     ret (g_conCtx != NUL);
-#else
-    ret NO;
-#endif
 }
 dfa ER _ConInit()
 {
-#ifdef PROG_SYS_WIN
     ifl (_ConIsInit())
         rets;
     g_conCtx = new ConCtx;
     if (!ConIsExist())
     {
+#if defined(PROG_SYS_WIN)
         ifu (AllocConsole() == 0)
             rete(ErrVal::CON);
         ife (Win(Win::SelType::CON).Focus())
             retep;
         g_conCtx->isConOwn = YES;
+#else
+        rete(ErrVal::NO_SUPPORT);
+#endif
     }
     ife (_ConCurShow(NO))
         retep;
@@ -833,6 +869,7 @@ dfa ER _ConInit()
         retep;
     ife (_ConInBufClr())
         retep;
+#if defined(PROG_SYS_WIN)
     {
         cx AU hdl = _ConOutHdl();
         CONSOLE_FONT_INFOEX font = {};
@@ -843,10 +880,8 @@ dfa ER _ConInit()
         StrCpy(font.FaceName, L"Consolas");
         SetCurrentConsoleFontEx(hdl, YES, &font);
     }
-    rets;
-#else
-    rete(ErrVal::NO_SUPPORT);
 #endif
+    rets;
 }
 dfa ER _ConFree()
 {
@@ -875,8 +910,10 @@ dfa ER _ConFree()
 
 dfa BO ConIsExist()
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     ret (GetConsoleWindow() != NUL);
+#elif defined(PROG_SYS_ESP32)
+    ret YES; // assume always exist
 #else
     ret NO;
 #endif

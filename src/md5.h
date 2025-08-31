@@ -56,7 +56,7 @@ class Md5
       public:
         dfa NT GetCsstr(CS* str) cx
         {
-            CsstrSetForm(str, "%08x%08x%08x%08x", (unsigned)RevByte(b4[0]), (unsigned)RevByte(b4[1]), (unsigned)RevByte(b4[2]), (unsigned)RevByte(b4[3]));
+            CsstrSetForm(str, 33, "%08x%08x%08x%08x", (unsigned)RevByte(b4[0]), (unsigned)RevByte(b4[1]), (unsigned)RevByte(b4[2]), (unsigned)RevByte(b4[3]));
         }
         dfa NT SetCsstr(cx CS* str)
         {
@@ -68,7 +68,7 @@ class Md5
         }
         dfa NT GetChstr(CH* str) cx
         {
-            ChstrSetForm(str, L"%08x%08x%08x%08x", RevByte(b4[0]), RevByte(b4[1]), RevByte(b4[2]), RevByte(b4[3]));
+            ChstrSetForm(str, 33, L"%08x%08x%08x%08x", RevByte(b4[0]), RevByte(b4[1]), RevByte(b4[2]), RevByte(b4[3]));
         }
         dfa NT SetChstr(cx CH* str)
         {

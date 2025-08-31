@@ -758,7 +758,7 @@ dfa NT Srv::CliAuthToNoUser(CliSrv& cli)
     RandCrypt(&userNameNum, siz(userNameNum));
     userNameNum %= 10000;
     CS userName[16];
-    CsstrSetForm(userName, "anon-%04u", userNameNum);
+    CsstrSetForm(userName, 16, "anon-%04u", userNameNum);
     ife (m_cliList.IdSecSet(&cli, std::string(userName)))
         jsrc(reGenUserName);
 
