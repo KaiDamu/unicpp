@@ -18,6 +18,17 @@ noinl GA AdrOfNextOpe()
     ret RetAdr();
 }
 
+dfa NT NoOpe()
+{
+#if defined(PROG_COMPILER_MSVC)
+    __nop();
+#elif defined(PROG_COMPILER_GCC)
+    __asm__ __volatile__("nop");
+#else
+    NT(0);
+#endif
+}
+
 #ifdef PROG_SYS_WIN
 
 dfa ER MemDelSys(GA ptr, HD proc = ProcCurHdl())

@@ -65,6 +65,12 @@
     #include "import/winapi/util.h"
 #endif
 
+#ifdef PROG_SYS_ESP32
+    #include <freertos/freertos.h>
+    #include <esp_check.h>
+    #include <esp_timer.h>
+#endif
+
 #include "keyword.h"
 #include "debug.h"
 #include "type.h"

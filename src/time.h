@@ -67,6 +67,8 @@ dfa TmCpu CpuTsc()
     __asm__(".byte 0x0f, 0x31" : "=a"(part[0]), "=d"(part[1]));
 #elif defined(PROG_COMPILER_MSVC) && (defined(PROG_CPU_TYPE_X86_32) || defined(PROG_CPU_TYPE_X86_64))
     val = __rdtsc();
+#elif defined(PROG_SYS_ESP32)
+    val = U8(esp_cpu_get_cycle_count());
 #else
     unimp;
 #endif
@@ -75,7 +77,7 @@ dfa TmCpu CpuTsc()
 
 dfa ER _TimeMainInit()
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     LARGE_INTEGER tmp[2];
     ifu (QueryPerformanceFrequency(&tmp[1]) == 0)
         rete(ErrVal::TIME);
@@ -83,6 +85,9 @@ dfa ER _TimeMainInit()
         rete(ErrVal::TIME);
     cx AU ofs = U8(tmp[0].QuadPart);
     cx AU tps = F8(tmp[1].QuadPart);
+#elif defined(PROG_SYS_ESP32)
+    cx AU ofs = U8(esp_timer_get_time());
+    cx AU tps = F8(1000000);
 #else
     cx AU ofs = U8(clock());
     cx AU tps = F8(CLOCKS_PER_SEC);
@@ -94,10 +99,12 @@ dfa ER _TimeMainInit()
 
 dfa TmMain TimeMain()
 {
-#ifdef PROG_SYS_WIN
+#if defined(PROG_SYS_WIN)
     LARGE_INTEGER tmp;
     QueryPerformanceCounter(&tmp);
     cx AU val = U8(tmp.QuadPart);
+#elif defined(PROG_SYS_ESP32)
+    cx AU val = U8(esp_timer_get_time());
 #else
     cx AU val = U8(clock());
 #endif

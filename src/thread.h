@@ -82,7 +82,7 @@ tpl<SI TBound1 = 64, SI TBound2 = 4000> dfa NT ThdYield(SI spinCntCur)
     }
 #elif defined(PROG_SYS_ESP32)
     if (spinCntCur < TBound1)
-        portNOP();
+        NoOpe();
     else if (spinCntCur < TBound2)
         taskYIELD();
     else

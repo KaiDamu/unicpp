@@ -132,7 +132,7 @@ tpl1 dfa T1 RandVal(T1 min, T1 max)
 
 tpl1 dfa T1 RandMag()
 {
-    ret T1(F8(T1(1) << RandU4(0, sizb(T1) - 1)) * RandVal<F8>(0.5, 2.0));
+    ret T1(F8(T1(1) << RandVal<U4>(0, sizb(T1) - 1)) * RandVal<F8>(0.5, 2.0));
 }
 
 dfa NT RandCrypt(GA buf, SI size)
