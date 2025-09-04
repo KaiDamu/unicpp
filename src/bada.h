@@ -2,30 +2,6 @@
 
 /// TODO: "bada.h is in a PoC stage!" ///
 
-#ifdef PROG_SYS_WIN
-
-enum class BadaColDatType : U1
-{
-    NONE = 0,
-    BI_SWITCH_LTR = 1,
-    EDGE_FILL = 2,
-};
-enum class BadaColDatFeatures : U4
-{
-    RESERVED = 0b0,
-};
-enum class BadaDatBlockType : U1
-{
-    NONE = 0,
-    GRID_SIZE = 1,
-    FPS = 2,
-    COL_DAT_TYPE = 3,
-    COL_DAT = 4,
-    END = 5,
-};
-
-cxex U4 BADA_MAGIC = 0x41444142; // "BADA"
-
 /*
    The following information is describing the format of the BADA codec and file format.
 
@@ -37,7 +13,7 @@ cxex U4 BADA_MAGIC = 0x41444142; // "BADA"
    (see file structure below)
 
    The 'magic' field must be "BADA".
-   The last element of 'datBlocks' must have 'type' set to 'BadaDatBlockType.END'.
+   The last element of 'datBlocks' must have 'type' set to 'DatBlockType.END'.
 
    [File structure]
        U4 magic = "BADA"
@@ -45,91 +21,123 @@ cxex U4 BADA_MAGIC = 0x41444142; // "BADA"
 
    [File structure structures]
        DatBlock
-           U1 type (BadaDatBlockType)
+           U1 type (DatBlockType)
            U1[] dat
 
    [File structure structure types]
-       BadaDatBlockType.NONE
+       DatBlockType.NONE
            U1[0] none
-       BadaDatBlockType.GRID_SIZE
+       DatBlockType.GRID_SIZE
            U4V w
            U4V h
            U4 cnt
-       BadaDatBlockType.FPS
+       DatBlockType.FPS
            U4V cnt
-       BadaDatBlockType.COL_DAT_TYPE
-           U1 type (BadaColDatType)
-           U4V features (BadaColDatFeatures)
+       DatBlockType.COL_DAT_TYPE
+           U1 type (ColDatType)
+           U4V features (ColDatFeatures)
            U1[] featuresDat
-       BadaDatBlockType.COL_DAT
+       DatBlockType.COL_DAT
            U4 size
            U1[size] dat
-       BadaDatBlockType.END
+       DatBlockType.END
            U1[0] none
 
    [Color data types]
-       BadaColDatType.NONE
-       BadaColDatType.BI_SWITCH_LTR
-       BadaColDatType.EDGE_FILL
+       ColDatType.NONE
+       ColDatType.BI_SWITCH_LTR
+       ColDatType.EDGE_FILL
 */
 
-class BadaCodec
+namespace Bada
 {
-  private:
-    struct Frame
+
+using ColDatTypeT = U1;
+enum class ColDatType : ColDatTypeT
+{
+    NONE = 0,
+    BI_SWITCH_LTR = 1,
+    EDGE_FILL = 2,
+};
+
+using ColDatFeaturesT = U4;
+enum class ColDatFeatures : ColDatFeaturesT
+{
+    RESERVED = 0b0,
+};
+
+using DatBlockTypeT = U1;
+enum class DatBlockType : DatBlockTypeT
+{
+    NONE = 0,
+    GRID_SIZE = 1,
+    FPS = 2,
+    COL_DAT_TYPE = 3,
+    COL_DAT = 4,
+    END = 5,
+};
+
+using MagicT = U4;
+cxex MagicT MAGIC = 0x41444142; // "BADA"
+
+class Xcoder
+{
+  protected:
+    struct Frame // EDGE_FILL only
     {
         BO isLazy;
         BO isBaseWhite;
         BitVec pixelPath;
         std::vector<SI> fillOrigins;
 
-        dfa Frame()
+        dfa Frame() : isLazy(NO), isBaseWhite(NO)
         {
-            isLazy = NO;
-            isBaseWhite = NO;
         }
     };
 
-  private:
-    // ...
+  protected:
     MemFile m_file;
     Size2<SI> m_frameSize;
     SI m_frameCnt;
     std::vector<Frame> m_frames;
+    ColDatType m_colDatType;
+    ColDatFeatures m_colDatFeatures;
+    SI m_fps;
+    SI m_cntCur; // BI_SWITCH_LTR only
+    U1 m_colCur; // BI_SWITCH_LTR only
+
+  protected:
+    dfa Xcoder()
+    {
+        m_frameSize = Size2<SI>(0, 0);
+        m_frameCnt = 0;
+        m_colDatType = ColDatType::NONE;
+        m_colDatFeatures = ColDatFeatures(0);
+        m_fps = 0;
+        m_cntCur = 0;
+        m_colCur = 0;
+    }
+};
+
+#ifdef PROG_SYS_WIN
+
+class Encoder : public Xcoder
+{
+  private:
     ColGrid<ColV> m_lazyRef;
     SI m_lazyRefFrameI;
-    BadaColDatType m_colDatType;
-    BadaColDatFeatures m_colDatFeatures;
-    SI m_fps;
-    // ...
     ThdTaskMgr m_thdTaskMgr;
-    // ...
-    SI m_cntCur;
-    U1 m_colCur;
-    // ...
     SI m_colDatSizePos;
-    SI m_colDatPos;
-    SI m_colDatSize;
-    SI m_frameCur;
-    union {
-        U1 m_varU1;
-        U2 m_varU2;
-        U4 m_varU4;
-        U8 m_varU8;
-    };
 
   public:
-    struct EncodeParams
+    struct Params
     {
-        BadaColDatType colDatType;
-        BadaColDatFeatures colDatFeatures;
+        ColDatType colDatType;
+        ColDatFeatures colDatFeatures;
         SI fps;
 
-        dfa EncodeParams()
+        dfa Params() : colDatType(ColDatType::BI_SWITCH_LTR), colDatFeatures(ColDatFeatures(0)), fps(30)
         {
-            colDatType = BadaColDatType::BI_SWITCH_LTR;
-            colDatFeatures = BadaColDatFeatures(0);
-            fps = 30;
         }
     };
 
@@ -148,15 +156,6 @@ class BadaCodec
             blackCnt += colGrid.pixels[(colGrid.size.h - 1) * colGrid.size.w + x].v < TO(ColV::v)(0x80);
         cx SI allCnt = (colGrid.size.w + colGrid.size.h) * 2 - 4;
         cx AU blackRatio = F4(blackCnt) / F4(allCnt);
-        /* // this makes it worse...
-        if (IsBetween<F4>(blackRatio, 0.3, 0.7))
-        {
-            SI blackSide = 0;
-            ite (i, i < SI(colGrid.pixels.size()))
-                blackSide += ToType<ColV>(colGrid.pixels[i]).v < TO(ColV::v)(0x80) ? 1 : -1;
-            ret ((blackSide >= 0) ? ColV(0x00) : ColV(0xFF));
-        }
-        */
         ret ((blackRatio >= F4(0.5)) ? ColV(0x00) : ColV(0xFF));
     }
 
@@ -233,38 +232,19 @@ class BadaCodec
 
         rets;
     }
-    dfa NT _FrameToColGrid_EdgeFill(ColGrid<ColV>& colGrid, cx Frame& frame)
-    {
-        // init
-        colGrid.Resize(m_frameSize);
-
-        // base
-        cx AU colBase = frame.isBaseWhite ? ColV(0xFF) : ColV(0x00);
-        MemSet(colGrid.pixels.data(), colBase.v, colGrid.pixels.size() * siz(colBase.v));
-
-        // path
-        cx AU colObj = frame.isBaseWhite ? ColV(0x00) : ColV(0xFF);
-        PixelPath::Draw(colGrid, frame.pixelPath, colObj);
-
-        // fill
-        for (cx AU& fillOrigin : frame.fillOrigins)
-            ColGridFloodFillAt(colGrid, fillOrigin, colBase, colObj);
-    }
 
   public:
-    dfa ER BeginEncode(cx CH* path, cx EncodeParams& params)
+    dfa ER Begin(cx CH* path, cx Params& params)
     {
-        ife (m_thdTaskMgr.Init())
-            retep;
+        ifep(m_thdTaskMgr.Init());
         m_colDatType = params.colDatType;
         m_colDatFeatures = params.colDatFeatures;
         m_fps = params.fps;
-        ife (m_file.Open(path, NO))
-            retep;
-        m_file.WriteVal(BADA_MAGIC);
-        m_file.WriteVal(BadaDatBlockType::FPS);
+        ifep(m_file.Open(path, NO));
+        m_file.WriteVal(MAGIC);
+        m_file.WriteVal(DatBlockType::FPS);
         m_file.WriteVarint(U4(m_fps));
-        m_file.WriteVal(BadaDatBlockType::COL_DAT_TYPE);
+        m_file.WriteVal(DatBlockType::COL_DAT_TYPE);
         m_file.WriteVal(m_colDatType);
         m_file.WriteVarint(U4(m_colDatFeatures));
         m_frameSize = Size2<SI>(0, 0);
@@ -274,176 +254,14 @@ class BadaCodec
         m_colCur = 0;
         rets;
     }
-    dfa ER BeginDecode(cx CH* path)
-    {
-        ife (m_file.Open(path, YES))
-            retep;
-        m_frameSize = Size2<SI>(0, 0);
-        m_frameCnt = 0;
-        m_frames.clear();
-        m_colDatType = BadaColDatType::NONE;
-        m_colDatFeatures = BadaColDatFeatures(0);
-        m_fps = 30;
-
-        ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
-            rete(ErrVal::FILE);
-        ifu (m_varU4 != BADA_MAGIC)
-            rete(ErrVal::NO_VALID);
-
-        {
-            BadaDatBlockType datBlockType = BadaDatBlockType::NONE;
-            while (datBlockType != BadaDatBlockType::END)
-            {
-                ifu (m_file.ReadVal(datBlockType) != siz(datBlockType))
-                    rete(ErrVal::FILE);
-
-                switch (datBlockType)
-                {
-                case BadaDatBlockType::NONE: {
-                    break;
-                }
-                case BadaDatBlockType::GRID_SIZE: {
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_frameSize.w = m_varU4;
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_frameSize.h = m_varU4;
-                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
-                        rete(ErrVal::FILE);
-                    m_frameCnt = m_varU4;
-                    break;
-                }
-                case BadaDatBlockType::FPS: {
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_fps = m_varU4;
-                    break;
-                }
-                case BadaDatBlockType::COL_DAT_TYPE: {
-                    ifu (m_file.ReadVal(m_colDatType) != siz(m_colDatType))
-                        rete(ErrVal::FILE);
-                    ifu (m_file.ReadVarint(AsType<U4>(m_colDatFeatures)) == 0)
-                        rete(ErrVal::FILE);
-                    ifu (U4(m_colDatFeatures) != 0)
-                        rete(ErrVal::NO_SUPPORT);
-                    break;
-                }
-                case BadaDatBlockType::COL_DAT: {
-                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
-                        rete(ErrVal::FILE);
-                    m_colDatSize = m_varU4;
-                    m_colDatPos = m_file.CurGet();
-                    m_file.CurMove(m_colDatSize);
-                    break;
-                }
-                case BadaDatBlockType::END: {
-                    break;
-                }
-                default: {
-                    rete(ErrVal::NO_SUPPORT);
-                }
-                }
-            }
-        }
-
-        m_frameCur = 0;
-        m_cntCur = 0;
-        m_colCur = 1;
-        m_file.CurSet(m_colDatPos);
-
-        if (m_colDatType == BadaColDatType::EDGE_FILL)
-        {
-            // init
-            m_frames.resize(m_frameCnt);
-
-            // lazy
-            {
-                std::vector<SI> vals;
-                m_file.ReadValSeqBox(vals);
-                SI frameI = 0;
-                BO last = NO;
-                for (cx AU& val : vals)
-                {
-                    ite (i, i < val)
-                        m_frames[frameI++].isLazy = last;
-                    last = !last;
-                }
-            }
-
-            // lazy map
-            std::vector<Frame*> framesNolazyMap;
-            framesNolazyMap.reserve(m_frameCnt);
-            {
-                for (AU& frame : m_frames)
-                {
-                    if (!frame.isLazy)
-                        framesNolazyMap.emplace_back(&frame);
-                }
-            }
-
-            // base
-            {
-                std::vector<SI> baseColCnts;
-                m_file.ReadValSeqBox(baseColCnts);
-                SI frameI = 0;
-                BO baseCur = NO;
-                for (cx AU& baseColCnt : baseColCnts)
-                {
-                    ite (i, i < baseColCnt)
-                        framesNolazyMap[frameI++]->isBaseWhite = baseCur;
-                    baseCur = !baseCur;
-                }
-            }
-
-            // fill
-            {
-                std::vector<SI> fillCnts;
-                std::vector<SI> fillOriginDiffs;
-                m_file.ReadValSeqBox(fillCnts);
-                m_file.ReadValSeqBox(fillOriginDiffs);
-                SI frameI = 0;
-                SI fillOriginDiffIOfs = 0;
-                for (cx AU& fillCnt : fillCnts)
-                {
-                    framesNolazyMap[frameI]->fillOrigins.reserve(fillCnt);
-                    SI fillOriginMain = -1;
-                    ite (i, i < fillCnt)
-                    {
-                        fillOriginMain += fillOriginDiffs[i + fillOriginDiffIOfs];
-                        framesNolazyMap[frameI]->fillOrigins.emplace_back(fillOriginMain);
-                    }
-                    fillOriginDiffIOfs += fillCnt;
-                    ++frameI;
-                }
-            }
-
-            ite (i, i < SI(framesNolazyMap.size()))
-            {
-                AU& frame = *(framesNolazyMap[i]);
-
-                // path
-                ifu (m_file.ReadVal<U4>(m_varU4) != siz(m_varU4))
-                    rete(ErrVal::FILE);
-                cx AU pixelPathDatSize = SI(m_varU4);
-                std::vector<U1> pixelPathDat(pixelPathDatSize);
-                ifu (m_file.Read(pixelPathDat.data(), pixelPathDat.size()) != SI(pixelPathDat.size()))
-                    rete(ErrVal::FILE);
-                frame.pixelPath.AddLast(&pixelPathDatSize, sizb(U4));
-                frame.pixelPath.AddLast(pixelPathDat.data(), pixelPathDat.size() * BIT_IN_BYTE);
-            }
-        }
-
-        rets;
-    }
-    dfa ER FrameEncode(cx ColGrid<ColV>& colGrid_)
+    dfa ER FrameWrite(cx ColGrid<ColV>& colGrid_)
     {
         ColGrid<ColV> colGrid = colGrid_;
 
         ifu (m_frameCnt == 0)
         {
             m_frameSize = colGrid.size;
-            m_file.WriteVal(BadaDatBlockType::COL_DAT);
+            m_file.WriteVal(DatBlockType::COL_DAT);
             m_colDatSizePos = m_file.CurGet();
             m_file.WriteVal(U4(0)); // size, will be filled in later
         }
@@ -451,7 +269,7 @@ class BadaCodec
         ifu (colGrid.size != m_frameSize)
             rete(ErrVal::NO_VALID);
 
-        if (m_colDatType == BadaColDatType::BI_SWITCH_LTR)
+        if (m_colDatType == ColDatType::BI_SWITCH_LTR)
         {
             AU pixel = colGrid.pixels.data();
             cx AU pixelEnd = pixel + colGrid.pixels.size();
@@ -471,7 +289,7 @@ class BadaCodec
                 ++pixel;
             }
         }
-        else if (m_colDatType == BadaColDatType::EDGE_FILL)
+        else if (m_colDatType == ColDatType::EDGE_FILL)
         {
             if (m_lazyRefFrameI == -1)
             {
@@ -484,8 +302,7 @@ class BadaCodec
                 cmpInfo.mode = ColGridVNCmpInfo::Mode::CHUNK_MAX;
                 cmpInfo.longChunkCntSuggest = 10;
                 F4 diff;
-                ife (ColGridVNCmp(diff, colGrid, m_lazyRef, cmpInfo))
-                    retep;
+                ifep(ColGridVNCmp(diff, colGrid, m_lazyRef, cmpInfo));
                 cxex AU LAZY_DIFF_THRESHOLD = F4(0.075);
                 if (diff >= LAZY_DIFF_THRESHOLD)
                 {
@@ -501,10 +318,8 @@ class BadaCodec
 
             Frame frame;
             Frame frameAlter;
-            ife (tx->_FrameEncode_EdgeFill(frame, colGrid, colBase))
-                retep;
-            ife (tx->_FrameEncode_EdgeFill(frameAlter, colGrid, colBaseAlter))
-                retep;
+            ifep(tx->_FrameEncode_EdgeFill(frame, colGrid, colBase));
+            ifep(tx->_FrameEncode_EdgeFill(frameAlter, colGrid, colBaseAlter));
 
             // choose the smaller one
             cxex AU FILL_ORIGIN_SIZE_AVG = F4(2.25);
@@ -525,88 +340,14 @@ class BadaCodec
 
         rets;
     }
-    dfa ER FrameDecode(ColGrid<ColV>& colGrid)
+    dfa ER End()
     {
-        colGrid.Resize(m_frameSize);
-
-        if (m_colDatType == BadaColDatType::BI_SWITCH_LTR)
-        {
-            cx AU pixelCnt = m_frameSize.Area();
-            SI pixelI = 0;
-            while (pixelI < pixelCnt)
-            {
-                if (m_cntCur == 0)
-                {
-                    ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
-                        rete(ErrVal::NO_EXIST);
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_cntCur = m_varU4;
-                    m_colCur = m_colCur ? 0 : 1;
-                }
-
-                cx AU cntToRead = Min(m_cntCur, pixelCnt - pixelI);
-                cx AU colSrc = m_colCur ? ColV(0xFF) : ColV(0x00);
-                AU pixelCur = colGrid.pixels.data() + pixelI;
-                ite (i, i < cntToRead)
-                    *(pixelCur + i) = colSrc;
-                pixelI += cntToRead;
-                m_cntCur -= cntToRead;
-            }
-        }
-        else if (m_colDatType == BadaColDatType::EDGE_FILL)
-        {
-            // get frame
-            cx AU& frame = m_frames[m_frameCur];
-
-            // handle lazy
-            if (frame.isLazy)
-            {
-                // for (AU& pixel : colGrid.pixels)
-                // pixel = ColV(0x80);
-
-                // get previous frame index which is not lazy
-                AU frameIPrev = m_frameCur;
-                while (m_frames[frameIPrev].isLazy)
-                    --frameIPrev;
-                // copy previous frame
-                ColGrid<ColV> colGridPrev;
-                tx->_FrameToColGrid_EdgeFill(colGridPrev, m_frames[frameIPrev]);
-
-                // get next frame index which is not lazy
-                AU frameINext = m_frameCur;
-                while (m_frames[frameINext].isLazy)
-                    ++frameINext;
-                // copy next frame
-                ColGrid<ColV> colGridNext;
-                tx->_FrameToColGrid_EdgeFill(colGridNext, m_frames[frameINext]);
-
-                // lerping between previous and next frame
-                F4 lerpRatio = F4(m_frameCur - frameIPrev) / F4(frameINext - frameIPrev);
-                ColGridLerp(colGrid, colGridPrev, colGridNext, lerpRatio);
-            }
-            else
-            {
-                tx->_FrameToColGrid_EdgeFill(colGrid, frame);
-            }
-        }
-        else
-        {
-            rete(ErrVal::NO_SUPPORT);
-        }
-
-        ++m_frameCur;
-
-        rets;
-    }
-    dfa ER EndEncode()
-    {
-        if (m_colDatType == BadaColDatType::BI_SWITCH_LTR)
+        if (m_colDatType == ColDatType::BI_SWITCH_LTR)
         {
             if (m_cntCur > 0)
                 m_file.WriteVarint(U4(m_cntCur));
         }
-        else if (m_colDatType == BadaColDatType::EDGE_FILL)
+        else if (m_colDatType == ColDatType::EDGE_FILL)
         {
             // process remaining lazy frames
             for (SI i = m_lazyRefFrameI + 1; i < m_frameCnt - 1; ++i)
@@ -715,24 +456,300 @@ class BadaCodec
             m_file.CurSet(curPos);
         }
 
-        m_file.WriteVal(BadaDatBlockType::GRID_SIZE);
+        m_file.WriteVal(DatBlockType::GRID_SIZE);
         m_file.WriteVarint(U4(m_frameSize.w));
         m_file.WriteVarint(U4(m_frameSize.h));
         m_file.WriteVal(U4(m_frameCnt));
-        m_file.WriteVal(BadaDatBlockType::END);
+        m_file.WriteVal(DatBlockType::END);
 
-        ife (m_file.Close(YES))
-            retep;
+        ifep(m_file.Close(YES));
 
-        ife (m_thdTaskMgr.Free())
-            retep;
+        ifep(m_thdTaskMgr.Free());
 
         rets;
     }
-    dfa ER EndDecode()
+
+  public:
+    dfa Encoder()
     {
-        ife (m_file.Close())
-            retep;
+        m_lazyRefFrameI = -1;
+        m_colDatSizePos = 0;
+    }
+};
+
+#endif
+
+class Decoder : public Xcoder
+{
+  private:
+    SI m_colDatPos;
+    SI m_colDatSize;
+    SI m_frameCur;
+    union {
+        U1 m_varU1;
+        U2 m_varU2;
+        U4 m_varU4;
+        U8 m_varU8;
+    };
+
+  private:
+    dfa NT _FrameToColGrid_EdgeFill(ColGrid<ColV>& colGrid, cx Frame& frame)
+    {
+        // init
+        colGrid.Resize(m_frameSize);
+
+        // base
+        cx AU colBase = frame.isBaseWhite ? ColV(0xFF) : ColV(0x00);
+        MemSet(colGrid.pixels.data(), colBase.v, colGrid.pixels.size() * siz(colBase.v));
+
+        // path
+        cx AU colObj = frame.isBaseWhite ? ColV(0x00) : ColV(0xFF);
+        PixelPath::Draw(colGrid, frame.pixelPath, colObj);
+
+        // fill
+        for (cx AU& fillOrigin : frame.fillOrigins)
+            ColGridFloodFillAt(colGrid, fillOrigin, colBase, colObj);
+    }
+
+  public:
+    dfa ER Begin(cx CH* path)
+    {
+        ifep(m_file.Open(path, YES));
+        m_frameSize = Size2<SI>(0, 0);
+        m_frameCnt = 0;
+        m_frames.clear();
+        m_colDatType = ColDatType::NONE;
+        m_colDatFeatures = ColDatFeatures(0);
+        m_fps = 30;
+
+        ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
+            rete(ErrVal::FILE);
+        ifu (m_varU4 != MAGIC)
+            rete(ErrVal::NO_VALID);
+
+        {
+            DatBlockType datBlockType = DatBlockType::NONE;
+            while (datBlockType != DatBlockType::END)
+            {
+                ifu (m_file.ReadVal(datBlockType) != siz(datBlockType))
+                    rete(ErrVal::FILE);
+
+                switch (datBlockType)
+                {
+                case DatBlockType::NONE: {
+                    break;
+                }
+                case DatBlockType::GRID_SIZE: {
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
+                    m_frameSize.w = m_varU4;
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
+                    m_frameSize.h = m_varU4;
+                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
+                        rete(ErrVal::FILE);
+                    m_frameCnt = m_varU4;
+                    break;
+                }
+                case DatBlockType::FPS: {
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
+                    m_fps = m_varU4;
+                    break;
+                }
+                case DatBlockType::COL_DAT_TYPE: {
+                    ifu (m_file.ReadVal(m_colDatType) != siz(m_colDatType))
+                        rete(ErrVal::FILE);
+                    ifu (m_file.ReadVarint(AsType<U4>(m_colDatFeatures)) == 0)
+                        rete(ErrVal::FILE);
+                    ifu (U4(m_colDatFeatures) != 0)
+                        rete(ErrVal::NO_SUPPORT);
+                    break;
+                }
+                case DatBlockType::COL_DAT: {
+                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
+                        rete(ErrVal::FILE);
+                    m_colDatSize = m_varU4;
+                    m_colDatPos = m_file.CurGet();
+                    m_file.CurMove(m_colDatSize);
+                    break;
+                }
+                case DatBlockType::END: {
+                    break;
+                }
+                default: {
+                    rete(ErrVal::NO_SUPPORT);
+                }
+                }
+            }
+        }
+
+        m_frameCur = 0;
+        m_cntCur = 0;
+        m_colCur = 1;
+        m_file.CurSet(m_colDatPos);
+
+        if (m_colDatType == ColDatType::EDGE_FILL)
+        {
+            // init
+            m_frames.resize(m_frameCnt);
+
+            // lazy
+            {
+                std::vector<SI> vals;
+                m_file.ReadValSeqBox(vals);
+                SI frameI = 0;
+                BO last = NO;
+                for (cx AU& val : vals)
+                {
+                    ite (i, i < val)
+                        m_frames[frameI++].isLazy = last;
+                    last = !last;
+                }
+            }
+
+            // lazy map
+            std::vector<Frame*> framesNolazyMap;
+            framesNolazyMap.reserve(m_frameCnt);
+            {
+                for (AU& frame : m_frames)
+                {
+                    if (!frame.isLazy)
+                        framesNolazyMap.emplace_back(&frame);
+                }
+            }
+
+            // base
+            {
+                std::vector<SI> baseColCnts;
+                m_file.ReadValSeqBox(baseColCnts);
+                SI frameI = 0;
+                BO baseCur = NO;
+                for (cx AU& baseColCnt : baseColCnts)
+                {
+                    ite (i, i < baseColCnt)
+                        framesNolazyMap[frameI++]->isBaseWhite = baseCur;
+                    baseCur = !baseCur;
+                }
+            }
+
+            // fill
+            {
+                std::vector<SI> fillCnts;
+                std::vector<SI> fillOriginDiffs;
+                m_file.ReadValSeqBox(fillCnts);
+                m_file.ReadValSeqBox(fillOriginDiffs);
+                SI frameI = 0;
+                SI fillOriginDiffIOfs = 0;
+                for (cx AU& fillCnt : fillCnts)
+                {
+                    framesNolazyMap[frameI]->fillOrigins.reserve(fillCnt);
+                    SI fillOriginMain = -1;
+                    ite (i, i < fillCnt)
+                    {
+                        fillOriginMain += fillOriginDiffs[i + fillOriginDiffIOfs];
+                        framesNolazyMap[frameI]->fillOrigins.emplace_back(fillOriginMain);
+                    }
+                    fillOriginDiffIOfs += fillCnt;
+                    ++frameI;
+                }
+            }
+
+            ite (i, i < SI(framesNolazyMap.size()))
+            {
+                AU& frame = *(framesNolazyMap[i]);
+
+                // path
+                ifu (m_file.ReadVal<U4>(m_varU4) != siz(m_varU4))
+                    rete(ErrVal::FILE);
+                cx AU pixelPathDatSize = SI(m_varU4);
+                std::vector<U1> pixelPathDat(pixelPathDatSize);
+                ifu (m_file.Read(pixelPathDat.data(), pixelPathDat.size()) != SI(pixelPathDat.size()))
+                    rete(ErrVal::FILE);
+                frame.pixelPath.AddLast(&pixelPathDatSize, sizb(U4));
+                frame.pixelPath.AddLast(pixelPathDat.data(), pixelPathDat.size() * BIT_IN_BYTE);
+            }
+        }
+
+        rets;
+    }
+    dfa ER FrameRead(ColGrid<ColV>& colGrid)
+    {
+        colGrid.Resize(m_frameSize);
+
+        if (m_colDatType == ColDatType::BI_SWITCH_LTR)
+        {
+            cx AU pixelCnt = m_frameSize.Area();
+            SI pixelI = 0;
+            while (pixelI < pixelCnt)
+            {
+                if (m_cntCur == 0)
+                {
+                    ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
+                        rete(ErrVal::NO_EXIST);
+                    ifu (m_file.ReadVarint(m_varU4) == 0)
+                        rete(ErrVal::FILE);
+                    m_cntCur = m_varU4;
+                    m_colCur = m_colCur ? 0 : 1;
+                }
+
+                cx AU cntToRead = Min(m_cntCur, pixelCnt - pixelI);
+                cx AU colSrc = m_colCur ? ColV(0xFF) : ColV(0x00);
+                AU pixelCur = colGrid.pixels.data() + pixelI;
+                ite (i, i < cntToRead)
+                    *(pixelCur + i) = colSrc;
+                pixelI += cntToRead;
+                m_cntCur -= cntToRead;
+            }
+        }
+        else if (m_colDatType == ColDatType::EDGE_FILL)
+        {
+            // get frame
+            cx AU& frame = m_frames[m_frameCur];
+
+            // handle lazy
+            if (frame.isLazy)
+            {
+                // for (AU& pixel : colGrid.pixels)
+                // pixel = ColV(0x80);
+
+                // get previous frame index which is not lazy
+                AU frameIPrev = m_frameCur;
+                while (m_frames[frameIPrev].isLazy)
+                    --frameIPrev;
+                // copy previous frame
+                ColGrid<ColV> colGridPrev;
+                tx->_FrameToColGrid_EdgeFill(colGridPrev, m_frames[frameIPrev]);
+
+                // get next frame index which is not lazy
+                AU frameINext = m_frameCur;
+                while (m_frames[frameINext].isLazy)
+                    ++frameINext;
+                // copy next frame
+                ColGrid<ColV> colGridNext;
+                tx->_FrameToColGrid_EdgeFill(colGridNext, m_frames[frameINext]);
+
+                // lerping between previous and next frame
+                F4 lerpRatio = F4(m_frameCur - frameIPrev) / F4(frameINext - frameIPrev);
+                ColGridLerp(colGrid, colGridPrev, colGridNext, lerpRatio);
+            }
+            else
+            {
+                tx->_FrameToColGrid_EdgeFill(colGrid, frame);
+            }
+        }
+        else
+        {
+            rete(ErrVal::NO_SUPPORT);
+        }
+
+        ++m_frameCur;
+
+        rets;
+    }
+    dfa ER End()
+    {
+        ifep(m_file.Close());
         rets;
     }
 
@@ -753,18 +770,13 @@ class BadaCodec
     }
 
   public:
-    dfa BadaCodec()
+    dfa Decoder()
     {
-        m_frameSize = Size2<SI>(0, 0);
-        m_frameCnt = 0;
-        m_lazyRefFrameI = -1;
-        m_colDatType = BadaColDatType::NONE;
-        m_colDatFeatures = BadaColDatFeatures(0);
-        m_fps = 0;
-        m_cntCur = 0;
-        m_colCur = 0;
-        m_colDatSizePos = 0;
+        m_colDatPos = 0;
+        m_colDatSize = 0;
+        m_frameCur = 0;
+        m_varU8 = 0;
     }
 };
 
-#endif
+} // namespace Bada
