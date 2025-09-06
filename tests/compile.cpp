@@ -6,6 +6,5 @@
 
 ER Main()
 {
-    ConWrite("Hello, world!");
     rets;
 }

@@ -19,9 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tests\compile.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="src\aes.h" />
     <ClInclude Include="src\arg.h" />
     <ClInclude Include="src\array.h" />
@@ -114,6 +111,9 @@
     <ClInclude Include="src\vfs.h" />
     <ClInclude Include="src\vuser.h" />
     <ClInclude Include="src\window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="samples\hello-world.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
