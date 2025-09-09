@@ -34,7 +34,7 @@
        DatBlockType.FPS
            U4V cnt
        DatBlockType.COL_DAT_TYPE
-           U1 type (ColDatType)
+           U1 type (SubCodecType)
            U4V features (ColDatFeatures)
            U1[] featuresDat
        DatBlockType.COL_DAT
@@ -44,16 +44,16 @@
            U1[0] none
 
    [Color data types]
-       ColDatType.NONE
-       ColDatType.BI_SWITCH
-       ColDatType.EDGE_FILL
+       SubCodecType.NONE
+       SubCodecType.BI_SWITCH
+       SubCodecType.EDGE_FILL
 */
 
 namespace Bada
 {
 
-using ColDatTypeT = U1;
-enum class ColDatType : ColDatTypeT
+using SubCodecTypeT = U1;
+enum class SubCodecType : SubCodecTypeT
 {
     NONE = 0,
     BI_SWITCH = 1,
@@ -80,10 +80,28 @@ enum class DatBlockType : DatBlockTypeT
 using MagicT = U4;
 cxex MagicT MAGIC = 0x41444142; // "BADA"
 
-class Xcoder
+struct Meta
 {
-  protected:
-    struct Frame // EDGE_FILL only
+    Size2<SI> frameSize;
+    SI fps;
+
+    dfa Meta() : frameSize(0, 0), fps(0)
+    {
+    }
+};
+
+struct SubCodecBiSwitch
+{
+    SI cntCur;
+    U1 colCur;
+
+    dfa SubCodecBiSwitch() : cntCur(0), colCur(0)
+    {
+    }
+};
+struct SubCodecEdgeFill
+{
+    struct Frame
     {
         BO isLazy;
         BO isBaseWhite;
@@ -95,77 +113,37 @@ class Xcoder
         }
     };
 
+    std::vector<Frame> frames;
+};
+
+class Xcoder
+{
   protected:
     MemFile m_file;
-    Size2<SI> m_frameSize;
     SI m_frameCnt;
-    std::vector<Frame> m_frames;
-    ColDatType m_colDatType;
+    SubCodecType m_subCodecType;
     ColDatFeatures m_colDatFeatures;
-    SI m_fps;
-    SI m_cntCur; // BI_SWITCH only
-    U1 m_colCur; // BI_SWITCH only
+    Meta m_meta;
 
   protected:
     dfa Xcoder()
     {
-        m_frameSize = Size2<SI>(0, 0);
         m_frameCnt = 0;
-        m_colDatType = ColDatType::NONE;
+        m_subCodecType = SubCodecType::NONE;
         m_colDatFeatures = ColDatFeatures(0);
-        m_fps = 0;
-        m_cntCur = 0;
-        m_colCur = 0;
     }
 };
 
 #ifdef PROG_SYS_WIN
 
-class Encoder : public Xcoder
+struct EncoderSubCodecBiSwitch : public SubCodecBiSwitch
 {
-  private:
-    ColGrid<ColV> m_lazyRef;
-    SI m_lazyRefFrameI;
-    ThdTaskMgr m_thdTaskMgr;
-    SI m_colDatSizePos;
-
-  public:
-    struct Params
-    {
-        ColDatType colDatType;
-        ColDatFeatures colDatFeatures;
-        SI fps;
-
-        dfa Params() : colDatType(ColDatType::BI_SWITCH), colDatFeatures(ColDatFeatures(0)), fps(30)
-        {
-        }
-    };
-
-  public:
-    dfa ColV FrameBaseCol(cx ColGrid<ColV>& colGrid)
-    {
-        SI blackCnt = 0;
-        ite (x, x < colGrid.size.w)
-            blackCnt += colGrid.pixels[x].v < TO(ColV::v)(0x80);
-        for (SI y = 1; y < colGrid.size.h - 1; ++y)
-        {
-            blackCnt += colGrid.pixels[y * colGrid.size.w].v < TO(ColV::v)(0x80);
-            blackCnt += colGrid.pixels[y * colGrid.size.w + colGrid.size.w - 1].v < TO(ColV::v)(0x80);
-        }
-        ite (x, x < colGrid.size.w)
-            blackCnt += colGrid.pixels[(colGrid.size.h - 1) * colGrid.size.w + x].v < TO(ColV::v)(0x80);
-        cx SI allCnt = (colGrid.size.w + colGrid.size.h) * 2 - 4;
-        cx AU blackRatio = F4(blackCnt) / F4(allCnt);
-        ret ((blackRatio >= F4(0.5)) ? ColV(0x00) : ColV(0xFF));
-    }
-
-  private:
     dfa NT _FrameColDatGenByX_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid)
     {
         // TODO: merge with _FrameColDatGenByY_BiSwitch
 
-        m_cntCur = 0;
-        m_colCur = 0;
+        cntCur = 0;
+        colCur = 0;
 
         std::vector<SI> cntList;
 
@@ -174,21 +152,21 @@ class Encoder : public Xcoder
         while (pixel != pixelEnd)
         {
             cx AU isWhite = pixel->v >= TO(ColV::v)(0x80);
-            ifu (U1(isWhite) ^ m_colCur)
+            ifu (U1(isWhite) ^ colCur)
             {
-                cntList.emplace_back(m_cntCur);
-                m_colCur = isWhite;
-                m_cntCur = 1;
+                cntList.emplace_back(cntCur);
+                colCur = isWhite;
+                cntCur = 1;
             }
             else
             {
-                ++m_cntCur;
+                ++cntCur;
             }
             ++pixel;
         }
 
-        if (m_cntCur > 0)
-            cntList.emplace_back(m_cntCur);
+        if (cntCur > 0)
+            cntList.emplace_back(cntCur);
 
         ValSeqBoxEncode(bitVec, cntList.data(), cntList.size());
     }
@@ -196,8 +174,8 @@ class Encoder : public Xcoder
     {
         // TODO: merge with _FrameColDatGenByX_BiSwitch
 
-        m_cntCur = 0;
-        m_colCur = 0;
+        cntCur = 0;
+        colCur = 0;
 
         std::vector<SI> cntList;
 
@@ -206,24 +184,27 @@ class Encoder : public Xcoder
             {
                 cx AU& pixel = colGrid.Pixel(Pos2<SI>(x, y));
                 cx AU isWhite = pixel.v >= TO(ColV::v)(0x80);
-                ifu (U1(isWhite) ^ m_colCur)
+                ifu (U1(isWhite) ^ colCur)
                 {
-                    cntList.emplace_back(m_cntCur);
-                    m_colCur = isWhite;
-                    m_cntCur = 1;
+                    cntList.emplace_back(cntCur);
+                    colCur = isWhite;
+                    cntCur = 1;
                 }
                 else
                 {
-                    ++m_cntCur;
+                    ++cntCur;
                 }
             }
 
-        if (m_cntCur > 0)
-            cntList.emplace_back(m_cntCur);
+        if (cntCur > 0)
+            cntList.emplace_back(cntCur);
 
         ValSeqBoxEncode(bitVec, cntList.data(), cntList.size());
     }
-    dfa ER _FrameEncode_EdgeFill(Frame& frame, ColGrid<ColV> colGrid, cx ColV& colBase)
+};
+struct EncoderSubCodecEdgeFill : public SubCodecEdgeFill
+{
+    dfa ER _FrameEncode_EdgeFill(Frame& frame, ColGrid<ColV> colGrid, cx ColV& colBase, ThdTaskMgr& thdTaskMgr)
     {
         cx AU colObj = ((colBase == ColV(0x00)) ? ColV(0xFF) : ColV(0x00));
         cx AU colMarkEdge = ColV(0x10);
@@ -259,9 +240,9 @@ class Encoder : public Xcoder
                     stratSizes[i] = pixelPath[i].SizeByte();
                 });
             }
-            m_thdTaskMgr.TaskAdd(thdTaskList);
+            thdTaskMgr.TaskAdd(thdTaskList);
         }
-        m_thdTaskMgr.WaitAll();
+        thdTaskMgr.WaitAll();
 
         AU stratMinI = SI(-1);
         AU stratMinSize = SI(1e9);
@@ -295,24 +276,66 @@ class Encoder : public Xcoder
 
         rets;
     }
+};
+class Encoder : public Xcoder
+{
+  private:
+    EncoderSubCodecBiSwitch m_subCodecBiSwitch;
+    EncoderSubCodecEdgeFill m_subCodecEdgeFill;
+
+  private:
+    ColGrid<ColV> m_lazyRef;
+    SI m_lazyRefFrameI;
+    ThdTaskMgr m_thdTaskMgr;
+    SI m_colDatSizePos;
+
+  public:
+    struct Params
+    {
+        SubCodecType colDatType;
+        ColDatFeatures colDatFeatures;
+        SI fps;
+
+        dfa Params() : colDatType(SubCodecType::BI_SWITCH), colDatFeatures(ColDatFeatures(0)), fps(30)
+        {
+        }
+    };
+
+  public:
+    dfa ColV FrameBaseCol(cx ColGrid<ColV>& colGrid)
+    {
+        SI blackCnt = 0;
+        ite (x, x < colGrid.size.w)
+            blackCnt += colGrid.pixels[x].v < TO(ColV::v)(0x80);
+        for (SI y = 1; y < colGrid.size.h - 1; ++y)
+        {
+            blackCnt += colGrid.pixels[y * colGrid.size.w].v < TO(ColV::v)(0x80);
+            blackCnt += colGrid.pixels[y * colGrid.size.w + colGrid.size.w - 1].v < TO(ColV::v)(0x80);
+        }
+        ite (x, x < colGrid.size.w)
+            blackCnt += colGrid.pixels[(colGrid.size.h - 1) * colGrid.size.w + x].v < TO(ColV::v)(0x80);
+        cx SI allCnt = (colGrid.size.w + colGrid.size.h) * 2 - 4;
+        cx AU blackRatio = F4(blackCnt) / F4(allCnt);
+        ret ((blackRatio >= F4(0.5)) ? ColV(0x00) : ColV(0xFF));
+    }
 
   public:
     dfa ER Begin(cx CH* path, cx Params& params)
     {
         ifep(m_thdTaskMgr.Init());
-        m_colDatType = params.colDatType;
+        m_subCodecType = params.colDatType;
         m_colDatFeatures = params.colDatFeatures;
-        m_fps = params.fps;
+        m_meta.fps = params.fps;
         ifep(m_file.Open(path, NO, YES));
         m_file.WriteVal(MAGIC);
         m_file.WriteVal(DatBlockType::FPS);
-        m_file.WriteVarint(U4(m_fps));
+        m_file.WriteVarint(U4(m_meta.fps));
         m_file.WriteVal(DatBlockType::COL_DAT_TYPE);
-        m_file.WriteVal(m_colDatType);
+        m_file.WriteVal(m_subCodecType);
         m_file.WriteVarint(U4(m_colDatFeatures));
-        m_frameSize = Size2<SI>(0, 0);
+        m_meta.frameSize = Size2<SI>(0, 0);
         m_frameCnt = 0;
-        m_frames.clear();
+        m_subCodecEdgeFill.frames.clear();
         rets;
     }
     dfa ER FrameWrite(cx ColGrid<ColV>& colGrid_)
@@ -321,20 +344,20 @@ class Encoder : public Xcoder
 
         ifu (m_frameCnt == 0)
         {
-            m_frameSize = colGrid.size;
+            m_meta.frameSize = colGrid.size;
             m_file.WriteVal(DatBlockType::COL_DAT);
             m_colDatSizePos = m_file.CurGet();
             m_file.WriteVal(U4(0)); // size, will be filled in later
         }
 
-        ifu (colGrid.size != m_frameSize)
+        ifu (colGrid.size != m_meta.frameSize)
             rete(ErrVal::NO_VALID);
 
-        if (m_colDatType == ColDatType::BI_SWITCH)
+        if (m_subCodecType == SubCodecType::BI_SWITCH)
         {
             BitVec frameColDatByX, frameColDatByY;
-            tx->_FrameColDatGenByX_BiSwitch(frameColDatByX, colGrid);
-            tx->_FrameColDatGenByY_BiSwitch(frameColDatByY, colGrid);
+            m_subCodecBiSwitch._FrameColDatGenByX_BiSwitch(frameColDatByX, colGrid);
+            m_subCodecBiSwitch._FrameColDatGenByY_BiSwitch(frameColDatByY, colGrid);
 
             cx AU isByY = (frameColDatByY.SizeByte() < frameColDatByX.SizeByte());
 
@@ -344,7 +367,7 @@ class Encoder : public Xcoder
             else
                 m_file.Write(frameColDatByX.Dat(), frameColDatByX.SizeByte());
         }
-        else if (m_colDatType == ColDatType::EDGE_FILL)
+        else if (m_subCodecType == SubCodecType::EDGE_FILL)
         {
             if (m_lazyRefFrameI == -1)
             {
@@ -362,7 +385,7 @@ class Encoder : public Xcoder
                 if (diff >= LAZY_DIFF_THRESHOLD)
                 {
                     for (SI i = m_lazyRefFrameI + 1; i < m_frameCnt - 1; ++i)
-                        m_frames[i].isLazy = YES;
+                        m_subCodecEdgeFill.frames[i].isLazy = YES;
                     m_lazyRef = colGrid;
                     m_lazyRefFrameI = m_frameCnt;
                 }
@@ -371,19 +394,19 @@ class Encoder : public Xcoder
             cx AU colBase = tx->FrameBaseCol(colGrid);
             cx AU colBaseAlter = (colBase == ColV(0x00) ? ColV(0xFF) : ColV(0x00));
 
-            Frame frame;
-            Frame frameAlter;
-            ifep(tx->_FrameEncode_EdgeFill(frame, colGrid, colBase));
-            ifep(tx->_FrameEncode_EdgeFill(frameAlter, colGrid, colBaseAlter));
+            SubCodecEdgeFill::Frame frame;
+            SubCodecEdgeFill::Frame frameAlter;
+            ifep(m_subCodecEdgeFill._FrameEncode_EdgeFill(frame, colGrid, colBase, m_thdTaskMgr));
+            ifep(m_subCodecEdgeFill._FrameEncode_EdgeFill(frameAlter, colGrid, colBaseAlter, m_thdTaskMgr));
 
             // choose the smaller one
             cxex AU FILL_ORIGIN_SIZE_AVG = F4(2.25);
             cx AU frameCost = frame.pixelPath.SizeByte() + SI(F4(frame.fillOrigins.size()) * FILL_ORIGIN_SIZE_AVG);
             cx AU frameAlterCost = frameAlter.pixelPath.SizeByte() + SI(F4(frameAlter.fillOrigins.size()) * FILL_ORIGIN_SIZE_AVG);
             if (frameAlterCost < frameCost)
-                m_frames.emplace_back(std::move(frameAlter));
+                m_subCodecEdgeFill.frames.emplace_back(std::move(frameAlter));
             else
-                m_frames.emplace_back(std::move(frame));
+                m_subCodecEdgeFill.frames.emplace_back(std::move(frame));
         }
         else
         {
@@ -397,19 +420,19 @@ class Encoder : public Xcoder
     }
     dfa ER End()
     {
-        if (m_colDatType == ColDatType::BI_SWITCH)
+        if (m_subCodecType == SubCodecType::BI_SWITCH)
         {
             ;
         }
-        else if (m_colDatType == ColDatType::EDGE_FILL)
+        else if (m_subCodecType == SubCodecType::EDGE_FILL)
         {
             // process remaining lazy frames
             for (SI i = m_lazyRefFrameI + 1; i < m_frameCnt - 1; ++i)
-                m_frames[i].isLazy = YES;
+                m_subCodecEdgeFill.frames[i].isLazy = YES;
 
             // filter lazy
-            TO(m_frames) framesNolazy;
-            for (cx AU& frame : m_frames)
+            TO(m_subCodecEdgeFill.frames) framesNolazy;
+            for (cx AU& frame : m_subCodecEdgeFill.frames)
             {
                 if (!frame.isLazy)
                     framesNolazy.emplace_back(frame);
@@ -421,7 +444,7 @@ class Encoder : public Xcoder
                 std::vector<SI> vals;
                 SI cnt = 0;
                 BO last = NO;
-                for (cx AU& frame : m_frames)
+                for (cx AU& frame : m_subCodecEdgeFill.frames)
                 {
                     if (frame.isLazy == last)
                     {
@@ -511,8 +534,8 @@ class Encoder : public Xcoder
         }
 
         m_file.WriteVal(DatBlockType::GRID_SIZE);
-        m_file.WriteVarint(U4(m_frameSize.w));
-        m_file.WriteVarint(U4(m_frameSize.h));
+        m_file.WriteVarint(U4(m_meta.frameSize.w));
+        m_file.WriteVarint(U4(m_meta.frameSize.h));
         m_file.WriteVal(U4(m_frameCnt));
         m_file.WriteVal(DatBlockType::END);
 
@@ -533,49 +556,37 @@ class Encoder : public Xcoder
 
 #endif
 
-class Decoder : public Xcoder
+struct DecoderSubCodecBiSwitch : public SubCodecBiSwitch
 {
-  private:
-    SI m_colDatPos;
-    SI m_colDatSize;
-    SI m_frameCur;
-    union {
-        U1 m_varU1;
-        U2 m_varU2;
-        U4 m_varU4;
-        U8 m_varU8;
-    };
-
-  private:
     dfa NT _CntListToColGrid_ByX_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList)
     {
         // TODO: merge with _CntListToColGrid_ByY_BiSwitch
 
         SI cntListI = 0;
 
-        m_cntCur = 0;
-        m_colCur = 1;
+        cntCur = 0;
+        colCur = 1;
 
-        cx AU pixelCnt = m_frameSize.Area();
+        cx AU pixelCnt = colGrid.size.Area();
         SI pixelI = 0;
         while (pixelI < pixelCnt)
         {
-            if (m_cntCur == 0)
+            if (cntCur == 0)
             {
                 // ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
                 // rete(ErrVal::NO_EXIST);
-                m_cntCur = cntList[cntListI];
+                cntCur = cntList[cntListI];
                 ++cntListI;
-                m_colCur = m_colCur ? 0 : 1;
+                colCur = colCur ? 0 : 1;
             }
 
-            cx AU cntToRead = Min(m_cntCur, pixelCnt - pixelI);
-            cx AU colSrc = m_colCur ? ColV(0xFF) : ColV(0x00);
+            cx AU cntToRead = Min(cntCur, pixelCnt - pixelI);
+            cx AU colSrc = colCur ? ColV(0xFF) : ColV(0x00);
             AU pixelCur = colGrid.pixels.data() + pixelI;
             ite (i, i < cntToRead)
                 *(pixelCur + i) = colSrc;
             pixelI += cntToRead;
-            m_cntCur -= cntToRead;
+            cntCur -= cntToRead;
         }
     }
     dfa NT _CntListToColGrid_ByY_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList)
@@ -584,31 +595,34 @@ class Decoder : public Xcoder
 
         SI cntListI = 0;
 
-        m_cntCur = 0;
-        m_colCur = 1;
+        cntCur = 0;
+        colCur = 1;
 
         ite (x, x < colGrid.size.w)
             ite (y, y < colGrid.size.h)
             {
-                if (m_cntCur == 0)
+                if (cntCur == 0)
                 {
                     // ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
                     // rete(ErrVal::NO_EXIST);
                     jdst(nextCol);
-                    m_cntCur = cntList[cntListI];
+                    cntCur = cntList[cntListI];
                     ++cntListI;
-                    m_colCur ^= 1;
-                    ifu (m_cntCur == 0) // this happens if the first pixel of the frame is not the default color
+                    colCur ^= 1;
+                    ifu (cntCur == 0) // this happens if the first pixel of the frame is not the default color
                         jsrc(nextCol);
                 }
-                colGrid.Pixel(Pos2<SI>(x, y)) = ColV(0 - m_colCur);
-                --m_cntCur;
+                colGrid.Pixel(Pos2<SI>(x, y)) = ColV(0 - colCur);
+                --cntCur;
             }
     }
-    dfa NT _FrameToColGrid_EdgeFill(ColGrid<ColV>& colGrid, cx Frame& frame)
+};
+struct DecoderSubCodecEdgeFill : public SubCodecEdgeFill
+{
+    dfa NT _FrameToColGrid_EdgeFill(ColGrid<ColV>& colGrid, cx Frame& frame, cx Size2<SI>& frameSize)
     {
         // init
-        colGrid.Resize(m_frameSize);
+        colGrid.Resize(frameSize); // TODO: why is this needed here, but not in BI_SWITCH?
 
         // base
         cx AU colBase = frame.isBaseWhite ? ColV(0xFF) : ColV(0x00);
@@ -622,17 +636,34 @@ class Decoder : public Xcoder
         for (cx AU& fillOrigin : frame.fillOrigins)
             ColGridFloodFillAt(colGrid, fillOrigin, colBase, colObj);
     }
+};
+class Decoder : public Xcoder
+{
+  private:
+    DecoderSubCodecBiSwitch m_subCodecBiSwitch;
+    DecoderSubCodecEdgeFill m_subCodecEdgeFill;
+
+  private:
+    SI m_colDatPos;
+    SI m_colDatSize;
+    SI m_frameCur;
+    union {
+        U1 m_varU1;
+        U2 m_varU2;
+        U4 m_varU4;
+        U8 m_varU8;
+    };
 
   public:
     dfa ER Begin(cx CH* path)
     {
         ifep(m_file.Open(path, YES));
-        m_frameSize = Size2<SI>(0, 0);
+        m_meta.frameSize = Size2<SI>(0, 0);
         m_frameCnt = 0;
-        m_frames.clear();
-        m_colDatType = ColDatType::NONE;
+        m_subCodecEdgeFill.frames.clear();
+        m_subCodecType = SubCodecType::NONE;
         m_colDatFeatures = ColDatFeatures(0);
-        m_fps = 30;
+        m_meta.fps = 30;
 
         ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
             rete(ErrVal::FILE);
@@ -654,10 +685,10 @@ class Decoder : public Xcoder
                 case DatBlockType::GRID_SIZE: {
                     ifu (m_file.ReadVarint(m_varU4) == 0)
                         rete(ErrVal::FILE);
-                    m_frameSize.w = m_varU4;
+                    m_meta.frameSize.w = m_varU4;
                     ifu (m_file.ReadVarint(m_varU4) == 0)
                         rete(ErrVal::FILE);
-                    m_frameSize.h = m_varU4;
+                    m_meta.frameSize.h = m_varU4;
                     ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
                         rete(ErrVal::FILE);
                     m_frameCnt = m_varU4;
@@ -666,11 +697,11 @@ class Decoder : public Xcoder
                 case DatBlockType::FPS: {
                     ifu (m_file.ReadVarint(m_varU4) == 0)
                         rete(ErrVal::FILE);
-                    m_fps = m_varU4;
+                    m_meta.fps = m_varU4;
                     break;
                 }
                 case DatBlockType::COL_DAT_TYPE: {
-                    ifu (m_file.ReadVal(m_colDatType) != siz(m_colDatType))
+                    ifu (m_file.ReadVal(m_subCodecType) != siz(m_subCodecType))
                         rete(ErrVal::FILE);
                     ifu (m_file.ReadVarint(AsType<U4>(m_colDatFeatures)) == 0)
                         rete(ErrVal::FILE);
@@ -699,10 +730,10 @@ class Decoder : public Xcoder
         m_frameCur = 0;
         m_file.CurSet(m_colDatPos);
 
-        if (m_colDatType == ColDatType::EDGE_FILL)
+        if (m_subCodecType == SubCodecType::EDGE_FILL)
         {
             // init
-            m_frames.resize(m_frameCnt);
+            m_subCodecEdgeFill.frames.resize(m_frameCnt);
 
             // lazy
             {
@@ -713,16 +744,16 @@ class Decoder : public Xcoder
                 for (cx AU& val : vals)
                 {
                     ite (i, i < val)
-                        m_frames[frameI++].isLazy = last;
+                        m_subCodecEdgeFill.frames[frameI++].isLazy = last;
                     last = !last;
                 }
             }
 
             // lazy map
-            std::vector<Frame*> framesNolazyMap;
+            std::vector<SubCodecEdgeFill::Frame*> framesNolazyMap;
             framesNolazyMap.reserve(m_frameCnt);
             {
-                for (AU& frame : m_frames)
+                for (AU& frame : m_subCodecEdgeFill.frames)
                 {
                     if (!frame.isLazy)
                         framesNolazyMap.emplace_back(&frame);
@@ -785,9 +816,9 @@ class Decoder : public Xcoder
     }
     dfa ER FrameRead(ColGrid<ColV>& colGrid)
     {
-        colGrid.Resize(m_frameSize);
+        colGrid.Resize(m_meta.frameSize);
 
-        if (m_colDatType == ColDatType::BI_SWITCH)
+        if (m_subCodecType == SubCodecType::BI_SWITCH)
         {
             BO isByY;
             ifu (m_file.ReadVal(isByY) != siz(isByY))
@@ -798,14 +829,14 @@ class Decoder : public Xcoder
                 rete(ErrVal::FILE);
 
             if (isByY)
-                tx->_CntListToColGrid_ByY_BiSwitch(colGrid, cntList);
+                m_subCodecBiSwitch._CntListToColGrid_ByY_BiSwitch(colGrid, cntList);
             else
-                tx->_CntListToColGrid_ByX_BiSwitch(colGrid, cntList);
+                m_subCodecBiSwitch._CntListToColGrid_ByX_BiSwitch(colGrid, cntList);
         }
-        else if (m_colDatType == ColDatType::EDGE_FILL)
+        else if (m_subCodecType == SubCodecType::EDGE_FILL)
         {
             // get frame
-            cx AU& frame = m_frames[m_frameCur];
+            cx AU& frame = m_subCodecEdgeFill.frames[m_frameCur];
 
             // handle lazy
             if (frame.isLazy)
@@ -815,19 +846,19 @@ class Decoder : public Xcoder
 
                 // get previous frame index which is not lazy
                 AU frameIPrev = m_frameCur;
-                while (m_frames[frameIPrev].isLazy)
+                while (m_subCodecEdgeFill.frames[frameIPrev].isLazy)
                     --frameIPrev;
                 // copy previous frame
                 ColGrid<ColV> colGridPrev;
-                tx->_FrameToColGrid_EdgeFill(colGridPrev, m_frames[frameIPrev]);
+                m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGridPrev, m_subCodecEdgeFill.frames[frameIPrev], m_meta.frameSize);
 
                 // get next frame index which is not lazy
                 AU frameINext = m_frameCur;
-                while (m_frames[frameINext].isLazy)
+                while (m_subCodecEdgeFill.frames[frameINext].isLazy)
                     ++frameINext;
                 // copy next frame
                 ColGrid<ColV> colGridNext;
-                tx->_FrameToColGrid_EdgeFill(colGridNext, m_frames[frameINext]);
+                m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGridNext, m_subCodecEdgeFill.frames[frameINext], m_meta.frameSize);
 
                 // lerping between previous and next frame
                 F4 lerpRatio = F4(m_frameCur - frameIPrev) / F4(frameINext - frameIPrev);
@@ -835,7 +866,7 @@ class Decoder : public Xcoder
             }
             else
             {
-                tx->_FrameToColGrid_EdgeFill(colGrid, frame);
+                m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGrid, frame, m_meta.frameSize);
             }
         }
         else
@@ -862,11 +893,11 @@ class Decoder : public Xcoder
   public:
     dfa Size2<SI> FrameSizeGet() cx
     {
-        ret m_frameSize;
+        ret m_meta.frameSize;
     }
     dfa SI FpsGet() cx
     {
-        ret m_fps;
+        ret m_meta.fps;
     }
 
   public:
