@@ -45,7 +45,7 @@
 
    [Color data types]
        ColDatType.NONE
-       ColDatType.BI_SWITCH_LTR
+       ColDatType.BI_SWITCH
        ColDatType.EDGE_FILL
 */
 
@@ -56,7 +56,7 @@ using ColDatTypeT = U1;
 enum class ColDatType : ColDatTypeT
 {
     NONE = 0,
-    BI_SWITCH_LTR = 1,
+    BI_SWITCH = 1,
     EDGE_FILL = 2,
 };
 
@@ -103,8 +103,8 @@ class Xcoder
     ColDatType m_colDatType;
     ColDatFeatures m_colDatFeatures;
     SI m_fps;
-    SI m_cntCur; // BI_SWITCH_LTR only
-    U1 m_colCur; // BI_SWITCH_LTR only
+    SI m_cntCur; // BI_SWITCH only
+    U1 m_colCur; // BI_SWITCH only
 
   protected:
     dfa Xcoder()
@@ -136,7 +136,7 @@ class Encoder : public Xcoder
         ColDatFeatures colDatFeatures;
         SI fps;
 
-        dfa Params() : colDatType(ColDatType::BI_SWITCH_LTR), colDatFeatures(ColDatFeatures(0)), fps(30)
+        dfa Params() : colDatType(ColDatType::BI_SWITCH), colDatFeatures(ColDatFeatures(0)), fps(30)
         {
         }
     };
@@ -160,6 +160,69 @@ class Encoder : public Xcoder
     }
 
   private:
+    dfa NT _FrameColDatGenByX_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid)
+    {
+        // TODO: merge with _FrameColDatGenByY_BiSwitch
+
+        m_cntCur = 0;
+        m_colCur = 0;
+
+        std::vector<SI> cntList;
+
+        AU pixel = colGrid.pixels.data();
+        cx AU pixelEnd = pixel + colGrid.pixels.size();
+        while (pixel != pixelEnd)
+        {
+            cx AU isWhite = pixel->v >= TO(ColV::v)(0x80);
+            ifu (U1(isWhite) ^ m_colCur)
+            {
+                cntList.emplace_back(m_cntCur);
+                m_colCur = isWhite;
+                m_cntCur = 1;
+            }
+            else
+            {
+                ++m_cntCur;
+            }
+            ++pixel;
+        }
+
+        if (m_cntCur > 0)
+            cntList.emplace_back(m_cntCur);
+
+        ValSeqBoxEncode(bitVec, cntList.data(), cntList.size());
+    }
+    dfa NT _FrameColDatGenByY_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid)
+    {
+        // TODO: merge with _FrameColDatGenByX_BiSwitch
+
+        m_cntCur = 0;
+        m_colCur = 0;
+
+        std::vector<SI> cntList;
+
+        ite (x, x < colGrid.size.w)
+            ite (y, y < colGrid.size.h)
+            {
+                cx AU& pixel = colGrid.Pixel(Pos2<SI>(x, y));
+                cx AU isWhite = pixel.v >= TO(ColV::v)(0x80);
+                ifu (U1(isWhite) ^ m_colCur)
+                {
+                    cntList.emplace_back(m_cntCur);
+                    m_colCur = isWhite;
+                    m_cntCur = 1;
+                }
+                else
+                {
+                    ++m_cntCur;
+                }
+            }
+
+        if (m_cntCur > 0)
+            cntList.emplace_back(m_cntCur);
+
+        ValSeqBoxEncode(bitVec, cntList.data(), cntList.size());
+    }
     dfa ER _FrameEncode_EdgeFill(Frame& frame, ColGrid<ColV> colGrid, cx ColV& colBase)
     {
         cx AU colObj = ((colBase == ColV(0x00)) ? ColV(0xFF) : ColV(0x00));
@@ -240,7 +303,7 @@ class Encoder : public Xcoder
         m_colDatType = params.colDatType;
         m_colDatFeatures = params.colDatFeatures;
         m_fps = params.fps;
-        ifep(m_file.Open(path, NO));
+        ifep(m_file.Open(path, NO, YES));
         m_file.WriteVal(MAGIC);
         m_file.WriteVal(DatBlockType::FPS);
         m_file.WriteVarint(U4(m_fps));
@@ -250,8 +313,6 @@ class Encoder : public Xcoder
         m_frameSize = Size2<SI>(0, 0);
         m_frameCnt = 0;
         m_frames.clear();
-        m_cntCur = 0;
-        m_colCur = 0;
         rets;
     }
     dfa ER FrameWrite(cx ColGrid<ColV>& colGrid_)
@@ -269,25 +330,19 @@ class Encoder : public Xcoder
         ifu (colGrid.size != m_frameSize)
             rete(ErrVal::NO_VALID);
 
-        if (m_colDatType == ColDatType::BI_SWITCH_LTR)
+        if (m_colDatType == ColDatType::BI_SWITCH)
         {
-            AU pixel = colGrid.pixels.data();
-            cx AU pixelEnd = pixel + colGrid.pixels.size();
-            while (pixel != pixelEnd)
-            {
-                cx AU isWhite = pixel->v >= TO(ColV::v)(0x80);
-                ifu (U1(isWhite) ^ m_colCur)
-                {
-                    m_file.WriteVarint(U4(m_cntCur));
-                    m_colCur = isWhite;
-                    m_cntCur = 1;
-                }
-                else
-                {
-                    ++m_cntCur;
-                }
-                ++pixel;
-            }
+            BitVec frameColDatByX, frameColDatByY;
+            tx->_FrameColDatGenByX_BiSwitch(frameColDatByX, colGrid);
+            tx->_FrameColDatGenByY_BiSwitch(frameColDatByY, colGrid);
+
+            cx AU isByY = (frameColDatByY.SizeByte() < frameColDatByX.SizeByte());
+
+            m_file.WriteVal(U1(isByY));
+            if (isByY)
+                m_file.Write(frameColDatByY.Dat(), frameColDatByY.SizeByte());
+            else
+                m_file.Write(frameColDatByX.Dat(), frameColDatByX.SizeByte());
         }
         else if (m_colDatType == ColDatType::EDGE_FILL)
         {
@@ -342,10 +397,9 @@ class Encoder : public Xcoder
     }
     dfa ER End()
     {
-        if (m_colDatType == ColDatType::BI_SWITCH_LTR)
+        if (m_colDatType == ColDatType::BI_SWITCH)
         {
-            if (m_cntCur > 0)
-                m_file.WriteVarint(U4(m_cntCur));
+            ;
         }
         else if (m_colDatType == ColDatType::EDGE_FILL)
         {
@@ -493,6 +547,64 @@ class Decoder : public Xcoder
     };
 
   private:
+    dfa NT _CntListToColGrid_ByX_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList)
+    {
+        // TODO: merge with _CntListToColGrid_ByY_BiSwitch
+
+        SI cntListI = 0;
+
+        m_cntCur = 0;
+        m_colCur = 1;
+
+        cx AU pixelCnt = m_frameSize.Area();
+        SI pixelI = 0;
+        while (pixelI < pixelCnt)
+        {
+            if (m_cntCur == 0)
+            {
+                // ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
+                // rete(ErrVal::NO_EXIST);
+                m_cntCur = cntList[cntListI];
+                ++cntListI;
+                m_colCur = m_colCur ? 0 : 1;
+            }
+
+            cx AU cntToRead = Min(m_cntCur, pixelCnt - pixelI);
+            cx AU colSrc = m_colCur ? ColV(0xFF) : ColV(0x00);
+            AU pixelCur = colGrid.pixels.data() + pixelI;
+            ite (i, i < cntToRead)
+                *(pixelCur + i) = colSrc;
+            pixelI += cntToRead;
+            m_cntCur -= cntToRead;
+        }
+    }
+    dfa NT _CntListToColGrid_ByY_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList)
+    {
+        // TODO: merge with _CntListToColGrid_ByX_BiSwitch
+
+        SI cntListI = 0;
+
+        m_cntCur = 0;
+        m_colCur = 1;
+
+        ite (x, x < colGrid.size.w)
+            ite (y, y < colGrid.size.h)
+            {
+                if (m_cntCur == 0)
+                {
+                    // ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
+                    // rete(ErrVal::NO_EXIST);
+                    jdst(nextCol);
+                    m_cntCur = cntList[cntListI];
+                    ++cntListI;
+                    m_colCur ^= 1;
+                    ifu (m_cntCur == 0) // this happens if the first pixel of the frame is not the default color
+                        jsrc(nextCol);
+                }
+                colGrid.Pixel(Pos2<SI>(x, y)) = ColV(0 - m_colCur);
+                --m_cntCur;
+            }
+    }
     dfa NT _FrameToColGrid_EdgeFill(ColGrid<ColV>& colGrid, cx Frame& frame)
     {
         // init
@@ -585,8 +697,6 @@ class Decoder : public Xcoder
         }
 
         m_frameCur = 0;
-        m_cntCur = 0;
-        m_colCur = 1;
         m_file.CurSet(m_colDatPos);
 
         if (m_colDatType == ColDatType::EDGE_FILL)
@@ -677,30 +787,20 @@ class Decoder : public Xcoder
     {
         colGrid.Resize(m_frameSize);
 
-        if (m_colDatType == ColDatType::BI_SWITCH_LTR)
+        if (m_colDatType == ColDatType::BI_SWITCH)
         {
-            cx AU pixelCnt = m_frameSize.Area();
-            SI pixelI = 0;
-            while (pixelI < pixelCnt)
-            {
-                if (m_cntCur == 0)
-                {
-                    ifu (m_file.CurGet() >= m_colDatPos + m_colDatSize)
-                        rete(ErrVal::NO_EXIST);
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_cntCur = m_varU4;
-                    m_colCur = m_colCur ? 0 : 1;
-                }
+            BO isByY;
+            ifu (m_file.ReadVal(isByY) != siz(isByY))
+                rete(ErrVal::FILE);
 
-                cx AU cntToRead = Min(m_cntCur, pixelCnt - pixelI);
-                cx AU colSrc = m_colCur ? ColV(0xFF) : ColV(0x00);
-                AU pixelCur = colGrid.pixels.data() + pixelI;
-                ite (i, i < cntToRead)
-                    *(pixelCur + i) = colSrc;
-                pixelI += cntToRead;
-                m_cntCur -= cntToRead;
-            }
+            std::vector<SI> cntList;
+            ifu (m_file.ReadValSeqBox(cntList) < 1)
+                rete(ErrVal::FILE);
+
+            if (isByY)
+                tx->_CntListToColGrid_ByY_BiSwitch(colGrid, cntList);
+            else
+                tx->_CntListToColGrid_ByX_BiSwitch(colGrid, cntList);
         }
         else if (m_colDatType == ColDatType::EDGE_FILL)
         {
