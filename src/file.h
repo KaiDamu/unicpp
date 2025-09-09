@@ -331,6 +331,7 @@ dfa ER BufToFile(cx CH* path, CXGA buf, SI size)
 }
 tpl1 dfa ER FileToBuf(std::vector<T1>& buf, cx CH* path, CXGA bufAppend = NUL, SI sizeAppend = 0)
 {
+    buf.clear();
     File file;
     ifep(file.OpenRead(path));
     SI size;
@@ -408,26 +409,33 @@ class MemFile
     {
         ret SI(m_cur - m_buf.data());
     }
-    dfa ER Open(cx CH* path = NUL, BO mustExist = YES)
+    dfa ER Open(cx CH* path = NUL, BO mustExist = YES, BO doClr = NO)
     {
         ifu (tx->IsOpen())
             rete(ErrVal::YES_INIT);
         if (path == NUL)
         {
             jdst(jmp1);
+            m_path = path;
             m_buf.resize(FILE_MEM_RESIZE_ADD_DEFA);
             m_cur = m_buf.data();
             m_end = m_cur;
             rets;
         }
-        ife (FileToBuf(m_buf, path))
+        if (doClr)
         {
-            if (!mustExist && !FileIsExist(path, YES, YES))
+            ifu (mustExist && !FileIsExist(path, YES, YES))
+                rete(ErrVal::FILE);
+            jsrc(jmp1);
+        }
+        else
+        {
+            ife (FileToBuf(m_buf, path))
             {
-                m_path = path;
+                ifu (mustExist && !FileIsExist(path, YES, YES))
+                    rete(ErrVal::FILE);
                 jsrc(jmp1);
             }
-            rete(ErrVal::FILE);
         }
         m_path = path;
         m_cur = m_buf.data();
@@ -563,6 +571,10 @@ class MemFile
             m_end = m_cur + size;
         }
         MemCpyUpdCur(m_cur, buf, size);
+    }
+    tpl1 dfa NT Write(cx std::span<cx T1>& buf)
+    {
+        tx->Write(buf.data(), buf.size_bytes());
     }
     tpl1 dfa NT WriteVal(cx T1& val)
     {
