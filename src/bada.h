@@ -3,50 +3,17 @@
 /// TODO: "bada.h is in a PoC stage!" ///
 
 /*
-   The following information is describing the format of the BADA codec and file format.
+   The BADA codec is used to simply and efficiently encode/decode videos only containing shades of black and white.
+   It's also a perfect fit for storing animations and even character sets on single-color displays.
 
-   The BADA codec is used to simply and efficiently encode and decode videos only containing shades of black and white.
    Inspired by the music video "Bad Apple!!".
+   A size comparison between different codecs on this video:
+   [#4] 161.611.776 bytes - <lossless> Raw bit format
+   [#3]   6.072.392 bytes - < lossy  > HEVC/H.265 grayscale (2 color), standard compression
+   [#2]   3.156.114 bytes - < lossy  > HEVC/H.265 grayscale (2 color), very strong compression
+   [#1]   3.060.870 bytes - <lossless> BADA format
 
    Although not enforced, it is suggested to use ".bada" as the file extension.
-
-   (see file structure below)
-
-   The 'magic' field must be "BADA".
-   The last element of 'datBlocks' must have 'type' set to 'DatBlockType.END'.
-
-   [File structure]
-       U4 magic = "BADA"
-       DatBlock[] datBlocks
-
-   [File structure structures]
-       DatBlock
-           U1 type (DatBlockType)
-           U1[] dat
-
-   [File structure structure types]
-       DatBlockType.NONE
-           U1[0] none
-       DatBlockType.GRID_SIZE
-           U4V w
-           U4V h
-           U4 cnt
-       DatBlockType.FPS
-           U4V cnt
-       DatBlockType.COL_DAT_TYPE
-           U1 type (SubCodecType)
-           U4V features (ColDatFeatures)
-           U1[] featuresDat
-       DatBlockType.COL_DAT
-           U4 size
-           U1[size] dat
-       DatBlockType.END
-           U1[0] none
-
-   [Color data types]
-       SubCodecType.NONE
-       SubCodecType.BI_SWITCH
-       SubCodecType.EDGE_FILL
 */
 
 namespace Bada
@@ -56,94 +23,177 @@ using SubCodecTypeT = U1;
 enum class SubCodecType : SubCodecTypeT
 {
     NONE = 0,
-    BI_SWITCH = 1,
-    EDGE_FILL = 2,
+    RAW_BIT,
+    CPY_FRAME,
+    BI_SWITCH,
+    EDGE_FILL,
+    DIFF_PATH,
 };
 
-using ColDatFeaturesT = U4;
-enum class ColDatFeatures : ColDatFeaturesT
-{
-    RESERVED = 0b0,
-};
-
-using DatBlockTypeT = U1;
-enum class DatBlockType : DatBlockTypeT
+using SubCodecExTypeT = U1;
+enum class SubCodecExType : SubCodecExTypeT
 {
     NONE = 0,
-    GRID_SIZE = 1,
-    FPS = 2,
-    COL_DAT_TYPE = 3,
-    COL_DAT = 4,
-    END = 5,
+    RAW_BIT,
+    CPY_FRAME,
+    BI_SWITCH_X_BLACK,
+    BI_SWITCH_X_WHITE,
+    BI_SWITCH_Y_BLACK,
+    BI_SWITCH_Y_WHITE,
+    EDGE_FILL_BLACK,
+    EDGE_FILL_WHITE,
+    DIFF_PATH_BLACK,
+    DIFF_PATH_WHITE,
+    CNT,
 };
-
-using MagicT = U4;
-cxex MagicT MAGIC = 0x41444142; // "BADA"
 
 struct Meta
 {
     Size2<SI> frameSize;
+    SI frameCnt;
     SI fps;
 
-    dfa Meta() : frameSize(0, 0), fps(0)
+    dfa NT Clr()
     {
+        frameSize.Clr();
+        frameCnt = 0;
+        fps = 0;
+    }
+
+    dfa Meta()
+    {
+        tx->Clr();
     }
 };
 
+struct Hdr
+{
+    using MagicT = U4;
+
+    static cxex MagicT MAGIC = 0x2520DABA; // 'BADA2025' in hex
+
+    MagicT magic; // must be set before writing a valid header
+    Meta meta;
+
+    dfa NT Write(MemFile& file) cx
+    {
+        file.WriteVal(magic);
+        file.WriteVal(U2(meta.frameSize.w));
+        file.WriteVal(U2(meta.frameSize.h));
+        file.WriteVal(U4(meta.frameCnt));
+        file.WriteVal(U1(meta.fps));
+    }
+    dfa ER Read(MemFile& file)
+    {
+        ifep(file.ReadVal<TO(magic)>(magic));
+        ifu (magic != MAGIC)
+            rete(ErrVal::NO_VALID);
+        ifep(file.ReadVal<U2>(meta.frameSize.w));
+        ifep(file.ReadVal<U2>(meta.frameSize.h));
+        ifep(file.ReadVal<U4>(meta.frameCnt));
+        ifep(file.ReadVal<U1>(meta.fps));
+        rets;
+    }
+
+    dfa NT Clr()
+    {
+        magic = 0;
+        meta.Clr();
+    }
+
+    dfa Hdr()
+    {
+        tx->Clr();
+    }
+};
+
+struct SubCodecCpyFrame
+{
+};
 struct SubCodecBiSwitch
 {
     SI cntCur;
-    U1 colCur;
+    U1 colCurIsWhite;
 
-    dfa SubCodecBiSwitch() : cntCur(0), colCur(0)
+    dfa NT Clr()
     {
+        cntCur = 0;
+        colCurIsWhite = 0;
+    }
+
+    dfa SubCodecBiSwitch()
+    {
+        tx->Clr();
     }
 };
 struct SubCodecEdgeFill
 {
     struct Frame
     {
-        BO isLazy;
         BO isBaseWhite;
         BitVec pixelPath;
         std::vector<SI> fillOrigins;
 
-        dfa Frame() : isLazy(NO), isBaseWhite(NO)
+        dfa Frame() : isBaseWhite(NO)
         {
         }
     };
 
-    std::vector<Frame> frames;
+    dfa NT Clr()
+    {
+    }
 };
 
 class Xcoder
 {
   protected:
     MemFile m_file;
-    SI m_frameCnt;
-    SubCodecType m_subCodecType;
-    ColDatFeatures m_colDatFeatures;
-    Meta m_meta;
-
-  protected:
-    dfa Xcoder()
-    {
-        m_frameCnt = 0;
-        m_subCodecType = SubCodecType::NONE;
-        m_colDatFeatures = ColDatFeatures(0);
-    }
+    Hdr m_hdr;
 };
 
 #ifdef PROG_SYS_WIN
 
+struct EncoderSubCodecCpyFrame : public SubCodecCpyFrame
+{
+    struct CompactFrame
+    {
+        std::vector<U1> bits;
+        FNV1A64 hash;
+        SI filePos;
+
+        dfa NT Clr()
+        {
+            bits.clear();
+            hash = FNV1A64();
+            filePos = -1;
+        }
+
+        dfa CompactFrame()
+        {
+            tx->Clr();
+        }
+    };
+
+    DCircularBuf<CompactFrame> recentFrames;
+
+    dfa NT Clr()
+    {
+        recentFrames.Clr();
+    }
+
+    dfa EncoderSubCodecCpyFrame()
+    {
+        tx->Clr();
+    }
+};
 struct EncoderSubCodecBiSwitch : public SubCodecBiSwitch
 {
-    dfa NT _FrameColDatGenByX_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid)
+    dfa NT _FrameColDatGenByX_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid, U1 colCurIsWhiteInit)
     {
         // TODO: merge with _FrameColDatGenByY_BiSwitch
 
         cntCur = 0;
-        colCur = 0;
+        colCurIsWhite = colCurIsWhiteInit;
 
         std::vector<SI> cntList;
 
@@ -152,10 +202,10 @@ struct EncoderSubCodecBiSwitch : public SubCodecBiSwitch
         while (pixel != pixelEnd)
         {
             cx AU isWhite = pixel->v >= TO(ColV::v)(0x80);
-            ifu (U1(isWhite) ^ colCur)
+            ifu (U1(isWhite) ^ colCurIsWhite)
             {
                 cntList.emplace_back(cntCur);
-                colCur = isWhite;
+                colCurIsWhite = isWhite;
                 cntCur = 1;
             }
             else
@@ -168,14 +218,14 @@ struct EncoderSubCodecBiSwitch : public SubCodecBiSwitch
         if (cntCur > 0)
             cntList.emplace_back(cntCur);
 
-        ValSeqBoxEncode(bitVec, cntList.data(), cntList.size());
+        ValSeqBoxEncode<SI, ValSeqBoxMode::DEFA>(bitVec, cntList);
     }
-    dfa NT _FrameColDatGenByY_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid)
+    dfa NT _FrameColDatGenByY_BiSwitch(BitVec& bitVec, cx ColGrid<ColV>& colGrid, U1 colCurIsWhiteInit)
     {
         // TODO: merge with _FrameColDatGenByX_BiSwitch
 
         cntCur = 0;
-        colCur = 0;
+        colCurIsWhite = colCurIsWhiteInit;
 
         std::vector<SI> cntList;
 
@@ -184,10 +234,10 @@ struct EncoderSubCodecBiSwitch : public SubCodecBiSwitch
             {
                 cx AU& pixel = colGrid.Pixel(Pos2<SI>(x, y));
                 cx AU isWhite = pixel.v >= TO(ColV::v)(0x80);
-                ifu (U1(isWhite) ^ colCur)
+                ifu (U1(isWhite) ^ colCurIsWhite)
                 {
                     cntList.emplace_back(cntCur);
-                    colCur = isWhite;
+                    colCurIsWhite = isWhite;
                     cntCur = 1;
                 }
                 else
@@ -199,7 +249,7 @@ struct EncoderSubCodecBiSwitch : public SubCodecBiSwitch
         if (cntCur > 0)
             cntList.emplace_back(cntCur);
 
-        ValSeqBoxEncode(bitVec, cntList.data(), cntList.size());
+        ValSeqBoxEncode<SI, ValSeqBoxMode::DEFA>(bitVec, cntList);
     }
 };
 struct EncoderSubCodecEdgeFill : public SubCodecEdgeFill
@@ -246,30 +296,21 @@ struct EncoderSubCodecEdgeFill : public SubCodecEdgeFill
 
         AU stratMinI = SI(-1);
         AU stratMinSize = SI(1e9);
-        AU isTie = NO;
         ite (i, i < SI(PixelPath::BuildStrat::CNT))
         {
             if (stratSizes[i] < stratMinSize)
             {
                 stratMinI = i;
                 stratMinSize = stratSizes[i];
-                isTie = NO;
             }
             else if (stratSizes[i] == stratMinSize)
             {
-                isTie = YES;
+                ;
             }
         }
-        // if (!isTie)
-        // g_stratWins[stratMinI] += 1;
-        // ite (i, i < SI(PixelPath::BuildStrat::CNT))
-        // ConWriteRaw("%d ", g_stratWins[i]);
-        // ConWriteRaw("\n");
-        unused(isTie);
         cx AU& pixelPathBest = pixelPath[stratMinI];
 
         // add data to frame
-        frame.isLazy = NO;
         frame.isBaseWhite = (colBase != ColV(0x00));
         frame.pixelPath = std::move(pixelPathBest);
         frame.fillOrigins = std::move(fillOriginsFiltered);
@@ -280,23 +321,20 @@ struct EncoderSubCodecEdgeFill : public SubCodecEdgeFill
 class Encoder : public Xcoder
 {
   private:
+    EncoderSubCodecCpyFrame m_subCodecCpyFrame;
     EncoderSubCodecBiSwitch m_subCodecBiSwitch;
     EncoderSubCodecEdgeFill m_subCodecEdgeFill;
 
   private:
-    ColGrid<ColV> m_lazyRef;
-    SI m_lazyRefFrameI;
     ThdTaskMgr m_thdTaskMgr;
-    SI m_colDatSizePos;
 
   public:
     struct Params
     {
-        SubCodecType colDatType;
-        ColDatFeatures colDatFeatures;
         SI fps;
+        SI recentFrameCnt;
 
-        dfa Params() : colDatType(SubCodecType::BI_SWITCH), colDatFeatures(ColDatFeatures(0)), fps(30)
+        dfa Params() : fps(30), recentFrameCnt(32)
         {
         }
     };
@@ -323,225 +361,142 @@ class Encoder : public Xcoder
     dfa ER Begin(cx CH* path, cx Params& params)
     {
         ifep(m_thdTaskMgr.Init());
-        m_subCodecType = params.colDatType;
-        m_colDatFeatures = params.colDatFeatures;
-        m_meta.fps = params.fps;
         ifep(m_file.Open(path, NO, YES));
-        m_file.WriteVal(MAGIC);
-        m_file.WriteVal(DatBlockType::FPS);
-        m_file.WriteVarint(U4(m_meta.fps));
-        m_file.WriteVal(DatBlockType::COL_DAT_TYPE);
-        m_file.WriteVal(m_subCodecType);
-        m_file.WriteVarint(U4(m_colDatFeatures));
-        m_meta.frameSize = Size2<SI>(0, 0);
-        m_frameCnt = 0;
-        m_subCodecEdgeFill.frames.clear();
+        m_hdr.Clr();
+        m_hdr.Write(m_file);
+        m_hdr.magic = Hdr::MAGIC;
+        m_hdr.meta.fps = params.fps;
+
+        m_subCodecCpyFrame.recentFrames.New(params.recentFrameCnt);
+        m_subCodecEdgeFill.Clr();
+
         rets;
     }
     dfa ER FrameWrite(cx ColGrid<ColV>& colGrid_)
     {
         ColGrid<ColV> colGrid = colGrid_;
 
-        ifu (m_frameCnt == 0)
-        {
-            m_meta.frameSize = colGrid.size;
-            m_file.WriteVal(DatBlockType::COL_DAT);
-            m_colDatSizePos = m_file.CurGet();
-            m_file.WriteVal(U4(0)); // size, will be filled in later
-        }
+        ifu (m_hdr.meta.frameCnt == 0)
+            m_hdr.meta.frameSize = colGrid.size;
 
-        ifu (colGrid.size != m_meta.frameSize)
+        ifu (colGrid.size != m_hdr.meta.frameSize)
             rete(ErrVal::NO_VALID);
 
-        if (m_subCodecType == SubCodecType::BI_SWITCH)
+        SI subCodecExBestI = SI(SubCodecExType::NONE);
+        std::array<MemFile, SI(SubCodecExType::CNT)> subCodecExDatList;
+        ite (i, i < SI(subCodecExDatList.size()))
         {
-            BitVec frameColDatByX, frameColDatByY;
-            m_subCodecBiSwitch._FrameColDatGenByX_BiSwitch(frameColDatByX, colGrid);
-            m_subCodecBiSwitch._FrameColDatGenByY_BiSwitch(frameColDatByY, colGrid);
+            AU& subCodecExDat = subCodecExDatList[i];
 
-            cx AU isByY = (frameColDatByY.SizeByte() < frameColDatByX.SizeByte());
-
-            m_file.WriteVal(U1(isByY));
-            if (isByY)
-                m_file.Write(frameColDatByY.Dat(), frameColDatByY.SizeByte());
-            else
-                m_file.Write(frameColDatByX.Dat(), frameColDatByX.SizeByte());
-        }
-        else if (m_subCodecType == SubCodecType::EDGE_FILL)
-        {
-            if (m_lazyRefFrameI == -1)
+            switch (SubCodecExType(i))
             {
-                m_lazyRef = colGrid;
-                m_lazyRefFrameI = m_frameCnt;
-            }
-            else
-            {
-                ColGridVNCmpInfo cmpInfo;
-                cmpInfo.mode = ColGridVNCmpInfo::Mode::CHUNK_MAX;
-                cmpInfo.longChunkCntSuggest = 10;
-                F4 diff;
-                ifep(ColGridVNCmp(diff, colGrid, m_lazyRef, cmpInfo));
-                cxex AU LAZY_DIFF_THRESHOLD = F4(0.075);
-                if (diff >= LAZY_DIFF_THRESHOLD)
+            case SubCodecExType::CPY_FRAME: {
+                AU& compactFrame = m_subCodecCpyFrame.recentFrames.NewFirst();
+                cx AU compactSize = BitToByteSize(colGrid.pixels.size());
+                compactFrame.bits.resize(compactSize);
+                MemSet(compactFrame.bits.data(), 0, compactFrame.bits.size());
+                ite (i, i < colGrid.pixels.size())
                 {
-                    for (SI i = m_lazyRefFrameI + 1; i < m_frameCnt - 1; ++i)
-                        m_subCodecEdgeFill.frames[i].isLazy = YES;
-                    m_lazyRef = colGrid;
-                    m_lazyRefFrameI = m_frameCnt;
+                    cx AU bit = (colGrid.pixels[i].v != 0);
+                    compactFrame.bits[i / BIT_IN_BYTE] |= U1(bit << (i % BIT_IN_BYTE));
+                }
+                compactFrame.hash = HashFnv1a64(compactFrame.bits.data(), compactFrame.bits.size());
+                compactFrame.filePos = m_file.CurGet();
+
+                for (SI i = 1; i < m_subCodecCpyFrame.recentFrames.Len(); ++i)
+                {
+                    cx AU& recentFrame = m_subCodecCpyFrame.recentFrames[i];
+                    if (recentFrame.hash == compactFrame.hash) // NOTE: we are just assuming no hash collision
+                    {
+                        // ConWriteInfo("Frame copy found at %d, file pos %d", m_hdr.meta.frameCnt + 1, recentFrame.filePos);
+
+                        ifep(subCodecExDat.Open(NUL, NO, YES));
+                        subCodecExDat.WriteVarint(AsTypeU(recentFrame.filePos));
+
+                        m_subCodecCpyFrame.recentFrames.DelFirst();
+                        break;
+                    }
                 }
             }
+            break;
+            case SubCodecExType::BI_SWITCH_X_BLACK:
+            case SubCodecExType::BI_SWITCH_X_WHITE:
+            case SubCodecExType::BI_SWITCH_Y_BLACK:
+            case SubCodecExType::BI_SWITCH_Y_WHITE: {
+                cx BO isByY = (SubCodecExType(i) == SubCodecExType::BI_SWITCH_Y_BLACK || SubCodecExType(i) == SubCodecExType::BI_SWITCH_Y_WHITE);
+                cx U1 colCurIsWhiteInit = (SubCodecExType(i) == SubCodecExType::BI_SWITCH_X_WHITE || SubCodecExType(i) == SubCodecExType::BI_SWITCH_Y_WHITE);
 
-            cx AU colBase = tx->FrameBaseCol(colGrid);
-            cx AU colBaseAlter = (colBase == ColV(0x00) ? ColV(0xFF) : ColV(0x00));
+                cx AU isCorrectCol = (colGrid.pixels[0] != ColV(0x00)) == colCurIsWhiteInit;
+                if (isCorrectCol)
+                {
+                    BitVec frameColDat;
+                    if (isByY)
+                        m_subCodecBiSwitch._FrameColDatGenByY_BiSwitch(frameColDat, colGrid, colCurIsWhiteInit);
+                    else
+                        m_subCodecBiSwitch._FrameColDatGenByX_BiSwitch(frameColDat, colGrid, colCurIsWhiteInit);
 
-            SubCodecEdgeFill::Frame frame;
-            SubCodecEdgeFill::Frame frameAlter;
-            ifep(m_subCodecEdgeFill._FrameEncode_EdgeFill(frame, colGrid, colBase, m_thdTaskMgr));
-            ifep(m_subCodecEdgeFill._FrameEncode_EdgeFill(frameAlter, colGrid, colBaseAlter, m_thdTaskMgr));
+                    ifep(subCodecExDat.Open(NUL, NO, YES));
+                    subCodecExDat.Write(frameColDat.Dat(), frameColDat.SizeByte());
+                }
+            }
+            break;
+            case SubCodecExType::EDGE_FILL_BLACK:
+            case SubCodecExType::EDGE_FILL_WHITE: {
+                cx AU colBase = (SubCodecExType(i) == SubCodecExType::EDGE_FILL_BLACK) ? ColV(0x00) : ColV(0xFF);
 
-            // choose the smaller one
-            cxex AU FILL_ORIGIN_SIZE_AVG = F4(2.25);
-            cx AU frameCost = frame.pixelPath.SizeByte() + SI(F4(frame.fillOrigins.size()) * FILL_ORIGIN_SIZE_AVG);
-            cx AU frameAlterCost = frameAlter.pixelPath.SizeByte() + SI(F4(frameAlter.fillOrigins.size()) * FILL_ORIGIN_SIZE_AVG);
-            if (frameAlterCost < frameCost)
-                m_subCodecEdgeFill.frames.emplace_back(std::move(frameAlter));
-            else
-                m_subCodecEdgeFill.frames.emplace_back(std::move(frame));
+                SubCodecEdgeFill::Frame frame;
+                ifep(m_subCodecEdgeFill._FrameEncode_EdgeFill(frame, colGrid, colBase, m_thdTaskMgr));
+
+                cx AU& frameCur = frame;
+
+                // simplify fill origins
+                BitVec fillOriginBox;
+                ValSeqBoxEncode<SI, ValSeqBoxMode::DIFF_ASC>(fillOriginBox, frameCur.fillOrigins);
+
+                // write serialized data of the current frame
+                ifep(subCodecExDat.Open(NUL, NO, YES));
+                subCodecExDat.Write(fillOriginBox.Dat(), fillOriginBox.SizeByte());
+                subCodecExDat.WriteVarint(AsTypeU(frameCur.pixelPath.SizeByte()));
+                subCodecExDat.Write(frameCur.pixelPath.Dat(), frameCur.pixelPath.SizeByte());
+            }
+            break;
+            default:
+                break;
+            }
+
+            if (subCodecExDat.IsOpen())
+            {
+                if (subCodecExBestI == SI(SubCodecExType::NONE))
+                {
+                    subCodecExBestI = i;
+                }
+                else
+                {
+                    if (subCodecExDat.Size() < subCodecExDatList[subCodecExBestI].Size())
+                        subCodecExBestI = i;
+                }
+            }
         }
-        else
-        {
-            rete(ErrVal::NO_SUPPORT);
-        }
-        // jdst(skipEncode);
 
-        ++m_frameCnt;
+        ifu (subCodecExBestI == SI(SubCodecExType::NONE))
+            rete(ErrVal::NO_EXIST);
+
+        m_file.WriteVal(SubCodecExTypeT(subCodecExBestI));
+        m_file.Write(subCodecExDatList[subCodecExBestI].Dat(), subCodecExDatList[subCodecExBestI].Size());
+
+        ++m_hdr.meta.frameCnt;
 
         rets;
     }
     dfa ER End()
     {
-        if (m_subCodecType == SubCodecType::BI_SWITCH)
-        {
-            ;
-        }
-        else if (m_subCodecType == SubCodecType::EDGE_FILL)
-        {
-            // process remaining lazy frames
-            for (SI i = m_lazyRefFrameI + 1; i < m_frameCnt - 1; ++i)
-                m_subCodecEdgeFill.frames[i].isLazy = YES;
-
-            // filter lazy
-            TO(m_subCodecEdgeFill.frames) framesNolazy;
-            for (cx AU& frame : m_subCodecEdgeFill.frames)
-            {
-                if (!frame.isLazy)
-                    framesNolazy.emplace_back(frame);
-            }
-
-            // simplify lazy
-            BitVec lazyBox;
-            {
-                std::vector<SI> vals;
-                SI cnt = 0;
-                BO last = NO;
-                for (cx AU& frame : m_subCodecEdgeFill.frames)
-                {
-                    if (frame.isLazy == last)
-                    {
-                        ++cnt;
-                    }
-                    else
-                    {
-                        vals.emplace_back(cnt);
-                        cnt = 1;
-                        last = frame.isLazy;
-                    }
-                }
-                vals.emplace_back(cnt);
-                ValSeqBoxEncode(lazyBox, vals.data(), vals.size());
-            }
-
-            // simplify base
-            BitVec baseColBox;
-            {
-                std::vector<SI> baseColCnts;
-                SI cnt = 0;
-                BO last = NO;
-                for (cx AU& frame : framesNolazy)
-                {
-                    if (frame.isBaseWhite == last)
-                    {
-                        ++cnt;
-                    }
-                    else
-                    {
-                        baseColCnts.emplace_back(cnt);
-                        cnt = 1;
-                        last = frame.isBaseWhite;
-                    }
-                }
-                baseColCnts.emplace_back(cnt);
-                ValSeqBoxEncode(baseColBox, baseColCnts.data(), baseColCnts.size());
-            }
-
-            // simplify fill
-            BitVec fillCntBox;
-            BitVec fillOriginBox;
-            {
-                std::vector<SI> fillCnts;
-                std::vector<SI> fillOriginDiffs;
-                fillCnts.reserve(framesNolazy.size());
-                fillOriginDiffs.reserve(framesNolazy.size() * 4);
-                for (cx AU& frame : framesNolazy)
-                {
-                    fillCnts.emplace_back(frame.fillOrigins.size());
-
-                    SI fillOriginLast = -1;
-                    for (cx AU& fillOrigin : frame.fillOrigins)
-                    {
-                        cx AU fillOriginDiff = fillOrigin - fillOriginLast;
-                        fillOriginDiffs.emplace_back(fillOriginDiff);
-                        fillOriginLast = fillOrigin;
-                    }
-                }
-                ValSeqBoxEncode(fillCntBox, fillCnts.data(), fillCnts.size());
-                ValSeqBoxEncode(fillOriginBox, fillOriginDiffs.data(), fillOriginDiffs.size());
-            }
-
-            // lazy
-            m_file.Write(lazyBox.Dat(), lazyBox.SizeByte());
-
-            // base
-            m_file.Write(baseColBox.Dat(), baseColBox.SizeByte());
-
-            // fill
-            m_file.Write(fillCntBox.Dat(), fillCntBox.SizeByte());
-            m_file.Write(fillOriginBox.Dat(), fillOriginBox.SizeByte());
-
-            for (cx AU& frame : framesNolazy)
-            {
-                // path
-                m_file.Write(frame.pixelPath.Dat(), frame.pixelPath.SizeByte());
-            }
-        }
-
-        {
-            cx AU curPos = m_file.CurGet();
-            cx AU colDatSize = curPos - m_colDatSizePos - siz(U4);
-            m_file.CurSet(m_colDatSizePos);
-            m_file.WriteVal(U4(colDatSize));
-            m_file.CurSet(curPos);
-        }
-
-        m_file.WriteVal(DatBlockType::GRID_SIZE);
-        m_file.WriteVarint(U4(m_meta.frameSize.w));
-        m_file.WriteVarint(U4(m_meta.frameSize.h));
-        m_file.WriteVal(U4(m_frameCnt));
-        m_file.WriteVal(DatBlockType::END);
-
+        m_file.CurSet(0);
+        m_hdr.Write(m_file);
         ifep(m_file.Close(YES));
 
         ifep(m_thdTaskMgr.Free());
+
+        m_subCodecCpyFrame.recentFrames.Del();
 
         rets;
     }
@@ -549,23 +504,24 @@ class Encoder : public Xcoder
   public:
     dfa Encoder()
     {
-        m_lazyRefFrameI = -1;
-        m_colDatSizePos = 0;
     }
 };
 
 #endif
 
+struct DecoderSubCodecCpyFrame : public SubCodecCpyFrame
+{
+};
 struct DecoderSubCodecBiSwitch : public SubCodecBiSwitch
 {
-    dfa NT _CntListToColGrid_ByX_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList)
+    dfa NT _CntListToColGrid_ByX_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList, BO colCurIsWhiteInit)
     {
         // TODO: merge with _CntListToColGrid_ByY_BiSwitch
 
         SI cntListI = 0;
 
         cntCur = 0;
-        colCur = 1;
+        colCurIsWhite = colCurIsWhiteInit ? 0 : 1;
 
         cx AU pixelCnt = colGrid.size.Area();
         SI pixelI = 0;
@@ -577,11 +533,11 @@ struct DecoderSubCodecBiSwitch : public SubCodecBiSwitch
                 // rete(ErrVal::NO_EXIST);
                 cntCur = cntList[cntListI];
                 ++cntListI;
-                colCur = colCur ? 0 : 1;
+                colCurIsWhite = colCurIsWhite ? 0 : 1;
             }
 
             cx AU cntToRead = Min(cntCur, pixelCnt - pixelI);
-            cx AU colSrc = colCur ? ColV(0xFF) : ColV(0x00);
+            cx AU colSrc = colCurIsWhite ? ColV(0xFF) : ColV(0x00);
             AU pixelCur = colGrid.pixels.data() + pixelI;
             ite (i, i < cntToRead)
                 *(pixelCur + i) = colSrc;
@@ -589,14 +545,14 @@ struct DecoderSubCodecBiSwitch : public SubCodecBiSwitch
             cntCur -= cntToRead;
         }
     }
-    dfa NT _CntListToColGrid_ByY_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList)
+    dfa NT _CntListToColGrid_ByY_BiSwitch(ColGrid<ColV>& colGrid, cx std::vector<SI>& cntList, BO colCurIsWhiteInit)
     {
         // TODO: merge with _CntListToColGrid_ByX_BiSwitch
 
         SI cntListI = 0;
 
         cntCur = 0;
-        colCur = 1;
+        colCurIsWhite = colCurIsWhiteInit ? 0 : 1;
 
         ite (x, x < colGrid.size.w)
             ite (y, y < colGrid.size.h)
@@ -608,11 +564,11 @@ struct DecoderSubCodecBiSwitch : public SubCodecBiSwitch
                     jdst(nextCol);
                     cntCur = cntList[cntListI];
                     ++cntListI;
-                    colCur ^= 1;
+                    colCurIsWhite ^= 1;
                     ifu (cntCur == 0) // this happens if the first pixel of the frame is not the default color
                         jsrc(nextCol);
                 }
-                colGrid.Pixel(Pos2<SI>(x, y)) = ColV(0 - colCur);
+                colGrid.Pixel(Pos2<SI>(x, y)) = ColV(0 - colCurIsWhite);
                 --cntCur;
             }
     }
@@ -640,241 +596,99 @@ struct DecoderSubCodecEdgeFill : public SubCodecEdgeFill
 class Decoder : public Xcoder
 {
   private:
+    DecoderSubCodecCpyFrame m_subCodecCpyFrame;
     DecoderSubCodecBiSwitch m_subCodecBiSwitch;
     DecoderSubCodecEdgeFill m_subCodecEdgeFill;
 
   private:
-    SI m_colDatPos;
-    SI m_colDatSize;
     SI m_frameCur;
-    union {
-        U1 m_varU1;
-        U2 m_varU2;
-        U4 m_varU4;
-        U8 m_varU8;
-    };
 
   public:
     dfa ER Begin(cx CH* path)
     {
         ifep(m_file.Open(path, YES));
-        m_meta.frameSize = Size2<SI>(0, 0);
-        m_frameCnt = 0;
-        m_subCodecEdgeFill.frames.clear();
-        m_subCodecType = SubCodecType::NONE;
-        m_colDatFeatures = ColDatFeatures(0);
-        m_meta.fps = 30;
+        m_hdr.Clr();
+        ifep(m_hdr.Read(m_file));
 
-        ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
-            rete(ErrVal::FILE);
-        ifu (m_varU4 != MAGIC)
-            rete(ErrVal::NO_VALID);
-
-        {
-            DatBlockType datBlockType = DatBlockType::NONE;
-            while (datBlockType != DatBlockType::END)
-            {
-                ifu (m_file.ReadVal(datBlockType) != siz(datBlockType))
-                    rete(ErrVal::FILE);
-
-                switch (datBlockType)
-                {
-                case DatBlockType::NONE: {
-                    break;
-                }
-                case DatBlockType::GRID_SIZE: {
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_meta.frameSize.w = m_varU4;
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_meta.frameSize.h = m_varU4;
-                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
-                        rete(ErrVal::FILE);
-                    m_frameCnt = m_varU4;
-                    break;
-                }
-                case DatBlockType::FPS: {
-                    ifu (m_file.ReadVarint(m_varU4) == 0)
-                        rete(ErrVal::FILE);
-                    m_meta.fps = m_varU4;
-                    break;
-                }
-                case DatBlockType::COL_DAT_TYPE: {
-                    ifu (m_file.ReadVal(m_subCodecType) != siz(m_subCodecType))
-                        rete(ErrVal::FILE);
-                    ifu (m_file.ReadVarint(AsType<U4>(m_colDatFeatures)) == 0)
-                        rete(ErrVal::FILE);
-                    ifu (U4(m_colDatFeatures) != 0)
-                        rete(ErrVal::NO_SUPPORT);
-                    break;
-                }
-                case DatBlockType::COL_DAT: {
-                    ifu (m_file.ReadVal(m_varU4) != siz(m_varU4))
-                        rete(ErrVal::FILE);
-                    m_colDatSize = m_varU4;
-                    m_colDatPos = m_file.CurGet();
-                    m_file.CurMove(m_colDatSize);
-                    break;
-                }
-                case DatBlockType::END: {
-                    break;
-                }
-                default: {
-                    rete(ErrVal::NO_SUPPORT);
-                }
-                }
-            }
-        }
+        m_subCodecEdgeFill.Clr();
 
         m_frameCur = 0;
-        m_file.CurSet(m_colDatPos);
-
-        if (m_subCodecType == SubCodecType::EDGE_FILL)
-        {
-            // init
-            m_subCodecEdgeFill.frames.resize(m_frameCnt);
-
-            // lazy
-            {
-                std::vector<SI> vals;
-                m_file.ReadValSeqBox(vals);
-                SI frameI = 0;
-                BO last = NO;
-                for (cx AU& val : vals)
-                {
-                    ite (i, i < val)
-                        m_subCodecEdgeFill.frames[frameI++].isLazy = last;
-                    last = !last;
-                }
-            }
-
-            // lazy map
-            std::vector<SubCodecEdgeFill::Frame*> framesNolazyMap;
-            framesNolazyMap.reserve(m_frameCnt);
-            {
-                for (AU& frame : m_subCodecEdgeFill.frames)
-                {
-                    if (!frame.isLazy)
-                        framesNolazyMap.emplace_back(&frame);
-                }
-            }
-
-            // base
-            {
-                std::vector<SI> baseColCnts;
-                m_file.ReadValSeqBox(baseColCnts);
-                SI frameI = 0;
-                BO baseCur = NO;
-                for (cx AU& baseColCnt : baseColCnts)
-                {
-                    ite (i, i < baseColCnt)
-                        framesNolazyMap[frameI++]->isBaseWhite = baseCur;
-                    baseCur = !baseCur;
-                }
-            }
-
-            // fill
-            {
-                std::vector<SI> fillCnts;
-                std::vector<SI> fillOriginDiffs;
-                m_file.ReadValSeqBox(fillCnts);
-                m_file.ReadValSeqBox(fillOriginDiffs);
-                SI frameI = 0;
-                SI fillOriginDiffIOfs = 0;
-                for (cx AU& fillCnt : fillCnts)
-                {
-                    framesNolazyMap[frameI]->fillOrigins.reserve(fillCnt);
-                    SI fillOriginMain = -1;
-                    ite (i, i < fillCnt)
-                    {
-                        fillOriginMain += fillOriginDiffs[i + fillOriginDiffIOfs];
-                        framesNolazyMap[frameI]->fillOrigins.emplace_back(fillOriginMain);
-                    }
-                    fillOriginDiffIOfs += fillCnt;
-                    ++frameI;
-                }
-            }
-
-            ite (i, i < SI(framesNolazyMap.size()))
-            {
-                AU& frame = *(framesNolazyMap[i]);
-
-                // path
-                ifu (m_file.ReadVal<U4>(m_varU4) != siz(m_varU4))
-                    rete(ErrVal::FILE);
-                cx AU pixelPathDatSize = SI(m_varU4);
-                std::vector<U1> pixelPathDat(pixelPathDatSize);
-                ifu (m_file.Read(pixelPathDat.data(), pixelPathDat.size()) != SI(pixelPathDat.size()))
-                    rete(ErrVal::FILE);
-                frame.pixelPath.AddLast(&pixelPathDatSize, sizb(U4));
-                frame.pixelPath.AddLast(pixelPathDat.data(), pixelPathDat.size() * BIT_IN_BYTE);
-            }
-        }
 
         rets;
     }
     dfa ER FrameRead(ColGrid<ColV>& colGrid)
     {
-        colGrid.Resize(m_meta.frameSize);
+        colGrid.Resize(m_hdr.meta.frameSize);
+        ++m_frameCur;
 
-        if (m_subCodecType == SubCodecType::BI_SWITCH)
+        SI filePosRestore = -1;
+
+        jdst(cpyFrameRedir);
+
+        SubCodecExType subCodecEx;
+        ifep(m_file.ReadVal<U1>(subCodecEx));
+
+        switch (subCodecEx)
         {
-            BO isByY;
-            ifu (m_file.ReadVal(isByY) != siz(isByY))
+        case SubCodecExType::CPY_FRAME: {
+            SI filePosFrame;
+            ifu (m_file.ReadVarint(filePosFrame) < 1)
                 rete(ErrVal::FILE);
+            filePosRestore = m_file.CurGet();
+            ifu (filePosFrame < 0 || filePosFrame >= filePosRestore)
+                rete(ErrVal::NO_EXIST);
+            m_file.CurSet(filePosFrame);
+            jsrc(cpyFrameRedir);
+        }
+        break;
+        case SubCodecExType::BI_SWITCH_X_BLACK:
+        case SubCodecExType::BI_SWITCH_X_WHITE:
+        case SubCodecExType::BI_SWITCH_Y_BLACK:
+        case SubCodecExType::BI_SWITCH_Y_WHITE: {
+            cx BO isByY = (subCodecEx == SubCodecExType::BI_SWITCH_Y_BLACK || subCodecEx == SubCodecExType::BI_SWITCH_Y_WHITE);
+            cx U1 colCurIsWhiteInit = (subCodecEx == SubCodecExType::BI_SWITCH_X_WHITE || subCodecEx == SubCodecExType::BI_SWITCH_Y_WHITE);
 
             std::vector<SI> cntList;
-            ifu (m_file.ReadValSeqBox(cntList) < 1)
+            ifu ((m_file.ReadValSeqBox<SI, ValSeqBoxMode::DEFA>(cntList) < 1))
                 rete(ErrVal::FILE);
 
             if (isByY)
-                m_subCodecBiSwitch._CntListToColGrid_ByY_BiSwitch(colGrid, cntList);
+                m_subCodecBiSwitch._CntListToColGrid_ByY_BiSwitch(colGrid, cntList, colCurIsWhiteInit);
             else
-                m_subCodecBiSwitch._CntListToColGrid_ByX_BiSwitch(colGrid, cntList);
+                m_subCodecBiSwitch._CntListToColGrid_ByX_BiSwitch(colGrid, cntList, colCurIsWhiteInit);
         }
-        else if (m_subCodecType == SubCodecType::EDGE_FILL)
-        {
-            // get frame
-            cx AU& frame = m_subCodecEdgeFill.frames[m_frameCur];
+        break;
+        case SubCodecExType::EDGE_FILL_BLACK:
+        case SubCodecExType::EDGE_FILL_WHITE: {
+            cx AU colBase = (subCodecEx == SubCodecExType::EDGE_FILL_BLACK) ? ColV(0x00) : ColV(0xFF);
 
-            // handle lazy
-            if (frame.isLazy)
-            {
-                // for (AU& pixel : colGrid.pixels)
-                // pixel = ColV(0x80);
+            SubCodecEdgeFill::Frame frame;
 
-                // get previous frame index which is not lazy
-                AU frameIPrev = m_frameCur;
-                while (m_subCodecEdgeFill.frames[frameIPrev].isLazy)
-                    --frameIPrev;
-                // copy previous frame
-                ColGrid<ColV> colGridPrev;
-                m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGridPrev, m_subCodecEdgeFill.frames[frameIPrev], m_meta.frameSize);
+            // base color
+            frame.isBaseWhite = (colBase != ColV(0x00));
 
-                // get next frame index which is not lazy
-                AU frameINext = m_frameCur;
-                while (m_subCodecEdgeFill.frames[frameINext].isLazy)
-                    ++frameINext;
-                // copy next frame
-                ColGrid<ColV> colGridNext;
-                m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGridNext, m_subCodecEdgeFill.frames[frameINext], m_meta.frameSize);
+            // fill origins
+            ifu ((m_file.ReadValSeqBox<SI, ValSeqBoxMode::DIFF_ASC>(frame.fillOrigins) < 1))
+                rete(ErrVal::FILE);
 
-                // lerping between previous and next frame
-                F4 lerpRatio = F4(m_frameCur - frameIPrev) / F4(frameINext - frameIPrev);
-                ColGridLerp(colGrid, colGridPrev, colGridNext, lerpRatio);
-            }
-            else
-            {
-                m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGrid, frame, m_meta.frameSize);
-            }
+            // path
+            SI pixelPathDatSize;
+            ifu (m_file.ReadVarint(pixelPathDatSize) < 1)
+                rete(ErrVal::FILE);
+            std::vector<U1> pixelPathDat(pixelPathDatSize);
+            ifu (m_file.Read<U1>(pixelPathDat) != SI(pixelPathDat.size()))
+                rete(ErrVal::FILE);
+            frame.pixelPath.AddLast(pixelPathDat.data(), pixelPathDat.size() * BIT_IN_BYTE);
+
+            m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGrid, frame, m_hdr.meta.frameSize);
         }
-        else
-        {
-            rete(ErrVal::NO_SUPPORT);
+        break;
+        default:
+            break;
         }
 
-        ++m_frameCur;
+        if (filePosRestore != -1)
+            m_file.CurSet(filePosRestore);
 
         rets;
     }
@@ -887,26 +701,23 @@ class Decoder : public Xcoder
   public:
     dfa BO HasNextFrame() cx
     {
-        ret m_frameCur < m_frameCnt;
+        ret m_frameCur < m_hdr.meta.frameCnt;
     }
 
   public:
     dfa Size2<SI> FrameSizeGet() cx
     {
-        ret m_meta.frameSize;
+        ret m_hdr.meta.frameSize;
     }
     dfa SI FpsGet() cx
     {
-        ret m_meta.fps;
+        ret m_hdr.meta.fps;
     }
 
   public:
     dfa Decoder()
     {
-        m_colDatPos = 0;
-        m_colDatSize = 0;
         m_frameCur = 0;
-        m_varU8 = 0;
     }
 };
 
