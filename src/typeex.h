@@ -37,6 +37,27 @@ tpl2 dfa cx T1& AsType(cx T2& src)
     ret reinterpret_cast<cx T1&>(src);
 }
 
+tpl1 using GetTypeU = std::make_unsigned<T1>::type;
+tpl1 using GetTypeS = std::make_signed<T1>::type;
+
+tpl1 dfa GetTypeU<T1>& AsTypeU(T1& src)
+{
+    ret AsType<GetTypeU<T1>>(src);
+}
+tpl1 dfa cx GetTypeU<T1>& AsTypeU(cx T1& src)
+{
+    ret AsType<cx GetTypeU<T1>>(src);
+}
+
+tpl1 dfa GetTypeS<T1>& AsTypeS(T1& src)
+{
+    ret AsType<GetTypeS<T1>>(src);
+}
+tpl1 dfa cx GetTypeS<T1>& AsTypeS(cx T1& src)
+{
+    ret AsType<cx GetTypeS<T1>>(src);
+}
+
 tpl2 dfa NT ToType(T1& dst, cx T2& src) = delete;
 tpl2 dfa T1 ToType(cx T2& src)
 {

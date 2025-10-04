@@ -116,9 +116,10 @@ tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, std::string& val)
 tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, ZzVarint& val)
 {
     SI readSize;
-    ifep(VarintDecode(val.val, readSize, cur, end));
+    GetTypeU<TO(val.val)> tmp;
+    ifep(VarintDecode(tmp, readSize, cur, end));
     cur += readSize;
-    val.val = ZigzagDecode(val.val);
+    val.val = ZigzagDecode(tmp);
     rets;
 }
 

@@ -108,6 +108,11 @@ tpl1 class Vec2
         ret *tx;
     }
 
+    dfa NT Clr()
+    {
+        a = 0;
+        b = 0;
+    }
     dfa T1 Area() cx
     {
         ret w * h;
@@ -231,6 +236,12 @@ tpl1 class Vec3
         ret *tx;
     }
 
+    dfa NT Clr()
+    {
+        a = 0;
+        b = 0;
+        c = 0;
+    }
     dfa T1 Vol() cx
     {
         ret w * h * d;

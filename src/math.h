@@ -301,13 +301,15 @@ tpl1 dfa T1 Dist0Fast(T1 x, T1 y)
     cx AU ya = Abs<T1>(y);
     ret (xa > ya) ? (T1(0.947543) * xa + T1(0.392485) * ya) : (T1(0.947543) * ya + T1(0.392485) * xa);
 }
-tpl1 dfa T1 ZigzagEncode(T1 val)
+tpl1 dfa GetTypeU<T1> ZigzagEncode(T1 val)
 {
+    static_assert(IsTypeS<T1>, "ZigzagEncode: T1 must be a signed integer type");
     ret (val << 1) ^ (val >> (sizb(T1) - SI(1)));
 }
-tpl1 dfa T1 ZigzagDecode(T1 val)
+tpl1 dfa GetTypeS<T1> ZigzagDecode(T1 val)
 {
-    ret (val >> 1) ^ (-(val & 1));
+    static_assert(IsTypeU<T1>, "ZigzagDecode: T1 must be an unsigned integer type");
+    ret (val >> 1) ^ (-(AsTypeS(val) & 1));
 }
 tpl1 dfa T1 ZigzagAround0(T1 i)
 {

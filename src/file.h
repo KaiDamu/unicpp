@@ -416,7 +416,10 @@ class MemFile
         if (path == NUL)
         {
             jdst(jmp1);
-            m_path = path;
+            if (path == NUL)
+                m_path.clear();
+            else
+                m_path = path;
             m_buf.resize(FILE_MEM_RESIZE_ADD_DEFA);
             m_cur = m_buf.data();
             m_end = m_cur;
@@ -467,9 +470,25 @@ class MemFile
         m_cur += size;
         ret size;
     }
-    tpl1 dfa SI ReadVal(T1& val)
+    tpl1 dfa SI Read(cx std::span<T1>& buf)
     {
-        ret tx->Read((GA)&val, siz(T1));
+        ret tx->Read(buf.data(), buf.size_bytes());
+    }
+    tpl<typename TRead, typename TDst> dfa ER ReadVal(TDst& val)
+    {
+        ifcx (IsTypeSame<TRead, TDst>)
+        {
+            ifu (tx->Read((GA)&val, siz(val)) != siz(val))
+                rete(ErrVal::FILE);
+        }
+        else
+        {
+            TRead tmp;
+            ifu (tx->Read((GA)&tmp, siz(tmp)) != siz(tmp))
+                rete(ErrVal::FILE);
+            val = TDst(tmp);
+        }
+        rets;
     }
     tpl1 dfa SI ReadVarint(T1& val)
     {
@@ -517,7 +536,7 @@ class MemFile
         } while (VarbaseintIsIncomplete(buf, size, base));
         ret VarbaseintDecode<T1>(val, buf, base);
     }
-    tpl1 dfa SI ReadValSeqBox(std::vector<T1>& vals)
+    tpl<typename T1, ValSeqBoxMode TMode> dfa SI ReadValSeqBox(std::vector<T1>& vals)
     {
         vals.clear();
         SI datSize = 0;
@@ -528,10 +547,10 @@ class MemFile
         tx->CurMove(-readSize);
         BitVec box;
         box.Reserve(fullSize * BIT_IN_BYTE);
-        box._LenSet(fullSize * BIT_IN_BYTE);
+        box._LenbSet(fullSize * BIT_IN_BYTE);
         MemCpy(box._Dat(), m_cur, fullSize);
         m_cur += fullSize;
-        ValSeqBoxDecode(vals, box);
+        ValSeqBoxDecode<T1, TMode>(vals, box);
         ret fullSize;
     }
     dfa SI ReadLine(std::string& str)

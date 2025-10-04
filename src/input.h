@@ -1,6 +1,7 @@
 #pragma once
 
-enum class InputKey : U1
+using InputKeyT = U1;
+enum class InputKey : InputKeyT
 {
     NONE = 0x00,
     MOUS_LEFT = 0x01,
