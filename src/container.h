@@ -90,60 +90,60 @@ class BitVec
 {
   private:
     std::vector<U1> m_dat;
-    SI m_len;  // length in bits
-    SI m_free; // free bits at the end
-    SI m_cur;  // cursor position in bits
+    SI m_lenb;  // length in bits
+    SI m_freeb; // free bits at the end
+    SI m_curb;  // cursor position in bits
 
   public:
     dfa U1* _Dat()
     {
         ret m_dat.data();
     }
-    dfa NT _LenSet(SI len)
+    dfa NT _LenbSet(SI lenb)
     {
-        cx AU delta = len - m_len;
-        m_len = len;
-        m_free -= delta;
+        cx AU delta = lenb - m_lenb;
+        m_lenb = lenb;
+        m_freeb -= delta;
     }
 
   public:
     dfa NT Clr()
     {
-        MemSet(m_dat.data(), 0, BitToByteSize(m_len));
-        m_len = 0;
-        m_free = m_dat.size() * BIT_IN_BYTE;
-        m_cur = 0;
+        MemSet(m_dat.data(), 0, BitToByteSize(m_lenb));
+        m_lenb = 0;
+        m_freeb = m_dat.size() * BIT_IN_BYTE;
+        m_curb = 0;
     }
-    dfa NT Reserve(SI size)
+    dfa NT Reserve(SI sizeb)
     {
-        ifl (size <= m_len + m_free)
+        ifl (sizeb <= m_lenb + m_freeb)
             ret;
-        m_dat.resize(BitToByteSize(size), 0);
-        m_free = size - m_len;
+        m_dat.resize(BitToByteSize(sizeb), 0);
+        m_freeb = sizeb - m_lenb;
     }
-    dfa NT Reserve(SI sizeMin, SI sizeNew)
+    dfa NT Reserve(SI sizebMin, SI sizebNew)
     {
-        ifl (sizeMin <= m_len + m_free)
+        ifl (sizebMin <= m_lenb + m_freeb)
             ret;
-        tx->Reserve((sizeNew == -1) ? SI(F8(sizeMin) * 1.5) : sizeNew);
+        tx->Reserve((sizebNew == -1) ? SI(F8(sizebMin) * 1.5) : sizebNew);
     }
 
   public:
-    dfa NT Set(CXGA buf, SI pos, SI size)
+    dfa NT SetAt(CXGA buf, SI sizeb, SI posb)
     {
         cx AU buf_ = (cx U1*)buf;
 
-        tx->Reserve(BitToByteSize(pos + size) * BIT_IN_BYTE, -1);
+        tx->Reserve(BitToByteSize(posb + sizeb) * BIT_IN_BYTE, -1);
 
-        if ((pos % BIT_IN_BYTE) == 0 && (size % BIT_IN_BYTE) == 0)
+        if ((posb % BIT_IN_BYTE) == 0 && (sizeb % BIT_IN_BYTE) == 0)
         {
-            MemCpy(m_dat.data() + (pos / BIT_IN_BYTE), buf_, size / BIT_IN_BYTE);
+            MemCpy(m_dat.data() + (posb / BIT_IN_BYTE), buf_, sizeb / BIT_IN_BYTE);
         }
         else
         {
-            AU dstBitPos = pos;
+            AU dstBitPos = posb;
             AU srcBitPos = SI(0);
-            AU bitsRemain = size;
+            AU bitsRemain = sizeb;
 
             while (bitsRemain > 0)
             {
@@ -165,24 +165,24 @@ class BitVec
             }
         }
 
-        m_len = Max(m_len, pos + size);
-        m_free = m_dat.size() * BIT_IN_BYTE - m_len;
+        m_lenb = Max(m_lenb, posb + sizeb);
+        m_freeb = m_dat.size() * BIT_IN_BYTE - m_lenb;
     }
-    dfa NT Get(GA buf, SI pos, SI size) cx
+    dfa NT GetAt(GA buf, SI sizeb, SI posb) cx
     {
         AU buf_ = (U1*)buf;
 
-        if ((pos % BIT_IN_BYTE) == 0 && (size % BIT_IN_BYTE) == 0)
+        if ((posb % BIT_IN_BYTE) == 0 && (sizeb % BIT_IN_BYTE) == 0)
         {
-            MemCpy(buf_, m_dat.data() + (pos / BIT_IN_BYTE), size / BIT_IN_BYTE);
+            MemCpy(buf_, m_dat.data() + (posb / BIT_IN_BYTE), sizeb / BIT_IN_BYTE);
         }
         else
         {
-            MemSet(buf_, 0, BitToByteSize(size));
+            MemSet(buf_, 0, BitToByteSize(sizeb));
 
-            AU srcBitPos = pos;
+            AU srcBitPos = posb;
             AU dstBitPos = SI(0);
-            AU bitsRemain = size;
+            AU bitsRemain = sizeb;
 
             while (bitsRemain > 0)
             {
@@ -203,25 +203,25 @@ class BitVec
             }
         }
     }
-    dfa NT AddLast(CXGA buf, SI size)
+    dfa NT AddLast(CXGA buf, SI sizeb)
     {
-        tx->Set(buf, m_len, size);
+        tx->SetAt(buf, sizeb, m_lenb);
     }
-    tpl1 dfa SI GetVarint(T1& val, SI pos) cx
+    tpl1 dfa SI GetVarintAt(T1& val, SI posb) cx
     {
         U1 buf[VarintSizeMax<T1>()];
         SI size = 0;
         do
         {
-            tx->Get(buf + size, pos + size * BIT_IN_BYTE, BIT_IN_BYTE);
+            tx->GetAt(buf + size, BIT_IN_BYTE, posb + size * BIT_IN_BYTE);
             ++size;
         } while (VarintIsIncomplete(buf, size));
         ret VarintDecode(val, buf);
     }
-    dfa NT Read(GA buf, SI size)
+    dfa NT Read(GA buf, SI sizeb)
     {
-        tx->Get(buf, m_cur, size);
-        m_cur += size;
+        tx->GetAt(buf, sizeb, m_curb);
+        m_curb += sizeb;
     }
     tpl1 dfa SI ReadVarbaseint(T1& val, U1 base)
     {
@@ -248,7 +248,7 @@ class BitVec
     dfa NT PadToByte()
     {
         cx AU zero = U1(0);
-        tx->Set(&zero, m_len, (BIT_IN_BYTE - (m_len % BIT_IN_BYTE)) % BIT_IN_BYTE);
+        tx->SetAt(&zero, (BIT_IN_BYTE - (m_lenb % BIT_IN_BYTE)) % BIT_IN_BYTE, m_lenb);
     }
 
   public:
@@ -256,32 +256,74 @@ class BitVec
     {
         ret m_dat.data();
     }
-    dfa SI Size() cx
+    dfa SI SizeBit() cx
     {
-        ret m_len;
+        ret m_lenb;
     }
     dfa SI SizeByte() cx
     {
-        ret BitToByteSize(m_len);
+        ret BitToByteSize(m_lenb);
     }
 
   public:
-    dfa BitVec() : m_len(0), m_free(0), m_cur(0)
+    dfa BitVec() : m_lenb(0), m_freeb(0), m_curb(0)
     {
     }
 };
 
-tpl1 dfa NT ValSeqBoxEncode(BitVec& out, cx T1* vals, SI valCnt)
+using ValSeqBoxModeT = U1;
+enum class ValSeqBoxMode : ValSeqBoxModeT
 {
-    ifu (valCnt < 1)
-        ret;
+    DEFA,      // keep values as they are
+    DIFF,      // store value differences, general case (can be negative)
+    DIFF_ASC,  // store value differences, optimal for ascending ordered values
+    DIFF2,     // store value differences of differences, general case (can be negative)
+    DIFF2_ASC, // store value differences of differences, optimal for ascending ordered DIFFERENCE values
+};
 
-    AU valMax = vals[0];
-    for (SI i = 1; i < valCnt; ++i)
+tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxEncode(BitVec& out, cx std::span<cx T1>& vals)
+{
+    std::vector<T1> valsMod;
+    std::span<T1> valsModSpan;
+    ifcx (TMode == ValSeqBoxMode::DIFF || TMode == ValSeqBoxMode::DIFF_ASC)
     {
-        if (vals[i] > valMax)
-            valMax = vals[i];
+        valsMod.resize(vals.size());
+        T1 valPrev = 0;
+        ite (i, i < SI(vals.size()))
+        {
+            ifcx (TMode == ValSeqBoxMode::DIFF_ASC) // if ascending order is guaranteed, diff is always non-negative
+                valsMod[i] = vals[i] - valPrev;
+            else
+                valsMod[i] = ZigzagEncode(vals[i] - valPrev);
+            valPrev = vals[i];
+        }
+        valsModSpan = valsMod;
     }
+    ifcx (TMode == ValSeqBoxMode::DIFF2 || TMode == ValSeqBoxMode::DIFF2_ASC)
+    {
+        valsMod.resize(vals.size());
+        T1 valPrev = 0;
+        T1 glide = 0;
+        ite (i, i < SI(vals.size()))
+        {
+            cx AU glideDiff = (vals[i] - valPrev) - glide;
+            ifcx (TMode == ValSeqBoxMode::DIFF2_ASC) // if ascending order is guaranteed, diff is always non-negative
+                valsMod[i] = glideDiff;
+            else
+                valsMod[i] = ZigzagEncode(glideDiff);
+            glide += glideDiff;
+            valPrev = vals[i];
+        }
+        valsModSpan = valsMod;
+    }
+
+    cx std::span<cx T1>& valsProc_ = (TMode == ValSeqBoxMode::DEFA) ? vals : valsModSpan;
+    cx std::span<cx GetTypeU<T1>>& valsProc = AsType<cx std::span<cx GetTypeU<T1>>>(valsProc_);
+
+    GetTypeU<T1> valMax = ((valsProc.size() > 0) ? valsProc[0] : GetTypeU<T1>(0));
+    for (SI i = 1; i < SI(valsProc.size()); ++i)
+        if (valsProc[i] > valMax)
+            valMax = valsProc[i];
     cx AU valMaxLenb = LenBin(valMax);
 
     struct Encoding
@@ -300,15 +342,15 @@ tpl1 dfa NT ValSeqBoxEncode(BitVec& out, cx T1* vals, SI valCnt)
     SI bufSize;
 
     encoding[0].valMaxLenb = valMaxLenb;
-    encoding[0].sizeb = valMaxLenb * valCnt;
+    encoding[0].sizeb = valMaxLenb * SI(valsProc.size());
 
     for (U1 base = 1; base < 8; ++base)
     {
         cx AU encodingValMaxLen = VarbaseintEncode(buf, valMax, base);
         encoding[base].valMaxLenb = ((encodingValMaxLen - SI(1)) * BIT_IN_BYTE) + LenBin<U1>(*(buf + (encodingValMaxLen - SI(1))));
 
-        ite (i, i < valCnt)
-            encoding[base].sizeb += Min(VarbaseintEncodeSize(vals[i], base) * BIT_IN_BYTE, encoding[base].valMaxLenb);
+        ite (i, i < SI(valsProc.size()))
+            encoding[base].sizeb += Min(VarbaseintEncodeSize(valsProc[i], base) * BIT_IN_BYTE, encoding[base].valMaxLenb);
     }
 
     SI encodingBestI = 0;
@@ -324,32 +366,32 @@ tpl1 dfa NT ValSeqBoxEncode(BitVec& out, cx T1* vals, SI valCnt)
 
     cx AU zero = U8(0);
     out.AddLast(&zero, sizb(zero));
-    bufSize = VarbaseintEncode(buf, valCnt, 5);
+    bufSize = VarbaseintEncode(buf, GetTypeU<SI>(valsProc.size()), 5);
     out.AddLast(buf, bufSize * BIT_IN_BYTE);
     out.AddLast(&encodingBest.valMaxLenb, 7);
     out.AddLast(&encodingBestI, 3);
 
     if (encodingBestI == 0)
     {
-        ite (i, i < valCnt)
-            out.AddLast(&vals[i], valMaxLenb);
+        ite (i, i < SI(valsProc.size()))
+            out.AddLast(&valsProc[i], valMaxLenb);
     }
     else
     {
-        ite (i, i < valCnt)
+        ite (i, i < SI(valsProc.size()))
         {
-            bufSize = VarbaseintEncode(buf, vals[i], U1(encodingBestI));
+            bufSize = VarbaseintEncode(buf, valsProc[i], U1(encodingBestI));
             out.AddLast(buf, Min(bufSize * BIT_IN_BYTE, encodingBest.valMaxLenb));
         }
     }
 
     out.PadToByte();
 
-    bufSize = VarbaseintEncode(out._Dat(), out.SizeByte() - siz(U8), 7);
+    bufSize = VarbaseintEncode(out._Dat(), AsTypeU(out.SizeByte() - siz(U8)), 7);
     MemMove(out._Dat() + bufSize, out.Dat() + siz(U8), out.SizeByte() - siz(U8));
-    out._LenSet(out.Size() - ((siz(U8) - bufSize) * BIT_IN_BYTE));
+    out._LenbSet(out.SizeBit() - ((siz(U8) - bufSize) * BIT_IN_BYTE));
 }
-tpl1 dfa NT ValSeqBoxDecode(std::vector<T1>& vals, BitVec& in)
+tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxDecode(std::vector<T1>& vals, BitVec& in)
 {
     SI datSize;
     in.ReadVarbaseint(datSize, 7);
@@ -375,6 +417,35 @@ tpl1 dfa NT ValSeqBoxDecode(std::vector<T1>& vals, BitVec& in)
         for (AU& val : vals)
             in.ReadVarbasetruncint(val, U1(encodingBestI), valMaxLenb);
     }
+
+    ifcx (TMode == ValSeqBoxMode::DIFF || TMode == ValSeqBoxMode::DIFF_ASC)
+    {
+        T1 valPrev = 0;
+        ite (i, i < SI(vals.size()))
+        {
+            ifcx (TMode == ValSeqBoxMode::DIFF_ASC) // if ascending order is guaranteed, diff is always non-negative
+                vals[i] = valPrev + vals[i];
+            else
+                vals[i] = valPrev + ZigzagDecode(AsTypeU(vals[i]));
+            valPrev = vals[i];
+        }
+    }
+    ifcx (TMode == ValSeqBoxMode::DIFF2 || TMode == ValSeqBoxMode::DIFF2_ASC)
+    {
+        T1 valPrev = 0;
+        T1 glide = 0;
+        ite (i, i < SI(vals.size()))
+        {
+            T1 glideDiff;
+            ifcx (TMode == ValSeqBoxMode::DIFF2_ASC) // if ascending order is guaranteed, diff is always non-negative
+                glideDiff = vals[i];
+            else
+                glideDiff = ZigzagDecode(AsTypeU(vals[i]));
+            glide += glideDiff;
+            vals[i] = valPrev + glide;
+            valPrev = vals[i];
+        }
+    }
 }
 
 tpl<typename T1, SI TCap> class CircularBuf
@@ -396,7 +467,7 @@ tpl<typename T1, SI TCap> class CircularBuf
     }
 
   public:
-    dfa SI Size() cx
+    dfa SI Len() cx
     {
         ret m_len;
     }
@@ -463,6 +534,110 @@ tpl<typename T1, SI TCap> class CircularBuf
         m_first = 0;
         m_end = 0;
         m_len = 0;
+    }
+};
+tpl<typename T1> class DCircularBuf
+{
+  private:
+    std::vector<T1> m_buf;
+    SI m_first;
+    SI m_end;
+    SI m_len;
+
+  private:
+    dfa SI _NextI(SI i) cx
+    {
+        ret (i + 1) % m_buf.size();
+    }
+    dfa SI _PrevI(SI i) cx
+    {
+        ret (i + (m_buf.size() - 1)) % m_buf.size();
+    }
+
+  public:
+    dfa SI Len() cx
+    {
+        ret m_len;
+    }
+    dfa BO IsEmpty() cx
+    {
+        ret m_len == 0;
+    }
+    dfa BO IsFull() cx
+    {
+        ret m_len == SI(m_buf.size());
+    }
+
+  public:
+    dfa T1& NewFirst()
+    {
+        if (tx->IsFull())
+            m_end = tx->_PrevI(m_end);
+        else
+            ++m_len;
+        m_first = tx->_PrevI(m_first);
+        T1& val = m_buf[m_first];
+        val = T1();
+        ret val;
+    }
+    dfa T1& NewLast()
+    {
+        if (tx->IsFull())
+            m_first = tx->_NextI(m_first);
+        else
+            ++m_len;
+        T1& val = m_buf[m_end];
+        m_end = tx->_NextI(m_end);
+        val = T1();
+        ret val;
+    }
+    dfa NT DelFirst()
+    {
+        Assert(!tx->IsEmpty());
+        m_first = tx->_NextI(m_first);
+        --m_len;
+    }
+    dfa NT DelLast()
+    {
+        Assert(!tx->IsEmpty());
+        m_end = tx->_PrevI(m_end);
+        --m_len;
+    }
+
+  public:
+    dfa NT Clr()
+    {
+        m_first = 0;
+        m_end = 0;
+        m_len = 0;
+    }
+    dfa NT New(SI cap)
+    {
+        m_buf.resize(cap);
+        tx->Clr();
+    }
+    dfa NT Del()
+    {
+        m_buf.clear();
+        tx->Clr();
+    }
+
+  public:
+    dfa T1& operator[](SI i)
+    {
+        Assert(i < m_len);
+        ret m_buf[(m_first + i) % m_buf.size()];
+    }
+    dfa cx T1& operator[](SI i) cx
+    {
+        Assert(i < m_len);
+        ret m_buf[(m_first + i) % m_buf.size()];
+    }
+
+  public:
+    dfa DCircularBuf()
+    {
+        tx->Clr();
     }
 };
 

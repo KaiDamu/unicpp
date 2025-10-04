@@ -126,7 +126,7 @@ tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, ZzVarint& val)
 tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::string& val)
 {
     Req(buf, curI + VarintSizeMax<SI>() + SI(val.size()));
-    curI += VarintEncode(&buf[curI], SI(val.size()));
+    curI += VarintEncode(&buf[curI], GetTypeU<SI>(val.size()));
     MemCpy(&buf[curI], val.data(), val.size());
     curI += val.size();
     rets;

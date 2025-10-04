@@ -359,6 +359,7 @@ dfa BO VarbaseintIsIncomplete(cx U1* dat, SI size, U1 base)
 }
 tpl1 dfa SI VarintEncode(U1* out, T1 in)
 {
+    static_assert(IsTypeU<T1>, "VarintEncode: T1 must be an unsigned integer type");
     cx U1* cx outBase = out;
     while (in > 0x7F)
     {
@@ -404,6 +405,7 @@ tpl1 dfa ER VarintDecode(T1& out, SI& inReadSize, cx U1* in, cx U1* end)
 }
 tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base)
 {
+    static_assert(IsTypeU<T1>, "VarbaseintEncode: T1 must be an unsigned integer type");
     cx U1* cx outBase = out;
     cx AU mask = U1(U1(0xFF) << base);
     while (in >= mask)
@@ -431,6 +433,7 @@ tpl1 dfa SI VarbaseintDecode(T1& out, cx U1* in, U1 base)
 }
 tpl1 dfa SI VarbaseintEncodeSize(T1 in, U1 base)
 {
+    static_assert(IsTypeU<T1>, "VarbaseintEncodeSize: T1 must be an unsigned integer type");
     SI size = 1;
     cx AU mask = U1(U1(0xFF) << base);
     while (in >= mask)
@@ -484,7 +487,10 @@ tpl1 dfa T1 RevByte(T1 val)
 }
 tpl1 dfa SI LenBin(T1 val)
 {
-    ret LenBin<U8>(val);
+    ifcx (IsTypeU<T1>)
+        ret LenBin<U8>(val);
+    else
+        ret LenBin<U8>(AsTypeU(val));
 }
 tpl0 dfa SI LenBin<>(U8 val)
 {
