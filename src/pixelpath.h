@@ -7,13 +7,17 @@
     Losslessly encoded pixel position data.
     Best suited for contiguous lines of pixels, like lines, arches, rectangles, circles, etc.
 
+    - the format is not byte-aligned, but bit-aligned
     PixelPathFormat
-        U4 sizeOfPaths
-        U1[sizeOfPaths]@PathDat[] paths
+        PathDat[] paths
+        SinglePxDat singlePxs
     PathDat
         U4V posOfs
-        U4V pxCnt
+        U4V movePxCnt
         1B[] moveDat
+    SinglePxDat
+        U4V cntOfSinglePx
+        U4V[cntOfSinglePx] posOfs_2
 
     // 'posOfs' offsets 'posMain'
     // 'posMain' initial value is '-1'
@@ -112,31 +116,37 @@ class PixelPath
             {
             }
         };
+        struct SinglePx
+        {
+            SI ofs;
+
+            dfa SinglePx(SI ofs = 0) noex : ofs(ofs)
+            {
+            }
+        };
 
         pixelPath.Clr();
-        AU datSizeSum = U4(0);
-        pixelPath.AddLast(&datSizeSum, sizb(U4));
-        SI iLast = -1;
+        SI pxCurILastPaths = -1;
+        SI pxCurILastSinglePxs = -1;
         std::vector<Dir> moveBufDir;
         std::vector<DirLen> moveBufDirLen;
         BitVec moveBuf;
+        std::vector<SinglePx> singlePxs;
 
-        cx AU pixelBase = colGrid.pixels.data();
-        cx AU pixelEnd = pixelBase + colGrid.pixels.size();
-        AU pixelCurMain = pixelBase;
-        while (pixelCurMain != pixelEnd)
+        U1 buf[VarintSizeMax<U4>()];
+        SI bufDatSize;
+
+        cx AU pxBase = colGrid.pixels.data();
+        cx AU pxEnd = pxBase + colGrid.pixels.size();
+        AU pxCurMain = pxBase;
+        while (pxCurMain != pxEnd)
         {
-            if (*pixelCurMain == colObj)
+            if (*pxCurMain == colObj)
             {
-                AU pixelCur = pixelCurMain;
-                cx AU iCur = SI(pixelCur - pixelBase);
-                cx AU posOfs = iCur - iLast;
-                iLast = iCur;
+                AU pxCur = pxCurMain;
+                cx AU pxCurI = SI(pxCur - pxBase);
 
-                U1 buf[VarintSizeMax<U4>()];
-                SI bufDatSize = VarintEncode(buf, U4(posOfs));
-                pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
-                *pixelCur = colMark;
+                *pxCur = colMark;
                 moveBufDir.clear();
                 AU forwardDir = Dir(0);
 
@@ -247,16 +257,16 @@ class PixelPath
                     {
                         cx AU dir = stratDirMap[i];
                         cx AU iOfs = GetIOfsByDir(dir, colGrid.size.w);
-                        AU pixelTest = pixelCur + iOfs;
-                        ifu ((pixelTest < pixelBase) || (pixelTest >= pixelEnd))
+                        AU pxTest = pxCur + iOfs;
+                        ifu ((pxTest < pxBase) || (pxTest >= pxEnd))
                             continue;
 
-                        if (*pixelTest != colObj)
+                        if (*pxTest != colObj)
                             continue;
 
-                        pixelCur = pixelTest;
+                        pxCur = pxTest;
                         moveBufDir.emplace_back(dir);
-                        *pixelCur = colMark;
+                        *pxCur = colMark;
                         forwardDir = dir;
                         jsrc(validStep);
                     }
@@ -264,9 +274,11 @@ class PixelPath
                     jdst(validStep);
                 }
 
-                moveBufDirLen.clear();
-                ifl (moveBufDir.size() > 0)
+                cx AU isMultiPxMode = (moveBufDir.size() > 0);
+
+                ifl (isMultiPxMode)
                 {
+                    moveBufDirLen.clear();
                     moveBufDirLen.reserve(moveBufDir.size());
                     AU dirPrev = moveBufDir[0];
                     SI dirCnt = 1;
@@ -282,83 +294,103 @@ class PixelPath
                         dirCnt = 1;
                     }
                     moveBufDirLen.emplace_back(dirPrev, U4(dirCnt));
-                }
 
-                moveBuf.Clr();
-                for (cx AU& dirLen : moveBufDirLen)
-                {
-                    moveBuf.AddLast(&dirLen.dir, DIR_SIZEB);
-                    if (dirLen.len > 1)
+                    moveBuf.Clr();
+                    for (cx AU& dirLen : moveBufDirLen)
                     {
-                        cx AU backDir = GetBackDir(dirLen.dir);
-                        AU encodeStrVal = DirLenToMoves(dirLen.len);
-                        do
+                        moveBuf.AddLast(&dirLen.dir, DIR_SIZEB);
+                        if (dirLen.len > 1)
                         {
-                            switch (encodeStrVal & 0b11)
+                            cx AU backDir = GetBackDir(dirLen.dir);
+                            AU encodeStrVal = DirLenToMoves(dirLen.len);
+                            do
                             {
-                            case 0b01:
-                                moveBuf.AddLast(&dirLen.dir, DIR_SIZEB);
-                                break;
-                            case 0b10:
-                                moveBuf.AddLast(&backDir, DIR_SIZEB);
-                                break;
-                            case 0b11: {
-                                bufDatSize = VarintEncode(buf, dirLen.len);
-                                moveBuf.AddLast(buf, bufDatSize * BIT_IN_BYTE);
-                                break;
-                            }
-                            default:
-                                jsrc(double_break_1);
-                            }
-                            encodeStrVal >>= 2;
-                        } while (YES);
-                        jdst(double_break_1);
+                                switch (encodeStrVal & 0b11)
+                                {
+                                case 0b01:
+                                    moveBuf.AddLast(&dirLen.dir, DIR_SIZEB);
+                                    break;
+                                case 0b10:
+                                    moveBuf.AddLast(&backDir, DIR_SIZEB);
+                                    break;
+                                case 0b11: {
+                                    bufDatSize = VarintEncode(buf, AsTypeU(dirLen.len));
+                                    moveBuf.AddLast(buf, bufDatSize * BIT_IN_BYTE);
+                                    break;
+                                }
+                                default:
+                                    jsrc(double_break_1);
+                                }
+                                encodeStrVal >>= 2;
+                            } while (YES);
+                            jdst(double_break_1);
+                        }
                     }
+
+                    cx AU posOfs = pxCurI - pxCurILastPaths;
+                    pxCurILastPaths = pxCurI;
+
+                    bufDatSize = VarintEncode(buf, U4(posOfs));
+                    pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
+
+                    bufDatSize = VarintEncode(buf, U4(moveBufDir.size()));
+                    pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
+
+                    pixelPath.AddLast(moveBuf.Dat(), moveBuf.SizeBit());
                 }
+                else
+                {
+                    cx AU posOfs = pxCurI - pxCurILastSinglePxs;
+                    pxCurILastSinglePxs = pxCurI;
 
-                bufDatSize = VarintEncode(buf, U4(moveBufDir.size()));
-                pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
-
-                pixelPath.AddLast(moveBuf.Dat(), moveBuf.Size());
+                    singlePxs.emplace_back(posOfs);
+                }
             }
 
-            ++pixelCurMain;
+            ++pxCurMain;
         }
 
-        datSizeSum = U4(pixelPath.SizeByte() - siz(U4)); // exclude 'datSizeSum' itself
-        pixelPath.Set(&datSizeSum, 0, siz(U4) * BIT_IN_BYTE);
+        // (posOfs == 0) marks end of paths
+        bufDatSize = VarintEncode(buf, U4(0));
+        pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
+
+        bufDatSize = VarintEncode(buf, U4(singlePxs.size()));
+        pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
+        for (cx AU& singlePx : singlePxs)
+        {
+            bufDatSize = VarintEncode(buf, U4(singlePx.ofs));
+            pixelPath.AddLast(buf, bufDatSize * BIT_IN_BYTE);
+        }
+
+        pixelPath.PadToByte();
     }
     tpl1 static dfa NT Draw(ColGrid<T1>& colGrid, cx BitVec& pixelPath, cx T1& col)
     {
-        SI posMain = -1;
-
         U4 varU4;
-        pixelPath.Get(&varU4, 0, siz(U4) * BIT_IN_BYTE);
-        AU pixelPathCur = siz(U4) * BIT_IN_BYTE;
+        SI posMain = -1;
+        AU pxPathCurb = 0;
 
         while (YES)
         {
-            AU varSize = pixelPath.GetVarint(varU4, pixelPathCur);
-            pixelPathCur += varSize * BIT_IN_BYTE;
+            pxPathCurb += pixelPath.GetVarintAt(varU4, pxPathCurb) * BIT_IN_BYTE;
             cx AU posOfs = SI(varU4);
 
             ifu (posOfs == 0)
                 break;
 
             posMain += posOfs;
-            AU pixelCur = colGrid.pixels.data() + posMain;
-            *pixelCur = col;
+            AU pxCur = colGrid.pixels.data() + posMain;
+            *pxCur = col;
 
-            varSize = pixelPath.GetVarint(varU4, pixelPathCur);
-            pixelPathCur += varSize * BIT_IN_BYTE;
+            pxPathCurb += pixelPath.GetVarintAt(varU4, pxPathCurb) * BIT_IN_BYTE;
             cx AU moveCntEnd = SI(varU4);
             AU moveCntCur = SI(0);
 
             while (moveCntCur != moveCntEnd)
             {
                 U1 varU1;
-                pixelPath.Get(&varU1, pixelPathCur, DIR_SIZEB);
-                pixelPathCur += DIR_SIZEB;
+                pixelPath.GetAt(&varU1, DIR_SIZEB, pxPathCurb);
+                pxPathCurb += DIR_SIZEB;
                 cx AU dir = Dir(varU1);
                 cx AU backDir = GetBackDir(dir);
                 cx AU iOfs = GetIOfsByDir(Dir(dir), colGrid.size.w);
@@ -368,11 +400,11 @@ class PixelPath
                 AU moveCnt = SI(1);
                 while (moveCntCur + moveCnt != moveCntEnd)
                 {
-                    pixelPath.Get(&varU1, pixelPathCur, DIR_SIZEB);
+                    pixelPath.GetAt(&varU1, DIR_SIZEB, pxPathCurb);
                     cx AU dirNext = Dir(varU1);
                     if (dirNext != dir && dirNext != backDir)
                         break;
-                    pixelPathCur += DIR_SIZEB;
+                    pxPathCurb += DIR_SIZEB;
 
                     moveHash += U1(((dirNext == dir) ? 1 : 2) * moveHashMul);
                     moveHashMul *= 3;
@@ -380,19 +412,31 @@ class PixelPath
 
                     ifu (moveCnt == DIR_LEN_VAR)
                     {
-                        pixelPathCur += pixelPath.GetVarint(varU4, pixelPathCur) * BIT_IN_BYTE;
+                        pxPathCurb += pixelPath.GetVarintAt(varU4, pxPathCurb) * BIT_IN_BYTE;
                         moveCnt = SI(varU4);
                     }
                 }
 
                 ite (i, i < moveCnt)
                 {
-                    cx AU pixelDst = pixelCur + iOfs;
-                    pixelCur = pixelDst;
-                    *pixelCur = col;
+                    cx AU pxDst = pxCur + iOfs;
+                    pxCur = pxDst;
+                    *pxCur = col;
                 }
                 moveCntCur += moveCnt;
             }
+        }
+
+        posMain = -1;
+        pxPathCurb += pixelPath.GetVarintAt(varU4, pxPathCurb) * BIT_IN_BYTE;
+        cx AU singlePxCnt = SI(varU4);
+        ite (i, i < singlePxCnt)
+        {
+            pxPathCurb += pixelPath.GetVarintAt(varU4, pxPathCurb) * BIT_IN_BYTE;
+            cx AU posOfs = SI(varU4);
+            posMain += posOfs;
+            cx AU pxCur = colGrid.pixels.data() + posMain;
+            *pxCur = col;
         }
     }
 };
