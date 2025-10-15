@@ -10,7 +10,7 @@ class CliBase
   public: // NOTE: public by current design
     std::vector<U1> m_tmpBufWrite;
     std::vector<U1> m_tmpBufRead;
-    std::unordered_map<MsgNumT, MsgPend> m_msgPendList;
+    std::unordered_map<MsgNumT, MsgPend, StdHasherNoOpe<MsgNumT>> m_msgPendList;
     ThdLockFast m_msgPendListLock;
     ProtoVerT m_ver;
     MsgNumT m_msgNumToWrite;

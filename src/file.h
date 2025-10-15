@@ -329,7 +329,7 @@ dfa ER BufToFile(cx CH* path, CXGA buf, SI size)
     ifep(file.Close());
     rets;
 }
-tpl1 dfa ER FileToBuf(std::vector<T1>& buf, cx CH* path, CXGA bufAppend = NUL, SI sizeAppend = 0)
+tpl1 dfa ER FileToBuf(std::vector<T1>& buf, cx CH* path, CXGA bufAppend, SI sizeAppend)
 {
     buf.clear();
     File file;

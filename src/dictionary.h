@@ -1,5 +1,18 @@
 #pragma once
 
+// pre-defined:
+tpl1 dfa cx T1* StrFind(cx T1* main, cx T1& c);
+tpl1 dfa SI StrTrimWspace(T1* dst);
+tpl1 dfa ER FileToBuf(std::vector<T1>& buf, cx CH* path, CXGA bufAppend = NUL, SI sizeAppend = 0);
+
+tpl1 struct StdHasherNoOpe
+{
+    dfa size_t operator()(cx T1& val) cx noex
+    {
+        ret size_t(val);
+    }
+};
+
 tpl2 class DictAvl
 {
   private:
@@ -397,23 +410,43 @@ tpl2 class DictAvl
 class SVarBlock
 {
   private:
-    DictAvl<std::string, std::string> m_vars;
+    std::unordered_map<FNV1A64, std::string, StdHasherNoOpe<FNV1A64>> m_vars;
+
+  private:
+    dfa ER _Get(std::string& val, cx CS* var) cx
+    {
+        cx AU& it = m_vars.find(HashFnv1a64Str(var));
+        ifu (it == m_vars.end())
+            rete(ErrVal::NO_EXIST);
+        val = it->second;
+        rets;
+    }
 
   public:
     dfa NT Clr()
     {
-        m_vars.Clr();
+        m_vars.clear();
     }
-    dfa NT Set(cx std::string& var, cx std::string& val)
+    dfa NT Set(cx CS* var, cx std::string& val)
     {
-        m_vars.Replace(var, val);
+        m_vars[HashFnv1a64Str(var)] = val;
     }
-    dfa std::string Get(cx std::string& var) cx
+    dfa std::string Get(cx CS* var) cx
     {
-        cx std::string* cx val = m_vars[var];
-        if (val == NUL)
-            ret std::string();
-        ret *val;
+        std::string str;
+        tx->_Get(str, var);
+        ret str;
+    }
+    tpl1 dfa ER Get(T1& val, cx CS* var, cx T1& defa = T1()) cx
+    {
+        std::string str;
+        ife (tx->_Get(str, var))
+        {
+            val = defa;
+            retep;
+        }
+        ToType<T1>(val, str);
+        rets;
     }
     dfa SI LoadMemCfg(DatIte<U1> dat)
     {
@@ -474,16 +507,16 @@ class SVarBlock
             retep;
         DatIte<U1> datIte;
         datIte.Src(fileDat.data(), fileDat.size());
-        cx SI len = tx->LoadMemCfg(datIte);
+        cx AU len = tx->LoadMemCfg(datIte);
         unused(len);
         rets;
     }
 
   public:
-    SVarBlock()
+    dfa SVarBlock()
     {
     }
-    ~SVarBlock()
+    dfa ~SVarBlock()
     {
     }
 };

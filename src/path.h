@@ -1,7 +1,7 @@
 #pragma once
 
 // pre-defined:
-dfa SI ProcWorkPath(CH* out);
+dfa SI ProcWorkPathGet(CH* out);
 dfa SI ProcWorkPathLen();
 dfa BO FileIsExist(cx CH* path, BO acceptFile, BO acceptDir);
 dfa SI ProcEnvvarGet(CH*, cx CH*, SI);
@@ -157,7 +157,7 @@ dfa SI PathToAbspath(CH* path)
     cxex SI CH_PATH_DIR_ADD = 1;
     for (SI i = pathLen; i > -1; --i)
         path[i + workPathLen + CH_PATH_DIR_ADD] = path[i];
-    ProcWorkPath(path);
+    ProcWorkPathGet(path);
     path[workPathLen] = CH_PATH_DIR;
     ret workPathLen + CH_PATH_DIR_ADD + pathLen;
 }
@@ -165,7 +165,7 @@ dfa SI PathToAbspath(CH* dst, cx CH* src)
 {
     if (PathIsAbspath(src))
         ret StrCpyStrLen(dst, src);
-    cx AU workPathLen = ProcWorkPath(dst);
+    cx AU workPathLen = ProcWorkPathGet(dst);
     dst[workPathLen] = CH_PATH_DIR;
     cxex SI CH_PATH_DIR_ADD = 1;
     cx AU srcLen = StrCpyStrLen(dst + workPathLen + CH_PATH_DIR_ADD, src);

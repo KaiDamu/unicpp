@@ -317,3 +317,28 @@ tpl2 dfa SI IntToStrBase16(T1* dst, T2 src, SI padToLen = siz(T2) * 2, T1 padVal
     }
     ret padLen + strLen;
 }
+
+tpl0 dfa NT ToType(F4& dst, cx CS* cx& src)
+{
+    StrToFloat(dst, src);
+}
+tpl0 dfa NT ToType(F4& dst, cx std::string& src)
+{
+    StrToFloat(dst, src.c_str());
+}
+tpl0 dfa NT ToType(BO& dst, cx std::string& src)
+{
+    dst = ((src.size() != 0) && (src[0] != '0' || src.size() > 1));
+}
+tpl0 dfa NT ToType(SI& dst, cx std::string& src)
+{
+    StrToInt(dst, src.c_str(), SI(src.size()));
+}
+tpl0 dfa NT ToType(std::string& dst, cx std::string& src)
+{
+    dst = src;
+}
+tpl0 dfa NT ToType(std::wstring& dst, cx std::string& src)
+{
+    dst = std::wstring(src.begin(), src.end());
+}

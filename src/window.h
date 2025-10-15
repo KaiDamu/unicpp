@@ -85,6 +85,7 @@ class Win
         FOCUS = 1,
         TITLE_CLASS = 2,
         CON = 3,
+        DESKTOP = 4,
     };
     enum class CaptureMode : U1
     {
@@ -122,6 +123,12 @@ class Win
         }
         case SelType::CON: {
             m_hdl = GetConsoleWindow();
+            ifu (m_hdl == NUL)
+                rete(ErrVal::WIN);
+            rets;
+        }
+        case SelType::DESKTOP: {
+            m_hdl = GetDesktopWindow();
             ifu (m_hdl == NUL)
                 rete(ErrVal::WIN);
             rets;
@@ -251,6 +258,21 @@ class Win
             rect.pos.x = posBase.x + ofsEx;
             rect.pos.y = posBase.y + ofsEx;
         }
+
+        rets;
+    }
+    dfa ER RectInnerSet(cx Rect2<SI>& rect)
+    {
+        Rect2<SI> rectOuterCur;
+        Rect2<SI> rectInnerCur;
+        ifep(tx->RectOuterGet(rectOuterCur));
+        ifep(tx->RectInnerGet(rectInnerCur));
+
+        Rect2<SI> rectOuterDst;
+        rectOuterDst = rect;
+        rectOuterDst.pos -= rectInnerCur.pos - rectOuterCur.pos;
+        rectOuterDst.size += rectOuterCur.size - rectInnerCur.size;
+        ifep(tx->RectOuterSet(rectOuterDst));
 
         rets;
     }

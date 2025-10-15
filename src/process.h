@@ -178,7 +178,7 @@ dfa GAFN ProcFnAdrGet(HD mdl, cx CS* fnName)
 class MdlFnCache
 {
   private:
-    std::unordered_map<FNV1A64, GAFN> m_fnCache;
+    std::unordered_map<FNV1A64, GAFN, StdHasherNoOpe<FNV1A64>> m_fnCache;
 
   public:
     dfa ER CacheDll(cx CH* dllName)
@@ -274,14 +274,20 @@ dfa cx CH* ProcDirPath()
     }
     ret s_cache;
 }
-dfa SI ProcWorkPath(CH* out)
+dfa SI ProcWorkPathGet(CH* path)
 {
-    cx AU& path = ThdTeb()->ProcessEnvironmentBlock->ProcessParameters->CurrentDirectory.DosPath;
-    MemCpy(out, path.Buffer, path.Length);
-    cx AU pathLen = SI(path.Length / siz(CH));
-    cx BO hasTrailSlash = (out[pathLen - 1] == CH_PATH_DIR && out[pathLen - 2] != CH_PATH_DRIVE);
-    out[pathLen - hasTrailSlash] = '\0';
+    cx AU& path_ = ThdTeb()->ProcessEnvironmentBlock->ProcessParameters->CurrentDirectory.DosPath;
+    MemCpy(path, path_.Buffer, path_.Length);
+    cx AU pathLen = SI(path_.Length / siz(CH));
+    cx BO hasTrailSlash = (path[pathLen - 1] == CH_PATH_DIR && path[pathLen - 2] != CH_PATH_DRIVE);
+    path[pathLen - hasTrailSlash] = '\0';
     ret SI(pathLen - hasTrailSlash);
+}
+dfa ER ProcWorkPathSet(cx CH* path)
+{
+    ifu (SetCurrentDirectoryW(path) == 0)
+        rete(ErrVal::PROC);
+    rets;
 }
 dfa SI ProcWorkPathLen()
 {
@@ -675,7 +681,7 @@ dfa ER ProcRestartElevated()
         rets;
     Proc proc;
     CH workPath[PATH_LENX_MAX];
-    ProcWorkPath(workPath);
+    ProcWorkPathGet(workPath);
     ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcArgFullGet()), workPath))
         retep;
     proc.__Drop();

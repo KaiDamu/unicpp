@@ -208,7 +208,7 @@ dfa ER CliBase::_MsgReadBase(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& soc
         m_msgPendListLock.Unlock();
     }
 
-    using TMsgDatFactory = std::unordered_map<MsgType, std::function<std::unique_ptr<MsgDatAny>()>>;
+    using TMsgDatFactory = std::unordered_map<MsgType, std::function<std::unique_ptr<MsgDatAny>()>, StdHasherNoOpe<MsgType>>;
     static cx TMsgDatFactory s_msgDatFactory = {
         {MsgType::VER_REQ, []() { ret std::make_unique<MsgDatVerReq>(); }},
         {MsgType::VER_RES, []() { ret std::make_unique<MsgDatVerRes>(); }},

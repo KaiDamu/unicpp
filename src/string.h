@@ -703,7 +703,7 @@ class EnvvarCache
 {
   private:
     std::vector<CH> m_strBuf;
-    std::unordered_map<FNV1A64, cx CH*> m_varCache;
+    std::unordered_map<FNV1A64, cx CH*, StdHasherNoOpe<FNV1A64>> m_varCache;
 
   public:
     dfa ER CacheState()
