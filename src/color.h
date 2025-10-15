@@ -653,6 +653,12 @@ tpl0 dfa NT ToType(ColRgba& dst, cx ColHsvN& src)
     ToType(tmp, src);
     ToType(dst, tmp);
 }
+tpl0 dfa NT ToType(ColVN& dst, cx ColHsvN& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
 tpl0 dfa NT ToType(ColRgbN& dst, cx ColVN& src)
 {
     dst.r = src.v;
@@ -758,7 +764,148 @@ dfa F4 ColHsvNCmp(cx ColHsvN& a, cx ColHsvN& b, F4 wH = COL_HSV_WEIGHT_H, F4 wS 
 }
 
 /// [compare color grid]
-struct ColGridVNCmpInfo
+struct ColGridSsimInfo
+{
+    struct Win
+    {
+        F4 mean;
+        F4 variance;
+    };
+
+    cx ColGrid<ColVN>* imgCol;
+    cx ColGrid<ColVN>* imgMask;
+    SI winSize;
+    SI stepSize;
+    std::vector<Win> wins;
+
+    dfa NT Clr()
+    {
+        imgCol = NUL;
+        imgMask = NUL;
+        winSize = 0;
+        stepSize = 0;
+        wins.clear();
+    }
+
+    dfa ColGridSsimInfo()
+    {
+        tx->Clr();
+    }
+};
+dfa NT ColGridSsimInfoGet(ColGridSsimInfo& result, cx ColGrid<ColVN>& imgCol, cx ColGrid<ColVN>& imgMask, SI winSize = 0, SI stepSize = 0)
+{
+    if (winSize == 0)
+    {
+        cx AU minSize = Min<SI>(imgCol.size.w, imgCol.size.h);
+        winSize = Min(Clamp<SI>(RoundToInt(minSize * 0.05f), 7, 17), minSize);
+    }
+    if (stepSize == 0)
+        stepSize = Max<SI>((winSize + 1) / 2, 1);
+
+    result.Clr();
+    result.imgCol = &imgCol;
+    result.imgMask = &imgMask;
+    result.winSize = winSize;
+    result.stepSize = stepSize;
+
+    cx AU& imgW = imgCol.size.w;
+    cx AU& imgH = imgCol.size.h;
+
+    result.wins.reserve((imgW / stepSize + 1) * (imgH / stepSize + 1));
+
+    for (SI y = 0; y < imgH; y += stepSize)
+        for (SI x = 0; x < imgW; x += stepSize)
+        {
+            cx AU xEnd = Min(x + winSize, imgW);
+            cx AU yEnd = Min(y + winSize, imgH);
+            F4 mean = 0;
+            F4 meanSq = 0;
+            F4 weightSum = 0;
+
+            for (SI j = y; j < yEnd; ++j)
+            {
+                cx AU iBase = j * imgW + x;
+                for (SI i = 0; i < xEnd - x; ++i)
+                {
+                    cx AU& val = imgCol.pixels[iBase + i].v;
+                    cx AU& weight = imgMask.pixels[iBase + i].v;
+                    cx AU valMulWeight = val * weight;
+                    mean += valMulWeight;
+                    meanSq += valMulWeight * val;
+                    weightSum += weight;
+                }
+            }
+            if (IsNearZero(weightSum))
+            {
+                result.wins.emplace_back(0, 0);
+                continue;
+            }
+
+            mean /= weightSum;
+            cx AU variance = Max(meanSq / weightSum - mean * mean, F4(0));
+            result.wins.emplace_back(mean, variance);
+        }
+}
+dfa ER ColGridCmpSsim(F4& resultDiff, cx ColGridSsimInfo& infoA, cx ColGridSsimInfo& infoB)
+{
+    resultDiff = 1.0f;
+
+    ifu (infoA.imgCol->size != infoB.imgCol->size)
+        rete(ErrVal::NO_VALID);
+    ifu (infoA.imgMask != infoB.imgMask)
+        rete(ErrVal::NO_VALID);
+    ifu (infoA.winSize != infoB.winSize)
+        rete(ErrVal::NO_VALID);
+    ifu (infoA.stepSize != infoB.stepSize)
+        rete(ErrVal::NO_VALID);
+
+    cx AU& imgW = infoA.imgCol->size.w;
+    cx AU& imgH = infoA.imgCol->size.h;
+    cx AU& imgMask = *infoA.imgMask;
+    cx AU& winSize = infoA.winSize;
+    cx AU& stepSize = infoA.stepSize;
+
+    cxex AU L = 1.0f - 0.0f;
+    cxex AU C1 = (0.01f * L) * (0.01f * L);
+    cxex AU C2 = (0.03f * L) * (0.03f * L);
+
+    F4 ssimSum = 0;
+    F4 weightSumAll = 0;
+    SI winI = 0;
+
+    for (SI y = 0; y < imgH; y += stepSize)
+        for (SI x = 0; x < imgW; x += stepSize, ++winI)
+        {
+            cx AU xEnd = Min(x + winSize, imgW);
+            cx AU yEnd = Min(y + winSize, imgH);
+            F4 covariance = 0;
+            F4 weightSum = 0;
+
+            for (SI j = y; j < yEnd; ++j)
+            {
+                cx AU iBase = j * imgW + x;
+                for (SI i = 0; i < xEnd - x; ++i)
+                {
+                    cx AU& weight = imgMask.pixels[iBase + i].v;
+                    covariance += (infoA.imgCol->pixels[iBase + i].v - infoA.wins[winI].mean) * (infoB.imgCol->pixels[iBase + i].v - infoB.wins[winI].mean) * weight;
+                    weightSum += weight;
+                }
+            }
+            if (IsNearZero(weightSum))
+                continue;
+
+            covariance /= weightSum;
+            cx AU numerator = (2 * infoA.wins[winI].mean * infoB.wins[winI].mean + C1) * (2 * covariance + C2);
+            cx AU denominator = (infoA.wins[winI].mean * infoA.wins[winI].mean + infoB.wins[winI].mean * infoB.wins[winI].mean + C1) * (infoA.wins[winI].variance + infoB.wins[winI].variance + C2);
+            cx AU ssim = numerator / denominator;
+            ssimSum += ssim * weightSum;
+            weightSumAll += weightSum;
+        }
+
+    resultDiff = 1.0f - (IsNearZero(weightSumAll) ? F4(0) : (ssimSum / weightSumAll));
+    rets;
+}
+struct ColGridCmpA1Info
 {
     enum class Mode : U1
     {
@@ -769,45 +916,22 @@ struct ColGridVNCmpInfo
     Mode mode;
     SI longChunkCntSuggest;
 
-    ColGridVNCmpInfo()
+    dfa ColGridCmpA1Info()
     {
         mode = Mode::LINEAR;
         longChunkCntSuggest = 0;
     }
 };
-struct ColGridHsvNCmpInfo
-{
-    Pos2<SI> subGridPos;
-    cx ColGrid<ColVN>* subGridMask;
-    cx ColGrid<ColVN>* subGridEdges;
-    cx ColGrid<ColVN>* mainGridEdges;
-    F4 wCol;
-    F4 wEdges;
-    F4 wH;
-    F4 wS;
-    F4 wV;
-
-    ColGridHsvNCmpInfo()
-    {
-        subGridPos = Pos2<SI>(0, 0);
-        subGridMask = NUL;
-        subGridEdges = NUL;
-        mainGridEdges = NUL;
-        wCol = 1.0f;
-        wEdges = 1.0f;
-        wH = COL_HSV_WEIGHT_H;
-        wS = COL_HSV_WEIGHT_S;
-        wV = COL_HSV_WEIGHT_V;
-    }
-};
-tpl1 dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<T1>& subGrid, cx ColGrid<T1>& mainGrid, cx ColGridVNCmpInfo& info)
+tpl1 dfa ER ColGridCmpA1(F4& resultDiff, cx ColGrid<T1>& subGrid, cx ColGrid<T1>& mainGrid, cx ColGridCmpA1Info& info)
 {
     static_assert(IsTypeSame<T1, ColVN> || IsTypeSame<T1, ColV>, "T1 must be ColVN");
+
+    resultDiff = 1.0f;
 
     ifu (subGrid.size != mainGrid.size)
         rete(ErrVal::NO_VALID);
 
-    if (info.mode == ColGridVNCmpInfo::Mode::LINEAR)
+    if (info.mode == ColGridCmpA1Info::Mode::LINEAR)
     {
         AU diffSum = F8(0);
         cx AU iEnd = SI(subGrid.pixels.size());
@@ -815,7 +939,7 @@ tpl1 dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<T1>& subGrid, cx ColGrid<T1>
             diffSum += F8(Diff(subGrid.pixels[i].v, mainGrid.pixels[i].v));
         resultDiff = F4(diffSum / F8(subGrid.pixels.size()));
     }
-    else if (info.mode == ColGridVNCmpInfo::Mode::CHUNK_MAX)
+    else if (info.mode == ColGridCmpA1Info::Mode::CHUNK_MAX)
     {
         cx AU chunkSize = Size2ChunkSizeSuggest(subGrid.size, info.longChunkCntSuggest, 0.9f, 0.15f);
         cx AU chunkCnt = Size2ChunkCnt(subGrid.size, chunkSize);
@@ -841,9 +965,9 @@ tpl1 dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<T1>& subGrid, cx ColGrid<T1>
         AU diffMax = F8(0);
         for (cx AU& chunk : chunks)
         {
-            cx AU diff = chunk.diffSum / F8(chunk.diffCnt);
-            if (diff > diffMax)
-                diffMax = diff;
+            cx AU diffVal = chunk.diffSum / F8(chunk.diffCnt);
+            if (diffVal > diffMax)
+                diffMax = diffVal;
         }
 
         resultDiff = F4(diffMax);
@@ -858,68 +982,91 @@ tpl1 dfa ER ColGridVNCmp(F4& resultDiff, cx ColGrid<T1>& subGrid, cx ColGrid<T1>
 
     rets;
 }
-dfa ER ColGridHsvNCmp(F4& resultDiff, cx ColGrid<ColHsvN>& subGrid, cx ColGrid<ColHsvN>& mainGrid, cx ColGridHsvNCmpInfo& info)
+struct ColGridCmpA2Info
+{
+    cx ColGrid<ColVN>* gridMask;   // set if per-pixel weights are used (to exclude an area, or focus on an area)
+    cx ColGrid<ColHsvN>* gridACol; // set if HSV color comparison is used
+    cx ColGrid<ColHsvN>* gridBCol; // set if HSV color comparison is used
+    cx ColGrid<ColVN>* gridAEdges; // set if edge comparison is used
+    cx ColGrid<ColVN>* gridBEdges; // set if edge comparison is used
+    cx ColGridSsimInfo* gridASsim; // set if ssim comparison is used
+    cx ColGridSsimInfo* gridBSsim; // set if ssim comparison is used
+    F4 wCol;                       // weight for color difference
+    F4 wEdges;                     // weight for edge difference
+    F4 wSsim;                      // weight for ssim difference
+    F4 wColH;                      // sub-weight for HSV H channel
+    F4 wColS;                      // sub-weight for HSV S channel
+    F4 wColV;                      // sub-weight for HSV V channel
+
+    dfa ColGridCmpA2Info()
+    {
+        gridMask = NUL;
+        gridACol = NUL;
+        gridBCol = NUL;
+        gridAEdges = NUL;
+        gridBEdges = NUL;
+        gridASsim = NUL;
+        gridBSsim = NUL;
+        wCol = 1.0f;
+        wEdges = 1.0f;
+        wSsim = 2.0f;
+        wColH = COL_HSV_WEIGHT_H;
+        wColS = COL_HSV_WEIGHT_S;
+        wColV = COL_HSV_WEIGHT_V;
+    }
+};
+tpl<BO TUseMask, BO TDoCol, BO TDoEdges, BO TDoSsim> dfa ER ColGridCmpA2(F4& resultDiff, cx ColGridCmpA2Info& info)
 {
     resultDiff = 1.0f;
 
-    // check pos & size
-    ifu (info.subGridPos.x + subGrid.size.w > mainGrid.size.w || info.subGridPos.y + subGrid.size.h > mainGrid.size.h)
-    {
-        rete(ErrVal::HIGH_SIZE);
-    }
-    ifu (info.subGridPos.x < 0 || info.subGridPos.y < 0)
-    {
-        rete(ErrVal::LOW_SIZE);
-    }
-    ifu ((info.subGridMask != NUL) && (info.subGridMask->size.w != subGrid.size.w || info.subGridMask->size.h != subGrid.size.h))
-    {
+    Size2<SI> gridSize;
+    ifcx (TDoCol)
+        gridSize = info.gridACol->size;
+    else ifcx (TDoEdges)
+        gridSize = info.gridAEdges->size;
+    else ifcx (TDoSsim)
+        gridSize = info.gridASsim->imgCol->size;
+    else
         rete(ErrVal::NO_VALID);
-    }
-    ifu ((info.subGridEdges != NUL) && (info.subGridEdges->size.w != subGrid.size.w || info.subGridEdges->size.h != subGrid.size.h))
-    {
-        rete(ErrVal::NO_VALID);
-    }
-    ifu ((info.mainGridEdges != NUL) && (info.mainGridEdges->size.w != mainGrid.size.w || info.mainGridEdges->size.h != mainGrid.size.h))
-    {
-        rete(ErrVal::NO_VALID);
-    }
 
-    // compare
-    F4 diffSum = 0.0f;
-    F4 diffCnt = (info.subGridMask == NUL) ? F4(subGrid.size.Area()) : 0.0f;
-    cx AU doEdgesProc = (info.subGridEdges != NUL && info.mainGridEdges != NUL) ? YES : NO;
-    cx AU iEnd = subGrid.size.Area();
+    F4 diffCnt = (TUseMask ? F4(0) : F4(gridSize.Area()));
+    F4 diffValSum = 0;
+    cx AU iEnd = gridSize.Area();
     ite (i, i < iEnd)
     {
-        cx AU iMain = ((i / subGrid.size.w) + info.subGridPos.y) * mainGrid.size.w + ((i % subGrid.size.w) + info.subGridPos.x);
-        cx AU diff = ColHsvNCmp(subGrid.pixels[i], mainGrid.pixels[iMain], info.wH, info.wS, info.wV);
-        if (info.subGridMask == NUL)
+        F4 maskVal = 1.0f;
+        ifcx (TUseMask)
         {
-            diffSum += diff * info.wCol;
-        }
-        else
-        {
-            cx AU& maskVal = info.subGridMask->pixels[i].v;
-            diffSum += diff * info.wCol * maskVal;
+            maskVal = info.gridMask->pixels[i].v;
             diffCnt += maskVal;
         }
-        if (doEdgesProc)
+
+        ifcx (TDoCol)
         {
-            cx AU diffEdge = Diff(info.subGridEdges->pixels[i].v, info.mainGridEdges->pixels[iMain].v);
-            if (info.subGridMask == NUL)
-            {
-                diffSum += diffEdge * info.wEdges;
-            }
-            else
-            {
-                cx AU& maskVal = info.subGridMask->pixels[i].v;
-                diffSum += diffEdge * info.wEdges * maskVal;
-            }
+            cx AU diffValCol = ColHsvNCmp(info.gridACol->pixels[i], info.gridBCol->pixels[i], info.wColH, info.wColS, info.wColV);
+            diffValSum += diffValCol * info.wCol * maskVal;
+        }
+
+        ifcx (TDoEdges)
+        {
+            cx AU diffValEdges = Diff(info.gridAEdges->pixels[i].v, info.gridBEdges->pixels[i].v);
+            diffValSum += diffValEdges * info.wEdges * maskVal;
         }
     }
+    ifcx (TDoSsim)
+    {
+        F4 diffSsim;
+        ifep(ColGridCmpSsim(diffSsim, *info.gridASsim, *info.gridBSsim));
+        diffValSum += diffSsim * info.wSsim * diffCnt;
+    }
 
-    cx AU diffSumWMul = 1.0f / (doEdgesProc ? (info.wCol + info.wEdges) : info.wCol);
-    resultDiff = diffSum * diffSumWMul / diffCnt;
+    cx AU wSum = (TDoCol ? info.wCol : 0.0f) + (TDoEdges ? info.wEdges : 0.0f) + (TDoSsim ? info.wSsim : 0.0f);
+
+    if (IsNearZero(diffCnt) || IsNearZero(wSum))
+        resultDiff = 1.0f;
+    else
+        resultDiff = diffValSum / diffCnt / wSum;
+
     rets;
 }
 
