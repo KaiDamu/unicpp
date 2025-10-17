@@ -143,6 +143,9 @@ struct SubCodecEdgeFill
     {
     }
 };
+struct SubCodecDiffPath
+{
+};
 
 class Xcoder
 {
@@ -318,12 +321,16 @@ struct EncoderSubCodecEdgeFill : public SubCodecEdgeFill
         rets;
     }
 };
+struct EncoderSubCodecDiffPath : public SubCodecDiffPath
+{
+};
 class Encoder : public Xcoder
 {
   private:
     EncoderSubCodecCpyFrame m_subCodecCpyFrame;
     EncoderSubCodecBiSwitch m_subCodecBiSwitch;
     EncoderSubCodecEdgeFill m_subCodecEdgeFill;
+    EncoderSubCodecDiffPath m_subCodecDiffPath;
 
   private:
     ThdTaskMgr m_thdTaskMgr;
@@ -460,6 +467,10 @@ class Encoder : public Xcoder
                 subCodecExDat.Write(frameCur.pixelPath.Dat(), frameCur.pixelPath.SizeByte());
             }
             break;
+            case SubCodecExType::DIFF_PATH_BLACK:
+            case SubCodecExType::DIFF_PATH_WHITE: {
+            }
+            break;
             default:
                 break;
             }
@@ -593,12 +604,16 @@ struct DecoderSubCodecEdgeFill : public SubCodecEdgeFill
             ColGridFloodFillAt(colGrid, fillOrigin, colBase, colObj);
     }
 };
+struct DecoderSubCodecDiffPath : public SubCodecDiffPath
+{
+};
 class Decoder : public Xcoder
 {
   private:
     DecoderSubCodecCpyFrame m_subCodecCpyFrame;
     DecoderSubCodecBiSwitch m_subCodecBiSwitch;
     DecoderSubCodecEdgeFill m_subCodecEdgeFill;
+    DecoderSubCodecDiffPath m_subCodecDiffPath;
 
   private:
     SI m_frameCur;
@@ -681,6 +696,10 @@ class Decoder : public Xcoder
             frame.pixelPath.AddLast(pixelPathDat.data(), pixelPathDat.size() * BIT_IN_BYTE);
 
             m_subCodecEdgeFill._FrameToColGrid_EdgeFill(colGrid, frame, m_hdr.meta.frameSize);
+        }
+        break;
+        case SubCodecExType::DIFF_PATH_BLACK:
+        case SubCodecExType::DIFF_PATH_WHITE: {
         }
         break;
         default:
