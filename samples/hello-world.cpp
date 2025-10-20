@@ -1,5 +1,6 @@
 #define PROG_BUILD_TYPE_DBG // remove this line for release build
-#include <unicpp.h>
+#include <unicpp/main.hpp>
+#include <unicpp/console.hpp>
 
 ER Main()
 {

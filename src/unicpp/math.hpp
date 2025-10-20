@@ -1,0 +1,87 @@
+#pragma once
+
+#include "typeex.hpp"
+
+dfa U8 MulU16(U8 a, U8 b, U8& hi);
+dfa SI BitToByteSize(SI size);
+dfa BO VarintIsIncomplete(cx U1* dat, SI size);
+dfa BO VarbaseintIsIncomplete(cx U1* dat, SI size, U1 base);
+dfa U1 ByteObfuscate(U1 val, U1 i);
+dfa U1 ByteUnobfuscate(U1 val, U1 i);
+
+tpl<SI TI, typename T1> dfa cxex T1 ByteIVal(cx T1& val);
+tpl1 dfa T1 ByteIVal(cx T1& val, SI i);
+tpl1 dfa T1 Min(T1 a, T1 b);
+tpl<typename T1, typename... Args> dfa T1 Min(T1 a, T1 b, Args... args);
+tpl1 dfa T1 Max(T1 a, T1 b);
+tpl<typename T1, typename... Args> dfa T1 Max(T1 a, T1 b, Args... args);
+tpl1 dfa T1 Clamp(T1 val, T1 min, T1 max);
+tpl1 dfa T1 Abs(T1 val);
+tpl0 dfa F4 Abs(F4 val);
+tpl0 dfa F8 Abs(F8 val);
+tpl1 dfa T1 Diff(T1 a, T1 b);
+tpl1 dfa T1 DiffWrap(T1 a, T1 b, T1 wrapAt);
+tpl1 dfa S8 FloorToInt(T1 val);
+tpl1 dfa S8 CeilToInt(T1 val);
+tpl1 dfa T1 Floor(T1 val);
+tpl1 dfa T1 Ceil(T1 val);
+tpl1 T1 DivCeil(T1 val, T1 div);
+tpl1 dfa T1 CeilStep(T1 val, T1 step);
+tpl1 dfa S8 RoundToInt(T1 val) = delete;
+tpl0 dfa S8 RoundToInt<>(F4 val);
+tpl0 dfa S8 RoundToInt<>(F8 val);
+tpl1 dfa T1 Sign(T1 val);
+tpl1 dfa T1 WholePart(T1 val);
+tpl1 dfa T1 FractionPart(T1 val);
+tpl1 dfa BO IsNearZero(T1 val);
+tpl1 dfa T1 PowInt(T1 base, S2 exp);
+tpl1 dfa T1 Pow2(T1 val);
+tpl1 dfa T1 Pow3(T1 val);
+tpl1 dfa T1 Sqrt(T1 val);
+tpl0 dfa F4 Sqrt<F4>(F4 val);
+tpl0 dfa F8 Sqrt<F8>(F8 val);
+tpl1 dfa T1 RadNorm1(T1 val);
+tpl1 dfa T1 Sin(T1 val);
+tpl0 dfa F4 Sin<F4>(F4 val);
+tpl1 dfa T1 Cos(T1 val);
+tpl0 dfa F4 Cos<F4>(F4 val);
+tpl1 dfa T1 Atan(T1 x, T1 y);
+tpl0 dfa F4 Atan<F4>(F4 x, F4 y);
+tpl1 dfa T1 Dist0(T1 x, T1 y);
+tpl1 dfa T1 Dist0Fast(T1 x, T1 y);
+tpl1 dfa GetTypeU<T1> ZigzagEncode(T1 val);
+tpl1 dfa GetTypeS<T1> ZigzagDecode(T1 val);
+tpl1 dfa T1 ZigzagAround0(T1 i);
+tpl1 dfa T1 ZigzagAround(T1 val, T1 i);
+tpl<typename T1, T1 TSize> dfa T1 AlignBit(T1 val);
+tpl1 dfa T1 AlignBit(T1 val, T1 size);
+tpl1 dfa NT Swap(T1& a, T1& b);
+tpl2 dfa T1 Lerp(cx T1& a, cx T1& b, T2 t);
+tpl1 T1 DegToRad(T1 deg);
+tpl1 T1 RadToDeg(T1 rad);
+tpl1 dfa SI VarintEncode(U1* out, T1 in);
+tpl1 dfa SI VarintDecode(T1& out, cx U1* in);
+tpl1 dfa ER VarintDecode(T1& out, SI& inReadSize, cx U1* in, cx U1* end);
+tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base);
+tpl1 dfa SI VarbaseintDecode(T1& out, cx U1* in, U1 base);
+tpl1 dfa SI VarbaseintEncodeSize(T1 in, U1 base);
+tpl1 dfa T1 RotL(T1 val, SI cnt);
+tpl1 dfa T1 RotR(T1 val, SI cnt);
+tpl1 dfa T1 RevByte(T1 val);
+tpl1 dfa SI LenBin(T1 val);
+tpl0 dfa SI LenBin<>(U8 val);
+tpl0 dfa SI LenBin<>(U4 val);
+tpl0 dfa SI LenBin<>(U2 val);
+tpl0 dfa SI LenBin<>(U1 val);
+tpl1 dfa SI LenInt(T1 val);
+tpl1 dfa T1 HiBitVal(T1 val);
+tpl1 dfa T1 AppendInt(cx T1& high, cx T1& low);
+tpl1 dfa T1 NormalizeMinmax(T1* arr, SI cnt);
+tpl1 dfa T1 NormalizeMax(T1* arr, SI cnt);
+tpl1 dfa T1 ValPrev(cx T1& val);
+tpl1 dfa T1 ValNext(cx T1& val);
+tpl1 dfa T1 AdamEase1(T1 t, T1 curveRaw);
+tpl1 dfa T1 AdamEase1CurveRawGet(T1 curve);
+tpl1 dfa T1 AdamHill1(T1 t, T1 tMid, T1 fullness);
+
+#include "math.ipp"

@@ -19,101 +19,251 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\aes.h" />
-    <ClInclude Include="src\arg.h" />
-    <ClInclude Include="src\array.h" />
-    <ClInclude Include="src\atomic.h" />
-    <ClInclude Include="src\bada.h" />
-    <ClInclude Include="src\bigmath.h" />
-    <ClInclude Include="src\char.h" />
-    <ClInclude Include="src\clipboard.h" />
-    <ClInclude Include="src\codegen.h" />
-    <ClInclude Include="src\color.h" />
-    <ClInclude Include="src\console.h" />
-    <ClInclude Include="src\container.h" />
-    <ClInclude Include="src\fp25519.h" />
-    <ClInclude Include="src\hash.h" />
-    <ClInclude Include="src\hunic.h" />
-    <ClInclude Include="src\import\winapi\unint.h" />
-    <ClInclude Include="src\import\winapi\unintimpl.h" />
-    <ClInclude Include="src\import\winapi\util.h" />
-    <ClInclude Include="src\input.h" />
-    <ClInclude Include="src\lock.h" />
-    <ClInclude Include="src\mouse.h" />
-    <ClInclude Include="src\debug.h" />
-    <ClInclude Include="src\dictionary.h" />
-    <ClInclude Include="src\directory.h" />
-    <ClInclude Include="src\dumb.h" />
-    <ClInclude Include="src\error.h" />
-    <ClInclude Include="src\event.h" />
-    <ClInclude Include="src\file.h" />
-    <ClInclude Include="src\graphics.h" />
-    <ClInclude Include="src\import\stdc\function.h" />
-    <ClInclude Include="src\import\stdc\type.h" />
-    <ClInclude Include="src\import\stdc\value.h" />
-    <ClInclude Include="src\import\winapi\function.h" />
-    <ClInclude Include="src\import\winapi\type.h" />
-    <ClInclude Include="src\import\winapi\value.h" />
-    <ClInclude Include="src\include.h" />
-    <ClInclude Include="src\joystick.h" />
-    <ClInclude Include="src\keyboard.h" />
-    <ClInclude Include="src\keyword.h" />
-    <ClInclude Include="src\list.h" />
-    <ClInclude Include="src\log.h" />
-    <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\math.h" />
-    <ClInclude Include="src\matrix.h" />
-    <ClInclude Include="src\md5.h" />
-    <ClInclude Include="src\memory.h" />
-    <ClInclude Include="src\network.h" />
-    <ClInclude Include="src\opengl.h" />
-    <ClInclude Include="src\path.h" />
-    <ClInclude Include="src\pipe.h" />
-    <ClInclude Include="src\pixelpath.h" />
-    <ClInclude Include="src\pointer.h" />
-    <ClInclude Include="src\preprocess.h" />
-    <ClInclude Include="src\pre\console.h" />
-    <ClInclude Include="src\pre\process.h" />
-    <ClInclude Include="src\process.h" />
-    <ClInclude Include="src\protobuf.h" />
-    <ClInclude Include="src\python.h" />
-    <ClInclude Include="src\qoi.h" />
-    <ClInclude Include="src\queue.h" />
-    <ClInclude Include="src\random.h" />
-    <ClInclude Include="src\registry.h" />
-    <ClInclude Include="src\c25519.h" />
-    <ClInclude Include="src\sandbox.h" />
-    <ClInclude Include="src\screen.h" />
-    <ClInclude Include="src\serial.h" />
-    <ClInclude Include="src\sha.h" />
-    <ClInclude Include="src\sort.h" />
-    <ClInclude Include="src\sound.h" />
-    <ClInclude Include="src\stack.h" />
-    <ClInclude Include="src\string.h" />
-    <ClInclude Include="src\system.h" />
-    <ClInclude Include="src\test.h" />
-    <ClInclude Include="src\thread.h" />
-    <ClInclude Include="src\time.h" />
-    <ClInclude Include="src\token.h" />
-    <ClInclude Include="src\tuple.h" />
-    <ClInclude Include="src\type.h" />
-    <ClInclude Include="src\typeconvert.h" />
-    <ClInclude Include="src\typeex.h" />
-    <ClInclude Include="src\ucnetcd.h" />
-    <ClInclude Include="src\ucnetcli.h" />
-    <ClInclude Include="src\ucnetcommon.h" />
-    <ClInclude Include="src\ucnetimpl.h" />
-    <ClInclude Include="src\ucnetmsg.h" />
-    <ClInclude Include="src\ucnetsrv.h" />
-    <ClInclude Include="src\unicpp.h" />
-    <ClInclude Include="src\value.h" />
-    <ClInclude Include="src\vector.h" />
-    <ClInclude Include="src\vfs.h" />
-    <ClInclude Include="src\vuser.h" />
-    <ClInclude Include="src\window.h" />
+    <ClInclude Include="src\unicpp\aes.hpp" />
+    <ClInclude Include="src\unicpp\aes.ipp" />
+    <ClInclude Include="src\unicpp\arg.hpp" />
+    <ClInclude Include="src\unicpp\arg.ipp" />
+    <ClInclude Include="src\unicpp\array.hpp" />
+    <ClInclude Include="src\unicpp\array.ipp" />
+    <ClInclude Include="src\unicpp\atomic.hpp" />
+    <ClInclude Include="src\unicpp\atomic.ipp" />
+    <ClInclude Include="src\unicpp\bada.hpp" />
+    <ClInclude Include="src\unicpp\bada.ipp" />
+    <ClInclude Include="src\unicpp\bigmath.hpp" />
+    <ClInclude Include="src\unicpp\bigmath.ipp" />
+    <ClInclude Include="src\unicpp\c25519.hpp" />
+    <ClInclude Include="src\unicpp\c25519.ipp" />
+    <ClInclude Include="src\unicpp\char.hpp" />
+    <ClInclude Include="src\unicpp\char.ipp" />
+    <ClInclude Include="src\unicpp\clipboard.hpp" />
+    <ClInclude Include="src\unicpp\clipboard.ipp" />
+    <ClInclude Include="src\unicpp\codegen.hpp" />
+    <ClInclude Include="src\unicpp\codegen.ipp" />
+    <ClInclude Include="src\unicpp\color.hpp" />
+    <ClInclude Include="src\unicpp\color.ipp" />
+    <ClInclude Include="src\unicpp\console.hpp" />
+    <ClInclude Include="src\unicpp\console.ipp" />
+    <ClInclude Include="src\unicpp\container.hpp" />
+    <ClInclude Include="src\unicpp\container.ipp" />
+    <ClInclude Include="src\unicpp\debug.hpp" />
+    <ClInclude Include="src\unicpp\debug.ipp" />
+    <ClInclude Include="src\unicpp\dictionary.hpp" />
+    <ClInclude Include="src\unicpp\dictionary.ipp" />
+    <ClInclude Include="src\unicpp\directory.hpp" />
+    <ClInclude Include="src\unicpp\directory.ipp" />
+    <ClInclude Include="src\unicpp\dumb.hpp" />
+    <ClInclude Include="src\unicpp\dumb.ipp" />
+    <ClInclude Include="src\unicpp\error.hpp" />
+    <ClInclude Include="src\unicpp\error.ipp" />
+    <ClInclude Include="src\unicpp\event.hpp" />
+    <ClInclude Include="src\unicpp\event.ipp" />
+    <ClInclude Include="src\unicpp\file.hpp" />
+    <ClInclude Include="src\unicpp\file.ipp" />
+    <ClInclude Include="src\unicpp\fp25519.hpp" />
+    <ClInclude Include="src\unicpp\fp25519.ipp" />
+    <ClInclude Include="src\unicpp\graphics.hpp" />
+    <ClInclude Include="src\unicpp\graphics.ipp" />
+    <ClInclude Include="src\unicpp\hash.hpp" />
+    <ClInclude Include="src\unicpp\hash.ipp" />
+    <ClInclude Include="src\unicpp\hunic.hpp" />
+    <ClInclude Include="src\unicpp\hunic.ipp" />
+    <ClInclude Include="src\unicpp\input.hpp" />
+    <ClInclude Include="src\unicpp\input.ipp" />
+    <ClInclude Include="src\unicpp\joystick.hpp" />
+    <ClInclude Include="src\unicpp\joystick.ipp" />
+    <ClInclude Include="src\unicpp\keyboard.hpp" />
+    <ClInclude Include="src\unicpp\keyboard.ipp" />
+    <ClInclude Include="src\unicpp\keyword.hpp" />
+    <ClInclude Include="src\unicpp\keyword.ipp" />
+    <ClInclude Include="src\unicpp\list.hpp" />
+    <ClInclude Include="src\unicpp\list.ipp" />
+    <ClInclude Include="src\unicpp\lock.hpp" />
+    <ClInclude Include="src\unicpp\lock.ipp" />
+    <ClInclude Include="src\unicpp\log.hpp" />
+    <ClInclude Include="src\unicpp\log.ipp" />
+    <ClInclude Include="src\unicpp\macro-off.hpp" />
+    <ClInclude Include="src\unicpp\macro-on.hpp" />
+    <ClInclude Include="src\unicpp\main.hpp" />
+    <ClInclude Include="src\unicpp\main.ipp" />
+    <ClInclude Include="src\unicpp\math.hpp" />
+    <ClInclude Include="src\unicpp\math.ipp" />
+    <ClInclude Include="src\unicpp\matrix.hpp" />
+    <ClInclude Include="src\unicpp\matrix.ipp" />
+    <ClInclude Include="src\unicpp\md5.hpp" />
+    <ClInclude Include="src\unicpp\md5.ipp" />
+    <ClInclude Include="src\unicpp\memory.hpp" />
+    <ClInclude Include="src\unicpp\memory.ipp" />
+    <ClInclude Include="src\unicpp\mouse.hpp" />
+    <ClInclude Include="src\unicpp\mouse.ipp" />
+    <ClInclude Include="src\unicpp\network.hpp" />
+    <ClInclude Include="src\unicpp\network.ipp" />
+    <ClInclude Include="src\unicpp\opengl.hpp" />
+    <ClInclude Include="src\unicpp\opengl.ipp" />
+    <ClInclude Include="src\unicpp\path.hpp" />
+    <ClInclude Include="src\unicpp\path.ipp" />
+    <ClInclude Include="src\unicpp\pipe.hpp" />
+    <ClInclude Include="src\unicpp\pipe.ipp" />
+    <ClInclude Include="src\unicpp\pixelpath.hpp" />
+    <ClInclude Include="src\unicpp\pixelpath.ipp" />
+    <ClInclude Include="src\unicpp\pointer.hpp" />
+    <ClInclude Include="src\unicpp\pointer.ipp" />
+    <ClInclude Include="src\unicpp\preprocess.hpp" />
+    <ClInclude Include="src\unicpp\preprocess.ipp" />
+    <ClInclude Include="src\unicpp\process.hpp" />
+    <ClInclude Include="src\unicpp\process.ipp" />
+    <ClInclude Include="src\unicpp\protobuf.hpp" />
+    <ClInclude Include="src\unicpp\protobuf.ipp" />
+    <ClInclude Include="src\unicpp\python.hpp" />
+    <ClInclude Include="src\unicpp\python.ipp" />
+    <ClInclude Include="src\unicpp\qoi.hpp" />
+    <ClInclude Include="src\unicpp\qoi.ipp" />
+    <ClInclude Include="src\unicpp\queue.hpp" />
+    <ClInclude Include="src\unicpp\queue.ipp" />
+    <ClInclude Include="src\unicpp\random.hpp" />
+    <ClInclude Include="src\unicpp\random.ipp" />
+    <ClInclude Include="src\unicpp\registry.hpp" />
+    <ClInclude Include="src\unicpp\registry.ipp" />
+    <ClInclude Include="src\unicpp\sandbox.hpp" />
+    <ClInclude Include="src\unicpp\sandbox.ipp" />
+    <ClInclude Include="src\unicpp\screen.hpp" />
+    <ClInclude Include="src\unicpp\screen.ipp" />
+    <ClInclude Include="src\unicpp\serial.hpp" />
+    <ClInclude Include="src\unicpp\serial.ipp" />
+    <ClInclude Include="src\unicpp\sha.hpp" />
+    <ClInclude Include="src\unicpp\sha.ipp" />
+    <ClInclude Include="src\unicpp\sort.hpp" />
+    <ClInclude Include="src\unicpp\sort.ipp" />
+    <ClInclude Include="src\unicpp\sound.hpp" />
+    <ClInclude Include="src\unicpp\sound.ipp" />
+    <ClInclude Include="src\unicpp\stack.hpp" />
+    <ClInclude Include="src\unicpp\stack.ipp" />
+    <ClInclude Include="src\unicpp\string.hpp" />
+    <ClInclude Include="src\unicpp\string.ipp" />
+    <ClInclude Include="src\unicpp\system.hpp" />
+    <ClInclude Include="src\unicpp\system.ipp" />
+    <ClInclude Include="src\unicpp\test.hpp" />
+    <ClInclude Include="src\unicpp\test.ipp" />
+    <ClInclude Include="src\unicpp\thread.hpp" />
+    <ClInclude Include="src\unicpp\thread.ipp" />
+    <ClInclude Include="src\unicpp\time.hpp" />
+    <ClInclude Include="src\unicpp\time.ipp" />
+    <ClInclude Include="src\unicpp\token.hpp" />
+    <ClInclude Include="src\unicpp\token.ipp" />
+    <ClInclude Include="src\unicpp\tuple.hpp" />
+    <ClInclude Include="src\unicpp\tuple.ipp" />
+    <ClInclude Include="src\unicpp\type.hpp" />
+    <ClInclude Include="src\unicpp\type.ipp" />
+    <ClInclude Include="src\unicpp\typeconvert.hpp" />
+    <ClInclude Include="src\unicpp\typeconvert.ipp" />
+    <ClInclude Include="src\unicpp\typeex.hpp" />
+    <ClInclude Include="src\unicpp\typeex.ipp" />
+    <ClInclude Include="src\unicpp\ucnetcd.hpp" />
+    <ClInclude Include="src\unicpp\ucnetcd.ipp" />
+    <ClInclude Include="src\unicpp\ucnetcli.hpp" />
+    <ClInclude Include="src\unicpp\ucnetcli.ipp" />
+    <ClInclude Include="src\unicpp\ucnetcommon.hpp" />
+    <ClInclude Include="src\unicpp\ucnetcommon.ipp" />
+    <ClInclude Include="src\unicpp\ucnetimpl.hpp" />
+    <ClInclude Include="src\unicpp\ucnetimpl.ipp" />
+    <ClInclude Include="src\unicpp\ucnetmsg.hpp" />
+    <ClInclude Include="src\unicpp\ucnetmsg.ipp" />
+    <ClInclude Include="src\unicpp\ucnetsrv.hpp" />
+    <ClInclude Include="src\unicpp\ucnetsrv.ipp" />
+    <ClInclude Include="src\unicpp\unint.hpp" />
+    <ClInclude Include="src\unicpp\unint.ipp" />
+    <ClInclude Include="src\unicpp\value.hpp" />
+    <ClInclude Include="src\unicpp\value.ipp" />
+    <ClInclude Include="src\unicpp\vector.hpp" />
+    <ClInclude Include="src\unicpp\vector.ipp" />
+    <ClInclude Include="src\unicpp\vfs.hpp" />
+    <ClInclude Include="src\unicpp\vfs.ipp" />
+    <ClInclude Include="src\unicpp\vuser.hpp" />
+    <ClInclude Include="src\unicpp\vuser.ipp" />
+    <ClInclude Include="src\unicpp\window.hpp" />
+    <ClInclude Include="src\unicpp\window.ipp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="samples\hello-world.cpp" />
+    <ClCompile Include="src\unicpp\aes.cpp" />
+    <ClCompile Include="src\unicpp\arg.cpp" />
+    <ClCompile Include="src\unicpp\array.cpp" />
+    <ClCompile Include="src\unicpp\atomic.cpp" />
+    <ClCompile Include="src\unicpp\bada.cpp" />
+    <ClCompile Include="src\unicpp\bigmath.cpp" />
+    <ClCompile Include="src\unicpp\c25519.cpp" />
+    <ClCompile Include="src\unicpp\char.cpp" />
+    <ClCompile Include="src\unicpp\clipboard.cpp" />
+    <ClCompile Include="src\unicpp\codegen.cpp" />
+    <ClCompile Include="src\unicpp\color.cpp" />
+    <ClCompile Include="src\unicpp\console.cpp" />
+    <ClCompile Include="src\unicpp\container.cpp" />
+    <ClCompile Include="src\unicpp\debug.cpp" />
+    <ClCompile Include="src\unicpp\dictionary.cpp" />
+    <ClCompile Include="src\unicpp\directory.cpp" />
+    <ClCompile Include="src\unicpp\dumb.cpp" />
+    <ClCompile Include="src\unicpp\error.cpp" />
+    <ClCompile Include="src\unicpp\event.cpp" />
+    <ClCompile Include="src\unicpp\file.cpp" />
+    <ClCompile Include="src\unicpp\fp25519.cpp" />
+    <ClCompile Include="src\unicpp\graphics.cpp" />
+    <ClCompile Include="src\unicpp\hash.cpp" />
+    <ClCompile Include="src\unicpp\hunic.cpp" />
+    <ClCompile Include="src\unicpp\input.cpp" />
+    <ClCompile Include="src\unicpp\joystick.cpp" />
+    <ClCompile Include="src\unicpp\keyboard.cpp" />
+    <ClCompile Include="src\unicpp\keyword.cpp" />
+    <ClCompile Include="src\unicpp\list.cpp" />
+    <ClCompile Include="src\unicpp\lock.cpp" />
+    <ClCompile Include="src\unicpp\log.cpp" />
+    <ClCompile Include="src\unicpp\main.cpp" />
+    <ClCompile Include="src\unicpp\math.cpp" />
+    <ClCompile Include="src\unicpp\matrix.cpp" />
+    <ClCompile Include="src\unicpp\md5.cpp" />
+    <ClCompile Include="src\unicpp\memory.cpp" />
+    <ClCompile Include="src\unicpp\mouse.cpp" />
+    <ClCompile Include="src\unicpp\network.cpp" />
+    <ClCompile Include="src\unicpp\opengl.cpp" />
+    <ClCompile Include="src\unicpp\path.cpp" />
+    <ClCompile Include="src\unicpp\pipe.cpp" />
+    <ClCompile Include="src\unicpp\pixelpath.cpp" />
+    <ClCompile Include="src\unicpp\pointer.cpp" />
+    <ClCompile Include="src\unicpp\preprocess.cpp" />
+    <ClCompile Include="src\unicpp\process.cpp" />
+    <ClCompile Include="src\unicpp\protobuf.cpp" />
+    <ClCompile Include="src\unicpp\python.cpp" />
+    <ClCompile Include="src\unicpp\qoi.cpp" />
+    <ClCompile Include="src\unicpp\queue.cpp" />
+    <ClCompile Include="src\unicpp\random.cpp" />
+    <ClCompile Include="src\unicpp\registry.cpp" />
+    <ClCompile Include="src\unicpp\sandbox.cpp" />
+    <ClCompile Include="src\unicpp\screen.cpp" />
+    <ClCompile Include="src\unicpp\serial.cpp" />
+    <ClCompile Include="src\unicpp\sha.cpp" />
+    <ClCompile Include="src\unicpp\sort.cpp" />
+    <ClCompile Include="src\unicpp\sound.cpp" />
+    <ClCompile Include="src\unicpp\stack.cpp" />
+    <ClCompile Include="src\unicpp\string.cpp" />
+    <ClCompile Include="src\unicpp\system.cpp" />
+    <ClCompile Include="src\unicpp\test.cpp" />
+    <ClCompile Include="src\unicpp\thread.cpp" />
+    <ClCompile Include="src\unicpp\time.cpp" />
+    <ClCompile Include="src\unicpp\token.cpp" />
+    <ClCompile Include="src\unicpp\tuple.cpp" />
+    <ClCompile Include="src\unicpp\type.cpp" />
+    <ClCompile Include="src\unicpp\typeconvert.cpp" />
+    <ClCompile Include="src\unicpp\typeex.cpp" />
+    <ClCompile Include="src\unicpp\ucnetcd.cpp" />
+    <ClCompile Include="src\unicpp\ucnetcli.cpp" />
+    <ClCompile Include="src\unicpp\ucnetcommon.cpp" />
+    <ClCompile Include="src\unicpp\ucnetimpl.cpp" />
+    <ClCompile Include="src\unicpp\ucnetmsg.cpp" />
+    <ClCompile Include="src\unicpp\ucnetsrv.cpp" />
+    <ClCompile Include="src\unicpp\unint.cpp" />
+    <ClCompile Include="src\unicpp\value.cpp" />
+    <ClCompile Include="src\unicpp\vector.cpp" />
+    <ClCompile Include="src\unicpp\vfs.cpp" />
+    <ClCompile Include="src\unicpp\vuser.cpp" />
+    <ClCompile Include="src\unicpp\window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -174,7 +324,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -190,7 +340,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -206,7 +356,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_DBG;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -222,7 +372,7 @@
       <PreprocessorDefinitions>_HAS_CXX20;PROG_COMPILER_MSVC;PROG_BUILD_TYPE_RELEASE;PROG_ADR_SIZE_8;PROG_SYS_WIN;PROG_THD_CNT_MULTI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\unicpp\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

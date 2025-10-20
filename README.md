@@ -75,7 +75,8 @@ UniCPP is a general-purpose framework, a collection of useful tools with a lot o
 ## Simple example
 ```cpp
 #define PROG_BUILD_TYPE_DBG
-#include <unicpp.h>
+#include <unicpp/main.hpp>
+#include <unicpp/console.hpp>
 ER Main() {
     ConWrite("Hello, &e;world!");
     ConWait("&9;Press [ENTER] to exit ", ConWaitAnim::SPINNER);
