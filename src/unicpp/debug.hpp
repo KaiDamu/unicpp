@@ -1,6 +1,6 @@
 #pragma once
 
-#include "keyword.hpp"
+#include "type.hpp"
 
 #ifdef PROG_BUILD_TYPE_DBG
 

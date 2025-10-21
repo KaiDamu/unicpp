@@ -140,6 +140,24 @@
     #pragma warning(disable : 4996) // _CRT_SECURE_NO_WARNINGS
 #endif
 
+#ifdef PROG_COMPILER_MSVC
+    #ifdef _MSVC_LANG
+        #if _MSVC_LANG < 202002L
+            #error "C++20 or higher is required to compile this code!"
+        #endif
+    #else
+        #error "A C++ compiler is required to compile this code!"
+    #endif
+#else
+    #ifdef __cplusplus
+        #if __cplusplus < 202002L
+            #error "C++20 or higher is required to compile this code!"
+        #endif
+    #else
+        #error "A C++ compiler is required to compile this code!"
+    #endif
+#endif
+
 #ifndef _HAS_CXX20
     #define _HAS_CXX20 1
 #endif

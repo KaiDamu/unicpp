@@ -8,6 +8,7 @@ tests/compile_gcc.exe
 tests/Compile C++.lnk
 tests/Compile GCC1520 C++.lnk
 samples-local/
+build/
 
 # User-specific files
 *.rsuser
