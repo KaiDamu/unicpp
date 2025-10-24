@@ -181,6 +181,8 @@
     <ClInclude Include="src\unicpp\vuser.ipp" />
     <ClInclude Include="src\unicpp\window.hpp" />
     <ClInclude Include="src\unicpp\window.ipp" />
+    <ClInclude Include="src\unicpp\windowcapture.hpp" />
+    <ClInclude Include="src\unicpp\windowcapture.ipp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="samples\hello-world.cpp" />
@@ -264,6 +266,7 @@
     <ClCompile Include="src\unicpp\vfs.cpp" />
     <ClCompile Include="src\unicpp\vuser.cpp" />
     <ClCompile Include="src\unicpp\window.cpp" />
+    <ClCompile Include="src\unicpp\windowcapture.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
