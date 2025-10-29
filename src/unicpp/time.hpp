@@ -38,7 +38,7 @@ extern TmCpu g_cpuTscPerMs;
 extern TmCpu g_cpuTscMsMul;
 
 dfa TmUnix LdapToUnix(TmLdap ldap);
-dfa TmLdap UnixToLdap(TmUnix unix);
+dfa TmLdap UnixToLdap(TmUnix tmUnix);
 
 dfa TmUnix TimeUnix();
 

@@ -3,13 +3,13 @@
 #include "keyword.hpp"
 
 using U1 = unsigned char;
-using U2 = unsigned short int;
-using U4 = unsigned long int;
-using U8 = unsigned long long int;
+using U2 = unsigned short;
+using U4 = unsigned int;
+using U8 = unsigned long long;
 using S1 = signed char;
-using S2 = signed short int;
-using S4 = signed long int;
-using S8 = signed long long int;
+using S2 = signed short;
+using S4 = signed int;
+using S8 = signed long long;
 using F4 = float;
 using F8 = double;
 
@@ -61,9 +61,13 @@ static_assert(siz(S8) == 8, "\"S8\" type size is not 8 byte!");
 static_assert(siz(F4) == 4, "\"F4\" type size is not 4 byte!");
 static_assert(siz(F8) == 8, "\"F8\" type size is not 8 byte!");
 
-static_assert(siz(bool) == 1, "\"bool\" type size is not 1 byte! (assumed)");
-static_assert(siz(char) == 1, "\"char\" type size is not 1 byte! (assumed)");
-static_assert(siz(wchar_t) == 2, "\"wchar_t\" type size is not 2 byte! (assumed)");
+static_assert(siz(CS) == 1, "\"CS\" type size is not 1 byte! (assumed)");
+#ifdef PROG_SYS_LINUX
+static_assert(siz(CH) == 4, "\"CH\" type size is not 4 byte! (assumed)");
+#else
+static_assert(siz(CH) == 2, "\"CH\" type size is not 2 byte! (assumed)");
+#endif
+static_assert(siz(BO) == 1, "\"BO\" type size is not 1 byte! (assumed)");
 
 #if IS_U16_SUPPORT
 using U16 = unsigned __int128;

@@ -3,7 +3,9 @@
 #include "value.hpp"
 #include "debug.hpp"
 #include "process.hpp"
-#include <shellapi.h>
+#ifdef PROG_SYS_WIN
+    #include <shellapi.h>
+#endif
 
 SI g_argCnt = 0;
 CH** g_argVal = NUL;

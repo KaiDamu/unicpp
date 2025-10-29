@@ -1,5 +1,7 @@
 #include "windowcapture.hpp"
 
+#ifdef PROG_SYS_WIN
+
 dfa WinCapture::Cache::Cache()
 {
     gdi.isValid = NO;
@@ -63,3 +65,5 @@ dfa WinCapture::~WinCapture()
 {
     tx->WinSet(NUL);
 }
+
+#endif

@@ -1,16 +1,19 @@
 #pragma once
 
 #include "preprocess.hpp"
-#include "macro-off.hpp"
-#include <windows.h>
-#include <winternl.h>
-#include <ntstatus.h>
-#include "macro-on.hpp"
-#include "type.hpp"
+
+#ifdef PROG_SYS_WIN
+
+    #include "macro-off.hpp"
+    #include <windows.h>
+    #include <winternl.h>
+    #include <ntstatus.h>
+    #include "macro-on.hpp"
+    #include "type.hpp"
 
 /// /// /// ///  IMPORT BEGIN  /// /// /// ///
 
-#define POLICY_LOOKUP_NAMES 0x00000800L
+    #define POLICY_LOOKUP_NAMES 0x00000800L
 
 // constexpr NTSTATUS STATUS_SUCCESS = 0x00000000;
 // constexpr NTSTATUS STATUS_BUFFER_OVERFLOW = 0x80000005;
@@ -53,7 +56,7 @@ typedef struct _LSA_TRANSLATED_NAME
     LONG DomainIndex;
 } LSA_TRANSLATED_NAME, *PLSA_TRANSLATED_NAME;
 
-#ifdef PROG_COMPILER_MSVC
+    #ifdef PROG_COMPILER_MSVC
 struct FILE_POSITION_INFORMATION
 {
     LARGE_INTEGER CurrentByteOffset;
@@ -80,14 +83,14 @@ struct FILE_DIRECTORY_INFORMATION
     ULONG FileNameLength;
     WCHAR FileName[1];
 };
-#endif
+    #endif
 
-#define _importfnwin(retType) __declspec(dllimport) retType WINAPI
+    #define _importfnwin(retType) __declspec(dllimport) retType WINAPI
 
-#ifdef PROG_COMPILER_MSVC
-    #pragma comment(lib, "ntdll.lib")
-    #pragma comment(lib, "user32.lib")
-#endif
+    #ifdef PROG_COMPILER_MSVC
+        #pragma comment(lib, "ntdll.lib")
+        #pragma comment(lib, "user32.lib")
+    #endif
 
 extern "C"
 {
@@ -962,16 +965,16 @@ struct alignas(16) XSAVE_FORMAT_
     U4 MxCsr;
     U4 MxCsr_Mask;
     M128A_ FloatRegisters[8];
-#ifdef PROG_ADR_SIZE_4
+    #ifdef PROG_ADR_SIZE_4
     M128A_ XmmRegisters[8];
     U1 Reserved4[224];
-#endif
-#ifdef PROG_ADR_SIZE_8
+    #endif
+    #ifdef PROG_ADR_SIZE_8
     M128A_ XmmRegisters[16];
     U1 Reserved4[96];
-#endif
+    #endif
 };
-#ifdef PROG_ADR_SIZE_4
+    #ifdef PROG_ADR_SIZE_4
 struct alignas(8) CONTEXT_
 {
     U4 ContextFlags;
@@ -1000,8 +1003,8 @@ struct alignas(8) CONTEXT_
     U4 SegSs;
     U1 ExtendedRegisters[512];
 };
-#endif
-#ifdef PROG_ADR_SIZE_8
+    #endif
+    #ifdef PROG_ADR_SIZE_8
 struct alignas(16) CONTEXT_
 {
     U8 P1Home;
@@ -1074,7 +1077,7 @@ struct alignas(16) CONTEXT_
     U8 LastExceptionToRip;
     U8 LastExceptionFromRip;
 };
-#endif
+    #endif
 struct EXCEPTION_RECORD_
 {
     U4 ExceptionCode;
@@ -1980,13 +1983,13 @@ struct TEB_
     U4 CurrentLocale;
     U4 FpSoftwareStatusRegister;
     GA ReservedForDebuggerInstrumentation[16];
-#ifdef PROG_ADR_SIZE_8
+    #ifdef PROG_ADR_SIZE_8
     GA SystemReserved1[25];
     GA HeapFlsData;
     UA RngState[4];
-#else
+    #else
     GA SystemReserved1[26];
-#endif
+    #endif
     S1 PlaceholderCompatibilityMode;
     U1 PlaceholderHydrationAlwaysExplicit;
     S1 PlaceholderReserved[10];
@@ -1998,17 +2001,17 @@ struct TEB_
     UA InstrumentationCallbackSp;
     UA InstrumentationCallbackPreviousPc;
     UA InstrumentationCallbackPreviousSp;
-#ifdef PROG_ADR_SIZE_8
+    #ifdef PROG_ADR_SIZE_8
     U4 TxFsContext;
-#endif
+    #endif
     U1 InstrumentationCallbackDisabled;
-#ifdef PROG_ADR_SIZE_8
+    #ifdef PROG_ADR_SIZE_8
     U1 UnalignedLoadStoreExceptions;
-#endif
-#ifdef PROG_ADR_SIZE_4
+    #endif
+    #ifdef PROG_ADR_SIZE_4
     U1 SpareBytes[23];
     U4 TxFsContext;
-#endif
+    #endif
     GDI_TEB_BATCH_ GdiTebBatch;
     CLIENT_ID_ RealClientId;
     HD GdiCachedProcessHandle;
@@ -2034,11 +2037,11 @@ struct TEB_
     GA ReservedForNtRpc;
     GA DbgSsReserved[2];
     U4 HardErrorMode;
-#ifdef PROG_ADR_SIZE_8
+    #ifdef PROG_ADR_SIZE_8
     GA Instrumentation[11];
-#else
+    #else
     GA Instrumentation[9];
-#endif
+    #endif
     GUID_ ActivityId;
     GA SubProcessTag;
     GA PerflibData;
@@ -2064,10 +2067,10 @@ struct TEB_
     UA ReservedForCodeCoverage;
     GA ThreadPoolData;
     GA* TlsExpansionSlots;
-#ifdef PROG_ADR_SIZE_8
+    #ifdef PROG_ADR_SIZE_8
     GA ChpeV2CpuAreaInfo;
     GA Unused;
-#endif
+    #endif
     U4 MuiGeneration;
     U4 IsImpersonating;
     GA NlsCache;
@@ -2179,13 +2182,13 @@ struct IMAGE_OPTIONAL_HEADER_
     U4 SizeOfUninitializedData;
     U4 AddressOfEntryPoint;
     U4 BaseOfCode;
-#ifdef PROG_ADR_SIZE_4
+    #ifdef PROG_ADR_SIZE_4
     U4 BaseOfData;
     U4 ImageBase;
-#endif
-#ifdef PROG_ADR_SIZE_8
+    #endif
+    #ifdef PROG_ADR_SIZE_8
     U8 ImageBase;
-#endif
+    #endif
     U4 SectionAlignment;
     U4 FileAlignment;
     U2 MajorOperatingSystemVersion;
@@ -2481,7 +2484,7 @@ struct FILE_DIRECTORY_INFORMATION_
     CH FileName flexarr;
 };
 
-#define _MDL_NTDLL_DLL
+    #define _MDL_NTDLL_DLL
 
 // clang-format off
 // code-gen begin 1
@@ -2557,72 +2560,72 @@ cxex SI UNI_NT_FN_CNT = 63;
 
 extern GAFN g_uniNtFn[UNI_NT_FN_CNT];
 
-#define NtClose_ reinterpret_cast<NtClose_T>(g_uniNtFn[0])
-#define NtOpenKeyEx_ reinterpret_cast<NtOpenKeyEx_T>(g_uniNtFn[1])
-#define NtOpenProcessTokenEx_ reinterpret_cast<NtOpenProcessTokenEx_T>(g_uniNtFn[2])
-#define NtQueryAttributesFile_ reinterpret_cast<NtQueryAttributesFile_T>(g_uniNtFn[3])
-#define NtQueryInformationToken_ reinterpret_cast<NtQueryInformationToken_T>(g_uniNtFn[4])
-#define NtQueryValueKey_ reinterpret_cast<NtQueryValueKey_T>(g_uniNtFn[5])
-#define LdrLoadDll_ reinterpret_cast<LdrLoadDll_T>(g_uniNtFn[6])
-#define LdrUnloadDll_ reinterpret_cast<LdrUnloadDll_T>(g_uniNtFn[7])
-#define NtAdjustPrivilegesToken_ reinterpret_cast<NtAdjustPrivilegesToken_T>(g_uniNtFn[8])
-#define NtAllocateVirtualMemory_ reinterpret_cast<NtAllocateVirtualMemory_T>(g_uniNtFn[9])
-#define NtCreateEvent_ reinterpret_cast<NtCreateEvent_T>(g_uniNtFn[10])
-#define NtCreateFile_ reinterpret_cast<NtCreateFile_T>(g_uniNtFn[11])
-#define NtCreateKeyedEvent_ reinterpret_cast<NtCreateKeyedEvent_T>(g_uniNtFn[12])
-#define NtCreateProcessEx_ reinterpret_cast<NtCreateProcessEx_T>(g_uniNtFn[13])
-#define NtCreateSection_ reinterpret_cast<NtCreateSection_T>(g_uniNtFn[14])
-#define NtCreateThreadEx_ reinterpret_cast<NtCreateThreadEx_T>(g_uniNtFn[15])
-#define NtCreateToken_ reinterpret_cast<NtCreateToken_T>(g_uniNtFn[16])
-#define NtCreateUserProcess_ reinterpret_cast<NtCreateUserProcess_T>(g_uniNtFn[17])
-#define NtDelayExecution_ reinterpret_cast<NtDelayExecution_T>(g_uniNtFn[18])
-#define NtDuplicateObject_ reinterpret_cast<NtDuplicateObject_T>(g_uniNtFn[19])
-#define NtDuplicateToken_ reinterpret_cast<NtDuplicateToken_T>(g_uniNtFn[20])
-#define NtEnumerateKey_ reinterpret_cast<NtEnumerateKey_T>(g_uniNtFn[21])
-#define NtFlushInstructionCache_ reinterpret_cast<NtFlushInstructionCache_T>(g_uniNtFn[22])
-#define NtFreeVirtualMemory_ reinterpret_cast<NtFreeVirtualMemory_T>(g_uniNtFn[23])
-#define NtImpersonateThread_ reinterpret_cast<NtImpersonateThread_T>(g_uniNtFn[24])
-#define NtLoadDriver_ reinterpret_cast<NtLoadDriver_T>(g_uniNtFn[25])
-#define NtMapViewOfSection_ reinterpret_cast<NtMapViewOfSection_T>(g_uniNtFn[26])
-#define NtOpenKeyedEvent_ reinterpret_cast<NtOpenKeyedEvent_T>(g_uniNtFn[27])
-#define NtOpenProcess_ reinterpret_cast<NtOpenProcess_T>(g_uniNtFn[28])
-#define NtOpenThreadTokenEx_ reinterpret_cast<NtOpenThreadTokenEx_T>(g_uniNtFn[29])
-#define NtOpenThread_ reinterpret_cast<NtOpenThread_T>(g_uniNtFn[30])
-#define NtQueryDirectoryFile_ reinterpret_cast<NtQueryDirectoryFile_T>(g_uniNtFn[31])
-#define NtQueryInformationFile_ reinterpret_cast<NtQueryInformationFile_T>(g_uniNtFn[32])
-#define NtQueryInformationProcess_ reinterpret_cast<NtQueryInformationProcess_T>(g_uniNtFn[33])
-#define NtQueryInformationThread_ reinterpret_cast<NtQueryInformationThread_T>(g_uniNtFn[34])
-#define NtQueryObject_ reinterpret_cast<NtQueryObject_T>(g_uniNtFn[35])
-#define NtQuerySystemInformation_ reinterpret_cast<NtQuerySystemInformation_T>(g_uniNtFn[36])
-#define NtQueryTimerResolution_ reinterpret_cast<NtQueryTimerResolution_T>(g_uniNtFn[37])
-#define NtRaiseHardError_ reinterpret_cast<NtRaiseHardError_T>(g_uniNtFn[38])
-#define NtReadFile_ reinterpret_cast<NtReadFile_T>(g_uniNtFn[39])
-#define NtReadVirtualMemory_ reinterpret_cast<NtReadVirtualMemory_T>(g_uniNtFn[40])
-#define NtReleaseKeyedEvent_ reinterpret_cast<NtReleaseKeyedEvent_T>(g_uniNtFn[41])
-#define NtResetEvent_ reinterpret_cast<NtResetEvent_T>(g_uniNtFn[42])
-#define NtSetEvent_ reinterpret_cast<NtSetEvent_T>(g_uniNtFn[43])
-#define NtSetInformationFile_ reinterpret_cast<NtSetInformationFile_T>(g_uniNtFn[44])
-#define NtSetInformationProcess_ reinterpret_cast<NtSetInformationProcess_T>(g_uniNtFn[45])
-#define NtSetInformationThread_ reinterpret_cast<NtSetInformationThread_T>(g_uniNtFn[46])
-#define NtSetInformationToken_ reinterpret_cast<NtSetInformationToken_T>(g_uniNtFn[47])
-#define NtSetTimerResolution_ reinterpret_cast<NtSetTimerResolution_T>(g_uniNtFn[48])
-#define NtSetValueKey_ reinterpret_cast<NtSetValueKey_T>(g_uniNtFn[49])
-#define NtShutdownSystem_ reinterpret_cast<NtShutdownSystem_T>(g_uniNtFn[50])
-#define NtTerminateProcess_ reinterpret_cast<NtTerminateProcess_T>(g_uniNtFn[51])
-#define NtTerminateThread_ reinterpret_cast<NtTerminateThread_T>(g_uniNtFn[52])
-#define NtUnloadDriver_ reinterpret_cast<NtUnloadDriver_T>(g_uniNtFn[53])
-#define NtWaitForKeyedEvent_ reinterpret_cast<NtWaitForKeyedEvent_T>(g_uniNtFn[54])
-#define NtWaitForSingleObject_ reinterpret_cast<NtWaitForSingleObject_T>(g_uniNtFn[55])
-#define NtWriteFile_ reinterpret_cast<NtWriteFile_T>(g_uniNtFn[56])
-#define NtWriteVirtualMemory_ reinterpret_cast<NtWriteVirtualMemory_T>(g_uniNtFn[57])
-#define NtYieldExecution_ reinterpret_cast<NtYieldExecution_T>(g_uniNtFn[58])
-#define RtlAcquirePebLock_ reinterpret_cast<RtlAcquirePebLock_T>(g_uniNtFn[59])
-#define RtlAdjustPrivilege_ reinterpret_cast<RtlAdjustPrivilege_T>(g_uniNtFn[60])
-#define RtlExitUserProcess_ reinterpret_cast<RtlExitUserProcess_T>(g_uniNtFn[61])
-#define RtlReleasePebLock_ reinterpret_cast<RtlReleasePebLock_T>(g_uniNtFn[62])
+    #define NtClose_ reinterpret_cast<NtClose_T>(g_uniNtFn[0])
+    #define NtOpenKeyEx_ reinterpret_cast<NtOpenKeyEx_T>(g_uniNtFn[1])
+    #define NtOpenProcessTokenEx_ reinterpret_cast<NtOpenProcessTokenEx_T>(g_uniNtFn[2])
+    #define NtQueryAttributesFile_ reinterpret_cast<NtQueryAttributesFile_T>(g_uniNtFn[3])
+    #define NtQueryInformationToken_ reinterpret_cast<NtQueryInformationToken_T>(g_uniNtFn[4])
+    #define NtQueryValueKey_ reinterpret_cast<NtQueryValueKey_T>(g_uniNtFn[5])
+    #define LdrLoadDll_ reinterpret_cast<LdrLoadDll_T>(g_uniNtFn[6])
+    #define LdrUnloadDll_ reinterpret_cast<LdrUnloadDll_T>(g_uniNtFn[7])
+    #define NtAdjustPrivilegesToken_ reinterpret_cast<NtAdjustPrivilegesToken_T>(g_uniNtFn[8])
+    #define NtAllocateVirtualMemory_ reinterpret_cast<NtAllocateVirtualMemory_T>(g_uniNtFn[9])
+    #define NtCreateEvent_ reinterpret_cast<NtCreateEvent_T>(g_uniNtFn[10])
+    #define NtCreateFile_ reinterpret_cast<NtCreateFile_T>(g_uniNtFn[11])
+    #define NtCreateKeyedEvent_ reinterpret_cast<NtCreateKeyedEvent_T>(g_uniNtFn[12])
+    #define NtCreateProcessEx_ reinterpret_cast<NtCreateProcessEx_T>(g_uniNtFn[13])
+    #define NtCreateSection_ reinterpret_cast<NtCreateSection_T>(g_uniNtFn[14])
+    #define NtCreateThreadEx_ reinterpret_cast<NtCreateThreadEx_T>(g_uniNtFn[15])
+    #define NtCreateToken_ reinterpret_cast<NtCreateToken_T>(g_uniNtFn[16])
+    #define NtCreateUserProcess_ reinterpret_cast<NtCreateUserProcess_T>(g_uniNtFn[17])
+    #define NtDelayExecution_ reinterpret_cast<NtDelayExecution_T>(g_uniNtFn[18])
+    #define NtDuplicateObject_ reinterpret_cast<NtDuplicateObject_T>(g_uniNtFn[19])
+    #define NtDuplicateToken_ reinterpret_cast<NtDuplicateToken_T>(g_uniNtFn[20])
+    #define NtEnumerateKey_ reinterpret_cast<NtEnumerateKey_T>(g_uniNtFn[21])
+    #define NtFlushInstructionCache_ reinterpret_cast<NtFlushInstructionCache_T>(g_uniNtFn[22])
+    #define NtFreeVirtualMemory_ reinterpret_cast<NtFreeVirtualMemory_T>(g_uniNtFn[23])
+    #define NtImpersonateThread_ reinterpret_cast<NtImpersonateThread_T>(g_uniNtFn[24])
+    #define NtLoadDriver_ reinterpret_cast<NtLoadDriver_T>(g_uniNtFn[25])
+    #define NtMapViewOfSection_ reinterpret_cast<NtMapViewOfSection_T>(g_uniNtFn[26])
+    #define NtOpenKeyedEvent_ reinterpret_cast<NtOpenKeyedEvent_T>(g_uniNtFn[27])
+    #define NtOpenProcess_ reinterpret_cast<NtOpenProcess_T>(g_uniNtFn[28])
+    #define NtOpenThreadTokenEx_ reinterpret_cast<NtOpenThreadTokenEx_T>(g_uniNtFn[29])
+    #define NtOpenThread_ reinterpret_cast<NtOpenThread_T>(g_uniNtFn[30])
+    #define NtQueryDirectoryFile_ reinterpret_cast<NtQueryDirectoryFile_T>(g_uniNtFn[31])
+    #define NtQueryInformationFile_ reinterpret_cast<NtQueryInformationFile_T>(g_uniNtFn[32])
+    #define NtQueryInformationProcess_ reinterpret_cast<NtQueryInformationProcess_T>(g_uniNtFn[33])
+    #define NtQueryInformationThread_ reinterpret_cast<NtQueryInformationThread_T>(g_uniNtFn[34])
+    #define NtQueryObject_ reinterpret_cast<NtQueryObject_T>(g_uniNtFn[35])
+    #define NtQuerySystemInformation_ reinterpret_cast<NtQuerySystemInformation_T>(g_uniNtFn[36])
+    #define NtQueryTimerResolution_ reinterpret_cast<NtQueryTimerResolution_T>(g_uniNtFn[37])
+    #define NtRaiseHardError_ reinterpret_cast<NtRaiseHardError_T>(g_uniNtFn[38])
+    #define NtReadFile_ reinterpret_cast<NtReadFile_T>(g_uniNtFn[39])
+    #define NtReadVirtualMemory_ reinterpret_cast<NtReadVirtualMemory_T>(g_uniNtFn[40])
+    #define NtReleaseKeyedEvent_ reinterpret_cast<NtReleaseKeyedEvent_T>(g_uniNtFn[41])
+    #define NtResetEvent_ reinterpret_cast<NtResetEvent_T>(g_uniNtFn[42])
+    #define NtSetEvent_ reinterpret_cast<NtSetEvent_T>(g_uniNtFn[43])
+    #define NtSetInformationFile_ reinterpret_cast<NtSetInformationFile_T>(g_uniNtFn[44])
+    #define NtSetInformationProcess_ reinterpret_cast<NtSetInformationProcess_T>(g_uniNtFn[45])
+    #define NtSetInformationThread_ reinterpret_cast<NtSetInformationThread_T>(g_uniNtFn[46])
+    #define NtSetInformationToken_ reinterpret_cast<NtSetInformationToken_T>(g_uniNtFn[47])
+    #define NtSetTimerResolution_ reinterpret_cast<NtSetTimerResolution_T>(g_uniNtFn[48])
+    #define NtSetValueKey_ reinterpret_cast<NtSetValueKey_T>(g_uniNtFn[49])
+    #define NtShutdownSystem_ reinterpret_cast<NtShutdownSystem_T>(g_uniNtFn[50])
+    #define NtTerminateProcess_ reinterpret_cast<NtTerminateProcess_T>(g_uniNtFn[51])
+    #define NtTerminateThread_ reinterpret_cast<NtTerminateThread_T>(g_uniNtFn[52])
+    #define NtUnloadDriver_ reinterpret_cast<NtUnloadDriver_T>(g_uniNtFn[53])
+    #define NtWaitForKeyedEvent_ reinterpret_cast<NtWaitForKeyedEvent_T>(g_uniNtFn[54])
+    #define NtWaitForSingleObject_ reinterpret_cast<NtWaitForSingleObject_T>(g_uniNtFn[55])
+    #define NtWriteFile_ reinterpret_cast<NtWriteFile_T>(g_uniNtFn[56])
+    #define NtWriteVirtualMemory_ reinterpret_cast<NtWriteVirtualMemory_T>(g_uniNtFn[57])
+    #define NtYieldExecution_ reinterpret_cast<NtYieldExecution_T>(g_uniNtFn[58])
+    #define RtlAcquirePebLock_ reinterpret_cast<RtlAcquirePebLock_T>(g_uniNtFn[59])
+    #define RtlAdjustPrivilege_ reinterpret_cast<RtlAdjustPrivilege_T>(g_uniNtFn[60])
+    #define RtlExitUserProcess_ reinterpret_cast<RtlExitUserProcess_T>(g_uniNtFn[61])
+    #define RtlReleasePebLock_ reinterpret_cast<RtlReleasePebLock_T>(g_uniNtFn[62])
 // [generated code end]
 
-#include "hash.hpp"
+    #include "hash.hpp"
 
 inl cxex cx FNV1A64 g_uniNtFnHash[UNI_NT_FN_CNT] = {
     0x0EA8815DD2EFDD00, 0xFF3367EA540125F6, 0x7E3399C0B3006553, 0xE655892078CEBCB7, 0x30ADCF95DB777C33, 0x4C79C7D07705B820, 0x102A162927837997, 0xAF58EA4C20FF953A, 0xBF07814C6980EFBB,
@@ -2636,5 +2639,7 @@ inl cxex cx FNV1A64 g_uniNtFnHash[UNI_NT_FN_CNT] = {
 cxex SI UNI_NT_FN_CNT_NO_KEY = 6;
 
 dfa ER UniNtLoad();
+
+#endif
 
 #include "unint.ipp"

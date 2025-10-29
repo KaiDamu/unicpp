@@ -99,8 +99,8 @@ tpl2 dfa SI StrToInt(T1& dst, cx T2* src, SI len)
         falltru;
     case 1:
         dst += (*src) - '0';
-        falltru;
         dst *= sign;
+        falltru;
     default:
         ret len;
     }

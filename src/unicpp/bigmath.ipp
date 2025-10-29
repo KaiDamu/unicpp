@@ -1,5 +1,8 @@
 #include "bigmath.hpp"
 
+#include "math.hpp"
+#include "memory.hpp"
+
 tpl<SI size> dfa BO BigIsNeg(cx U1* val)
 {
     ifcx (size < 1)

@@ -5,6 +5,9 @@
 #include "window.hpp"
 #include "thread.hpp"
 #include "memory.hpp"
+#ifdef PROG_SYS_LINUX
+    #include <unistd.h>
+#endif
 
 dfa ConCtx::ConCtx() : writePosX(0), isReadMode(NO), isConOwn(NO), colReal(CON_COL_DEFA), col(CON_COL_DEFA), colInitSave(CON_COL_DEFA)
 {
@@ -79,6 +82,8 @@ dfa ER _ConColRealSet(ConCol col)
         rete(ErrVal::CON);
     g_conCtx->colReal = col;
     rets;
+#elif defined(PROG_SYS_LINUX)
+    rets; // TODO: implement color setting for Linux console
 #elif defined(PROG_SYS_ESP32)
     rets; // assume no color support & ignore the request
 #else
@@ -95,6 +100,9 @@ dfa ER _ConColRealGet(ConCol& col)
     ifu (GetConsoleScreenBufferInfo(hdl, &info) == 0)
         rete(ErrVal::CON);
     col = ConCol(info.wAttributes & 0x000F);
+    rets;
+#elif defined(PROG_SYS_LINUX)
+    col = CON_COL_DEFA; // TODO: implement color getting for Linux console
     rets;
 #elif defined(PROG_SYS_ESP32)
     col = CON_COL_DEFA; // assume no color support & return default color
@@ -154,6 +162,8 @@ dfa ER _ConCurShow(BO isShown)
     ifu (SetConsoleCursorInfo(hdl, &info) == 0)
         rete(ErrVal::CON);
     rets;
+#elif defined(PROG_SYS_LINUX)
+    rets; // TODO: implement cursor visibility control for Linux console
 #elif defined(PROG_SYS_ESP32)
     rets; // assume no cursor visibility control & ignore the request
 #else
@@ -178,6 +188,8 @@ dfa ER _ConInBufClr()
             rete(ErrVal::CON);
     }
     rets;
+#elif defined(PROG_SYS_LINUX)
+    rets; // TODO: implement input buffer clearing for Linux console
 #elif defined(PROG_SYS_ESP32)
     rets; // assume this is not possible & ignore the request
 #else
@@ -380,7 +392,7 @@ dfa ER _ConWriteRaw(cx CS* buf, SI bufLen, BO isInput)
     g_conCtx->writeLock.Unlock();
     ret err;
 }
-dfa ER _ConWriteRawAl_(cx CS* form, cx AL& args)
+dfa ER _ConWriteRawAl_(cx CS* form, AL& args)
 {
     ArrSbo<CS, CON_SBO_LENX_MAX> buf;
     jdst(retry);
@@ -396,7 +408,7 @@ dfa ER _ConWriteRawAl_(cx CS* form, cx AL& args)
         retep;
     rets;
 }
-dfa ER _ConWriteRawAl(cx CS* form, cx AL& args, cx CS* pre, cx CS* post)
+dfa ER _ConWriteRawAl(cx CS* form, AL& args, cx CS* pre, cx CS* post)
 {
     ife (ConReq())
         retep;
@@ -872,6 +884,8 @@ dfa BO ConIsExist()
 {
 #if defined(PROG_SYS_WIN)
     ret (GetConsoleWindow() != NUL);
+#elif defined(PROG_SYS_LINUX)
+    ret isatty(fileno(stdout)) != 0;
 #elif defined(PROG_SYS_ESP32)
     ret YES; // assume always exist
 #else

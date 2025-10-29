@@ -1,5 +1,6 @@
 #pragma once
 
+#include "type.hpp"
 #include "unint.hpp"
 
 using SysVer = U8;

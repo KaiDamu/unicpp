@@ -3,8 +3,10 @@
 #include "thread.hpp"
 #include "memory.hpp"
 #include "token.hpp"
-#include <shellapi.h>
-#include <shellscalingapi.h>
+#ifdef PROG_SYS_WIN
+    #include <shellapi.h>
+    #include <shellscalingapi.h>
+#endif
 
 dfa NT ProcCrash()
 {

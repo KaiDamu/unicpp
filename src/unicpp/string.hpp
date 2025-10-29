@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 #include <unordered_map>
+#include "value.hpp"
 #include "hash.hpp"
 
 cxex SI STR_EX_LEN = 1;

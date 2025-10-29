@@ -81,8 +81,8 @@ dfa ER _ConClrRow(SI y);
 dfa ER _ConWriteRaw__(HD hdl, cx CS* buf, SI bufLen);
 dfa ER _ConWriteRaw_(cx CS* buf, SI bufLen, BO isInput);
 dfa ER _ConWriteRaw(cx CS* buf, SI bufLen, BO isInput);
-dfa ER _ConWriteRawAl_(cx CS* form, cx AL& args);
-dfa ER _ConWriteRawAl(cx CS* form, cx AL& args, cx CS* pre, cx CS* post);
+dfa ER _ConWriteRawAl_(cx CS* form, AL& args);
+dfa ER _ConWriteRawAl(cx CS* form, AL& args, cx CS* pre, cx CS* post);
 
 dfa ER _ConReadStr(CS* str, SI strLenxMax, SI& strLen, cx CS* prefix, ThdLockFast* prefixLock, BO isShow);
 dfa ER _ConWait(cx CS* prefix, ConWaitAnim anim);

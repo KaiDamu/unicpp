@@ -13,9 +13,9 @@ dfa TmUnix LdapToUnix(TmLdap ldap)
         ret 0;
     ret ldap / 10000000 - 11644473600;
 }
-dfa TmLdap UnixToLdap(TmUnix unix)
+dfa TmLdap UnixToLdap(TmUnix tmUnix)
 {
-    ret unix * 10000000 + 116444736000000000;
+    ret tmUnix * 10000000 + 116444736000000000;
 }
 
 dfa TmUnix TimeUnix()

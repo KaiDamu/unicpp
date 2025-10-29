@@ -1,5 +1,6 @@
 #include "file.hpp"
 
+#include <filesystem>
 #include "directory.hpp"
 
 dfa BO FileIsExist(cx CH* path, BO acceptFile, BO acceptDir)

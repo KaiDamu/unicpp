@@ -1,6 +1,8 @@
 #include "unint.hpp"
 
-#include "sandbox.hpp"
+#ifdef PROG_SYS_WIN
+
+    #include "sandbox.hpp"
 
 dfa NT UNICODE_STRING_::_Init(cx CH* buf, SI len)
 {
@@ -67,3 +69,5 @@ dfa ER UniNtLoad()
             rete(ErrVal::NO_EXIST);
     rets;
 }
+
+#endif
