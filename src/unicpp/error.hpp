@@ -24,6 +24,7 @@ enum class ErrVal : U4
     HOOK,
     LOCK,
     WIN,
+    GL,
     CON,
     REG,
     KEYB,

@@ -249,10 +249,10 @@
     <ClInclude Include="src\unicpp\network.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\unicpp\opengl.hpp">
+    <ClInclude Include="src\unicpp\glmain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\unicpp\opengl.ipp">
+    <ClInclude Include="src\unicpp\glmain.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\unicpp\path.hpp">
@@ -507,6 +507,18 @@
     <ClInclude Include="src\unicpp\windowcapture.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\unicpp\glload.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\unicpp\glload.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\unicpp\glex.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\unicpp\glex.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\unicpp\aes.cpp">
@@ -623,7 +635,7 @@
     <ClCompile Include="src\unicpp\network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\unicpp\opengl.cpp">
+    <ClCompile Include="src\unicpp\glmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\unicpp\path.cpp">
@@ -750,6 +762,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\unicpp\windowcapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicpp\glload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unicpp\glex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="samples\hello-world.cpp">

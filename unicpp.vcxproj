@@ -61,6 +61,10 @@
     <ClInclude Include="src\unicpp\file.ipp" />
     <ClInclude Include="src\unicpp\fp25519.hpp" />
     <ClInclude Include="src\unicpp\fp25519.ipp" />
+    <ClInclude Include="src\unicpp\glex.hpp" />
+    <ClInclude Include="src\unicpp\glex.ipp" />
+    <ClInclude Include="src\unicpp\glload.hpp" />
+    <ClInclude Include="src\unicpp\glload.ipp" />
     <ClInclude Include="src\unicpp\graphics.hpp" />
     <ClInclude Include="src\unicpp\graphics.ipp" />
     <ClInclude Include="src\unicpp\hash.hpp" />
@@ -97,8 +101,8 @@
     <ClInclude Include="src\unicpp\mouse.ipp" />
     <ClInclude Include="src\unicpp\network.hpp" />
     <ClInclude Include="src\unicpp\network.ipp" />
-    <ClInclude Include="src\unicpp\opengl.hpp" />
-    <ClInclude Include="src\unicpp\opengl.ipp" />
+    <ClInclude Include="src\unicpp\glmain.hpp" />
+    <ClInclude Include="src\unicpp\glmain.ipp" />
     <ClInclude Include="src\unicpp\path.hpp" />
     <ClInclude Include="src\unicpp\path.ipp" />
     <ClInclude Include="src\unicpp\pipe.hpp" />
@@ -207,6 +211,8 @@
     <ClCompile Include="src\unicpp\event.cpp" />
     <ClCompile Include="src\unicpp\file.cpp" />
     <ClCompile Include="src\unicpp\fp25519.cpp" />
+    <ClCompile Include="src\unicpp\glex.cpp" />
+    <ClCompile Include="src\unicpp\glload.cpp" />
     <ClCompile Include="src\unicpp\graphics.cpp" />
     <ClCompile Include="src\unicpp\hash.cpp" />
     <ClCompile Include="src\unicpp\hunic.cpp" />
@@ -224,7 +230,7 @@
     <ClCompile Include="src\unicpp\memory.cpp" />
     <ClCompile Include="src\unicpp\mouse.cpp" />
     <ClCompile Include="src\unicpp\network.cpp" />
-    <ClCompile Include="src\unicpp\opengl.cpp" />
+    <ClCompile Include="src\unicpp\glmain.cpp" />
     <ClCompile Include="src\unicpp\path.cpp" />
     <ClCompile Include="src\unicpp\pipe.cpp" />
     <ClCompile Include="src\unicpp\pixelpath.cpp" />

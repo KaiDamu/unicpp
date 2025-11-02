@@ -44,11 +44,11 @@ tpl1 dfa ER WinCapture::_ColGridGetGdi(ColGrid<T1>& colGrid, Mode captureMode)
     switch (captureMode)
     {
     case Mode::GDI_WIN:
-        ife (m_win->RectInnerGet(rectInner))
+        ife (m_win->InnerRectGet(rectInner))
             retep;
         break;
     case Mode::GDI_SCN:
-        ife (m_win->RectInnerGet(rectInner))
+        ife (m_win->InnerRectGet(rectInner))
             retep;
         break;
     default:
@@ -64,7 +64,7 @@ tpl1 dfa ER WinCapture::_ColGridGetGdi(ColGrid<T1>& colGrid, Mode captureMode)
         switch (captureMode)
         {
         case Mode::GDI_WIN:
-            ife (m_win->RectOuterGet(rectOuter))
+            ife (m_win->OuterRectGet(rectOuter))
                 retep;
             cache->ofs = rectInner.pos - rectOuter.pos;
             break;
@@ -194,7 +194,7 @@ tpl1 dfa ER WinCapture::_ColGridGetDxgi(ColGrid<T1>& colGrid, Mode captureMode)
     }
 
     Rect2<SI> rectWin;
-    ife (m_win->RectInnerGet(rectWin))
+    ife (m_win->InnerRectGet(rectWin))
         retep;
 
     Microsoft::WRL::ComPtr<IDXGIResource> desktop;
