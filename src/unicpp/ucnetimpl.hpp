@@ -8,7 +8,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 tpl3 dfa BaseMsgCallbDat<T2> _MsgCallbDatCreate(T3&& fn, GA ctx);
@@ -18,7 +18,7 @@ dfa S4 _SrvThdFn(GA param);
 dfa ER _SrvCliThdFn_(CliRef& cliRef);
 dfa S4 _SrvCliThdFn(GA param);
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif
 

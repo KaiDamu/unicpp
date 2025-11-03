@@ -2,7 +2,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 tpl<MsgType TType, BO TIsPend> dfa MsgType _MsgDatAnyT<TType, TIsPend>::Type() cx
@@ -18,6 +18,6 @@ tpl1 dfa BaseMsgCallbDat<T1>::BaseMsgCallbDat(BaseMsgCallbFnT<T1> fn, GA ctx) : 
 {
 }
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif

@@ -1,6 +1,6 @@
 #include "serial.hpp"
 
-namespace Serial
+namespace serial
 {
 
 dfa ER _ReadAll(cx U1*& cur, cx U1* end)
@@ -70,4 +70,4 @@ tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx ZzVarint& val)
     rets;
 }
 
-} // namespace Serial
+} // namespace serial

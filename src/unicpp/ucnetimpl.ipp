@@ -2,7 +2,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 tpl3 dfa BaseMsgCallbDat<T2> _MsgCallbDatCreate(T3&& fn, GA ctx)
@@ -25,6 +25,6 @@ tpl<MsgType TMsg, typename TFn> dfa NT Srv::MsgCallbSet(TFn&& fn, GA ctx)
     m_msgCallbList[SI(TMsg)] = _MsgCallbDatCreate<typename MsgTypeMap<TMsg>::MsgDatT, CliSrv>(std::forward<TFn>(fn), ctx);
 }
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif

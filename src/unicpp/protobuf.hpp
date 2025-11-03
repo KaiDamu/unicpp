@@ -2,21 +2,24 @@
 
 #include "type.hpp"
 
-cxex U1 PRB_FIELD_TYPE_VARINT = 0;
-cxex U1 PRB_FIELD_TYPE_I64 = 1;
-cxex U1 PRB_FIELD_TYPE_LEN = 2;
-cxex U1 PRB_FIELD_TYPE_SGROUP = 3;
-cxex U1 PRB_FIELD_TYPE_EGROUP = 4;
-cxex U1 PRB_FIELD_TYPE_I32 = 5;
+namespace protobuf
+{
 
-cxex U1 PRB_FIELD_ID_NONE = 0;
+cxex U1 FIELD_TYPE_VARINT = 0;
+cxex U1 FIELD_TYPE_I64 = 1;
+cxex U1 FIELD_TYPE_LEN = 2;
+cxex U1 FIELD_TYPE_SGROUP = 3;
+cxex U1 FIELD_TYPE_EGROUP = 4;
+cxex U1 FIELD_TYPE_I32 = 5;
 
-cxex SI PRB_CTX_STACK_LEN_MAX = 8;
+cxex U1 FIELD_ID_NONE = 0;
 
-class PrbCtx
+cxex SI CTX_STACK_LEN_MAX = 8;
+
+class Ctx
 {
   private:
-    struct PrbCtxStackElem
+    struct StackElem
     {
         cx U1* elemEnd;
         U1 fieldId;
@@ -29,10 +32,10 @@ class PrbCtx
     U1 m_fieldId;
     U8 m_fieldHash;
     SI m_stackLen;
-    PrbCtxStackElem m_stack[PRB_CTX_STACK_LEN_MAX];
+    StackElem m_stack[CTX_STACK_LEN_MAX];
     union {
         U8 m_stackHash;
-        U1 m_stackHashByte[PRB_CTX_STACK_LEN_MAX];
+        U1 m_stackHashByte[CTX_STACK_LEN_MAX];
     };
     union {
         U4 m_valU4;
@@ -63,9 +66,11 @@ class PrbCtx
     dfa NT Init();
 
   public:
-    dfa PrbCtx();
-    dfa PrbCtx(cx U1* buf, SI bufSize);
-    dfa ~PrbCtx();
+    dfa Ctx();
+    dfa Ctx(cx U1* buf, SI bufSize);
+    dfa ~Ctx();
 };
+
+} // namespace protobuf
 
 #include "protobuf.ipp"

@@ -9,7 +9,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 class Cli : public CliBase
@@ -51,7 +51,7 @@ class Cli : public CliBase
     dfa ~Cli();
 };
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif
 

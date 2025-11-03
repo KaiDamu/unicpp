@@ -2,7 +2,7 @@
 
 #include "memory.hpp"
 
-namespace Bada
+namespace bada
 {
 
 dfa NT Meta::Clr()
@@ -587,4 +587,4 @@ dfa Decoder::Decoder()
     m_frameCur = 0;
 }
 
-} // namespace Bada
+} // namespace bada

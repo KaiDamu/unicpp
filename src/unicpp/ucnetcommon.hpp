@@ -7,7 +7,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 using ProtoVerT = U2;
@@ -35,7 +35,7 @@ enum class PriviLv : PriviLvT
     SYSTEM,    // all actions are allowed
 };
 
-namespace Sec
+namespace sec
 {
 
 using ChecksumModeT = U1;
@@ -62,9 +62,9 @@ enum class SrvAuthMode : SrvAuthModeT
     SECURE,
 };
 
-} // namespace Sec
+} // namespace sec
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif
 

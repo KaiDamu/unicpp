@@ -5,7 +5,7 @@
     #include "random.hpp"
     #include "console.hpp"
 
-namespace Ucnet
+namespace ucnet
 {
 
 dfa NT _MsgNumGen(MsgNumT& dst, BO isAtAuthElseInit, BO isForCliElseSrv)
@@ -480,9 +480,9 @@ dfa NT CliSrv::Init(Srv* srv, SockTcp& sock, cx NetAdrV4& adr)
     tx->m_sock.Move(sock);
     tx->m_adr = adr;
     tx->ClrBase(NO);
-    tx->m_checksumMode = Sec::ChecksumMode::NONE;
-    tx->m_encryptMode = Sec::EncryptMode::NONE;
-    tx->m_srvAuthMode = Sec::SrvAuthMode::NONE;
+    tx->m_checksumMode = sec::ChecksumMode::NONE;
+    tx->m_encryptMode = sec::EncryptMode::NONE;
+    tx->m_srvAuthMode = sec::SrvAuthMode::NONE;
     tx->m_priviLv = PriviLv::INIT;
 }
 
@@ -763,6 +763,6 @@ dfa Srv::~Srv()
     tx->Close();
 }
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif

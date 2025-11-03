@@ -11,7 +11,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 cxex SI MSG_SIZE_MAX = 4 * BYTE_IN_MB;
@@ -53,7 +53,7 @@ struct MsgDatAny
 
     dfa virtual MsgType Type() cx = 0;
     dfa virtual BO IsPend() cx = 0;
-    dfa virtual ER Trans(Serial::TransIo& io);
+    dfa virtual ER Trans(serial::TransIo& io);
 
     dfa ER WriteTo(std::vector<U1>& buf, SI& curI) cx;
     dfa ER ReadFrom(cx U1* cur, cx U1* end);
@@ -80,7 +80,7 @@ struct MsgDatVerReq : _MsgDatAnyT<MsgType::VER_REQ, YES>
     ProtoVerT verMin;
     ProtoVerT verMax;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES, NO>
 {
@@ -93,7 +93,7 @@ struct MsgDatVerRes : _MsgDatAnyT<MsgType::VER_RES, NO>
     SessionIdT sessionId;
     std::string userName;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatSysErrWrite : _MsgDatAnyT<MsgType::SYS_ERR_WRITE, NO>
 {
@@ -117,13 +117,13 @@ struct MsgDatDbg : _MsgDatAnyT<MsgType::DBG, NO>
 {
     std::string text;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatPing : _MsgDatAnyT<MsgType::PING, NO>
 {
     TmMain time;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ, YES>
 {
@@ -138,7 +138,7 @@ struct MsgDatRoomPresenceReq : _MsgDatAnyT<MsgType::ROOM_PRESENCE_REQ, YES>
     std::string name;
     Sha512Hash pwHash;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES, NO>
 {
@@ -157,7 +157,7 @@ struct MsgDatRoomPresenceRes : _MsgDatAnyT<MsgType::ROOM_PRESENCE_RES, NO>
     Act act;
     std::vector<ListElem> roomList;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG, YES>
 {
@@ -176,7 +176,7 @@ struct MsgDatRoomCfg : _MsgDatAnyT<MsgType::ROOM_CFG, YES>
     Sha512Hash pwHash;
     SI cliCntMax;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 struct MsgDatRoomMsg : _MsgDatAnyT<MsgType::ROOM_MSG, YES>
 {
@@ -188,7 +188,7 @@ struct MsgDatRoomMsg : _MsgDatAnyT<MsgType::ROOM_MSG, YES>
     Act act;
     std::string msg;
 
-    dfa ER Trans(Serial::TransIo& io) override final;
+    dfa ER Trans(serial::TransIo& io) override final;
 };
 
 tpl<MsgType> struct MsgTypeMap;
@@ -228,15 +228,15 @@ tpl1 struct BaseMsgCallbDat
     dfa BaseMsgCallbDat(BaseMsgCallbFnT<T1> fn = {}, GA ctx = NUL);
 };
 
-} // namespace Ucnet
+} // namespace ucnet
 
-namespace Serial
+namespace serial
 {
 
-tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, std::vector<Ucnet::MsgDatRoomPresenceRes::ListElem>& val);
-tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::vector<Ucnet::MsgDatRoomPresenceRes::ListElem>& val);
+tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, std::vector<ucnet::MsgDatRoomPresenceRes::ListElem>& val);
+tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::vector<ucnet::MsgDatRoomPresenceRes::ListElem>& val);
 
-} // namespace Serial
+} // namespace serial
 
 #endif
 

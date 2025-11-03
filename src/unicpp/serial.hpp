@@ -5,7 +5,7 @@
 #include "container.hpp"
 #include "string.hpp"
 
-namespace Serial
+namespace serial
 {
 
 tpl1 dfa ER ReadType(cx U1*& cur, cx U1* end, T1& val);
@@ -36,9 +36,9 @@ tpl<typename... TArgs> dfa ER Trans(std::tuple<cx U1*&, cx U1*&>& io, TArgs&... 
 tpl<typename... TArgs> dfa ER Trans(std::tuple<std::vector<U1>&, SI&>& io, TArgs&... args);
 tpl<typename... TArgs> dfa ER Trans(TransIo& io, TArgs&... args);
 
-} // namespace Serial
+} // namespace serial
 
-namespace Serial
+namespace serial
 {
 
 tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, std::string& val);
@@ -47,6 +47,6 @@ tpl0 dfa ER ReadType(cx U1*& cur, cx U1* end, ZzVarint& val);
 tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::string& val);
 tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx ZzVarint& val);
 
-} // namespace Serial
+} // namespace serial
 
 #include "serial.ipp"

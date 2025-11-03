@@ -2,12 +2,12 @@
 
 #include "memory.hpp"
 
-namespace Serial
+namespace serial
 {
 
 tpl1 dfa ER ReadType(cx U1*& cur, cx U1* end, T1& val)
 {
-    static_assert(std::is_trivially_copyable<T1>::value, "Unsupported type for Serial::ReadType");
+    static_assert(std::is_trivially_copyable<T1>::value, "Unsupported type for serial::ReadType");
     ifu (SI(end - cur) < siz(T1))
         rete(ErrVal::NO_VALID);
     MemCpyUpdCurSrc(&val, cur, siz(T1));
@@ -25,7 +25,7 @@ tpl<typename... TArgs> dfa ER Read(cx U1*& cur, cx U1* end, TArgs&... args)
 
 tpl1 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx T1& val)
 {
-    static_assert(std::is_trivially_copyable<T1>::value, "Unsupported type for Serial::WriteType");
+    static_assert(std::is_trivially_copyable<T1>::value, "Unsupported type for serial::WriteType");
     Req(buf, curI + siz(T1));
     MemCpy(&buf[curI], &val, siz(T1));
     curI += siz(T1);
@@ -43,7 +43,7 @@ tpl<typename... TArgs> dfa ER Write(std::vector<U1>& buf, SI& curI, cx TArgs&...
 
 tpl<typename T1, typename... TArgs> dfa ER Trans(T1&, TArgs&...)
 {
-    static_assert(NO && siz(T1), "Serial::Trans could not deduce the action");
+    static_assert(NO && siz(T1), "serial::Trans could not deduce the action");
     rete(ErrVal::NA);
 }
 tpl<typename... TArgs> dfa ER Trans(std::tuple<cx U1*&, cx U1*&>& io, TArgs&... args)
@@ -63,4 +63,4 @@ tpl<typename... TArgs> dfa ER Trans(TransIo& io, TArgs&... args)
     ret (io.isWrite ? Trans(*io.write, args...) : Trans(*io.read, args...));
 }
 
-} // namespace Serial
+} // namespace serial

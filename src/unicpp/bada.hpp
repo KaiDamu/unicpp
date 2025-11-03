@@ -22,7 +22,7 @@
    Although not enforced, it is suggested to use ".bada" as the file extension.
 */
 
-namespace Bada
+namespace bada
 {
 
 using SubCodecTypeT = U1;
@@ -226,6 +226,6 @@ class Decoder : public Xcoder
     dfa Decoder();
 };
 
-} // namespace Bada
+} // namespace bada
 
 #include "bada.ipp"

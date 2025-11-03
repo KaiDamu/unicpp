@@ -7,7 +7,7 @@
 
 #ifdef PROG_SYS_WIN
 
-namespace Ucnet
+namespace ucnet
 {
 
 class Srv;
@@ -20,9 +20,9 @@ class CliSrv : public CliBase
     NetAdrV4 m_adr;
     Thd m_thd;
     ThdLockFast m_lock;
-    Sec::ChecksumMode m_checksumMode;
-    Sec::EncryptMode m_encryptMode;
-    Sec::SrvAuthMode m_srvAuthMode;
+    sec::ChecksumMode m_checksumMode;
+    sec::EncryptMode m_encryptMode;
+    sec::SrvAuthMode m_srvAuthMode;
     PriviLv m_priviLv;
 
   public:
@@ -33,25 +33,25 @@ class CliSrv : public CliBase
     dfa CliSrv(Srv* srv, SockTcp& sock, cx NetAdrV4& adr);
 };
 
-} // namespace Ucnet
+} // namespace ucnet
 
-tpl0 struct TypeTraits<Ucnet::CliSrv>
+tpl0 struct TypeTraits<ucnet::CliSrv>
 {
-    using IdT = TO(Ucnet::CliSrv::m_sessionId);
-    using IdSecT = TO(Ucnet::CliSrv::m_userName);
-    using LockT = TO(Ucnet::CliSrv::m_lock);
+    using IdT = TO(ucnet::CliSrv::m_sessionId);
+    using IdSecT = TO(ucnet::CliSrv::m_userName);
+    using LockT = TO(ucnet::CliSrv::m_lock);
 
-    dfa static IdT& id(Ucnet::CliSrv& obj);
-    dfa static cx IdT& id(cx Ucnet::CliSrv& obj);
-    dfa static IdSecT& idSec(Ucnet::CliSrv& obj);
-    dfa static LockT& lock(Ucnet::CliSrv& obj);
+    dfa static IdT& id(ucnet::CliSrv& obj);
+    dfa static cx IdT& id(cx ucnet::CliSrv& obj);
+    dfa static IdSecT& idSec(ucnet::CliSrv& obj);
+    dfa static LockT& lock(ucnet::CliSrv& obj);
 
-    dfa static BO HasIdSec(Ucnet::CliSrv& obj);
-    dfa static NT Lock(Ucnet::CliSrv& obj);
-    dfa static NT Unlock(Ucnet::CliSrv& obj);
+    dfa static BO HasIdSec(ucnet::CliSrv& obj);
+    dfa static NT Lock(ucnet::CliSrv& obj);
+    dfa static NT Unlock(ucnet::CliSrv& obj);
 };
 
-namespace Ucnet
+namespace ucnet
 {
 
 using CliList = MthdObjList<CliSrv>;
@@ -94,7 +94,7 @@ class Srv
     dfa ~Srv();
 };
 
-} // namespace Ucnet
+} // namespace ucnet
 
 #endif
 
