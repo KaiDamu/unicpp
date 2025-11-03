@@ -63,13 +63,3 @@ tpl1 dfa NT MemCpyValBe(GA dst, T1 src)
     *(p--) = U1(src >>= 8);
     *(p--) = U1(src >>= 8);
 }
-tpl1 dfa NT MemCpyUpdCur(T1*& dstCur, CXGA src, SI size)
-{
-    MemCpy(dstCur, src, size);
-    AsType<UA>(dstCur) += size;
-}
-tpl1 dfa NT MemCpyUpdCurSrc(GA dst, cx T1*& srcCur, SI size)
-{
-    MemCpy(dst, srcCur, size);
-    AsType<UA>(srcCur) += size;
-}

@@ -36,13 +36,14 @@ dfa NT MemSet(GA dst, U1 val, SI size)
     memset(dst, val, size);
 #endif
 }
-dfa NT MemCpy(GA dst, CXGA src, SI size)
+dfa SI MemCpy(GA dst, CXGA src, SI size)
 {
 #ifdef PROG_COMPILER_GCC
     __builtin_memcpy(dst, src, size);
 #else
     memcpy(dst, src, size);
 #endif
+    ret size;
 }
 dfa NT MemMove(GA dst, CXGA src, SI size)
 {
@@ -76,13 +77,14 @@ dfa NT MemSet0Force(GA dst, SI size)
     tmp = AsType<volatile U1>(((U1*)dst)[size - 1]);
     unused(tmp);
 }
-dfa NT MemCpyNocall(GA dst, CXGA src, SI size)
+dfa SI MemCpyNocall(GA dst, CXGA src, SI size)
 {
     AU dst_ = (U1*)dst;
     AU src_ = (cx U1*)src;
     cx AU end = src_ + size;
     while (src_ != end)
         *dst_++ = *src_++;
+    ret size;
 }
 
 #ifdef PROG_SYS_WIN

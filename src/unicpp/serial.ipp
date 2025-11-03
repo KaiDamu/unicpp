@@ -10,7 +10,7 @@ tpl1 dfa ER ReadType(cx U1*& cur, cx U1* end, T1& val)
     static_assert(std::is_trivially_copyable<T1>::value, "Unsupported type for serial::ReadType");
     ifu (SI(end - cur) < siz(T1))
         rete(ErrVal::NO_VALID);
-    MemCpyUpdCurSrc(&val, cur, siz(T1));
+    cur += MemCpy(&val, cur, siz(T1));
     rets;
 }
 tpl<typename T1, typename... TRest> dfa ER _ReadAll(cx U1*& cur, cx U1* end, T1& first, TRest&... rest)
@@ -27,8 +27,7 @@ tpl1 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx T1& val)
 {
     static_assert(std::is_trivially_copyable<T1>::value, "Unsupported type for serial::WriteType");
     Req(buf, curI + siz(T1));
-    MemCpy(&buf[curI], &val, siz(T1));
-    curI += siz(T1);
+    curI += MemCpy(&buf[curI], &val, siz(T1));
     rets;
 }
 tpl<typename T1, typename... TRest> dfa ER _WriteAll(std::vector<U1>& buf, SI& curI, cx T1& first, cx TRest&... rest)

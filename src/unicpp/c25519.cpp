@@ -261,11 +261,11 @@ dfa NT X25519Derive(X25519SharedKey& sharedKey, cx X25519SharedKeyRaw& sharedKey
     cx AU datSize = SI(X25519SharedKeyRaw::SIZE + X25519PubKey::SIZE * 2 + msgSize);
     std::vector<U1> dat(datSize);
     AU datCur = dat.data();
-    MemCpyUpdCur(datCur, sharedKeyRaw.Dat(), sharedKeyRaw.SIZE);
-    MemCpyUpdCur(datCur, pubKeySrv.Dat(), pubKeySrv.SIZE);
-    MemCpyUpdCur(datCur, pubKeyCli.Dat(), pubKeyCli.SIZE);
+    datCur += MemCpy(datCur, sharedKeyRaw.Dat(), sharedKeyRaw.SIZE);
+    datCur += MemCpy(datCur, pubKeySrv.Dat(), pubKeySrv.SIZE);
+    datCur += MemCpy(datCur, pubKeyCli.Dat(), pubKeyCli.SIZE);
     if (msgSize > 0)
-        MemCpyUpdCur(datCur, msg, msgSize);
+        datCur += MemCpy(datCur, msg, msgSize);
     Sha512Hash hash;
     HashSha512(hash, dat.data(), dat.size());
     MemCpy(sharedKey.Dat(), hash.Dat(), hash.SIZE);

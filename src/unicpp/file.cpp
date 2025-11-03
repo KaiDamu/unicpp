@@ -402,8 +402,7 @@ dfa SI MemFile::Read(GA buf, SI size)
 {
     ifu (m_cur + size > m_end)
         size = m_end - m_cur;
-    MemCpy(buf, m_cur, size);
-    m_cur += size;
+    m_cur += MemCpy(buf, m_cur, size);
     ret size;
 }
 dfa SI MemFile::ReadLine(std::string& str)
@@ -442,7 +441,7 @@ dfa NT MemFile::Write(CXGA buf, SI size)
         }
         m_end = m_cur + size;
     }
-    MemCpyUpdCur(m_cur, buf, size);
+    m_cur += MemCpy(m_cur, buf, size);
 }
 dfa NT MemFile::WriteCsstr(cx CS* str)
 {

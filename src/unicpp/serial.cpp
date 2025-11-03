@@ -59,8 +59,7 @@ tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx std::string& val)
 {
     Req(buf, curI + VarintSizeMax<SI>() + SI(val.size()));
     curI += VarintEncode(&buf[curI], GetTypeU<SI>(val.size()));
-    MemCpy(&buf[curI], val.data(), val.size());
-    curI += val.size();
+    curI += MemCpy(&buf[curI], val.data(), val.size());
     rets;
 }
 tpl0 dfa ER WriteType(std::vector<U1>& buf, SI& curI, cx ZzVarint& val)

@@ -30,11 +30,11 @@ tpl1 dfa SA StrCmpCi(cx T1* strA, cx T1* strB, SI len)
 tpl1 dfa SI StrEnclose(T1* dst, cx T1* src, cx T1* left, cx T1* right)
 {
     cx SI leftLen = StrLen(left);
-    MemCpyUpdCur(dst, left, leftLen * siz(T1));
+    AsType<UA>(dst) += MemCpy(dst, left, leftLen * siz(T1));
     cx SI srcLen = StrLen(src);
-    MemCpyUpdCur(dst, src, srcLen * siz(T1));
+    AsType<UA>(dst) += MemCpy(dst, src, srcLen * siz(T1));
     cx SI rightLen = StrLen(right);
-    MemCpyUpdCur(dst, right, rightLen * siz(T1));
+    AsType<UA>(dst) += MemCpy(dst, right, rightLen * siz(T1));
     *dst = '\0';
     ret leftLen + srcLen + rightLen;
 }
@@ -253,7 +253,7 @@ tpl1 dfa SI StrFindReplace(T1* dst, cx T1* src, cx T1* strReplace, cx T1* strFin
     {
         if ((*srcP == *strFind) && StrCmp(srcP, strFind, strFindLen) == 0)
         {
-            MemCpyUpdCur(dstP, strReplace, strReplaceLen * siz(T1));
+            AsType<UA>(dstP) += MemCpy(dstP, strReplace, strReplaceLen * siz(T1));
             srcP += strFindLen;
         }
         else
@@ -287,7 +287,7 @@ tpl1 dfa SI StrFindReplaceMulti(T1* dst, cx T1* src, std::span<cx T1*> strReplac
         {
             if ((*srcP == *strFindList[i]) && StrCmp(srcP, strFindList[i], strFindLens[i]) == 0)
             {
-                MemCpyUpdCur(dstP, strReplaceList[i], strReplaceLens[i] * siz(T1));
+                AsType<UA>(dstP) += MemCpy(dstP, strReplaceList[i], strReplaceLens[i] * siz(T1));
                 srcP += strFindLens[i];
                 jsrc(jReplaced);
             }

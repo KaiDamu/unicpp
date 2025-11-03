@@ -56,7 +56,7 @@ tpl1 dfa NT DatIte<T1>::Write(cx T1& dat)
 tpl1 dfa NT DatIte<T1>::Write(cx T1* dat, SI cnt)
 {
     Assert(tx->Pos() + cnt <= m_cap);
-    MemCpyUpdCur(m_cur, dat, cnt * siz(T1));
+    AsType<UA>(m_cur) += MemCpy(m_cur, dat, cnt * siz(T1));
 }
 tpl1 dfa NT DatIte<T1>::CurMove(SI cnt)
 {
@@ -206,7 +206,7 @@ tpl1 dfa NT Arr<T1>::Write(cx T1& dat)
 tpl1 dfa NT Arr<T1>::Write(cx T1* dat, SI cnt)
 {
     Assert(tx->Pos() + cnt <= m_cap);
-    MemCpyUpdCur(m_cur, dat, cnt * siz(T1));
+    AsType<UA>(m_cur) += MemCpy(m_cur, dat, cnt * siz(T1));
 }
 tpl1 dfa NT Arr<T1>::CurMove(SI cnt)
 {

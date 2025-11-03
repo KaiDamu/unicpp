@@ -28,14 +28,14 @@ dfa NT MemDel(GA ptr);
 dfa GA MemNew(SI size);
 
 dfa NT MemSet(GA dst, U1 val, SI size);
-dfa NT MemCpy(GA dst, CXGA src, SI size);
+dfa SI MemCpy(GA dst, CXGA src, SI size);
 dfa NT MemMove(GA dst, CXGA src, SI size);
 dfa SA MemCmp(CXGA ptr1, CXGA ptr2, SI size);
 
 dfa GA MemResize(GA ptr, SI sizeAlloc, SI sizeCpy);
 
 dfa NT MemSet0Force(GA dst, SI size);
-dfa NT MemCpyNocall(GA dst, CXGA src, SI size);
+dfa SI MemCpyNocall(GA dst, CXGA src, SI size);
 
 #ifdef PROG_SYS_WIN
 
@@ -89,8 +89,6 @@ tpl1 dfa T1* MemNewNoInit(SI cnt);
 
 tpl1 dfa NT MemCpyValBe(T1& dst, CXGA src);
 tpl1 dfa NT MemCpyValBe(GA dst, T1 src);
-tpl1 dfa NT MemCpyUpdCur(T1*& dstCur, CXGA src, SI size);
-tpl1 dfa NT MemCpyUpdCurSrc(GA dst, cx T1*& srcCur, SI size);
 
 #include "process.hpp"
 

@@ -186,8 +186,8 @@ dfa ER CliBase::_MsgReadBase(std::unique_ptr<MsgDatAny>& msgDat, cx SockTcp& soc
     MsgType msgType;
     MsgNumT msgNum;
     AU bufCur = (cx U1*)m_tmpBufRead.data();
-    MemCpyUpdCurSrc(&msgType, bufCur, siz(msgType));
-    MemCpyUpdCurSrc(&msgNum, bufCur, siz(msgNum));
+    bufCur += MemCpy(&msgType, bufCur, siz(msgType));
+    bufCur += MemCpy(&msgNum, bufCur, siz(msgNum));
 
     BO doIncMsgNumToRead = YES;
     if (msgNum != m_msgNumToRead)
