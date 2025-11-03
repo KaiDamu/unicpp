@@ -5,6 +5,11 @@
     #include "process.hpp"
     #include "screen.hpp"
 
+dfa Win::Cache::Cache()
+{
+    innerSize = Size2<SI>(-1, -1);
+}
+
 dfa HD Win::Hdl() cx
 {
     ret HD(m_hdl);
@@ -147,8 +152,13 @@ dfa ER Win::OuterRectSet(cx Rect2<SI>& rect)
     }
     rets;
 }
-dfa ER Win::InnerSizeGet(Size2<SI>& size)
+dfa ER Win::InnerSizeGet(Size2<SI>& size, BO getCache)
 {
+    if (getCache)
+    {
+        size = m_cache.innerSize;
+        rets;
+    }
     ife (ProcDpiAwareSet())
         retep;
     RECT rect_;
@@ -156,7 +166,12 @@ dfa ER Win::InnerSizeGet(Size2<SI>& size)
         rete(ErrVal::WIN);
     size.w = SI(rect_.right) - SI(rect_.left);
     size.h = SI(rect_.bottom) - SI(rect_.top);
+    m_cache.innerSize = size;
     rets;
+}
+dfa NT Win::InnerSizeCache(cx Size2<SI>& size)
+{
+    m_cache.innerSize = size;
 }
 dfa ER Win::InnerRectGet(Rect2<SI>& rect)
 {
@@ -253,6 +268,7 @@ dfa ER Win::New(cx Size2<SI>& innerSize, cx CH* titleStr, BO doShow, BO canResiz
     IntToStr(classStrTmp, ~UA(m_ownDat) ^ UA(0xA5A5));
     m_ownDat->classStr = classStrTmp;
     m_ownDat->displaySys = displaySys;
+    m_ownDat->innerViSize = Size2<F4>(F4(innerSize.w), F4(innerSize.h));
 
     WNDCLASSEXW info = {};
     info.cbSize = siz(info);

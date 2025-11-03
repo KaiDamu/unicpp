@@ -31,6 +31,9 @@ tpl1 struct Rect2
     dfa Rect2();
     dfa Rect2(cx Pos2<T1>& pos, cx Size2<T1>& size);
     dfa Rect2(T1 x, T1 y, T1 w, T1 h);
+
+    dfa BO operator==(cx Rect2<T1>& other) cx;
+    dfa BO operator!=(cx Rect2<T1>& other) cx;
 };
 
 tpl1 struct Triangle2

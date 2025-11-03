@@ -83,6 +83,29 @@ struct ColRgba
     dfa ColRgba& operator*=(F4 scalar);
     dfa ColRgba& operator/=(F4 scalar);
 };
+struct ColRgbaN
+{
+    F4 r; // range: 0.0 - 1.0
+    F4 g; // range: 0.0 - 1.0
+    F4 b; // range: 0.0 - 1.0
+    F4 a; // range: 0.0 - 1.0
+
+    dfa ColRgbaN();
+    dfa ColRgbaN(F4 r, F4 g, F4 b, F4 a);
+    dfa ~ColRgbaN() = default;
+
+    dfa BO operator==(cx ColRgbaN& other) cx;
+    dfa BO operator!=(cx ColRgbaN& other) cx;
+    dfa ColRgbaN operator+(cx ColRgbaN& other) cx;
+    dfa ColRgbaN operator-(cx ColRgbaN& other) cx;
+    dfa ColRgbaN operator*(F4 scalar) cx;
+    dfa ColRgbaN operator/(F4 scalar) cx;
+    dfa ColRgbaN operator-() cx;
+    dfa ColRgbaN& operator+=(cx ColRgbaN& other);
+    dfa ColRgbaN& operator-=(cx ColRgbaN& other);
+    dfa ColRgbaN& operator*=(F4 scalar);
+    dfa ColRgbaN& operator/=(F4 scalar);
+};
 struct ColV
 {
     U1 v; // range: 0 - 255
@@ -202,6 +225,10 @@ tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgba& src);
 tpl0 dfa NT ToType(ColVN& dst, cx ColRgb& src);
 tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgb& src);
 tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgba& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgba& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgbN& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgb& src);
 
 /// [convert color grid]
 tpl2 dfa NT ColGridToType(ColGrid<T1>& dst, cx ColGrid<T2>& src);

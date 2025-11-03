@@ -198,6 +198,73 @@ dfa ColRgba& ColRgba::operator/=(F4 scalar)
     ret *tx;
 }
 
+dfa ColRgbaN::ColRgbaN() : r(), g(), b(), a()
+{
+}
+dfa ColRgbaN::ColRgbaN(F4 r, F4 g, F4 b, F4 a) : r(r), g(g), b(b), a(a)
+{
+}
+dfa BO ColRgbaN::operator==(cx ColRgbaN& other) cx
+{
+    ret r == other.r && g == other.g && b == other.b && a == other.a;
+}
+dfa BO ColRgbaN::operator!=(cx ColRgbaN& other) cx
+{
+    ret r != other.r || g != other.g || b != other.b || a != other.a;
+}
+dfa ColRgbaN ColRgbaN::operator+(cx ColRgbaN& other) cx
+{
+    ret ColRgbaN(r + other.r, g + other.g, b + other.b, a + other.a);
+}
+dfa ColRgbaN ColRgbaN::operator-(cx ColRgbaN& other) cx
+{
+    ret ColRgbaN(r - other.r, g - other.g, b - other.b, a - other.a);
+}
+dfa ColRgbaN ColRgbaN::operator*(F4 scalar) cx
+{
+    ret ColRgbaN(r * scalar, g * scalar, b * scalar, a * scalar);
+}
+dfa ColRgbaN ColRgbaN::operator/(F4 scalar) cx
+{
+    ret ColRgbaN(r / scalar, g / scalar, b / scalar, a / scalar);
+}
+dfa ColRgbaN ColRgbaN::operator-() cx
+{
+    ret ColRgbaN(-r, -g, -b, -a);
+}
+dfa ColRgbaN& ColRgbaN::operator+=(cx ColRgbaN& other)
+{
+    r += other.r;
+    g += other.g;
+    b += other.b;
+    a += other.a;
+    ret *tx;
+}
+dfa ColRgbaN& ColRgbaN::operator-=(cx ColRgbaN& other)
+{
+    r -= other.r;
+    g -= other.g;
+    b -= other.b;
+    a -= other.a;
+    ret *tx;
+}
+dfa ColRgbaN& ColRgbaN::operator*=(F4 scalar)
+{
+    r *= scalar;
+    g *= scalar;
+    b *= scalar;
+    a *= scalar;
+    ret *tx;
+}
+dfa ColRgbaN& ColRgbaN::operator/=(F4 scalar)
+{
+    r /= scalar;
+    g /= scalar;
+    b /= scalar;
+    a /= scalar;
+    ret *tx;
+}
+
 dfa ColV::ColV() : v()
 {
 }
@@ -852,4 +919,29 @@ tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgba& src)
     ColRgbN tmp;
     ToType(tmp, src);
     ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgbaN& src)
+{
+    dst = src;
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgba& src)
+{
+    dst.r = F4(src.r) / 255.0f;
+    dst.g = F4(src.g) / 255.0f;
+    dst.b = F4(src.b) / 255.0f;
+    dst.a = F4(src.a) / 255.0f;
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgbN& src)
+{
+    dst.r = src.r;
+    dst.g = src.g;
+    dst.b = src.b;
+    dst.a = 1.0f;
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgb& src)
+{
+    dst.r = F4(src.r) / 255.0f;
+    dst.g = F4(src.g) / 255.0f;
+    dst.b = F4(src.b) / 255.0f;
+    dst.a = 1.0f;
 }

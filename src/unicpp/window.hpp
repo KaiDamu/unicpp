@@ -71,12 +71,21 @@ class Win
         std::wstring classStr;
         DisplaySys displaySys;
         gl::Ctx glCtx;
+        Size2<F4> innerViSize;
+    };
+
+    struct Cache
+    {
+        Size2<SI> innerSize;
+
+        dfa Cache();
     };
 
   private:
     HWND m_hdl;
     OwnDat* m_ownDat;
     BO m_isDelReq;
+    Cache m_cache;
 
   public:
     dfa HD Hdl() cx;
@@ -89,7 +98,8 @@ class Win
     dfa std::wstring ClassStrGet();
     dfa ER OuterRectGet(Rect2<SI>& rect);
     dfa ER OuterRectSet(cx Rect2<SI>& rect);
-    dfa ER InnerSizeGet(Size2<SI>& size);
+    dfa ER InnerSizeGet(Size2<SI>& size, BO getCache = NO);
+    dfa NT InnerSizeCache(cx Size2<SI>& size);
     dfa ER InnerRectGet(Rect2<SI>& rect);
     dfa ER InnerRectSet(cx Rect2<SI>& rect);
     dfa ER InnerUpd() cx;

@@ -43,6 +43,15 @@ tpl1 dfa Rect2<T1>::Rect2(T1 x, T1 y, T1 w, T1 h) : pos(x, y), size(w, h)
 {
 }
 
+tpl1 dfa BO Rect2<T1>::operator==(cx Rect2<T1>& other) cx
+{
+    ret pos == other.pos && size == other.size;
+}
+tpl1 dfa BO Rect2<T1>::operator!=(cx Rect2<T1>& other) cx
+{
+    ret pos != other.pos || size != other.size;
+}
+
 tpl1 dfa Triangle2<T1>::Triangle2()
 {
 }
