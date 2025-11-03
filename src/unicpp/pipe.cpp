@@ -8,8 +8,7 @@ dfa ER PipeIn::_Connect(cx CH* pipeName)
 {
     CH path[PATH_LEN_MAX] = L"\\\\.\\pipe\\";
     StrAdd(path, pipeName);
-    ife (m_hdl._OpenWin(path, GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING, 0))
-        retep;
+    ifep(m_hdl._OpenWin(path, GENERIC_READ | GENERIC_WRITE, 0, OPEN_EXISTING, 0));
     DWORD mode = PIPE_READMODE_MESSAGE;
     ifu (SetNamedPipeHandleState(m_hdl.Hdl(), &mode, NUL, NUL) == 0)
         rete(ErrVal::PIPE);

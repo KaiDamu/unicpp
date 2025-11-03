@@ -194,8 +194,7 @@ dfa ER File::Read(GA buf, SI size, SI& result) cx
 dfa ER File::Read(GA buf, SI size) cx
 {
     SI result;
-    ife (tx->Read(buf, size, result))
-        retep;
+    ifep(tx->Read(buf, size, result));
     ifu (size != result)
         rete(ErrVal::NO_FULL);
     rets;
@@ -388,8 +387,7 @@ dfa ER MemFile::Close(BO doSave, cx CH* pathOverride)
     if (doSave)
     {
         cx CH* path = ((pathOverride == NUL) ? m_path.c_str() : pathOverride);
-        ife (BufToFile(path, m_buf.data(), SI(m_end - m_buf.data())))
-            retep;
+        ifep(BufToFile(path, m_buf.data(), SI(m_end - m_buf.data())));
     }
     m_path = L"";
     m_buf.clear();
@@ -516,8 +514,7 @@ dfa ER FileCpy(cx CH* dst, cx CH* src, BO isReplace)
             CH dirPath[PATH_LENX_MAX];
             PathToAbspath(dirPath, dst);
             PathDirUp(dirPath);
-            ife (DirNew(dirPath))
-                retep;
+            ifep(DirNew(dirPath));
             jsrc(retry);
         }
         else
@@ -548,8 +545,7 @@ dfa ER FileMove(cx CH* dst, cx CH* src, BO isReplace)
             CH dirPath[PATH_LENX_MAX];
             PathToAbspath(dirPath, dst);
             PathDirUp(dirPath);
-            ife (DirNew(dirPath))
-                retep;
+            ifep(DirNew(dirPath));
             jsrc(retry);
         }
         else

@@ -229,36 +229,27 @@ tpl1 dfa ER QoiDecode(std::vector<T1>& out, Size2<SI>& outSize, cx U1* in, SI in
 tpl1 dfa ER ColGridToFileQoi(cx ColGrid<T1>& colGrid, cx CH* path)
 {
     File file;
-    ife (file.OpenWrite(path))
-        retep;
+    ifep(file.OpenWrite(path));
     std::vector<U1> out;
     cx T1* in = &colGrid.pixels[0];
     Size2<SI> inSize = colGrid.size;
-    ife (QoiEncode(out, in, inSize))
-        retep;
-    ife (file.Write(out.data(), out.size()))
-        retep;
-    ife (file.Close())
-        retep;
+    ifep(QoiEncode(out, in, inSize));
+    ifep(file.Write(out.data(), out.size()));
+    ifep(file.Close());
     rets;
 }
 tpl1 dfa ER FileToColGridQoi(ColGrid<T1>& colGrid, cx CH* path)
 {
     File file;
-    ife (file.OpenRead(path))
-        retep;
+    ifep(file.OpenRead(path));
     std::vector<T1>& out = colGrid.pixels;
     Size2<SI>& outSize = colGrid.size;
     SI inSize;
-    ife (file.SizeGet(inSize))
-        retep;
+    ifep(file.SizeGet(inSize));
     std::vector<U1> in;
     in.resize(inSize);
-    ife (file.Read(in.data(), inSize))
-        retep;
-    ife (QoiDecode(out, outSize, in.data(), inSize))
-        retep;
-    ife (file.Close())
-        retep;
+    ifep(file.Read(in.data(), inSize));
+    ifep(QoiDecode(out, outSize, in.data(), inSize));
+    ifep(file.Close());
     rets;
 }

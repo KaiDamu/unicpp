@@ -89,8 +89,7 @@ dfa ER ProcSecTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc)
 {
     out.clear();
     SecToken token;
-    ife (token.OpenByProc(proc, TOKEN_QUERY, 0))
-        retep;
+    ifep(token.OpenByProc(proc, TOKEN_QUERY, 0));
     cxex SI bufPrivisSize = siz(TOKEN_PRIVILEGES_) + 128 * siz(LUID_AND_ATTRIBUTES_); // max count assumed, as of Win11 the max is under 40
     U1 bufPrivis[bufPrivisSize];
     U4 tmp;
@@ -113,8 +112,7 @@ dfa ER ProcSecTokenPriviEnable(SecTokenPriviId priviId)
 dfa ER ProcSecTokenPriviEnableAll()
 {
     std::vector<LUID_AND_ATTRIBUTES_> privis;
-    ife (ProcSecTokenPriviListGet(privis, ProcCurHdl()))
-        retep;
+    ifep(ProcSecTokenPriviListGet(privis, ProcCurHdl()));
     BO isErr = NO;
     for (cx AU& privi : privis)
     {
@@ -133,8 +131,7 @@ dfa ER ProcSecTokenPriviIsEnabled(BO& isTrue, HD proc, SecTokenPriviId priviId)
 {
     isTrue = NO;
     std::vector<LUID_AND_ATTRIBUTES_> privis;
-    ife (ProcSecTokenPriviListGet(privis, proc))
-        retep;
+    ifep(ProcSecTokenPriviListGet(privis, proc));
     for (cx AU& privi : privis)
         if (privi.Luid.LowPart == U4(priviId))
         {
@@ -147,8 +144,7 @@ dfa ER ProcSecTokenPriviIsExist(BO& isTrue, HD proc, SecTokenPriviId priviId)
 {
     isTrue = NO;
     std::vector<LUID_AND_ATTRIBUTES_> privis;
-    ife (ProcSecTokenPriviListGet(privis, proc))
-        retep;
+    ifep(ProcSecTokenPriviListGet(privis, proc));
     for (cx AU& privi : privis)
         if (privi.Luid.LowPart == U4(priviId))
         {

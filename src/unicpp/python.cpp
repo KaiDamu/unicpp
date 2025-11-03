@@ -14,8 +14,7 @@ dfa ER PythonExePathGet(CH* path)
 dfa ER PythonStart(cx CH* file, cx CH* args, BO wait)
 {
     CH path[PATH_LEN_MAX];
-    ife (PythonExePathGet(path))
-        retep;
+    ifep(PythonExePathGet(path));
     std::wstring _args = L"\"";
     _args += file;
     _args += L"\"";
@@ -25,12 +24,10 @@ dfa ER PythonStart(cx CH* file, cx CH* args, BO wait)
         _args += args;
     }
     Proc proc;
-    ife (proc.Start(path, _args.c_str(), NUL))
-        retep;
+    ifep(proc.Start(path, _args.c_str(), NUL));
     if (wait)
     {
-        ife (proc.Wait())
-            retep;
+        ifep(proc.Wait());
     }
     else
     {

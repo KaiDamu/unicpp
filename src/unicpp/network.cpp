@@ -122,10 +122,8 @@ dfa ER SockTcp::Del()
 }
 dfa ER SockTcp::Reset()
 {
-    ife (tx->Del())
-        retep;
-    ife (tx->New())
-        retep;
+    ifep(tx->Del());
+    ifep(tx->New());
     rets;
 }
 dfa ER SockTcp::Connect(cx NetAdrV4& adr)

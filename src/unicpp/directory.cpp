@@ -13,8 +13,7 @@ dfa ER _DirFileEnum(cx CH* path, SI depth, DirFileEnumCallbFnT callb, GA param1,
         rets;
     --depth;
     File dir;
-    ife (dir._OpenNt(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, FILE_SHARE_READ, FILE_OPEN, 0, 0, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT, hdlRoot))
-        retep;
+    ifep(dir._OpenNt(path, FILE_LIST_DIRECTORY | SYNCHRONIZE, FILE_SHARE_READ, FILE_OPEN, 0, 0, FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT, hdlRoot));
     IO_STATUS_BLOCK_ isb;
     ArrDFast<U1> buf(4 * BYTE_IN_KB - 64);
     cxex SI END_SIZE = siz(CH); // reserve space for null-terminator
@@ -56,8 +55,7 @@ dfa ER _DirFileEnum(cx CH* path, SI depth, DirFileEnumCallbFnT callb, GA param1,
             {
                 cx AU chSave = info.FileName[fileNameLen]; // safe since we reserved END_SIZE
                 info.FileName[fileNameLen] = '\0';
-                ife (_DirFileEnum(info.FileName, depth, callb, param1, param2, inPostOrder, dir.Hdl(), pathFull, pathFullEnd, pathRelOfs))
-                    retep;
+                ifep(_DirFileEnum(info.FileName, depth, callb, param1, param2, inPostOrder, dir.Hdl(), pathFull, pathFullEnd, pathRelOfs));
                 info.FileName[fileNameLen] = chSave;
             }
             if (inPostOrder)
@@ -98,8 +96,7 @@ dfa ER DirFileList(std::vector<FileInfoCommon>& fileInfoList, cx CH* path, SI de
         unused(param2);
         ret YES;
     };
-    ife (DirFileEnum(path, depth, callb, &fileInfoList, NUL, NO))
-        retep;
+    ifep(DirFileEnum(path, depth, callb, &fileInfoList, NUL, NO));
     rets;
 }
 
@@ -126,8 +123,7 @@ dfa ER DirNew(cx CH* path)
         ifu (pathSep == NUL)
             rete(ErrVal::DIR);
         *pathSep = '\0';
-        ife (DirNew(path_))
-            retep;
+        ifep(DirNew(path_));
         ifu (CreateDirectoryW(path, NUL) == 0)
             rete(ErrVal::DIR);
     }
@@ -137,8 +133,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace)
 {
     CH dst_[PATH_LENX_MAX];
     PathToAbspath(dst_, dst);
-    ife (DirNew(dst_))
-        retep;
+    ifep(DirNew(dst_));
     struct Param
     {
         CH* dst;
@@ -170,8 +165,7 @@ dfa ER DirCpy(cx CH* dst, cx CH* src, BO isReplace)
         }
         ret YES;
     };
-    ife (DirFileEnum(src, -1, callb, (GA)&param, NUL, NO))
-        retep;
+    ifep(DirFileEnum(src, -1, callb, (GA)&param, NUL, NO));
     ifu (param.err != ErrVal::NONE)
         rete(param.err);
     rets;
@@ -205,10 +199,8 @@ dfa ER DirDel(cx CH* path)
         }
         ret YES;
     };
-    ife (DirFileEnum(path_, -1, callb, (GA)&param, NUL, YES))
-        retep;
-    ife (_DirDel(path_))
-        retep;
+    ifep(DirFileEnum(path_, -1, callb, (GA)&param, NUL, YES));
+    ifep(_DirDel(path_));
     ifu (param.err != ErrVal::NONE)
         rete(param.err);
     rets;
@@ -217,10 +209,8 @@ dfa ER DirMove(cx CH* dst, cx CH* src, BO isReplace)
 {
     ife (FileMove(dst, src, isReplace))
     {
-        ife (DirCpy(dst, src, isReplace))
-            retep;
-        ife (DirDel(src))
-            retep;
+        ifep(DirCpy(dst, src, isReplace));
+        ifep(DirDel(src));
     }
     rets;
 }

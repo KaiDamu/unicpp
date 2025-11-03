@@ -108,8 +108,7 @@ dfa std::wstring Win::ClassStrGet()
 }
 dfa ER Win::OuterRectGet(Rect2<SI>& rect)
 {
-    ife (ProcDpiAwareSet())
-        retep;
+    ifep(ProcDpiAwareSet());
     RECT rect_;
     ifu (GetWindowRect(m_hdl, &rect_) == 0)
         rete(ErrVal::WIN);
@@ -121,8 +120,7 @@ dfa ER Win::OuterRectGet(Rect2<SI>& rect)
 }
 dfa ER Win::OuterRectSet(cx Rect2<SI>& rect)
 {
-    ife (ProcDpiAwareSet())
-        retep;
+    ifep(ProcDpiAwareSet());
     cx AU doSetPos = (rect.pos.x != -1) && (rect.pos.y != -1);
     cx AU doSetSize = (rect.size.w != -1) && (rect.size.h != -1);
     if (doSetPos)
@@ -159,8 +157,7 @@ dfa ER Win::InnerSizeGet(Size2<SI>& size, BO getCache)
         size = m_cache.innerSize;
         rets;
     }
-    ife (ProcDpiAwareSet())
-        retep;
+    ifep(ProcDpiAwareSet());
     RECT rect_;
     ifu (GetClientRect(m_hdl, &rect_) == 0)
         rete(ErrVal::WIN);
@@ -175,8 +172,7 @@ dfa NT Win::InnerSizeCache(cx Size2<SI>& size)
 }
 dfa ER Win::InnerRectGet(Rect2<SI>& rect)
 {
-    ife (tx->InnerSizeGet(rect.size))
-        retep;
+    ifep(tx->InnerSizeGet(rect.size));
 
     // if (IsNearZero(FractionPart(ScnDpiMulGet())))
     if (YES)
@@ -192,8 +188,7 @@ dfa ER Win::InnerRectGet(Rect2<SI>& rect)
         // we have to do it manually to avoid rounding errors
 
         Rect2<SI> rectOuter;
-        ife (tx->OuterRectGet(rectOuter))
-            retep;
+        ifep(tx->OuterRectGet(rectOuter));
 
         RECT rectOfs = {0, 0, LONG(rect.size.w), LONG(rect.size.h)};
         ifu (AdjustWindowRectEx(&rectOfs, GetWindowLongW(m_hdl, GWL_STYLE), FALSE, GetWindowLongW(m_hdl, GWL_EXSTYLE)) == 0)

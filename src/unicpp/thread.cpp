@@ -214,8 +214,7 @@ dfa ER Thd::Del(S4 exitCode) cx
     cx AU status = NtTerminateThread_(m_hdl, NTSTATUS(exitCode));
     ifu (status != STATUS_SUCCESS)
         rete(ErrVal::THD);
-    ife (tx->Wait())
-        retep;
+    ifep(tx->Wait());
     rets;
 }
 dfa Thd::Thd() : m_hdl(NUL), m_isOwned(NO), m_tid(HD(0))
@@ -256,14 +255,11 @@ dfa ER ThdTaskMgr::WaitAll()
 }
 dfa ER ThdTaskMgr::Free()
 {
-    ife (tx->WaitAll())
-        retep;
+    ifep(tx->WaitAll());
     ite (i, i < SI(m_thdList.size()))
     {
-        ife (m_thdList[i].Del())
-            retep;
-        ife (m_thdList[i].Close())
-            retep;
+        ifep(m_thdList[i].Del());
+        ifep(m_thdList[i].Close());
     }
     m_thdList.clear();
     rets;
@@ -273,8 +269,7 @@ dfa ER ThdTaskMgr::Init(SI cnt)
     m_thdList.resize(cnt);
     ite (i, i < cnt)
     {
-        ife (m_thdList[i].New(ThdTaskMgrThdFn, tx))
-            retep;
+        ifep(m_thdList[i].New(ThdTaskMgrThdFn, tx));
     }
     rets;
 }

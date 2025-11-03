@@ -56,8 +56,7 @@ dfa ER Vfs::FileEntryListGet(std::list<FileEntry>& fileEntryList, cx CH* path) c
         ret YES;
         unused(param2);
     };
-    ife (DirFileEnum(path, -1, callb, &fileEntryList, NUL, NO))
-        retep;
+    ifep(DirFileEnum(path, -1, callb, &fileEntryList, NUL, NO));
     rets;
 }
 dfa ER Vfs::WriteHdr(MemFile& fileDst, cx VfsNewInfo& info, std::list<FileEntry>& fileEntryList) cx
@@ -104,13 +103,11 @@ dfa ER Vfs::WriteEntryDat(MemFile& fileDst, Arr<SI>& datOfsList, cx FileEntry& f
     fileDst.Write(&datOfsNow_, siz(U8));
     fileDst.CurSet(datOfsNow);
     MemFile fileSrc;
-    ife (fileSrc.Open(fileEntry.path.c_str(), YES))
-        retep;
+    ifep(fileSrc.Open(fileEntry.path.c_str(), YES));
     if (info.encrypt == VfsEncrypt::OBFUSCATE)
         MemObfuscate(fileSrc.Dat(), fileEntry.info.sizeDat);
     fileDst.Write(fileSrc.Dat(), fileEntry.info.sizeDat);
-    ife (fileSrc.Close())
-        retep;
+    ifep(fileSrc.Close());
     rets;
 }
 dfa ER Vfs::ReadHdr(MemFile& fileSrc, VfsHdr& hdr)
@@ -169,57 +166,43 @@ dfa NT Vfs::Init()
 }
 dfa ER Vfs::New(cx CH* dst, cx CH* src, cx VfsNewInfo& info)
 {
-    ife (tx->ChkInfo(info))
-        retep;
+    ifep(tx->ChkInfo(info));
     std::list<FileEntry> fileEntryList;
-    ife (tx->FileEntryListGet(fileEntryList, src))
-        retep;
+    ifep(tx->FileEntryListGet(fileEntryList, src));
     MemFile fileDst;
-    ife (fileDst.Open(dst, NO))
-        retep;
-    ife (tx->WriteHdr(fileDst, info, fileEntryList))
-        retep;
+    ifep(fileDst.Open(dst, NO));
+    ifep(tx->WriteHdr(fileDst, info, fileEntryList));
     Arr<SI> datOfsList(fileEntryList.size());
     for (cx AU& fileEntry : fileEntryList)
     {
-        ife (tx->WriteEntry(fileDst, datOfsList, fileEntry, tx->PathOfs(src)))
-            retep;
+        ifep(tx->WriteEntry(fileDst, datOfsList, fileEntry, tx->PathOfs(src)));
     }
     datOfsList.CurClr();
     for (cx AU& fileEntry : fileEntryList)
     {
-        ife (tx->WriteEntryDat(fileDst, datOfsList, fileEntry, info))
-            retep;
+        ifep(tx->WriteEntryDat(fileDst, datOfsList, fileEntry, info));
     }
-    ife (fileDst.Close(YES))
-        retep;
+    ifep(fileDst.Close(YES));
     rets;
 }
 dfa ER Vfs::Close()
 {
-    ife (m_file.Close())
-        retep;
+    ifep(m_file.Close());
     MemSet(&m_hdr, 0, siz(m_hdr));
     m_entryList.Clr();
     rets;
 }
 dfa ER Vfs::Open(cx CH* path)
 {
-    ife (tx->Close())
-        retep;
-    ife (m_file.Open(path))
-        retep;
-    ife (tx->ReadHdr(m_file, m_hdr))
-        retep;
-    ife (tx->ChkHdr(m_hdr))
-        retep;
+    ifep(tx->Close());
+    ifep(m_file.Open(path));
+    ifep(tx->ReadHdr(m_file, m_hdr));
+    ifep(tx->ChkHdr(m_hdr));
     ite (i, i < m_hdr.entryCnt)
     {
         VfsEntry entry = {};
-        ife (tx->ReadEntry(m_file, entry))
-            retep;
-        ife (tx->ChkEntry(entry))
-            retep;
+        ifep(tx->ReadEntry(m_file, entry));
+        ifep(tx->ChkEntry(entry));
         m_entryList.Add(entry.path, entry);
     }
     rets;

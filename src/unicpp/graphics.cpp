@@ -210,8 +210,7 @@ dfa S4 _ScnDrawThd(GA code)
 dfa ER ScnDrawInit()
 {
     volatile AU code = SCN_DRAW_THD_CODE_WAIT;
-    ife (g_scnDrawThd.New(_ScnDrawThd, const_cast<U1*>(&code)))
-        retep;
+    ifep(g_scnDrawThd.New(_ScnDrawThd, const_cast<U1*>(&code)));
     while (code == SCN_DRAW_THD_CODE_WAIT)
         NtYieldExecution_();
     ifu (code == SCN_DRAW_THD_CODE_ERR_YES)
@@ -222,10 +221,8 @@ dfa ER ScnDrawFree()
 {
     ifu (PostThreadMessageW(DWORD(UA(g_scnDrawThd.Id())), WM_QUIT, 0, 0) == 0)
         rete(ErrVal::THD);
-    ife (g_scnDrawThd.Wait())
-        retep;
-    ife (g_scnDrawThd.Close())
-        retep;
+    ifep(g_scnDrawThd.Wait());
+    ifep(g_scnDrawThd.Close());
     rets;
 }
 

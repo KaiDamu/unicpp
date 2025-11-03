@@ -299,27 +299,23 @@ dfa NT Md5::GetCsstr(CS* str, cx U1* buf, SI bufSize)
 dfa ER Md5::GetFile(Val& val, cx CH* path)
 {
     File f;
-    ife (f.OpenRead(path))
-        retep;
+    ifep(f.OpenRead(path));
     Md5::Gen md5;
     Arr<U1> buf(FILE_READ_SIZE_HIGH);
     SI readSize = 0;
     do
     {
-        ife (f.Read(buf, buf.Cap(), readSize))
-            retep;
+        ifep(f.Read(buf, buf.Cap(), readSize));
         md5.Upd(buf, readSize);
     } while (readSize == buf.Cap());
-    ife (f.Close())
-        retep;
+    ifep(f.Close());
     val = md5.Get();
     rets;
 }
 dfa ER Md5::GetCsstrFile(CS* str, cx CH* path)
 {
     Val val;
-    ife (Md5::GetFile(val, path))
-        retep;
+    ifep(Md5::GetFile(val, path));
     val.GetCsstr(str);
     rets;
 }

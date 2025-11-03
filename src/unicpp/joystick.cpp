@@ -114,8 +114,7 @@ dfa BO GampKeyIsDownTake(InputKey key, BO isDownReq)
 
 dfa ER GampStickStateGet(GampStickState& left, GampStickState& right)
 {
-    ife (_GampStateUpd())
-        retep;
+    ifep(_GampStateUpd());
     left.posRaw.x = F4(g_gampStickPosRaw[0].x) / F4(0x7FFF + (g_gampStickPosRaw[0].x < 0));
     left.posRaw.y = F4(g_gampStickPosRaw[0].y) / F4(0x7FFF + (g_gampStickPosRaw[0].y < 0));
     right.posRaw.x = F4(g_gampStickPosRaw[1].x) / F4(0x7FFF + (g_gampStickPosRaw[1].x < 0));

@@ -81,8 +81,7 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
     CodeGenResult* resultCur = NUL;
     CodeGenCtx ctx;
     MemFile file;
-    ife (file.Open(path, YES))
-        retep;
+    ifep(file.Open(path, YES));
     std::string line;
     while (file.ReadLine(line) > 0)
     {
@@ -90,8 +89,7 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
         {
             cx AU cmd = line.c_str() + _CODE_GEN_PREFIX_LEN;
             StrArgList<CS> argList;
-            ife (argList.Set(cmd))
-                retep;
+            ifep(argList.Set(cmd));
             ifu (argList.Cnt() < 1)
                 rete(ErrVal::NO_VALID);
             cx AU argVal0Hash = CodeGenHash(HashFnv1a64Str(argList.Val(0)));
@@ -109,8 +107,7 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
                 switch (opeId)
                 {
                 case CodeGenOpeId::UniNtFn:
-                    ife (_CodeGenBegin1(*resultCur, ctx))
-                        retep;
+                    ifep(_CodeGenBegin1(*resultCur, ctx));
                     break;
                 default:
                     break;
@@ -127,8 +124,7 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
                 switch (opeId)
                 {
                 case CodeGenOpeId::UniNtFn:
-                    ife (_CodeGenEnd1(*resultCur, ctx))
-                        retep;
+                    ifep(_CodeGenEnd1(*resultCur, ctx));
                     break;
                 default:
                     break;
@@ -142,8 +138,7 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
                 switch (ctx.opeId)
                 {
                 case CodeGenOpeId::UniNtFn:
-                    ife (_CodeGenCmd1(*resultCur, ctx, argList, argVal0Hash))
-                        retep;
+                    ifep(_CodeGenCmd1(*resultCur, ctx, argList, argVal0Hash));
                     break;
                 default:
                     break;
@@ -157,15 +152,13 @@ dfa ER CodeGenByFile(std::vector<CodeGenResult>& results, cx CH* path)
             switch (ctx.opeId)
             {
             case CodeGenOpeId::UniNtFn:
-                ife (_CodeGenLine1(*resultCur, ctx, line))
-                    retep;
+                ifep(_CodeGenLine1(*resultCur, ctx, line));
                 break;
             default:
                 rete(ErrVal::NO_VALID);
             }
         }
     }
-    ife (file.Close(NO))
-        retep;
+    ifep(file.Close(NO));
     rets;
 }

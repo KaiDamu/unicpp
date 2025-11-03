@@ -11,15 +11,13 @@ dfa ER MainInit(MainInitCtx& ctx)
     g_argValStd = ctx.argv;
 #endif
 #ifdef PROG_SYS_WIN
-    ife (UniNtLoad())
-        retep;
+    ifep(UniNtLoad());
 #endif
 #ifdef PROG_SYS_WIN
     ProcPrioSet(PROCESS_PRIORITY_CLASS_HIGH, YES); // hint for performance, error not handled
     TimeResSet(0.1, NO);                           // hint for performance, error not handled
 #endif
-    ife (_TimeMainInit())
-        retep;
+    ifep(_TimeMainInit());
     rets;
 }
 dfa ER MainFree()
@@ -34,12 +32,9 @@ dfa ER MainFree()
 
 dfa ER _Main(MainInitCtx& ctx)
 {
-    ife (MainInit(ctx))
-        retep;
-    ife (Main())
-        retep;
-    ife (MainFree())
-        retep;
+    ifep(MainInit(ctx));
+    ifep(Main());
+    ifep(MainFree());
     rets;
 }
 

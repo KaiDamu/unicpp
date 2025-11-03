@@ -37,8 +37,7 @@ dfa ER _EvtWin::Free()
 }
 dfa ER _EvtWin::Init()
 {
-    ife (tx->Free())
-        retep;
+    ifep(tx->Free());
     m_hdl = CreateEventW(NUL, YES, NO, NUL);
     ifu (m_hdl == NUL)
         rete(ErrVal::EVT);
@@ -67,8 +66,7 @@ dfa ER _EvtWin::Wait(BO stateAfter)
     ifu (WaitForSingleObject(m_hdl, INFINITE) != WAIT_OBJECT_0)
         rete(ErrVal::EVT);
     if (stateAfter == NO)
-        ife (tx->Set(stateAfter))
-            retep;
+        ifep(tx->Set(stateAfter));
     rets;
 }
 dfa _EvtWin::_EvtWin()

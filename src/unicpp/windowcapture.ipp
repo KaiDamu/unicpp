@@ -44,12 +44,10 @@ tpl1 dfa ER WinCapture::_ColGridGetGdi(ColGrid<T1>& colGrid, Mode captureMode)
     switch (captureMode)
     {
     case Mode::GDI_WIN:
-        ife (m_win->InnerRectGet(rectInner))
-            retep;
+        ifep(m_win->InnerRectGet(rectInner));
         break;
     case Mode::GDI_SCN:
-        ife (m_win->InnerRectGet(rectInner))
-            retep;
+        ifep(m_win->InnerRectGet(rectInner));
         break;
     default:
         rectInner = Rect2<SI>(0, 0, 0, 0);
@@ -64,8 +62,7 @@ tpl1 dfa ER WinCapture::_ColGridGetGdi(ColGrid<T1>& colGrid, Mode captureMode)
         switch (captureMode)
         {
         case Mode::GDI_WIN:
-            ife (m_win->OuterRectGet(rectOuter))
-                retep;
+            ifep(m_win->OuterRectGet(rectOuter));
             cache->ofs = rectInner.pos - rectOuter.pos;
             break;
         case Mode::GDI_SCN:
@@ -183,8 +180,7 @@ tpl1 dfa ER WinCapture::_ColGridGetDxgi(ColGrid<T1>& colGrid, Mode captureMode)
     cache = &m_cache->dxgi;
 
     Rect2<SI> rectScn;
-    ife (ScnRectGet(rectScn))
-        retep;
+    ifep(ScnRectGet(rectScn));
 
     ifu (rectScn.size != cache->size)
     {
@@ -194,8 +190,7 @@ tpl1 dfa ER WinCapture::_ColGridGetDxgi(ColGrid<T1>& colGrid, Mode captureMode)
     }
 
     Rect2<SI> rectWin;
-    ife (m_win->InnerRectGet(rectWin))
-        retep;
+    ifep(m_win->InnerRectGet(rectWin));
 
     Microsoft::WRL::ComPtr<IDXGIResource> desktop;
     DXGI_OUTDUPL_FRAME_INFO frameInfo;

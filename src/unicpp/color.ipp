@@ -287,8 +287,7 @@ tpl1 dfa NT ColGridFloodFillAll(ColGrid<T1>& colGrid, std::vector<SI>& fillOrigi
 tpl1 dfa ER ColGridToFileBmp(cx ColGrid<T1>& colGrid, cx CH* path)
 {
     MemFile file;
-    ife (file.Open(path, NO))
-        retep;
+    ifep(file.Open(path, NO));
 
     cx AU rowSize = AlignBit(colGrid.size.w * siz(ColRgb), siz(U4));
     cx AU imgSize = rowSize * colGrid.size.h;
@@ -330,15 +329,13 @@ tpl1 dfa ER ColGridToFileBmp(cx ColGrid<T1>& colGrid, cx CH* path)
         file.Write(rowDat.data(), rowDat.size());
     }
 
-    ife (file.Close(YES))
-        retep;
+    ifep(file.Close(YES));
     rets;
 }
 tpl1 dfa ER FileToColGridBmp(ColGrid<T1>& colGrid, cx CH* path)
 {
     MemFile file;
-    ife (file.Open(path, YES))
-        retep;
+    ifep(file.Open(path, YES));
 
     BITMAPFILEHEADER fileHdr = {};
     ifu (file.Read(&fileHdr, siz(fileHdr)) != siz(fileHdr))

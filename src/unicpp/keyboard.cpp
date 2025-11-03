@@ -142,8 +142,7 @@ dfa ER KeybInit()
     ifu (g_keybThdIsValid)
         rets;
     volatile AU code = KEYB_HOOK_THD_CODE_WAIT;
-    ife (g_keybThd.New(_KeybHookThd, const_cast<U1*>(&code)))
-        retep;
+    ifep(g_keybThd.New(_KeybHookThd, const_cast<U1*>(&code)));
     while (code == KEYB_HOOK_THD_CODE_WAIT)
         NtYieldExecution_();
     ifu (code == KEYB_HOOK_THD_CODE_ERR_YES)
@@ -157,10 +156,8 @@ dfa ER KeybFree()
         rets;
     ifu (PostThreadMessageW(DWORD(UA(g_keybThd.Id())), WM_QUIT, 0, 0) == 0)
         rete(ErrVal::THD);
-    ife (g_keybThd.Wait())
-        retep;
-    ife (g_keybThd.Close())
-        retep;
+    ifep(g_keybThd.Wait());
+    ifep(g_keybThd.Close());
     g_keybKeyEvtQueueLock.Lock();
     g_keybKeyEvtQueue.Clr();
     g_keybKeyEvtQueueLock.Unlock();
@@ -242,11 +239,9 @@ dfa ER KeybKeyPressUp(InputKey key)
 }
 dfa ER KeybKeyPress(InputKey key, TmMain hold, TmMain delay)
 {
-    ife (KeybKeyPressDown(key))
-        retep;
+    ifep(KeybKeyPressDown(key));
     ThdWait(hold);
-    ife (KeybKeyPressUp(key))
-        retep;
+    ifep(KeybKeyPressUp(key));
     ThdWait(delay);
     rets;
 }

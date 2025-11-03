@@ -129,8 +129,7 @@ dfa NT VuserInput::_CfgCurVariApply(Cfg::Cur& dst, cx Cfg::Cur& src)
 }
 dfa ER VuserInput::_CurPosGet(Pos2<F4>& pos)
 {
-    ife (::SysCurPosGet(pos))
-        retep;
+    ifep(::SysCurPosGet(pos));
     rets;
 }
 
@@ -142,12 +141,10 @@ dfa ER VuserInput::KeyPressDown(InputKey key)
     switch (InputKeyTypeGet(key))
     {
     case InputKeyType::KEYB:
-        ife (KeybKeyPressDown(key))
-            retep;
+        ifep(KeybKeyPressDown(key));
         break;
     case InputKeyType::MOUS:
-        ife (MousKeyPressDown(key))
-            retep;
+        ifep(MousKeyPressDown(key));
         break;
     default:
         rete(ErrVal::NO_SUPPORT);
@@ -165,12 +162,10 @@ dfa ER VuserInput::KeyPressUp(InputKey key)
     switch (InputKeyTypeGet(key))
     {
     case InputKeyType::KEYB:
-        ife (KeybKeyPressUp(key))
-            retep;
+        ifep(KeybKeyPressUp(key));
         break;
     case InputKeyType::MOUS:
-        ife (MousKeyPressUp(key))
-            retep;
+        ifep(MousKeyPressUp(key));
         break;
     default:
         rete(ErrVal::NO_SUPPORT);
@@ -182,10 +177,8 @@ dfa ER VuserInput::KeyPressUp(InputKey key)
 }
 dfa ER VuserInput::KeyPress(InputKey key)
 {
-    ife (tx->KeyPressDown(key))
-        retep;
-    ife (tx->KeyPressUp(key))
-        retep;
+    ifep(tx->KeyPressDown(key));
+    ifep(tx->KeyPressUp(key));
     rets;
 }
 dfa ER VuserInput::CurPosSet(cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
@@ -196,8 +189,7 @@ dfa ER VuserInput::CurPosSet(cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
 
     // get source position
     Pos2<F4> srcPos;
-    ife (tx->_CurPosGet(srcPos))
-        retep;
+    ifep(tx->_CurPosGet(srcPos));
 
     // get destination position
     cx Pos2<F4> dstPos = pos + ((posVari == Pos2<F4>(0, 0)) ? Pos2<F4>(0, 0) : Pos2<F4>(RandVal<F4>(-posVari.x, posVari.x), RandVal<F4>(-posVari.y, posVari.y)));
@@ -286,8 +278,7 @@ dfa ER VuserInput::CurPosSet(cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
         do
         {
             AU nowPos = Pos2<F4>(0, 0);
-            ife (posCurveFn(nowPos, tTest))
-                retep;
+            ifep(posCurveFn(nowPos, tTest));
 
             cx AU sectDist = Dist(prevPos, nowPos);
             if (sectDist > sectDistMax)
@@ -344,21 +335,17 @@ dfa ER VuserInput::CurPosSet(cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
 
         // get weighed t value - based on time curve
         AU tWeighed = F4(0);
-        ife (timeCurveFn(tWeighed, tAbs))
-            retep;
+        ifep(timeCurveFn(tWeighed, tAbs));
 
         // get weighed t value - based on path
-        ife (timePathFn(tWeighed, tWeighed, timePathFnICur))
-            retep;
+        ifep(timePathFn(tWeighed, tWeighed, timePathFnICur));
 
         // get intermediate position
         AU nowPos = Pos2<F4>(0, 0);
-        ife (posCurveFn(nowPos, tWeighed))
-            retep;
+        ifep(posCurveFn(nowPos, tWeighed));
 
         // set cursor to intermediate position
-        ife (::SysCurPosSet(nowPos))
-            retep;
+        ifep(::SysCurPosSet(nowPos));
 
         // wait for simulated update frequency
         cx AU timeHzTimer = timeBegin + (timeWaitBase * TmMain(i));
@@ -367,8 +354,7 @@ dfa ER VuserInput::CurPosSet(cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
     }
 
     // set cursor to destination position
-    ife (::SysCurPosSet(dstPos))
-        retep;
+    ifep(::SysCurPosSet(dstPos));
 
     // delay
     ThdWait(cfgCur.delay);
@@ -380,43 +366,34 @@ dfa ER VuserInput::CurPosMove(cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
 {
     // get source position
     Pos2<F4> srcPos;
-    ife (tx->_CurPosGet(srcPos))
-        retep;
+    ifep(tx->_CurPosGet(srcPos));
 
     // get destination position
     cx Pos2<F4> dstPos = srcPos + pos;
 
     // set cursor to destination position
-    ife (tx->CurPosSet(dstPos, posVari))
-        retep;
+    ifep(tx->CurPosSet(dstPos, posVari));
 
     // finish
     rets;
 }
 dfa ER VuserInput::KeyPressTo(InputKey key, cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
 {
-    ife (tx->CurPosSet(pos, posVari))
-        retep;
-    ife (tx->KeyPress(key))
-        retep;
+    ifep(tx->CurPosSet(pos, posVari));
+    ifep(tx->KeyPress(key));
     rets;
 }
 dfa ER VuserInput::KeyDragTo(InputKey key, cx Pos2<F4>& pos, cx Pos2<F4>& posVari)
 {
-    ife (tx->KeyPressDown(key))
-        retep;
-    ife (tx->CurPosSet(pos, posVari))
-        retep;
-    ife (tx->KeyPressUp(key))
-        retep;
+    ifep(tx->KeyPressDown(key));
+    ifep(tx->CurPosSet(pos, posVari));
+    ifep(tx->KeyPressUp(key));
     rets;
 }
 dfa ER VuserInput::KeyDrag(InputKey key, cx Pos2<F4>& posSrc, cx Pos2<F4>& posDst, cx Pos2<F4>& posSrcVari, cx Pos2<F4>& posDstVari)
 {
-    ife (tx->CurPosSet(posSrc, posSrcVari))
-        retep;
-    ife (tx->KeyDragTo(key, posDst, posDstVari))
-        retep;
+    ifep(tx->CurPosSet(posSrc, posSrcVari));
+    ifep(tx->KeyDragTo(key, posDst, posDstVari));
     rets;
 }
 

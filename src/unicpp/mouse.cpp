@@ -9,8 +9,7 @@ thdlocal Pos2<F4> g_curPosOfs;
 
 dfa ER SysCurPosGet(Pos2<F4>& pos)
 {
-    ife (ProcDpiAwareSet())
-        retep;
+    ifep(ProcDpiAwareSet());
     pos = Pos2<F4>(0, 0);
     POINT tmp = {};
     ifu (GetCursorPos(&tmp) == 0)
@@ -20,8 +19,7 @@ dfa ER SysCurPosGet(Pos2<F4>& pos)
 }
 dfa ER SysCurPosSet(cx Pos2<F4>& pos)
 {
-    ife (ProcDpiAwareSet())
-        retep;
+    ifep(ProcDpiAwareSet());
     cx AU x = S4(RoundToInt(pos.x));
     cx AU y = S4(RoundToInt(pos.y));
     ifu (SetCursorPos(x, y) == 0)
@@ -32,11 +30,9 @@ dfa ER SysCurPosSet(cx Pos2<F4>& pos)
 dfa ER SysCurPosMove(cx Pos2<F4>& pos)
 {
     Pos2<F4> tmp;
-    ife (SysCurPosGet(tmp))
-        retep;
+    ifep(SysCurPosGet(tmp));
     tmp = Pos2<F4>(tmp.x + pos.x, tmp.y + pos.y);
-    ife (SysCurPosSet(tmp))
-        retep;
+    ifep(SysCurPosSet(tmp));
     rets;
 }
 
@@ -75,11 +71,9 @@ dfa ER MousKeyPressUp(InputKey key)
 }
 dfa ER MousKeyPress(InputKey key, TmMain hold, TmMain delay)
 {
-    ife (MousKeyPressDown(key))
-        retep;
+    ifep(MousKeyPressDown(key));
     ThdWait(hold);
-    ife (MousKeyPressUp(key))
-        retep;
+    ifep(MousKeyPressUp(key));
     ThdWait(delay);
     rets;
 }

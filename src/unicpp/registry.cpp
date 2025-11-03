@@ -28,8 +28,7 @@ dfa ER RegKey::GetU4(U4& val, cx CH* name) cx
 {
     val = 0;
     ArrSbo<U1, 512> buf;
-    ife (tx->_Get(buf, name))
-        retep;
+    ifep(tx->_Get(buf, name));
     AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
     ifu ((info.Type != REG_DWORD_LITTLE_ENDIAN && info.Type != REG_DWORD_BIG_ENDIAN) || (info.DataLength != siz(U4)))
         rete(ErrVal::REG);
@@ -42,8 +41,7 @@ dfa ER RegKey::GetStr(std::wstring& val, cx CH* name) cx
 {
     val.clear();
     ArrSbo<U1, 512> buf;
-    ife (tx->_Get(buf, name))
-        retep;
+    ifep(tx->_Get(buf, name));
     AU& info = *(KEY_VALUE_PARTIAL_INFORMATION_*)buf.Dat();
     ifu (info.Type != REG_SZ)
         rete(ErrVal::REG);
@@ -132,12 +130,9 @@ dfa ER RegKeyGetStr(std::wstring& val, cx CH* path, cx CH* name)
 {
     val.clear();
     RegKey regKey;
-    ife (regKey.Open(path, KEY_READ, 0))
-        retep;
-    ife (regKey.GetStr(val, name))
-        retep;
-    ife (regKey.Close())
-        retep;
+    ifep(regKey.Open(path, KEY_READ, 0));
+    ifep(regKey.GetStr(val, name));
+    ifep(regKey.Close());
     rets;
 }
 
@@ -219,10 +214,8 @@ dfa ER RegDirDel(cx CH* path)
 }
 dfa ER RegDirMove(cx CH* dst, cx CH* src)
 {
-    ife (RegDirCpy(dst, src))
-        retep;
-    ife (RegDirDel(src))
-        retep;
+    ifep(RegDirCpy(dst, src));
+    ifep(RegDirDel(src));
     rets;
 }
 
@@ -337,30 +330,24 @@ dfa ER RegSetExtOpenPath(cx CH* ext, cx CH* prog, cx CH* extName)
     CH path[PATH_LEN_MAX];
     StrCpy(path, L"HKEY_CLASSES_ROOT\\.");
     StrAdd(path, ext);
-    ife (RegDirCreate(path))
-        retep;
+    ifep(RegDirCreate(path));
     StrAdd(path, L"\\");
-    ife (RegValSetStr(path, name))
-        retep;
+    ifep(RegValSetStr(path, name));
     StrCpy(path, L"HKEY_CLASSES_ROOT\\");
     StrAdd(path, name);
-    ife (RegDirCreate(path))
-        retep;
+    ifep(RegDirCreate(path));
     StrAdd(path, L"\\");
-    ife (RegValSetStr(path, extName))
-        retep;
+    ifep(RegValSetStr(path, extName));
     StrCpy(path, L"HKEY_CLASSES_ROOT\\");
     StrAdd(path, name);
     StrAdd(path, L"\\shell\\open\\command");
-    ife (RegDirCreate(path))
-        retep;
+    ifep(RegDirCreate(path));
     StrAdd(path, L"\\");
     CH cmd[PATH_LEN_MAX + 10];
     StrCpy(cmd, L"\"");
     StrAdd(cmd, prog);
     StrAdd(cmd, L"\" \"%1\"");
-    ife (RegValSetStr(path, cmd))
-        retep;
+    ifep(RegValSetStr(path, cmd));
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NUL, NUL);
     rets;
 }

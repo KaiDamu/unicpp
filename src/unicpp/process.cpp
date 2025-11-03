@@ -471,8 +471,7 @@ dfa ER _ProcIsUserLocalSystemByHdl(BO& isTrue, HD hdl)
 {
     isTrue = NO;
     SecToken token;
-    ife (token.OpenByProc(hdl, TOKEN_QUERY, 0))
-        retep;
+    ifep(token.OpenByProc(hdl, TOKEN_QUERY, 0));
     cx AU sidUser = token.SidUser();
     ifu (sidUser == NUL)
         rete(ErrVal::TOKEN);
@@ -483,8 +482,7 @@ dfa ER _ProcIsUserLocalSystemByPid(BO& isTrue, HD pid)
 {
     isTrue = NO;
     _Proc proc;
-    ife (proc.Open(pid, PROCESS_QUERY_LIMITED_INFORMATION))
-        retep;
+    ifep(proc.Open(pid, PROCESS_QUERY_LIMITED_INFORMATION));
     ret _ProcIsUserLocalSystemByHdl(isTrue, proc.Hdl());
 }
 
@@ -495,8 +493,7 @@ dfa ER ProcUsernameGet(HD proc, std::wstring* user, std::wstring* domain)
     if (domain != NUL)
         domain->clear();
     SecToken token;
-    ife (token.OpenByProc(proc, TOKEN_QUERY, 0))
-        retep;
+    ifep(token.OpenByProc(proc, TOKEN_QUERY, 0));
     cx AU sidUser = token.SidUser();
     ifu (sidUser == NUL)
         rete(ErrVal::TOKEN);
@@ -589,8 +586,7 @@ dfa ER Proc::Start(cx CH* path, cx CH* args, cx CH* workPath)
 {
     ifu (tx->IsActive())
         rete(ErrVal::YES_ACTIVE);
-    ife (tx->Close())
-        retep;
+    ifep(tx->Close());
     m_args = L"\"";
     m_args += path;
     m_args += L"\"";
@@ -617,8 +613,7 @@ dfa ER Proc::StartElevated(cx CH* path, cx CH* args, cx CH* workPath)
         ret tx->Start(path, args, workPath);
     ifu (tx->IsActive())
         rete(ErrVal::YES_ACTIVE);
-    ife (tx->Close())
-        retep;
+    ifep(tx->Close());
     m_args = args;
     SHELLEXECUTEINFOW sei = {};
     sei.cbSize = siz(sei);
@@ -643,8 +638,7 @@ dfa ER Proc::Stop() cx
         rets;
     ifu (TerminateProcess(m_info.hProcess, U4(-1)) == 0)
         rete(ErrVal::PROC);
-    ife (tx->Wait())
-        retep;
+    ifep(tx->Wait());
     rets;
 }
 dfa Proc::Proc()
@@ -664,8 +658,7 @@ dfa ER ProcRestartElevated()
     Proc proc;
     CH workPath[PATH_LENX_MAX];
     ProcWorkPathGet(workPath);
-    ife (proc.StartElevated(ProcFilePath(), StrArgSkip(ProcArgFullGet()), workPath))
-        retep;
+    ifep(proc.StartElevated(ProcFilePath(), StrArgSkip(ProcArgFullGet()), workPath));
     proc.__Drop();
     ProcExit(0);
     rets;

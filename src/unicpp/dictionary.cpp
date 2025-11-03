@@ -80,8 +80,7 @@ dfa SI SVarBlock::LoadMemCfg(DatIte<U1> dat)
 dfa ER SVarBlock::LoadFileCfg(cx CH* path)
 {
     std::vector<U1> fileDat;
-    ife (FileToBuf(fileDat, path))
-        retep;
+    ifep(FileToBuf(fileDat, path));
     DatIte<U1> datIte;
     datIte.Src(fileDat.data(), fileDat.size());
     cx AU len = tx->LoadMemCfg(datIte);

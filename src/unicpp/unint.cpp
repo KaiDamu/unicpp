@@ -56,8 +56,7 @@ GAFN g_uniNtFn[UNI_NT_FN_CNT] = {};
 dfa ER UniNtLoad()
 {
     MdlFnCache uniNtLoadCache;
-    ife (uniNtLoadCache.CacheDll(L"ntdll.dll"))
-        retep;
+    ifep(uniNtLoadCache.CacheDll(L"ntdll.dll"));
     cx AU fnCntNoKey = UNI_NT_FN_CNT_NO_KEY;
     cx AU fnCntYesKey = UNI_NT_FN_CNT - UNI_NT_FN_CNT_NO_KEY;
     ite (i, i < fnCntNoKey)
