@@ -80,8 +80,8 @@ class BitVec
     dfa NT AddLast(CXGA buf, SI sizeb);
     tpl1 dfa SI GetVarintAt(T1& val, SI posb) cx;
     dfa NT Read(GA buf, SI sizeb);
-    tpl1 dfa SI ReadVarbaseint(T1& val, U1 base);
-    tpl1 dfa SI ReadVarbasetruncint(T1& val, U1 base, SI sizebMax);
+    tpl1 dfa SI ReadVarbint(T1& val, U1 base);
+    tpl1 dfa SI ReadVarbtint(T1& val, U1 base, SI sizebMax);
     dfa NT PadToByte();
 
   public:

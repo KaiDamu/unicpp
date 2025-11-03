@@ -5,7 +5,7 @@
 dfa U8 MulU16(U8 a, U8 b, U8& hi);
 dfa SI BitToByteSize(SI size);
 dfa BO VarintIsIncomplete(cx U1* dat, SI size);
-dfa BO VarbaseintIsIncomplete(cx U1* dat, SI size, U1 base);
+dfa BO VarbintIsIncomplete(cx U1* dat, SI size, U1 base);
 dfa U1 ByteObfuscate(U1 val, U1 i);
 dfa U1 ByteUnobfuscate(U1 val, U1 i);
 
@@ -62,9 +62,9 @@ tpl1 T1 RadToDeg(T1 rad);
 tpl1 dfa SI VarintEncode(U1* out, T1 in);
 tpl1 dfa SI VarintDecode(T1& out, cx U1* in);
 tpl1 dfa ER VarintDecode(T1& out, SI& inReadSize, cx U1* in, cx U1* end);
-tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base);
-tpl1 dfa SI VarbaseintDecode(T1& out, cx U1* in, U1 base);
-tpl1 dfa SI VarbaseintEncodeSize(T1 in, U1 base);
+tpl1 dfa SI VarbintEncode(U1* out, T1 in, U1 base);
+tpl1 dfa SI VarbintDecode(T1& out, cx U1* in, U1 base);
+tpl1 dfa SI VarbintEncodeSize(T1 in, U1 base);
 tpl1 dfa T1 RotL(T1 val, SI cnt);
 tpl1 dfa T1 RotR(T1 val, SI cnt);
 tpl1 dfa T1 RevByte(T1 val);

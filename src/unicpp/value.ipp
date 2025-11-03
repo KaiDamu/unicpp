@@ -21,7 +21,7 @@ tpl1 cxex dfa SI VarintSizeMax()
 {
     ret (sizb(T1) + 6) / 7;
 }
-tpl<typename T1, U1 TBase> cxex dfa SI VarbaseintSizeMax()
+tpl<typename T1, U1 TBase> cxex dfa SI VarbintSizeMax()
 {
     static_assert(TBase > 0 && TBase < 8, "TBase must be in (0, 8)");
     ret (sizb(T1) + (TBase - 1)) / TBase;

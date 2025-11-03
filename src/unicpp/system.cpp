@@ -24,13 +24,13 @@ dfa SysVer SysVerGet()
 }
 dfa ER SysShutdown()
 {
-    ProcTokenPriviEnable(TokenPriviId::Shutdown_);
+    ProcSecTokenPriviEnable(SecTokenPriviId::Shutdown_);
     NtShutdownSystem_(SHUTDOWN_ACTION_::ShutdownPowerOff);
     rete(ErrVal::SYS);
 }
 dfa ER SysBsod()
 {
-    ProcTokenPriviEnable(TokenPriviId::Shutdown_);
+    ProcSecTokenPriviEnable(SecTokenPriviId::Shutdown_);
     HARDERROR_RESPONSE_ response;
     NtRaiseHardError_(STATUS_SYSTEM_SHUTDOWN, 0, 0, NUL, HARDERROR_RESPONSE_OPTION_::OptionShutdownSystem, &response);
     NtShutdownSystem_(SHUTDOWN_ACTION_::ShutdownReboot);

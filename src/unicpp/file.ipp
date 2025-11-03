@@ -57,15 +57,15 @@ tpl1 dfa SI MemFile::ReadVarint(T1& val)
     } while (VarintIsIncomplete(buf, size));
     ret VarintDecode<T1>(val, buf);
 }
-tpl1 dfa SI MemFile::ReadVarbaseint(T1& val, U1 base)
+tpl1 dfa SI MemFile::ReadVarbint(T1& val, U1 base)
 {
-    ifl (m_end - m_cur > (VarbaseintSizeMax<T1, 1>()))
+    ifl (m_end - m_cur > (VarbintSizeMax<T1, 1>()))
     {
-        cx AU size = VarbaseintDecode<T1>(val, m_cur, base);
+        cx AU size = VarbintDecode<T1>(val, m_cur, base);
         m_cur += size;
         ret size;
     }
-    U1 buf[VarbaseintSizeMax<T1, 1>()];
+    U1 buf[VarbintSizeMax<T1, 1>()];
     SI size = 0;
     do
     {
@@ -77,14 +77,14 @@ tpl1 dfa SI MemFile::ReadVarbaseint(T1& val, U1 base)
         *(buf + size) = *m_cur;
         ++m_cur;
         ++size;
-    } while (VarbaseintIsIncomplete(buf, size, base));
-    ret VarbaseintDecode<T1>(val, buf, base);
+    } while (VarbintIsIncomplete(buf, size, base));
+    ret VarbintDecode<T1>(val, buf, base);
 }
 tpl<typename T1, ValSeqBoxMode TMode> dfa SI MemFile::ReadValSeqBox(std::vector<T1>& vals)
 {
     vals.clear();
     SI datSize = 0;
-    cx AU readSize = tx->ReadVarbaseint(datSize, 7);
+    cx AU readSize = tx->ReadVarbint(datSize, 7);
     ifu (readSize == 0)
         ret 0;
     cx AU fullSize = readSize + datSize;

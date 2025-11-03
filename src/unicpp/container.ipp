@@ -83,27 +83,27 @@ tpl1 dfa SI BitVec::GetVarintAt(T1& val, SI posb) cx
     } while (VarintIsIncomplete(buf, size));
     ret VarintDecode(val, buf);
 }
-tpl1 dfa SI BitVec::ReadVarbaseint(T1& val, U1 base)
+tpl1 dfa SI BitVec::ReadVarbint(T1& val, U1 base)
 {
-    U1 buf[VarbaseintSizeMax<T1, 1>()];
+    U1 buf[VarbintSizeMax<T1, 1>()];
     SI size = 0;
     do
     {
         tx->Read(buf + size, BIT_IN_BYTE);
         ++size;
-    } while (VarbaseintIsIncomplete(buf, size, base));
-    ret VarbaseintDecode(val, buf, base);
+    } while (VarbintIsIncomplete(buf, size, base));
+    ret VarbintDecode(val, buf, base);
 }
-tpl1 dfa SI BitVec::ReadVarbasetruncint(T1& val, U1 base, SI sizebMax)
+tpl1 dfa SI BitVec::ReadVarbtint(T1& val, U1 base, SI sizebMax)
 {
-    U1 buf[VarbaseintSizeMax<T1, 1>()];
+    U1 buf[VarbintSizeMax<T1, 1>()];
     SI size = 0;
     do
     {
         tx->Read(buf + size, Min(BIT_IN_BYTE, sizebMax - size * BIT_IN_BYTE));
         ++size;
-    } while (VarbaseintIsIncomplete(buf, size, base));
-    ret VarbaseintDecode(val, buf, base);
+    } while (VarbintIsIncomplete(buf, size, base));
+    ret VarbintDecode(val, buf, base);
 }
 
 tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxEncode(BitVec& out, cx std::span<cx T1>& vals)
@@ -171,11 +171,11 @@ tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxEncode(BitVec& out, cx std
 
     for (U1 base = 1; base < 8; ++base)
     {
-        cx AU encodingValMaxLen = VarbaseintEncode(buf, valMax, base);
+        cx AU encodingValMaxLen = VarbintEncode(buf, valMax, base);
         encoding[base].valMaxLenb = ((encodingValMaxLen - SI(1)) * BIT_IN_BYTE) + LenBin<U1>(*(buf + (encodingValMaxLen - SI(1))));
 
         ite (i, i < SI(valsProc.size()))
-            encoding[base].sizeb += Min(VarbaseintEncodeSize(valsProc[i], base) * BIT_IN_BYTE, encoding[base].valMaxLenb);
+            encoding[base].sizeb += Min(VarbintEncodeSize(valsProc[i], base) * BIT_IN_BYTE, encoding[base].valMaxLenb);
     }
 
     SI encodingBestI = 0;
@@ -191,7 +191,7 @@ tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxEncode(BitVec& out, cx std
 
     cx AU zero = U8(0);
     out.AddLast(&zero, sizb(zero));
-    bufSize = VarbaseintEncode(buf, GetTypeU<SI>(valsProc.size()), 5);
+    bufSize = VarbintEncode(buf, GetTypeU<SI>(valsProc.size()), 5);
     out.AddLast(buf, bufSize * BIT_IN_BYTE);
     out.AddLast(&encodingBest.valMaxLenb, 7);
     out.AddLast(&encodingBestI, 3);
@@ -205,23 +205,23 @@ tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxEncode(BitVec& out, cx std
     {
         ite (i, i < SI(valsProc.size()))
         {
-            bufSize = VarbaseintEncode(buf, valsProc[i], U1(encodingBestI));
+            bufSize = VarbintEncode(buf, valsProc[i], U1(encodingBestI));
             out.AddLast(buf, Min(bufSize * BIT_IN_BYTE, encodingBest.valMaxLenb));
         }
     }
 
     out.PadToByte();
 
-    bufSize = VarbaseintEncode(out._Dat(), AsTypeU(out.SizeByte() - siz(U8)), 7);
+    bufSize = VarbintEncode(out._Dat(), AsTypeU(out.SizeByte() - siz(U8)), 7);
     MemMove(out._Dat() + bufSize, out.Dat() + siz(U8), out.SizeByte() - siz(U8));
     out._LenbSet(out.SizeBit() - ((siz(U8) - bufSize) * BIT_IN_BYTE));
 }
 tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxDecode(std::vector<T1>& vals, BitVec& in)
 {
     SI datSize;
-    in.ReadVarbaseint(datSize, 7);
+    in.ReadVarbint(datSize, 7);
     SI valCnt;
-    in.ReadVarbaseint(valCnt, 5);
+    in.ReadVarbint(valCnt, 5);
     SI valMaxLenb = 0;
     in.Read(&valMaxLenb, 7);
     SI encodingBestI = 0;
@@ -240,7 +240,7 @@ tpl<typename T1, ValSeqBoxMode TMode> dfa NT ValSeqBoxDecode(std::vector<T1>& va
     else
     {
         for (AU& val : vals)
-            in.ReadVarbasetruncint(val, U1(encodingBestI), valMaxLenb);
+            in.ReadVarbtint(val, U1(encodingBestI), valMaxLenb);
     }
 
     ifcx (TMode == ValSeqBoxMode::DIFF || TMode == ValSeqBoxMode::DIFF_ASC)

@@ -32,11 +32,11 @@ dfa BO SidIsSame(cx SID_& a, cx SID_& b)
     ret YES;
 }
 
-dfa HD Token::Hdl() cx
+dfa HD SecToken::Hdl() cx
 {
     ret m_hdl;
 }
-dfa cx SID_* Token::SidUser()
+dfa cx SID_* SecToken::SidUser()
 {
     if (m_sidBuf != NUL)
         MemDel(m_sidBuf);
@@ -50,7 +50,7 @@ dfa cx SID_* Token::SidUser()
     }
     ret((TOKEN_USER_*)m_sidBuf)->User.Sid;
 }
-dfa ER Token::OpenByProc(HD proc, U4 access, U4 attrib)
+dfa ER SecToken::OpenByProc(HD proc, U4 access, U4 attrib)
 {
     ifu (m_hdl != NUL)
         rete(ErrVal::YES_INIT);
@@ -62,7 +62,7 @@ dfa ER Token::OpenByProc(HD proc, U4 access, U4 attrib)
     }
     rets;
 }
-dfa ER Token::Close()
+dfa ER SecToken::Close()
 {
     if (m_hdl == NUL)
         rets;
@@ -77,18 +77,18 @@ dfa ER Token::Close()
     }
     rets;
 }
-dfa Token::Token() : m_hdl(NUL), m_sidBuf(NUL)
+dfa SecToken::SecToken() : m_hdl(NUL), m_sidBuf(NUL)
 {
 }
-dfa Token::~Token()
+dfa SecToken::~SecToken()
 {
     tx->Close();
 }
 
-dfa ER ProcTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc)
+dfa ER ProcSecTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc)
 {
     out.clear();
-    Token token;
+    SecToken token;
     ife (token.OpenByProc(proc, TOKEN_QUERY, 0))
         retep;
     cxex SI bufPrivisSize = siz(TOKEN_PRIVILEGES_) + 128 * siz(LUID_AND_ATTRIBUTES_); // max count assumed, as of Win11 the max is under 40
@@ -103,17 +103,17 @@ dfa ER ProcTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc)
         out.push_back(privis->Privileges[i]);
     rets;
 }
-dfa ER ProcTokenPriviEnable(TokenPriviId priviId)
+dfa ER ProcSecTokenPriviEnable(SecTokenPriviId priviId)
 {
     U1 tmp;
     ifu (RtlAdjustPrivilege_(U4(priviId), YES, NO, &tmp) != STATUS_SUCCESS)
         rete(ErrVal::TOKEN);
     rets;
 }
-dfa ER ProcTokenPriviEnableAll()
+dfa ER ProcSecTokenPriviEnableAll()
 {
     std::vector<LUID_AND_ATTRIBUTES_> privis;
-    ife (ProcTokenPriviListGet(privis, ProcCurHdl()))
+    ife (ProcSecTokenPriviListGet(privis, ProcCurHdl()))
         retep;
     BO isErr = NO;
     for (cx AU& privi : privis)
@@ -129,11 +129,11 @@ dfa ER ProcTokenPriviEnableAll()
         rete(ErrVal::NO_FULL);
     rets;
 }
-dfa ER ProcTokenPriviIsEnabled(BO& isTrue, HD proc, TokenPriviId priviId)
+dfa ER ProcSecTokenPriviIsEnabled(BO& isTrue, HD proc, SecTokenPriviId priviId)
 {
     isTrue = NO;
     std::vector<LUID_AND_ATTRIBUTES_> privis;
-    ife (ProcTokenPriviListGet(privis, proc))
+    ife (ProcSecTokenPriviListGet(privis, proc))
         retep;
     for (cx AU& privi : privis)
         if (privi.Luid.LowPart == U4(priviId))
@@ -143,11 +143,11 @@ dfa ER ProcTokenPriviIsEnabled(BO& isTrue, HD proc, TokenPriviId priviId)
         }
     rets;
 }
-dfa ER ProcTokenPriviIsExist(BO& isTrue, HD proc, TokenPriviId priviId)
+dfa ER ProcSecTokenPriviIsExist(BO& isTrue, HD proc, SecTokenPriviId priviId)
 {
     isTrue = NO;
     std::vector<LUID_AND_ATTRIBUTES_> privis;
-    ife (ProcTokenPriviListGet(privis, proc))
+    ife (ProcSecTokenPriviListGet(privis, proc))
         retep;
     for (cx AU& privi : privis)
         if (privi.Luid.LowPart == U4(priviId))

@@ -6,7 +6,7 @@
 
     #include <vector>
 
-enum class TokenPriviId : U4
+enum class SecTokenPriviId : U4
 {
     None_ = 0,
     CreateToken_ = 2,                     // Required To Create A Primary Token.
@@ -49,7 +49,7 @@ enum class TokenPriviId : U4
 dfa cx SID_* SidLocalSystem();
 dfa BO SidIsSame(cx SID_& a, cx SID_& b);
 
-class Token
+class SecToken
 {
   private:
     HD m_hdl;
@@ -60,15 +60,15 @@ class Token
     dfa cx SID_* SidUser();
     dfa ER OpenByProc(HD proc, U4 access, U4 attrib);
     dfa ER Close();
-    dfa Token();
-    dfa ~Token();
+    dfa SecToken();
+    dfa ~SecToken();
 };
 
-dfa ER ProcTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc);
-dfa ER ProcTokenPriviEnable(TokenPriviId priviId);
-dfa ER ProcTokenPriviEnableAll();
-dfa ER ProcTokenPriviIsEnabled(BO& isTrue, HD proc, TokenPriviId priviId);
-dfa ER ProcTokenPriviIsExist(BO& isTrue, HD proc, TokenPriviId priviId);
+dfa ER ProcSecTokenPriviListGet(std::vector<LUID_AND_ATTRIBUTES_>& out, HD proc);
+dfa ER ProcSecTokenPriviEnable(SecTokenPriviId priviId);
+dfa ER ProcSecTokenPriviEnableAll();
+dfa ER ProcSecTokenPriviIsEnabled(BO& isTrue, HD proc, SecTokenPriviId priviId);
+dfa ER ProcSecTokenPriviIsExist(BO& isTrue, HD proc, SecTokenPriviId priviId);
 
 #endif
 

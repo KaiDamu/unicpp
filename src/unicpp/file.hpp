@@ -102,7 +102,7 @@ class MemFile
     tpl1 dfa SI Read(cx std::span<T1>& buf);
     tpl<typename TRead, typename TDst> dfa ER ReadVal(TDst& val);
     tpl1 dfa SI ReadVarint(T1& val);
-    tpl1 dfa SI ReadVarbaseint(T1& val, U1 base);
+    tpl1 dfa SI ReadVarbint(T1& val, U1 base);
     tpl<typename T1, ValSeqBoxMode TMode> dfa SI ReadValSeqBox(std::vector<T1>& vals);
     dfa SI ReadLine(std::string& str);
     dfa NT Write(CXGA buf, SI size);

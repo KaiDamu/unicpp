@@ -470,7 +470,7 @@ dfa ER _ProcListGet(std::vector<SYSTEM_PROCESS_INFORMATION_>& out)
 dfa ER _ProcIsUserLocalSystemByHdl(BO& isTrue, HD hdl)
 {
     isTrue = NO;
-    Token token;
+    SecToken token;
     ife (token.OpenByProc(hdl, TOKEN_QUERY, 0))
         retep;
     cx AU sidUser = token.SidUser();
@@ -494,7 +494,7 @@ dfa ER ProcUsernameGet(HD proc, std::wstring* user, std::wstring* domain)
         user->clear();
     if (domain != NUL)
         domain->clear();
-    Token token;
+    SecToken token;
     ife (token.OpenByProc(proc, TOKEN_QUERY, 0))
         retep;
     cx AU sidUser = token.SidUser();

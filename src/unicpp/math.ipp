@@ -302,9 +302,9 @@ tpl1 dfa ER VarintDecode(T1& out, SI& inReadSize, cx U1* in, cx U1* end)
     inReadSize = SI(in - inBase);
     rete(ErrVal::NO_VALID);
 }
-tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base)
+tpl1 dfa SI VarbintEncode(U1* out, T1 in, U1 base)
 {
-    static_assert(IsTypeU<T1>, "VarbaseintEncode: T1 must be an unsigned integer type");
+    static_assert(IsTypeU<T1>, "VarbintEncode: T1 must be an unsigned integer type");
     cx U1* cx outBase = out;
     cx AU mask = U1(U1(0xFF) << base);
     while (in >= mask)
@@ -317,7 +317,7 @@ tpl1 dfa SI VarbaseintEncode(U1* out, T1 in, U1 base)
     *out++ = U1(in);
     ret SI(out - outBase);
 }
-tpl1 dfa SI VarbaseintDecode(T1& out, cx U1* in, U1 base)
+tpl1 dfa SI VarbintDecode(T1& out, cx U1* in, U1 base)
 {
     out = 0;
     cx U1* cx inBase = in;
@@ -330,9 +330,9 @@ tpl1 dfa SI VarbaseintDecode(T1& out, cx U1* in, U1 base)
         ++in;
     } while (YES);
 }
-tpl1 dfa SI VarbaseintEncodeSize(T1 in, U1 base)
+tpl1 dfa SI VarbintEncodeSize(T1 in, U1 base)
 {
-    static_assert(IsTypeU<T1>, "VarbaseintEncodeSize: T1 must be an unsigned integer type");
+    static_assert(IsTypeU<T1>, "VarbintEncodeSize: T1 must be an unsigned integer type");
     SI size = 1;
     cx AU mask = U1(U1(0xFF) << base);
     while (in >= mask)

@@ -36,7 +36,7 @@ dfa BO VarintIsIncomplete(cx U1* dat, SI size)
         ret YES;
     ret (dat[size - 1] & 0x80) ? YES : NO;
 }
-dfa BO VarbaseintIsIncomplete(cx U1* dat, SI size, U1 base)
+dfa BO VarbintIsIncomplete(cx U1* dat, SI size, U1 base)
 {
     ifu (size < 1)
         ret YES;
