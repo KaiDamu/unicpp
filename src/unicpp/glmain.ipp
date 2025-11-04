@@ -12,6 +12,11 @@ tpl1 dfa NT ColToCompType(ColComp& colComp, VarType& varType)
         colComp = ColComp::RGB;
         varType = VarType::U1;
     }
+    else ifcx (IsTypeSame<T1, ColRgba>)
+    {
+        colComp = ColComp::RGBA;
+        varType = VarType::U1;
+    }
     else ifcx (IsTypeSame<T1, ColRgbN>)
     {
         colComp = ColComp::RGB;

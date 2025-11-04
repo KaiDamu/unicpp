@@ -4,6 +4,7 @@
 #ifdef PROG_SYS_WIN
     #include "glload.hpp"
     #include "color.hpp"
+    #include "grtype.hpp"
 #endif
 
 namespace gl
@@ -46,6 +47,7 @@ dfa ER CtxUseClr();
 using VarTypeT = GLenum;
 enum class VarType : VarTypeT
 {
+    NONE = 0,
     U1 = GL_UNSIGNED_BYTE,
     F4 = GL_FLOAT,
 };
@@ -54,6 +56,7 @@ using ColFormT = GLenum;
 enum class ColForm : ColFormT
 {
     RGB8 = GL_RGB8,
+    RGBA8 = GL_RGBA8,
 };
 
 using ColCompT = GLenum;
@@ -63,7 +66,7 @@ enum class ColComp : ColCompT
     RGBA = GL_RGBA,
 };
 
-dfa SI VarTypeSize(VarType varType);
+dfa gl::VarType VarTypeGet(::VarType varType);
 tpl1 dfa NT ColToCompType(ColComp& colComp, VarType& varType);
 dfa SI Size2ToLvCnt(cx Size2<SI>& size);
 
@@ -107,24 +110,16 @@ class BufElemArr : public Buf
 class VtxArr : public HdlBase
 {
   private:
-    struct Attrib
-    {
-        GLint cnt;
-        VarType type;
-    };
-
-  private:
-    std::vector<Attrib> m_attribs;
+    SI m_attribCnt;
 
   public:
     dfa NT Del();
     dfa ER New();
     dfa NT Use() cx;
-    dfa ER AttribClr();
-    dfa NT AttribAdd(GLint cnt, VarType type);
-    dfa ER AttribUse(GLuint bufArrHdl = 0);
+    dfa ER VtxLayoutSet(cx gr::VtxLayout& vtxLayout, GLuint bufArrHdl = 0);
 
   public:
+    dfa VtxArr();
     dfa ~VtxArr();
 };
 
@@ -210,6 +205,20 @@ class Prog : public HdlBase
 
   public:
     dfa ~Prog();
+};
+
+class MeshGpu
+{
+  private:
+    BufArr m_vbo;
+    BufElemArr m_ebo;
+    VtxArr m_vao;
+
+  public:
+    dfa NT Del();
+    dfa ER New();
+    dfa NT Use() cx;
+    dfa ER Alloc(cx gr::MeshDat& meshDat);
 };
 
 namespace ctx

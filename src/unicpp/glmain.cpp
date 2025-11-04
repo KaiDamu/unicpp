@@ -110,16 +110,16 @@ dfa ER CtxUseClr()
     rets;
 }
 
-dfa SI VarTypeSize(VarType varType)
+dfa gl::VarType VarTypeGet(::VarType varType)
 {
     switch (varType)
     {
-    case VarType::U1:
-        ret 1;
-    case VarType::F4:
-        ret 4;
+    case ::VarType::U1:
+        ret gl::VarType::U1;
+    case ::VarType::F4:
+        ret gl::VarType::F4;
     default:
-        ret -1;
+        ret gl::VarType::NONE;
     }
 }
 dfa SI Size2ToLvCnt(cx Size2<SI>& size)
@@ -182,6 +182,7 @@ dfa NT VtxArr::Del()
         ret;
     glDeleteVertexArrays(1, &m_hdl);
     m_hdl = 0;
+    m_attribCnt = 0;
 }
 dfa ER VtxArr::New()
 {
@@ -199,36 +200,26 @@ dfa NT VtxArr::Use() cx
     glBindVertexArray(m_hdl);
     g_ctx->m_vtxArrHdl = m_hdl;
 }
-dfa ER VtxArr::AttribClr()
+dfa ER VtxArr::VtxLayoutSet(cx gr::VtxLayout& vtxLayout, GLuint bufArrHdl)
 {
-    ite (i, i < m_attribs.size())
+    ite (i, i < m_attribCnt)
         glDisableVertexArrayAttrib(m_hdl, i);
-    m_attribs.clear();
-    rets;
-}
-dfa NT VtxArr::AttribAdd(GLint cnt, VarType type)
-{
-    AU& attrib = m_attribs.emplace_back();
-    attrib.cnt = cnt;
-    attrib.type = type;
-}
-dfa ER VtxArr::AttribUse(GLuint bufArrHdl)
-{
-    GLsizei stride = 0;
-    ite (i, i < m_attribs.size())
-        stride += m_attribs[i].cnt * VarTypeSize(m_attribs[i].type);
     if (bufArrHdl == 0)
         bufArrHdl = g_ctx->m_bufArrHdl;
-    glVertexArrayVertexBuffer(m_hdl, 0, bufArrHdl, 0, stride); // binding 0
-    UA ofs = 0;
-    ite (i, i < m_attribs.size())
+    glVertexArrayVertexBuffer(m_hdl, 0, bufArrHdl, 0, vtxLayout.stride); // binding 0
+    ite (i, i < vtxLayout.attribs.size())
     {
-        glVertexArrayAttribFormat(m_hdl, i, m_attribs[i].cnt, AsType<VarTypeT>(m_attribs[i].type), GL_FALSE, ofs);
+        cx AU& attrib = vtxLayout.attribs[i];
+        cx AU doNormalize = (attrib.isNormalized ? GL_FALSE : GL_TRUE); // if it's already normalized, we don't need to normalize again
+        glVertexArrayAttribFormat(m_hdl, i, attrib.compCnt, AsType<gl::VarTypeT>(VarTypeGet(attrib.varType)), doNormalize, attrib.ofs);
         glVertexArrayAttribBinding(m_hdl, i, 0); // binding 0
         glEnableVertexArrayAttrib(m_hdl, i);
-        ofs += m_attribs[i].cnt * VarTypeSize(m_attribs[i].type);
     }
+    m_attribCnt = SI(vtxLayout.attribs.size());
     rets;
+}
+dfa VtxArr::VtxArr() : m_attribCnt(0)
+{
 }
 dfa VtxArr::~VtxArr()
 {
@@ -369,6 +360,45 @@ dfa NT Prog::Use() cx
 dfa Prog::~Prog()
 {
     tx->Del();
+}
+
+dfa NT MeshGpu::Del()
+{
+    m_vao.Del();
+    m_ebo.Del();
+    m_vbo.Del();
+}
+dfa ER MeshGpu::New()
+{
+    ifep(m_vbo.New());
+    ifep(m_ebo.New());
+    ifep(m_vao.New());
+    rets;
+}
+dfa NT MeshGpu::Use() cx
+{
+    m_vao.Use();
+}
+dfa ER MeshGpu::Alloc(cx gr::MeshDat& meshDat)
+{
+    // WARNING: this function modifies global state
+
+    ifu (m_vbo.Hdl() == 0 || m_ebo.Hdl() == 0 || m_vao.Hdl() == 0)
+        rete(ErrVal::NO_INIT);
+
+    m_vao.Use();
+    m_vbo.Use();
+    m_ebo.Use();
+
+    std::vector<gr::IndiceT> indicesMerged;
+    for (cx AU& part : meshDat.parts)
+        indicesMerged.insert(indicesMerged.end(), part.indices.begin(), part.indices.end());
+
+    ifep(m_vbo.Alloc<cx U1>(meshDat.vtxDat));
+    ifep(m_ebo.Alloc<cx gr::IndiceT>(indicesMerged));
+    ifep(m_vao.VtxLayoutSet(meshDat.vtxLayout));
+
+    rets;
 }
 
 namespace ctx

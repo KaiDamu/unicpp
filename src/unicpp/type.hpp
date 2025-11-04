@@ -47,6 +47,11 @@ using SI = S8;
 static_assert(siz(GA) == 8, "\"GA\" type size is not 8 byte! (while PROG_ADR_SIZE_8 is defined)");
 #endif
 
+using SI1 = S1;
+using SI2 = S2;
+using SI4 = S4;
+using SI8 = S8;
+
 using ID = UA;
 using HD = GA;
 

@@ -67,6 +67,8 @@
     <ClInclude Include="src\unicpp\glload.ipp" />
     <ClInclude Include="src\unicpp\graphics.hpp" />
     <ClInclude Include="src\unicpp\graphics.ipp" />
+    <ClInclude Include="src\unicpp\grtype.hpp" />
+    <ClInclude Include="src\unicpp\grtype.ipp" />
     <ClInclude Include="src\unicpp\hash.hpp" />
     <ClInclude Include="src\unicpp\hash.ipp" />
     <ClInclude Include="src\unicpp\hunic.hpp" />
@@ -214,6 +216,7 @@
     <ClCompile Include="src\unicpp\glex.cpp" />
     <ClCompile Include="src\unicpp\glload.cpp" />
     <ClCompile Include="src\unicpp\graphics.cpp" />
+    <ClCompile Include="src\unicpp\grtype.cpp" />
     <ClCompile Include="src\unicpp\hash.cpp" />
     <ClCompile Include="src\unicpp\hunic.cpp" />
     <ClCompile Include="src\unicpp\input.cpp" />

@@ -23,12 +23,14 @@ using GLsizeiptr = SA;
 using GLenum = U4;
 using GLbitfield = U4;
 using GLfloat = F4;
+using GLdouble = F8;
 using GLchar = CS;
 
 // GL constants
 cxex GLenum GL_UNSIGNED_BYTE = 0x1401;
 cxex GLenum GL_FLOAT = 0x1406;
 cxex GLenum GL_RGB8 = 0x8051;
+cxex GLenum GL_RGBA8 = 0x8058;
 cxex GLenum GL_RGB = 0x1907;
 cxex GLenum GL_RGBA = 0x1908;
 cxex GLenum GL_VALIDATE_STATUS = 0x8B83;
@@ -63,6 +65,8 @@ cxex GLenum GL_BLEND = 0x0BE2;
 cxex GLenum GL_FUNC_ADD = 0x8006;
 cxex GLenum GL_SRC_ALPHA = 0x0302;
 cxex GLenum GL_ONE_MINUS_SRC_ALPHA = 0x0303;
+cxex GLenum GL_DEPTH_TEST = 0x0B71;
+cxex GLenum GL_LESS = 0x0201;
 cxex GLint GL_LINEAR = 0x2601;
 cxex GLint GL_LINEAR_MIPMAP_LINEAR = 0x2703;
 cxex GLint GL_REPEAT = 0x2901;
@@ -132,6 +136,11 @@ using glBlendEquation_T = void(GLAPI*)(GLenum mode);
 using glBlendFunc_T = void(GLAPI*)(GLenum sfactor, GLenum dfactor);
 using glVertexArrayAttribFormat_T = void(GLAPI*)(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset);
 using glVertexArrayAttribBinding_T = void(GLAPI*)(GLuint vaobj, GLuint attribindex, GLuint bindingindex);
+using glUniformMatrix4fv_T = void(GLAPI*)(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+using glDepthFunc_T = void(GLAPI*)(GLenum func);
+using glDepthMask_T = void(GLAPI*)(GLboolean flag);
+using glClearDepth_T = void(GLAPI*)(GLdouble depth);
+using glDisable_T = void(GLAPI*)(GLenum cap);
 
 #endif
 
@@ -139,7 +148,7 @@ namespace gl
 {
 
 cxex SI PRE_LOAD_FN_CNT = 2;
-cxex SI LOAD_FN_CNT = 47;
+cxex SI LOAD_FN_CNT = 52;
 extern GAFN g_loadFn[LOAD_FN_CNT];
 extern BO g_isLoaded;
 
@@ -191,6 +200,11 @@ inl cxex cx CS* g_loadFnName[LOAD_FN_CNT] = {
     "glBlendFunc",
     "glVertexArrayAttribFormat",
     "glVertexArrayAttribBinding",
+    "glUniformMatrix4fv",
+    "glDepthFunc",
+    "glDepthMask",
+    "glClearDepth",
+    "glDisable",
 };
 
 } // namespace gl
@@ -242,6 +256,11 @@ inl cxex cx CS* g_loadFnName[LOAD_FN_CNT] = {
 #define glBlendFunc reinterpret_cast<glBlendFunc_T>(gl::g_loadFn[44])
 #define glVertexArrayAttribFormat reinterpret_cast<glVertexArrayAttribFormat_T>(gl::g_loadFn[45])
 #define glVertexArrayAttribBinding reinterpret_cast<glVertexArrayAttribBinding_T>(gl::g_loadFn[46])
+#define glUniformMatrix4fv reinterpret_cast<glUniformMatrix4fv_T>(gl::g_loadFn[47])
+#define glDepthFunc reinterpret_cast<glDepthFunc_T>(gl::g_loadFn[48])
+#define glDepthMask reinterpret_cast<glDepthMask_T>(gl::g_loadFn[49])
+#define glClearDepth reinterpret_cast<glClearDepth_T>(gl::g_loadFn[50])
+#define glDisable reinterpret_cast<glDisable_T>(gl::g_loadFn[51])
 
 namespace gl
 {
