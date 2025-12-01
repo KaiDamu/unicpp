@@ -128,6 +128,69 @@ dfa ColRgbN& ColRgbN::operator/=(F4 scalar)
     ret *tx;
 }
 
+dfa ColRgbL::ColRgbL() : r(), g(), b()
+{
+}
+dfa ColRgbL::ColRgbL(F4 r, F4 g, F4 b) : r(r), g(g), b(b)
+{
+}
+dfa BO ColRgbL::operator==(cx ColRgbL& other) cx
+{
+    ret r == other.r && g == other.g && b == other.b;
+}
+dfa BO ColRgbL::operator!=(cx ColRgbL& other) cx
+{
+    ret r != other.r || g != other.g || b != other.b;
+}
+dfa ColRgbL ColRgbL::operator+(cx ColRgbL& other) cx
+{
+    ret ColRgbL(r + other.r, g + other.g, b + other.b);
+}
+dfa ColRgbL ColRgbL::operator-(cx ColRgbL& other) cx
+{
+    ret ColRgbL(r - other.r, g - other.g, b - other.b);
+}
+dfa ColRgbL ColRgbL::operator*(F4 scalar) cx
+{
+    ret ColRgbL(r * scalar, g * scalar, b * scalar);
+}
+dfa ColRgbL ColRgbL::operator/(F4 scalar) cx
+{
+    ret ColRgbL(r / scalar, g / scalar, b / scalar);
+}
+dfa ColRgbL ColRgbL::operator-() cx
+{
+    ret ColRgbL(-r, -g, -b);
+}
+dfa ColRgbL& ColRgbL::operator+=(cx ColRgbL& other)
+{
+    r += other.r;
+    g += other.g;
+    b += other.b;
+    ret *tx;
+}
+dfa ColRgbL& ColRgbL::operator-=(cx ColRgbL& other)
+{
+    r -= other.r;
+    g -= other.g;
+    b -= other.b;
+    ret *tx;
+}
+dfa ColRgbL& ColRgbL::operator*=(F4 scalar)
+{
+    r *= scalar;
+    g *= scalar;
+    b *= scalar;
+    ret *tx;
+}
+dfa ColRgbL& ColRgbL::operator/=(F4 scalar)
+{
+    r /= scalar;
+    g /= scalar;
+    b /= scalar;
+    ret *tx;
+}
+
 dfa ColRgba::ColRgba() : r(), g(), b(), a()
 {
 }
@@ -503,6 +566,132 @@ dfa ColHsvN& ColHsvN::operator/=(F4 scalar)
     h /= scalar;
     s /= scalar;
     v /= scalar;
+    ret *tx;
+}
+
+dfa ColClab::ColClab() : l(), a(), b()
+{
+}
+dfa ColClab::ColClab(F4 l, F4 a, F4 b) : l(l), a(a), b(b)
+{
+}
+dfa BO ColClab::operator==(cx ColClab& other) cx
+{
+    ret l == other.l && a == other.a && b == other.b;
+}
+dfa BO ColClab::operator!=(cx ColClab& other) cx
+{
+    ret l != other.l || a != other.a || b != other.b;
+}
+dfa ColClab ColClab::operator+(cx ColClab& other) cx
+{
+    ret ColClab(l + other.l, a + other.a, b + other.b);
+}
+dfa ColClab ColClab::operator-(cx ColClab& other) cx
+{
+    ret ColClab(l - other.l, a - other.a, b - other.b);
+}
+dfa ColClab ColClab::operator*(F4 scalar) cx
+{
+    ret ColClab(l * scalar, a * scalar, b * scalar);
+}
+dfa ColClab ColClab::operator/(F4 scalar) cx
+{
+    ret ColClab(l / scalar, a / scalar, b / scalar);
+}
+dfa ColClab ColClab::operator-() cx
+{
+    ret ColClab(-l, -a, -b);
+}
+dfa ColClab& ColClab::operator+=(cx ColClab& other)
+{
+    l += other.l;
+    a += other.a;
+    b += other.b;
+    ret *tx;
+}
+dfa ColClab& ColClab::operator-=(cx ColClab& other)
+{
+    l -= other.l;
+    a -= other.a;
+    b -= other.b;
+    ret *tx;
+}
+dfa ColClab& ColClab::operator*=(F4 scalar)
+{
+    l *= scalar;
+    a *= scalar;
+    b *= scalar;
+    ret *tx;
+}
+dfa ColClab& ColClab::operator/=(F4 scalar)
+{
+    l /= scalar;
+    a /= scalar;
+    b /= scalar;
+    ret *tx;
+}
+
+dfa ColClch::ColClch() : l(), c(), h()
+{
+}
+dfa ColClch::ColClch(F4 l, F4 c, F4 h) : l(l), c(c), h(h)
+{
+}
+dfa BO ColClch::operator==(cx ColClch& other) cx
+{
+    ret l == other.l && c == other.c && h == other.h;
+}
+dfa BO ColClch::operator!=(cx ColClch& other) cx
+{
+    ret l != other.l || c != other.c || h != other.h;
+}
+dfa ColClch ColClch::operator+(cx ColClch& other) cx
+{
+    ret ColClch(l + other.l, c + other.c, h + other.h);
+}
+dfa ColClch ColClch::operator-(cx ColClch& other) cx
+{
+    ret ColClch(l - other.l, c - other.c, h - other.h);
+}
+dfa ColClch ColClch::operator*(F4 scalar) cx
+{
+    ret ColClch(l * scalar, c * scalar, h * scalar);
+}
+dfa ColClch ColClch::operator/(F4 scalar) cx
+{
+    ret ColClch(l / scalar, c / scalar, h / scalar);
+}
+dfa ColClch ColClch::operator-() cx
+{
+    ret ColClch(-l, -c, -h);
+}
+dfa ColClch& ColClch::operator+=(cx ColClch& other)
+{
+    l += other.l;
+    c += other.c;
+    h += other.h;
+    ret *tx;
+}
+dfa ColClch& ColClch::operator-=(cx ColClch& other)
+{
+    l -= other.l;
+    c -= other.c;
+    h -= other.h;
+    ret *tx;
+}
+dfa ColClch& ColClch::operator*=(F4 scalar)
+{
+    l *= scalar;
+    c *= scalar;
+    h *= scalar;
+    ret *tx;
+}
+dfa ColClch& ColClch::operator/=(F4 scalar)
+{
+    l /= scalar;
+    c /= scalar;
+    h /= scalar;
     ret *tx;
 }
 
@@ -944,4 +1133,160 @@ tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgb& src)
     dst.g = F4(src.g) / 255.0f;
     dst.b = F4(src.b) / 255.0f;
     dst.a = 1.0f;
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColHsvN& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColRgba& dst, cx ColRgbaN& src)
+{
+    dst.r = U1(src.r * 255.0f);
+    dst.g = U1(src.g * 255.0f);
+    dst.b = U1(src.b * 255.0f);
+    dst.a = U1(src.a * 255.0f);
+}
+tpl0 dfa NT ToType(ColRgb& dst, cx ColRgbaN& src)
+{
+    dst.r = U1(src.r * 255.0f);
+    dst.g = U1(src.g * 255.0f);
+    dst.b = U1(src.b * 255.0f);
+}
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgbaN& src)
+{
+    dst.r = src.r;
+    dst.g = src.g;
+    dst.b = src.b;
+}
+tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgbaN& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColVN& dst, cx ColRgbaN& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColRgbL& dst, cx ColRgbN& src)
+{
+    cx AU NToL = [](F4 v) -> F4 {
+        if (v <= 0.04045f)
+            ret v * 0.0773993808f;
+        ret Pow((v + 0.055f) * 0.9478673f, 2.4f);
+    };
+
+    dst.r = NToL(src.r);
+    dst.g = NToL(src.g);
+    dst.b = NToL(src.b);
+}
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgbL& src)
+{
+    cx AU LToN = [](F4 v) -> F4 {
+        if (v <= 0.0031308f)
+            ret v * 12.92f;
+        ret Pow(v, 0.41666667f) * 1.055f - 0.055f;
+    };
+
+    dst.r = LToN(src.r);
+    dst.g = LToN(src.g);
+    dst.b = LToN(src.b);
+}
+tpl0 dfa NT ToType(ColClab& dst, cx ColRgbL& src)
+{
+    Pos3<F4> t;
+    t.x = src.r * 0.4124564f + src.g * 0.3575761f + src.b * 0.1804375f;
+    t.y = src.r * 0.2126729f + src.g * 0.7151522f + src.b * 0.0721750f;
+    t.z = src.r * 0.0193339f + src.g * 0.1191920f + src.b * 0.9503041f;
+
+    cx AU TToF = [](F4 t) -> F4 {
+        if (t > 0.008856451679f)
+            ret Cbrt(t);
+        ret t * 7.787037037f + 0.13793103f;
+    };
+
+    Pos3<F4> f;
+    f.x = TToF(t.x * 1.0521111f);
+    f.y = TToF(t.y);
+    f.z = TToF(t.z * 0.91841702f);
+
+    dst.l = f.y * 116.0f - 16.0f;
+    dst.a = (f.x - f.y) * 500.0f;
+    dst.b = (f.y - f.z) * 200.0f;
+}
+tpl0 dfa NT ToType(ColRgbL& dst, cx ColClab& src)
+{
+    Pos3<F4> f;
+    f.y = (src.l + 16.0f) * 0.0086206897f;
+    f.x = f.y + (src.a * 0.002f);
+    f.z = f.y - (src.b * 0.005f);
+
+    cx AU FToT = [](F4 f) -> F4 {
+        cx AU f3 = Pow3(f);
+        if (f3 > 0.008856451679f)
+            ret f3;
+        ret (f - 0.13793103f) * 0.12841855f;
+    };
+
+    Pos3<F4> t;
+    t.x = FToT(f.x) * 0.95047f;
+    t.y = FToT(f.y);
+    t.z = FToT(f.z) * 1.08883f;
+
+    dst.r = Max(+3.2404542f * t.x - 1.5371385f * t.y - 0.4985314f * t.z, 0.0f);
+    dst.g = Max(-0.9692660f * t.x + 1.8760108f * t.y + 0.0415560f * t.z, 0.0f);
+    dst.b = Max(+0.0556434f * t.x - 0.2040259f * t.y + 1.0572252f * t.z, 0.0f);
+}
+tpl0 dfa NT ToType(ColClab& dst, cx ColRgbN& src)
+{
+    ColRgbL tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColClab& src)
+{
+    ColRgbL tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColClab& dst, cx ColRgbaN& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColClab& src)
+{
+    ColRgbN tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColClch& dst, cx ColClab& src)
+{
+    dst.l = src.l;
+    dst.c = Dist0(src.a, src.b);
+    dst.h = Atan(src.a, src.b);
+    if (dst.h < 0.0f)
+        dst.h += Tau<F4>();
+}
+tpl0 dfa NT ToType(ColClab& dst, cx ColClch& src)
+{
+    dst.l = src.l;
+    dst.a = src.c * Cos(src.h);
+    dst.b = src.c * Sin(src.h);
+}
+tpl0 dfa NT ToType(ColClch& dst, cx ColRgbaN& src)
+{
+    ColClab tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
+}
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColClch& src)
+{
+    ColClab tmp;
+    ToType(tmp, src);
+    ToType(dst, tmp);
 }

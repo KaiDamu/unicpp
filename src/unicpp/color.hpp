@@ -9,7 +9,7 @@ cxex F4 COL_HSV_WEIGHT_S = 0.3f;
 cxex F4 COL_HSV_WEIGHT_V = 0.2f;
 
 /// [color]
-struct ColRgb
+struct ColRgb // sRGB color with 0-255 range per channel
 {
     U1 r; // range: 0 - 255
     U1 g; // range: 0 - 255
@@ -31,7 +31,7 @@ struct ColRgb
     dfa ColRgb& operator*=(F4 scalar);
     dfa ColRgb& operator/=(F4 scalar);
 };
-struct ColRgbN
+struct ColRgbN // normalized sRGB color
 {
     F4 r; // range: 0.0 - 1.0
     F4 g; // range: 0.0 - 1.0
@@ -53,7 +53,29 @@ struct ColRgbN
     dfa ColRgbN& operator*=(F4 scalar);
     dfa ColRgbN& operator/=(F4 scalar);
 };
-struct ColRgba
+struct ColRgbL // linear RGB color
+{
+    F4 r; // range: 0.0 - 1.0
+    F4 g; // range: 0.0 - 1.0
+    F4 b; // range: 0.0 - 1.0
+
+    dfa ColRgbL();
+    dfa ColRgbL(F4 r, F4 g, F4 b);
+    dfa ~ColRgbL() = default;
+
+    dfa BO operator==(cx ColRgbL& other) cx;
+    dfa BO operator!=(cx ColRgbL& other) cx;
+    dfa ColRgbL operator+(cx ColRgbL& other) cx;
+    dfa ColRgbL operator-(cx ColRgbL& other) cx;
+    dfa ColRgbL operator*(F4 scalar) cx;
+    dfa ColRgbL operator/(F4 scalar) cx;
+    dfa ColRgbL operator-() cx;
+    dfa ColRgbL& operator+=(cx ColRgbL& other);
+    dfa ColRgbL& operator-=(cx ColRgbL& other);
+    dfa ColRgbL& operator*=(F4 scalar);
+    dfa ColRgbL& operator/=(F4 scalar);
+};
+struct ColRgba // sRGBA color with 0-255 range per channel
 {
     union {
         struct
@@ -83,7 +105,7 @@ struct ColRgba
     dfa ColRgba& operator*=(F4 scalar);
     dfa ColRgba& operator/=(F4 scalar);
 };
-struct ColRgbaN
+struct ColRgbaN // normalized sRGBA color
 {
     F4 r; // range: 0.0 - 1.0
     F4 g; // range: 0.0 - 1.0
@@ -106,7 +128,7 @@ struct ColRgbaN
     dfa ColRgbaN& operator*=(F4 scalar);
     dfa ColRgbaN& operator/=(F4 scalar);
 };
-struct ColV
+struct ColV // grayscale color with 0-255 range
 {
     U1 v; // range: 0 - 255
 
@@ -135,7 +157,7 @@ struct ColV
     dfa ColV& operator*=(cx ColV& other);
     dfa ColV& operator/=(cx ColV& other);
 };
-struct ColVN
+struct ColVN // normalized grayscale color
 {
     F4 v; // range: 0.0 - 1.0
 
@@ -164,7 +186,7 @@ struct ColVN
     dfa ColVN& operator*=(cx ColVN& other);
     dfa ColVN& operator/=(cx ColVN& other);
 };
-struct ColHsvN
+struct ColHsvN // normalized HSV color
 {
     F4 h; // range: 0.0 - 1.0
     F4 s; // range: 0.0 - 1.0
@@ -185,6 +207,50 @@ struct ColHsvN
     dfa ColHsvN& operator-=(cx ColHsvN& other);
     dfa ColHsvN& operator*=(F4 scalar);
     dfa ColHsvN& operator/=(F4 scalar);
+};
+struct ColClab // CIE L*a*b* color
+{
+    F4 l; // range:   +0.0 - +100.0 // lightness
+    F4 a; // range: -128.0 - +127.0 // green-red
+    F4 b; // range: -128.0 - +127.0 // blue-yellow
+
+    dfa ColClab();
+    dfa ColClab(F4 l, F4 a, F4 b);
+    dfa ~ColClab() = default;
+
+    dfa BO operator==(cx ColClab& other) cx;
+    dfa BO operator!=(cx ColClab& other) cx;
+    dfa ColClab operator+(cx ColClab& other) cx;
+    dfa ColClab operator-(cx ColClab& other) cx;
+    dfa ColClab operator*(F4 scalar) cx;
+    dfa ColClab operator/(F4 scalar) cx;
+    dfa ColClab operator-() cx;
+    dfa ColClab& operator+=(cx ColClab& other);
+    dfa ColClab& operator-=(cx ColClab& other);
+    dfa ColClab& operator*=(F4 scalar);
+    dfa ColClab& operator/=(F4 scalar);
+};
+struct ColClch // CIE L*C*h color
+{
+    F4 l; // range: 0.0 - 100.0 // lightness
+    F4 c; // range: 0.0 - INF   // chroma (magnitude)
+    F4 h; // range: 0.0 - 2PI   // hue (angle in radians)
+
+    dfa ColClch();
+    dfa ColClch(F4 l, F4 c, F4 h);
+    dfa ~ColClch() = default;
+
+    dfa BO operator==(cx ColClch& other) cx;
+    dfa BO operator!=(cx ColClch& other) cx;
+    dfa ColClch operator+(cx ColClch& other) cx;
+    dfa ColClch operator-(cx ColClch& other) cx;
+    dfa ColClch operator*(F4 scalar) cx;
+    dfa ColClch operator/(F4 scalar) cx;
+    dfa ColClch operator-() cx;
+    dfa ColClch& operator+=(cx ColClch& other);
+    dfa ColClch& operator-=(cx ColClch& other);
+    dfa ColClch& operator*=(F4 scalar);
+    dfa ColClch& operator/=(F4 scalar);
 };
 
 /// [color grid]
@@ -229,11 +295,29 @@ tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgbaN& src);
 tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgba& src);
 tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgbN& src);
 tpl0 dfa NT ToType(ColRgbaN& dst, cx ColRgb& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColHsvN& src);
+tpl0 dfa NT ToType(ColRgba& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColRgb& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColHsvN& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColVN& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColRgbL& dst, cx ColRgbN& src);
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColRgbL& src);
+tpl0 dfa NT ToType(ColClab& dst, cx ColRgbL& src);
+tpl0 dfa NT ToType(ColRgbL& dst, cx ColClab& src);
+tpl0 dfa NT ToType(ColClab& dst, cx ColRgbN& src);
+tpl0 dfa NT ToType(ColRgbN& dst, cx ColClab& src);
+tpl0 dfa NT ToType(ColClab& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColClab& src);
+tpl0 dfa NT ToType(ColClch& dst, cx ColClab& src);
+tpl0 dfa NT ToType(ColClab& dst, cx ColClch& src);
+tpl0 dfa NT ToType(ColClch& dst, cx ColRgbaN& src);
+tpl0 dfa NT ToType(ColRgbaN& dst, cx ColClch& src);
 
 /// [convert color grid]
 tpl2 dfa NT ColGridToType(ColGrid<T1>& dst, cx ColGrid<T2>& src);
 
-/// [compare color]
+/// [color tools]
 dfa F4 ColHsvNCmp(cx ColHsvN& a, cx ColHsvN& b, F4 wH = COL_HSV_WEIGHT_H, F4 wS = COL_HSV_WEIGHT_S, F4 wV = COL_HSV_WEIGHT_V);
 
 /// [compare color grid]

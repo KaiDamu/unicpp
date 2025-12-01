@@ -145,7 +145,7 @@ tpl2 dfa SI StrToFloat(T1& dst, cx T2* src)
 
         AU exp = S4(0);
         src += StrToInt(exp, src);
-        dstF *= PowInt(F8(10), exp);
+        dstF *= Pow(F8(10), exp);
     }
 
     dst = T1(dstF * sign);

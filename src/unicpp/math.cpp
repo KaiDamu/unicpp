@@ -101,6 +101,38 @@ tpl0 dfa F8 Sqrt<F8>(F8 val)
     ret sqrt(val);
 #endif
 }
+tpl0 dfa F4 Cbrt<F4>(F4 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_cbrtf(val);
+#else
+    ret cbrtf(val);
+#endif
+}
+tpl0 dfa F8 Cbrt<F8>(F8 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_cbrt(val);
+#else
+    ret cbrt(val);
+#endif
+}
+tpl0 dfa F4 Exp<F4>(F4 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_expf(val);
+#else
+    ret expf(val);
+#endif
+}
+tpl0 dfa F8 Exp<F8>(F8 val)
+{
+#ifdef PROG_COMPILER_GCC
+    ret __builtin_exp(val);
+#else
+    ret exp(val);
+#endif
+}
 tpl0 dfa F4 Sin<F4>(F4 val)
 {
 #ifdef PROG_COMPILER_GCC

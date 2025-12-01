@@ -3,7 +3,7 @@
 #include "error.hpp"
 #include "debug.hpp"
 
-#include <math.h>
+#include <cmath>
 #include <limits>
 #ifdef PROG_COMPILER_MSVC
     #include <intrin.h>
@@ -134,27 +134,34 @@ tpl1 dfa BO IsNearZero(T1 val)
         ret (Abs<T1>(val) < std::numeric_limits<T1>::epsilon());
     ret (val == T1(0));
 }
-tpl1 dfa T1 PowInt(T1 base, S2 exp)
+tpl2 dfa T1 Pow(T1 base, T2 exp)
 {
-    ifu (exp == 0)
-        ret T1(1);
-
-    cx AU isExpNeg = (exp < 0);
-    if (isExpNeg)
-        exp = -exp;
-
-    AU r = T1(1);
-    while (exp > 0)
+    ifcx (IsTypeF<T2>)
     {
-        if (exp & 1)
-            r *= base;
-        base *= base;
-        exp >>= 1;
+        ret T1(std::pow(T2(base), exp));
     }
-    if (isExpNeg)
-        r = T1(1) / r;
+    else
+    {
+        ifu (exp == 0)
+            ret T1(1);
 
-    ret r;
+        cx AU isExpNeg = (exp < 0);
+        if (isExpNeg)
+            exp = -exp;
+
+        AU r = T1(1);
+        while (exp > 0)
+        {
+            if (exp & 1)
+                r *= base;
+            base *= base;
+            exp >>= 1;
+        }
+        if (isExpNeg)
+            r = T1(1) / r;
+
+        ret r;
+    }
 }
 tpl1 dfa T1 Pow2(T1 val)
 {
@@ -167,6 +174,14 @@ tpl1 dfa T1 Pow3(T1 val)
 tpl1 dfa T1 Sqrt(T1 val)
 {
     ret T1(Sqrt(F8(val)));
+}
+tpl1 dfa T1 Cbrt(T1 val)
+{
+    ret T1(Cbrt(F8(val)));
+}
+tpl1 dfa T1 Exp(T1 val)
+{
+    ret T1(Exp(F8(val)));
 }
 tpl1 dfa T1 RadNorm1(T1 val)
 {

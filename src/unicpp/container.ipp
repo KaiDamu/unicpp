@@ -429,7 +429,7 @@ tpl1 dfa DCircularBuf<T1>::DCircularBuf()
     tx->Clr();
 }
 
-tpl1 Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio)
+tpl1 dfa Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio)
 {
     if ((F4(rect.size.w) / F4(rect.size.h)) > ratio)
     {
@@ -440,11 +440,11 @@ tpl1 Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio)
         ret Rect2<T1>({rect.pos.x, rect.pos.y}, {rect.size.w, T1(rect.size.w / ratio)});
     }
 }
-tpl1 Rect2<T1> Rect2Center(cx Rect2<T1>& rect, cx Rect2<T1>& rectOuter)
+tpl1 dfa Rect2<T1> Rect2Center(cx Rect2<T1>& rect, cx Rect2<T1>& rectOuter)
 {
     ret Rect2<T1>({rectOuter.pos.x + (rectOuter.size.w - rect.size.w) / 2, rectOuter.pos.y + (rectOuter.size.h - rect.size.h) / 2}, rect.size);
 }
-tpl1 Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio)
+tpl1 dfa Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio)
 {
     if ((F4(rect.size.w) / F4(rect.size.h)) > ratio)
     {

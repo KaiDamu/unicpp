@@ -14,6 +14,7 @@
 dfa ER ClipbSetText(cx CH* text);
 tpl1 dfa ER ClipbSetColGrid(cx ColGrid<T1>& colGrid);
 dfa ER ClipbGetText(std::wstring& text);
+tpl1 dfa ER ClipbGetColGrid(ColGrid<T1>& colGrid);
 
 #endif
 

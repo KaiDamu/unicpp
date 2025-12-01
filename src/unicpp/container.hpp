@@ -172,9 +172,9 @@ tpl1 class DCircularBuf
     dfa DCircularBuf();
 };
 
-tpl1 Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio);
-tpl1 Rect2<T1> Rect2Center(cx Rect2<T1>& rect, cx Rect2<T1>& rectOuter);
-tpl1 Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio);
+tpl1 dfa Rect2<T1> Rect2FitRatio(cx Rect2<T1>& rect, F4 ratio);
+tpl1 dfa Rect2<T1> Rect2Center(cx Rect2<T1>& rect, cx Rect2<T1>& rectOuter);
+tpl1 dfa Rect2<T1> Rect2FitRatioCenter(cx Rect2<T1>& rect, F4 ratio);
 
 tpl<SI TSize, SI TAlign = alignof(U8)> struct alignas(TAlign) DatBlock
 {
