@@ -41,6 +41,8 @@
     <ClInclude Include="src\unicpp\codegen.ipp" />
     <ClInclude Include="src\unicpp\color.hpp" />
     <ClInclude Include="src\unicpp\color.ipp" />
+    <ClInclude Include="src\unicpp\colorfx.hpp" />
+    <ClInclude Include="src\unicpp\colorfx.ipp" />
     <ClInclude Include="src\unicpp\console.hpp" />
     <ClInclude Include="src\unicpp\console.ipp" />
     <ClInclude Include="src\unicpp\container.hpp" />
@@ -203,6 +205,7 @@
     <ClCompile Include="src\unicpp\clipboard.cpp" />
     <ClCompile Include="src\unicpp\codegen.cpp" />
     <ClCompile Include="src\unicpp\color.cpp" />
+    <ClCompile Include="src\unicpp\colorfx.cpp" />
     <ClCompile Include="src\unicpp\console.cpp" />
     <ClCompile Include="src\unicpp\container.cpp" />
     <ClCompile Include="src\unicpp\debug.cpp" />
